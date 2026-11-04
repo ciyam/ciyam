@@ -1,8 +1,8 @@
 ; Copyright (c) 2026 CIYAM Developers
-;
+
 ; Distributed under the MIT/X11 software license, please refer to the file license.txt
 ; in the root project directory or http://www.opensource.org/licenses/mit-license.php.
-;
+
 NUM_ARGS=0
 @ifdef $1
 NUM_ARGS=@$NUM_ARGS+1
@@ -13,391 +13,391 @@ NUM_ARGS=@$NUM_ARGS+1
 @ifdef $3
 NUM_ARGS=@$NUM_ARGS+1
 @endif
-;
+
 ERROR=
 RETURN=
-;
+
 @ifneq "$NUM_ARGS" "3"
 ERROR=User name, room identifier and session id are required for "irc_join".
 @else
-;
+
 USER=$1
 ROOM_NO=$2
 SESSION=$3
-;
+
 EXTRA=
 REMOVE=
 CHANGED=
 ROOM_NAME=
 INCLUDE_NAME=1
-;
+
 ENTRANCE_ROOM=0000000
 RESERVED_ROOM=0000001
 STARTING_ROOM=0000002
-;
+
 PREFIX=@substr:0,2:$ROOM_NO
-@ifeq "$PREFIX" "~0"
-ROOM_NO=@substr:1:$ROOM_NO
-REMOVE=1
-@endif
-;
+   @ifeq "$PREFIX" "~0"
+   ROOM_NO=@substr:1:$ROOM_NO
+   REMOVE=1
+   @endif
+
 FIRST=@substr:0,1:$ROOM_NO
-@ifeq "$FIRST" "_"
-INCLUDE_NAME=
-ROOM_NO=@substr:1:$ROOM_NO
-@endif
-;
+   @ifeq "$FIRST" "_"
+   INCLUDE_NAME=
+   ROOM_NO=@substr:1:$ROOM_NO
+   @endif
+
 JOIN_TOKEN=
 POS=@strpos:-:$ROOM_NO
-;
-@ifdef $POS
-JPOS=@$POS+1
-JOIN_TOKEN=@substr:$JPOS:$ROOM_NO
-ROOM_NO=@substr:0,$POS:$ROOM_NO
-.system_variable @irc_close_$ROOM_NO
-@ifdef $OUTPUT
-NOW=@unix:
-@if $NOW #> $OUTPUT
-ERROR=This room has been closed.
-@endif
-@endif
-@endif
-;
-@ifeq "$ROOM_NO" "$ENTRANCE_ROOM"
-ROOM_NO=$RESERVED_ROOM
-@endif
-;
+
+   @ifdef $POS
+   JPOS=@$POS+1
+   JOIN_TOKEN=@substr:$JPOS:$ROOM_NO
+   ROOM_NO=@substr:0,$POS:$ROOM_NO
+   .system_variable @irc_close_$ROOM_NO
+      @ifdef $OUTPUT
+      NOW=@unix:
+         @if $NOW #> $OUTPUT
+         ERROR=This room has been closed.
+         @endif
+      @endif
+   @endif
+
+   @ifeq "$ROOM_NO" "$ENTRANCE_ROOM"
+   ROOM_NO=$RESERVED_ROOM
+   @endif
+
 .system_variable @irc_allow
-@ifndef $OUTPUT
-ERROR=IRC usage is not currently available.
-@else
-@ifneq "$ROOM_NO" "$RESERVED_ROOM"
-.system_variable @irc_uuids_$ROOM_NO
-@ifneq "$OUTPUT" "$JOIN_TOKEN"
-.=crypto_hash $USER$OUTPUT
-USER_TOKEN=@substr:0,32:$OUTPUT
-@ifneq "$USER_TOKEN" "$JOIN_TOKEN"
-.system_variable @irc_users_$ROOM_NO
-ALL_USERS=@strlit:$OUTPUT@
-CHECK_USERS=@repstr:@$USER@/:$ALL_USERS
-@ifeq "$ALL_USERS" "$CHECK_USERS"
-@ifndef $REMOVE
-@ifndef $JOIN_TOKEN
-ERROR=Unknown room '$ROOM_NO' (or not joined).
-@else
-ERROR=Unknown or invalid join token '$JOIN_TOKEN'.
+   @ifndef $OUTPUT
+   ERROR=IRC usage is not currently available.
+   @else
+      @ifneq "$ROOM_NO" "$RESERVED_ROOM"
+      .system_variable @irc_uuids_$ROOM_NO
+         @ifneq "$OUTPUT" "$JOIN_TOKEN"
+         .=crypto_hash $USER$OUTPUT
+         USER_TOKEN=@substr:0,32:$OUTPUT
+            @ifneq "$USER_TOKEN" "$JOIN_TOKEN"
+            .system_variable @irc_users_$ROOM_NO
+            ALL_USERS=@strlit:$OUTPUT@
+            CHECK_USERS=@repstr:@$USER@/:$ALL_USERS
+               @ifeq "$ALL_USERS" "$CHECK_USERS"
+                  @ifndef $REMOVE
+                     @ifndef $JOIN_TOKEN
+                     ERROR=Unknown room '$ROOM_NO' (or not joined).
+                     @else
+                     ERROR=Unknown or invalid join token '$JOIN_TOKEN'.
+                     @endif
+                  @endif
+               @endif
+            @endif
+         @endif
+      @endif
+   @endif
+
+   @ifndef $ERROR
+      @ifdef $JOIN_TOKEN
+      .system_variable @irc_names_$ROOM_NO
+      CHECK_NAME=$OUTPUT
+      FIRST=@substr:0,1:$CHECK_NAME
+         @ifeq "$FIRST" "/"
+         CHECK_NAME=@strlit:$CHECK_NAME/
+         CHECK_NAME=@repstr:\//@:$CHECK_NAME
+         VERIFY_NAME=@repstr:@$USER@/:$CHECK_NAME
+            @ifeq "$CHECK_NAME" "$VERIFY_NAME"
+            ERROR=Invalid attempt to join a private room.
+            @endif
+         @endif
+      @endif
+   @endif
+
+   @ifndef $ERROR
+
+   ROOM_AND_USER=@strlit:%ROOM_NO%_$USER
+
+   ; NOTE: Only accept names that are between three and twelve characters long
+   ; starting with 'a-z' and ending with 'a-z' or '0-9'. Hyphens are permitted
+   ; but only between the start and ending characters and may not be repeated.
+   ; The regex "chain" handles all of these conditions excepting the final one
+   ; which is provided using the "@repstr" environment variable function.
+
+   .regex -chain "^[a-z][-a-z0-9]+$$&&^.*[a-z0-9]$$&&^[-a-z0-9]{3,12}$$" "$USER"
+   USER_CHECK=$OUTPUT
+      @ifdef $USER_CHECK
+      USER_CHECK=@repstr:--/-:$USER_CHECK
+      @endif
+
+      @ifneq "$USER" "$USER_CHECK"
+      ERROR=Invalid username '$USER'.
+      @else
+
+      .session_variable -id=$SESSION @irc_user
+      USER_EXPECTED=$OUTPUT
+
+         @ifndef $USER_EXPECTED
+         USER_EXPECTED=$USER
+         @endif
+
+         @ifneq "$USER" "$USER_EXPECTED"
+         ERROR=Unexpected alias '$USER' for username '$USER_EXPECTED'.
+         @else
+
+         JOINED_OR_REMOVE=
+
+         ; NOTE: If already joined then will
+         ; return the current list of users.
+         .session_variable -id=$SESSION @irc_$ROOM_NO
+            @ifdef $OUTPUT
+            JOINED_OR_REMOVE=1
+            @elif "$REMOVE" != ""
+            JOINED_OR_REMOVE=1
+            @endif
+
+            @ifdef $JOINED_OR_REMOVE
+            .system_variable @irc_users_$ROOM_NO
+            ALL_USERS=@strlit:$OUTPUT
+            .system_variable @irc_names_$ROOM_NO
+            ROOM_NAME=$OUTPUT
+
+               @ifdef $REMOVE
+
+                  @ifeq "$ROOM_NO" "$RESERVED_ROOM"
+                  ERROR=Removal from this room is not permitted.
+                  @else
+                  .system_variable @irc_lock 1 "" 100
+
+                     @ifeq "$OUTPUT" "0"
+                     ERROR=Unable to obtain the system IRC lock (try again later).
+                     @else
+
+                     .system_variable @irc_owner_$ROOM_NO
+                        @ifeq "$USER" "$OUTPUT"
+                        ERROR=Removal of the room owner is not permitted.
+                        @else
+
+                        CHECK_USERS=@strlit:$ALL_USERS@
+                        OTHER_USERS=@repstr:@$USER@/:$CHECK_USERS
+
+                           @ifeq "$CHECK_USERS" "$OTHER_USERS"
+
+                           .system_variable @irc_xinvr_%ROOM_NO%_$USER
+                              @ifndef $OUTPUT
+                              CHANGED=1
+                              .system_variable @irc_xinvr_%ROOM_NO%_$USER 1
+                              .system_variable @irc_xinvs_%ROOM_NO%_$USER ""
+                              EXTRA=_:reject (invite for $ROOM_NO was rejected)
+                              ROOM_NO=$RESERVED_ROOM
+                              @endif
+
+                           @else
+
+                           LENGTH=@strlen:@$USER
+                           POS=@strpos:@$USER@:$CHECK_USERS
+
+                           PREFIX=
+                              @ifneq "$POS" "0"
+                              PREFIX=@substr:0,$POS:$ALL_USERS
+                              @endif
+
+                           POS=@$POS+$LENGTH
+                           SUFFIX=@substr:$POS:$ALL_USERS
+
+                           ALL_USERS=$PREFIX$SUFFIX
+
+                           EXTRA=_:remove
+
+                           .session_variable @irc_is_remove 1
+                           .session_variable -id=$SESSION @irc_$ROOM_NO ""
+                           .system_variable @irc_users_$ROOM_NO "$ALL_USERS"
+                           .system_variable @session_@queue_irc_%ROOM_NO%_$USER ""
+
+                           .system_variable @irc_users_$RESERVED_ROOM
+                           ALL_USERS=@strlit:$OUTPUT
+
+                           @endif
+
+                        @endif
+
+                     .system_variable @irc_lock ""
+
+                     @endif
+                  @endif
+               @endif
+
+            OPT_PREFIX=
+               @ifdef $INCLUDE_NAME
+               OPT_PREFIX=@strlit:%ROOM_NAME%_
+               @endif
+
+            RETURN=@strlit:$OPT_PREFIX$ALL_USERS
+
+            @else
+
+            .system_variable @irc_lock 1 "" 100
+
+               @ifeq "$OUTPUT" "0"
+               ERROR=Unable to obtain the system IRC lock (try again later).
+               @elif "$ROOM_NO" != "$RESERVED_ROOM"
+               .system_variable @irc_users_$ROOM_NO
+                  @ifndef $OUTPUT
+                  .system_variable @irc_lock ""
+                  ERROR=Invalid room number $ROOM_NO.
+                  @endif
+               @endif
+
+               @ifndef $ERROR
+
+               .system_variable @irc_rooms
+                  @ifndef $OUTPUT
+                  CHANGED=1
+                  .system_variable @qs_pf_irc 1
+
+                  .system_variable @irc_names_$RESERVED_ROOM Admin
+                  .system_variable @irc_names_$STARTING_ROOM General
+
+                  .system_variable @irc_owner_$RESERVED_ROOM admin
+                  .system_variable @irc_owner_$STARTING_ROOM admin
+
+                  .system_variable @irc_users_$RESERVED_ROOM @admin
+                  .system_variable @irc_users_$STARTING_ROOM @admin
+
+                  .system_variable @irc_rooms 0000003
+
+                  .system_variable @session_@queue_irc_%RESERVED_ROOM%_admin 1
+                  .system_variable @session_@queue_irc_%STARTING_ROOM%_admin 1
+                  @endif
+
+               .system_variable @irc_users_$ROOM_NO
+               ALL_USERS=@strlit:$OUTPUT
+
+               ALL_USERS_CHECK=
+
+                  @ifdef $ALL_USERS
+                  ALL_USERS_CHECK=@strlit:%ALL_USERS%@
+                  @endif
+
+               OPT_PREFIX=
+                  @ifdef $INCLUDE_NAME
+                  OPT_PREFIX=@strlit:%ROOM_NAME%_
+                  @endif
+
+               NOT_SELF_CHECK=@repstr:@$USER@/@:$ALL_USERS_CHECK
+
+                  @ifneq "$ALL_USERS_CHECK" "$NOT_SELF_CHECK"
+                  RETURN=dummy|dummy|$OPT_PREFIX$ALL_USERS
+                  @else
+
+                  ALL_USERS=@strlit:$ALL_USERS@$USER
+                  ALL_USERS=@set_sort:@:$ALL_USERS
+
+                  EXTRA=_:joined
+
+                  .system_variable @irc_users_$ROOM_NO $ALL_USERS
+
+                     @ifneq "$ROOM_NO" "$RESERVED_ROOM"
+                     RETURN=dummy|$EXTRA|$OPT_PREFIX$ALL_USERS
+                     @else
+                     RETURN=:joined (as $USER)|$EXTRA|$OPT_PREFIX$ALL_USERS
+                     @endif
+                  @endif
+
+               .session_variable -id=$SESSION @irc_$ROOM_NO 1
+               .session_variable -id=$SESSION @irc_user $USER
+
+               .system_variable @session_@queue_irc_$ROOM_AND_USER
+                  @ifndef $OUTPUT
+                  CHANGED=1
+                  .system_variable @irc_xinvs_$ROOM_AND_USER ""
+                  .system_variable @session_@queue_irc_$ROOM_AND_USER 1
+                  @endif
+
+               .session_variable -id=$SESSION @queue_irc_$ROOM_AND_USER @system
+
+               .system_variable @irc_lock ""
+
+               @endif
+
+            @endif
+
+         @endif
+
+      @endif
+
+   @endif
+
 @endif
-@endif
-@endif
-@endif
-@endif
-@endif
-@endif
-;
+
 @ifndef $ERROR
-@ifdef $JOIN_TOKEN
-.system_variable @irc_names_$ROOM_NO
-CHECK_NAME=$OUTPUT
-FIRST=@substr:0,1:$CHECK_NAME
-@ifeq "$FIRST" "/"
-CHECK_NAME=@strlit:$CHECK_NAME/
-CHECK_NAME=@repstr:\//@:$CHECK_NAME
-VERIFY_NAME=@repstr:@$USER@/:$CHECK_NAME
-@ifeq "$CHECK_NAME" "$VERIFY_NAME"
-ERROR=Invalid attempt to join a private room.
+   @ifdef $EXTRA
+   ENCODED=@base64::$EXTRA
+
+   .session_variable @irc_user
+   OLD_IRC_USER=$OUTPUT
+   .session_variable @irc_user $USER
+
+   .run_script !irc_send_message "@room=$ROOM_NO,@names=ALL,@message=$ENCODED"
+   .session_variable @irc_user "$OLD_IRC_USER"
+      @ifdef $REMOVE
+      .session_variable @irc_is_remove ""
+      @endif
+   @endif
 @endif
-@endif
-@endif
-@endif
-;
-@ifndef $ERROR
-;
-ROOM_AND_USER=@strlit:%ROOM_NO%_$USER
-;
-; NOTE: Only accept names that are between three and twelve characters long
-; starting with 'a-z' and ending with 'a-z' or '0-9'. Hyphens are permitted
-; but only between the start and ending characters and may not be repeated.
-; The regex "chain" handles all of these conditions excepting the final one
-; which is provided using the "@repstr" environment variable function.
-;
-.regex -chain "^[a-z][-a-z0-9]+$$&&^.*[a-z0-9]$$&&^[-a-z0-9]{3,12}$$" "$USER"
-USER_CHECK=$OUTPUT
-@ifdef $USER_CHECK
-USER_CHECK=@repstr:--/-:$USER_CHECK
-@endif
-;
-@ifneq "$USER" "$USER_CHECK"
-ERROR=Invalid username '$USER'.
-@else
-;
-.session_variable -id=$SESSION @irc_user
-USER_EXPECTED=$OUTPUT
-;
-@ifndef $USER_EXPECTED
-USER_EXPECTED=$USER
-@endif
-;
-@ifneq "$USER" "$USER_EXPECTED"
-ERROR=Unexpected alias '$USER' for username '$USER_EXPECTED'.
-@else
-;
-JOINED_OR_REMOVE=
-;
-; NOTE: If already joined then will
-; return the current list of users.
-.session_variable -id=$SESSION @irc_$ROOM_NO
-@ifdef $OUTPUT
-JOINED_OR_REMOVE=1
-@elif "$REMOVE" != ""
-JOINED_OR_REMOVE=1
-@endif
-;
-@ifdef $JOINED_OR_REMOVE
-.system_variable @irc_users_$ROOM_NO
-ALL_USERS=@strlit:$OUTPUT
-.system_variable @irc_names_$ROOM_NO
-ROOM_NAME=$OUTPUT
-;
-@ifdef $REMOVE
-;
-@ifeq "$ROOM_NO" "$RESERVED_ROOM"
-ERROR=Removal from this room is not permitted.
-@else
-.system_variable @irc_lock 1 "" 100
-;
-@ifeq "$OUTPUT" "0"
-ERROR=Unable to obtain the system IRC lock (try again later).
-@else
-;
-.system_variable @irc_owner_$ROOM_NO
-@ifeq "$USER" "$OUTPUT"
-ERROR=Removal of the room owner is not permitted.
-@else
-;
-CHECK_USERS=@strlit:$ALL_USERS@
-OTHER_USERS=@repstr:@$USER@/:$CHECK_USERS
-;
-@ifeq "$CHECK_USERS" "$OTHER_USERS"
-;
-.system_variable @irc_xinvr_%ROOM_NO%_$USER
-@ifndef $OUTPUT
-CHANGED=1
-.system_variable @irc_xinvr_%ROOM_NO%_$USER 1
-.system_variable @irc_xinvs_%ROOM_NO%_$USER ""
-EXTRA=_:reject (invite for $ROOM_NO was rejected)
-ROOM_NO=$RESERVED_ROOM
-@endif
-;
-@else
-;
-LENGTH=@strlen:@$USER
-POS=@strpos:@$USER@:$CHECK_USERS
-;
-PREFIX=
-@ifneq "$POS" "0"
-PREFIX=@substr:0,$POS:$ALL_USERS
-@endif
-;
-POS=@$POS+$LENGTH
-SUFFIX=@substr:$POS:$ALL_USERS
-;
-ALL_USERS=$PREFIX$SUFFIX
-;
-EXTRA=_:remove
-;
-.session_variable @irc_is_remove 1
-.session_variable -id=$SESSION @irc_$ROOM_NO ""
-.system_variable @irc_users_$ROOM_NO "$ALL_USERS"
-.system_variable @session_@queue_irc_%ROOM_NO%_$USER ""
-;
-.system_variable @irc_users_$RESERVED_ROOM
-ALL_USERS=@strlit:$OUTPUT
-;
-@endif
-;
-@endif
-;
-.system_variable @irc_lock ""
-;
-@endif
-@endif
-@endif
-;
-OPT_PREFIX=
-@ifdef $INCLUDE_NAME
-OPT_PREFIX=@strlit:%ROOM_NAME%_
-@endif
-;
-RETURN=@strlit:$OPT_PREFIX$ALL_USERS
-;
-@else
-;
-.system_variable @irc_lock 1 "" 100
-;
-@ifeq "$OUTPUT" "0"
-ERROR=Unable to obtain the system IRC lock (try again later).
-@elif "$ROOM_NO" != "$RESERVED_ROOM"
-.system_variable @irc_users_$ROOM_NO
-@ifndef $OUTPUT
-.system_variable @irc_lock ""
-ERROR=Invalid room number $ROOM_NO.
-@endif
-@endif
-;
-@ifndef $ERROR
-;
-.system_variable @irc_rooms
-@ifndef $OUTPUT
-CHANGED=1
-.system_variable @qs_pf_irc 1
-;
-.system_variable @irc_names_$RESERVED_ROOM Admin
-.system_variable @irc_names_$STARTING_ROOM General
-;
-.system_variable @irc_owner_$RESERVED_ROOM admin
-.system_variable @irc_owner_$STARTING_ROOM admin
-;
-.system_variable @irc_users_$RESERVED_ROOM @admin
-.system_variable @irc_users_$STARTING_ROOM @admin
-;
-.system_variable @irc_rooms 0000003
-;
-.system_variable @session_@queue_irc_%RESERVED_ROOM%_admin 1
-.system_variable @session_@queue_irc_%STARTING_ROOM%_admin 1
-@endif
-;
-.system_variable @irc_users_$ROOM_NO
-ALL_USERS=@strlit:$OUTPUT
-;
-ALL_USERS_CHECK=
-;
-@ifdef $ALL_USERS
-ALL_USERS_CHECK=@strlit:%ALL_USERS%@
-@endif
-;
-OPT_PREFIX=
-@ifdef $INCLUDE_NAME
-OPT_PREFIX=@strlit:%ROOM_NAME%_
-@endif
-;
-NOT_SELF_CHECK=@repstr:@$USER@/@:$ALL_USERS_CHECK
-;
-@ifneq "$ALL_USERS_CHECK" "$NOT_SELF_CHECK"
-RETURN=dummy|dummy|$OPT_PREFIX$ALL_USERS
-@else
-;
-ALL_USERS=@strlit:$ALL_USERS@$USER
-ALL_USERS=@set_sort:@:$ALL_USERS
-;
-EXTRA=_:joined
-;
-.system_variable @irc_users_$ROOM_NO $ALL_USERS
-;
-@ifneq "$ROOM_NO" "$RESERVED_ROOM"
-RETURN=dummy|$EXTRA|$OPT_PREFIX$ALL_USERS
-@else
-RETURN=:joined (as $USER)|$EXTRA|$OPT_PREFIX$ALL_USERS
-@endif
-@endif
-;
-.session_variable -id=$SESSION @irc_$ROOM_NO 1
-.session_variable -id=$SESSION @irc_user $USER
-;
-.system_variable @session_@queue_irc_$ROOM_AND_USER
-@ifndef $OUTPUT
-CHANGED=1
-.system_variable @irc_xinvs_$ROOM_AND_USER ""
-.system_variable @session_@queue_irc_$ROOM_AND_USER 1
-@endif
-;
-.session_variable -id=$SESSION @queue_irc_$ROOM_AND_USER @system
-;
-.system_variable @irc_lock ""
-;
-@endif
-;
-@endif
-;
-@endif
-;
-@endif
-;
-@endif
-;
-@endif
-;
-@ifndef $ERROR
-@ifdef $EXTRA
-ENCODED=@base64::$EXTRA
-;
-.session_variable @irc_user
-OLD_IRC_USER=$OUTPUT
-.session_variable @irc_user $USER
-;
-.run_script !irc_send_message "@room=$ROOM_NO,@names=ALL,@message=$ENCODED"
-.session_variable @irc_user "$OLD_IRC_USER"
-@ifdef $REMOVE
-.session_variable @irc_is_remove ""
-@endif
-@endif
-@endif
-;
+
 PREFIX=
 ERROR_OR_RETURN=
-;
+
 @ifdef $RETURN
-@ifdef $ALL_USERS
-IRC_USERS=@substr:1:$ALL_USERS
-IRC_USERS=@repstr:@/\n:$IRC_USERS
-@label NEXT
-CHECKED_USERS=
-;
-@:LOOP
-;
-NEXT_USER=%IRC_USERS:1%
-@ifndef $NEXT_USER
-@label END_LOOP
+   @ifdef $ALL_USERS
+   IRC_USERS=@substr:1:$ALL_USERS
+   IRC_USERS=@repstr:@/\n:$IRC_USERS
+   @label NEXT
+   CHECKED_USERS=
+
+   @:LOOP
+
+   NEXT_USER=%IRC_USERS:1%
+      @ifndef $NEXT_USER
+      @label END_LOOP
+      @endif
+
+   @skip
+
+   @:NEXT
+
+   SUFFIX=
+   .session_variable -num_found @irc_user $NEXT_USER
+      @ifndef $CHECKED_USERS
+      CHECKED_USERS=$NEXT_USER+$OUTPUT
+      @else
+      CHECKED_USERS=$CHECKED_USERS $NEXT_USER+$OUTPUT
+      @endif
+
+   IRC_USERS=%IRC_USERS:-1%
+   !!@:LOOP
+
+   @:END_LOOP
+
+   IRC_USERS=$CHECKED_USERS
+
+   RETURN=@strlit:$RETURN|$IRC_USERS
+   @endif
 @endif
-;
-@skip
-;
-@:NEXT
-;
-SUFFIX=
-.session_variable -num_found @irc_user $NEXT_USER
-@ifndef $CHECKED_USERS
-CHECKED_USERS=$NEXT_USER+$OUTPUT
-@else
-CHECKED_USERS=$CHECKED_USERS $NEXT_USER+$OUTPUT
-@endif
-;
-IRC_USERS=%IRC_USERS:-1%
-!!@:LOOP
-;
-@:END_LOOP
-;
-IRC_USERS=$CHECKED_USERS
-;
-RETURN=@strlit:$RETURN|$IRC_USERS
-@endif
-@endif
-;
+
 @ifdef $CHANGED
 .system_variable @irc_alter 1
 @endif
-;
+
 @ifdef $ERROR
 PREFIX=Error:$SP
 ERROR_OR_RETURN=$ERROR
 @elif "$RETURN" != ""
 ERROR_OR_RETURN=:$RETURN
 @endif
-;
+
 @ifdef $ERROR_OR_RETURN
 .session_variable @args_file
-@ifndef $OUTPUT
-#$PREFIX$ERROR_OR_RETURN
-@else
-.system_variable $OUTPUT "$ERROR_OR_RETURN"
-@endif
+   @ifndef $OUTPUT
+   #$PREFIX$ERROR_OR_RETURN
+   @else
+   .system_variable $OUTPUT "$ERROR_OR_RETURN"
+   @endif
 @endif

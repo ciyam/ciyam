@@ -1,82 +1,82 @@
 ; Copyright (c) 2021-2026 CIYAM Developers
-;
+
 ; Distributed under the MIT/X11 software license, please refer to the file license.txt
 ; in the root project directory or http://www.opensource.org/licenses/mit-license.php.
-;
+
 .system_variable @sid_locked
 @ifdef $OUTPUT
-;
+
 .identity
 COMBINED=@repstr:!/\n:$OUTPUT
 IDENT=%COMBINED:1%
-;
-@ifndef $CIYAM_QUIET
-#Locked Identity: $IDENT
-@endif
-;
+
+   @ifndef $CIYAM_QUIET
+   #Locked Identity: $IDENT
+   @endif
+
 .session_variable @pubkey
 EXT_PUBKEY=$OUTPUT
-;
+
 @:LOOP
-;
+
 @label NEXT
-;
+
 ; NOTE: The password is an optional argument which is not recommended
 ; for typical usage (but is used by "release.sh" so that the password
 ; will only need to be entered a single time). If a password has been
 ; provided which has spaces then need to use "$*" (rather than "$1").
-@ifdef $1
-ARGS="$*"
-@else
-DATA_AND_PUBKEY=@password:Enter unlock key or password to unlock the system identity:$EXT_PUBKEY
-ARGS=@repstr:\:/ -k=:$DATA_AND_PUBKEY
-@endif
-;
+   @ifdef $1
+   ARGS="$*"
+   @else
+   DATA_AND_PUBKEY=@password:Enter unlock key or password to unlock the system identity:$EXT_PUBKEY
+   ARGS=@repstr:\:/ -k=:$DATA_AND_PUBKEY
+   @endif
+
 .=identity $ARGS
 COMBINED=@repstr:!/\n:$OUTPUT
 NEW_IDENT=%COMBINED:1%
-;
-@ifneq "$IDENT" "$NEW_IDENT"
-@ifndef $ERROR
-@ifndef $CIYAM_QUIET
-#Unlocked identity: $NEW_IDENT
-@endif
-@endif
-;
-~rm -f .unlock_failed
-;
-@label DONE
-;
-@else
-#Unlock failed (incorrect password?).
-;
-@ifdef $1
-~touch .unlock_failed
-Retry=
-@else
-&Retry? [yes=1|no=]
-@endif
-;
-@ifndef $Retry
-@label DONE
-@endif
-;
-@endif
-;
+
+   @ifneq "$IDENT" "$NEW_IDENT"
+      @ifndef $ERROR
+         @ifndef $CIYAM_QUIET
+         #Unlocked identity: $NEW_IDENT
+         @endif
+      @endif
+
+   ~rm -f .unlock_failed
+
+   @label DONE
+
+   @else
+   #Unlock failed (incorrect password?).
+
+      @ifdef $1
+      ~touch .unlock_failed
+      Retry=
+      @else
+      &Retry? [yes=1|no=]
+      @endif
+
+      @ifndef $Retry
+      @label DONE
+      @endif
+
+   @endif
+
 @skip
-;
+
 @:NEXT
-;
+
 !!@:LOOP
-;
+
 @:DONE
-;
+
 @else
-;
-@ifndef $1
-@ifndef $CIYAM_QUIET
-#Identity is not currently locked.
-@endif
-@endif
-;
+
+   @ifndef $1
+      @ifndef $CIYAM_QUIET
+      #Identity is not currently locked.
+      @endif
+   @endif
+
 @endif

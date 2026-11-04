@@ -1,21 +1,21 @@
 ; Copyright (c) 2023-2026 CIYAM Developers
-;
+
 ; Distributed under the MIT/X11 software license, please refer to the file license.txt
 ; in the root project directory or http://www.opensource.org/licenses/mit-license.php.
-;
+
 ERROR=
 @ifeq "$1" ""
 ERROR=1
 @endif
-;
+
 @ifeq "$ERROR" "1"
 #Usage: reset_hosted_datachain.cin <identity>
 @else
-;
+
 IDENTITY=$1
-;
+
 #Resetting archive and blockchain files for $IDENTITY.
-;
+
 <bc_reset.cin $IDENTITY
-;
+
 @endif

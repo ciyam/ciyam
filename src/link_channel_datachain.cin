@@ -1,8 +1,8 @@
 ; Copyright (c) 2024-2026 CIYAM Developers
-;
+
 ; Distributed under the MIT/X11 software license, please refer to the file license.txt
 ; in the root project directory or http://www.opensource.org/licenses/mit-license.php.
-;
+
 NUM_ARGS=0
 @ifdef $1
 NUM_ARGS=@$NUM_ARGS+1
@@ -13,99 +13,99 @@ NUM_ARGS=@$NUM_ARGS+1
 @ifdef $3
 NUM_ARGS=@$NUM_ARGS+1
 @endif
-;
+
 @ifneq "$NUM_ARGS" "3"
 #Usage: link_channel_datachain.cin <storage> <channel> <identity:type>
 @else
 ERROR=
-;
+
 STORAGE=$1
 CHANNEL=$2
 IDENTITY_AND_TYPE=$3
-;
+
 IDENTITY=
 DATA_TYPE=
-;
+
 APP_DIR=@lower:$STORAGE
-;
+
 IDENTITY_AND_TYPE=@repstr:\:/\n:$IDENTITY_AND_TYPE
-;
+
 IDENTITY=%IDENTITY_AND_TYPE:1%
 DATA_TYPE=%IDENTITY_AND_TYPE:2%
-;
-@ifndef $DATA_TYPE
-ERROR=Unexpected datachain type missing for '$IDENTITY'.
-#Error: $ERROR
-@else
-;
-.system_variable @files_area_path
-FILES_AREA_DIR=$OUTPUT
-;
-DEMO=
-.system_variable @system_is_for_demo
-@ifdef $OUTPUT
-DEMO=1
-@endif
-;
-@ifndef $DEMO
-DATA_SIZE=1GB
-@else
-DATA_SIZE=100MB
-@endif
-;
-.storage_init $STORAGE
-@ifndef $ERROR
-.module_list
-MODULES=$OUTPUT
-MODULES=@repstr: /\n:$MODULES
-MODULE=%MODULES:2%
-;
-.storage_channel_list
-ALL_CHANNELS=$OUTPUT
-CHANNEL_REMOVED=@repstr:$CHANNEL/:$ALL_CHANNELS
-@ifeq "$ALL_CHANNELS" "$CHANNEL_REMOVED"
-ERROR=Unexpected unknown channel '$CHANNEL'.
-#Error: $ERROR
-@else
-;
-.storage_datachain_details -list
-ALL_DATA_CHAINS=$OUTPUT
-IDENTITY_REMOVED=@repstr:$IDENTITY/:$ALL_DATA_CHAINS
-;
-@ifeq "$ALL_DATA_CHAINS" "$IDENTITY_REMOVED"
-.storage_datachain_details $IDENTITY -type=$DATA_TYPE
-~mkdir $FILES_AREA_DIR/$IDENTITY
-.file_archive -add $FILES_AREA_DIR/$IDENTITY $DATA_SIZE $IDENTITY
-@endif
-.storage_datachain_details $IDENTITY -link $CHANNEL
-;
-@endif
-;
-.storage_term
-;
-@ifndef $ERROR
-;
-@ifeq "$DATA_TYPE" "0"
-.system_variable @blog_sync_datachains 1 ""
-@ifeq $OUTPUT 1
-.session_variable @errors_only 1
-~touch $WEBDIR/$APP_DIR/ui_@blog_changing
-.run_script sync_blog_datachains "@storage=$STORAGE,@identity=$IDENTITY"
-@endif
-@endif
-;
-@ifeq "$DATA_TYPE" "1"
-.system_variable @forum_sync_datachains 1 ""
-@ifeq $OUTPUT 1
-.session_variable @errors_only 1
-~touch $WEBDIR/$APP_DIR/ui_@forum_changing
-.run_script sync_forum_datachains "@storage=$STORAGE,@identity=$IDENTITY"
-@endif
-@endif
-;
-@endif
-;
-@endif
-@endif
-;
+
+   @ifndef $DATA_TYPE
+   ERROR=Unexpected datachain type missing for '$IDENTITY'.
+   #Error: $ERROR
+   @else
+
+   .system_variable @files_area_path
+   FILES_AREA_DIR=$OUTPUT
+
+   DEMO=
+   .system_variable @system_is_for_demo
+      @ifdef $OUTPUT
+      DEMO=1
+      @endif
+
+      @ifndef $DEMO
+      DATA_SIZE=1GB
+      @else
+      DATA_SIZE=100MB
+      @endif
+
+   .storage_init $STORAGE
+      @ifndef $ERROR
+      .module_list
+      MODULES=$OUTPUT
+      MODULES=@repstr: /\n:$MODULES
+      MODULE=%MODULES:2%
+
+      .storage_channel_list
+      ALL_CHANNELS=$OUTPUT
+      CHANNEL_REMOVED=@repstr:$CHANNEL/:$ALL_CHANNELS
+         @ifeq "$ALL_CHANNELS" "$CHANNEL_REMOVED"
+         ERROR=Unexpected unknown channel '$CHANNEL'.
+         #Error: $ERROR
+         @else
+
+         .storage_datachain_details -list
+         ALL_DATA_CHAINS=$OUTPUT
+         IDENTITY_REMOVED=@repstr:$IDENTITY/:$ALL_DATA_CHAINS
+
+            @ifeq "$ALL_DATA_CHAINS" "$IDENTITY_REMOVED"
+            .storage_datachain_details $IDENTITY -type=$DATA_TYPE
+            ~mkdir $FILES_AREA_DIR/$IDENTITY
+            .file_archive -add $FILES_AREA_DIR/$IDENTITY $DATA_SIZE $IDENTITY
+            @endif
+         .storage_datachain_details $IDENTITY -link $CHANNEL
+
+         @endif
+
+      .storage_term
+
+         @ifndef $ERROR
+
+            @ifeq "$DATA_TYPE" "0"
+            .system_variable @blog_sync_datachains 1 ""
+               @ifeq $OUTPUT 1
+               .session_variable @errors_only 1
+               ~touch $WEBDIR/$APP_DIR/ui_@blog_changing
+               .run_script sync_blog_datachains "@storage=$STORAGE,@identity=$IDENTITY"
+               @endif
+            @endif
+
+            @ifeq "$DATA_TYPE" "1"
+            .system_variable @forum_sync_datachains 1 ""
+               @ifeq $OUTPUT 1
+               .session_variable @errors_only 1
+               ~touch $WEBDIR/$APP_DIR/ui_@forum_changing
+               .run_script sync_forum_datachains "@storage=$STORAGE,@identity=$IDENTITY"
+               @endif
+            @endif
+
+         @endif
+
+      @endif
+   @endif
+
 @endif

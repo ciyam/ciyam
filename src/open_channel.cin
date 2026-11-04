@@ -1,8 +1,8 @@
 ; Copyright (c) 2023-2026 CIYAM Developers
-;
+
 ; Distributed under the MIT/X11 software license, please refer to the file license.txt
 ; in the root project directory or http://www.opensource.org/licenses/mit-license.php.
-;
+
 NUM_ARGS=0
 @ifdef $1
 NUM_ARGS=@$NUM_ARGS+1
@@ -10,59 +10,59 @@ NUM_ARGS=@$NUM_ARGS+1
 @ifdef $2
 NUM_ARGS=@$NUM_ARGS+1
 @endif
-;
+
 @ifneq "$NUM_ARGS" "2"
 #Usage: open_channel.cin <storage> <identity>
 @else
 ERROR=
-;
+
 STORAGE=$1
 IDENTITY=$2
-;
+
 .system_variable @opened_$IDENTITY
-@ifeq "$OUTPUT" ""
-;
-.system_variable @error_$IDENTITY ""
-;
-@ifneq "$STORAGE" "@dummy"
-.storage_init $STORAGE
-@endif
-;
-@ifdef $ERROR
-.system_variable @error_$IDENTITY "$ERROR"
-@else
-.storage_channel_documents -open $IDENTITY
-@ifdef $ERROR
-.system_variable @error_$IDENTITY "$ERROR"
-@else
-.system_variable @opened_files
-OPENED_FILES=$OUTPUT
-.system_variable @opening_user_$IDENTITY
-OPENING_USER=$OUTPUT
-@ifdef $CIYAM_USER
-~sudo chmod -R o-rx $OPENED_FILES/$IDENTITY
-@ifdef $OPENING_USER
-~sudo chown -R $OPENING_USER:ciyam $OPENED_FILES/$IDENTITY
-@endif
-@endif
-.system_variable @opened_$IDENTITY 1
-;
-.notifier -start $OPENED_FILES/$IDENTITY
-@ifdef $ERROR
-.system_variable @error_$IDENTITY "$ERROR"
-@endif
-@endif
-;
-@ifneq "$STORAGE" "@dummy"
-.storage_term
-@endif
-@endif
-;
-.system_variable @opened_user_$IDENTITY "$OPENING_USER"
-;
-@endif
-;
+   @ifeq "$OUTPUT" ""
+
+   .system_variable @error_$IDENTITY ""
+
+      @ifneq "$STORAGE" "@dummy"
+      .storage_init $STORAGE
+      @endif
+
+      @ifdef $ERROR
+      .system_variable @error_$IDENTITY "$ERROR"
+      @else
+      .storage_channel_documents -open $IDENTITY
+         @ifdef $ERROR
+         .system_variable @error_$IDENTITY "$ERROR"
+         @else
+         .system_variable @opened_files
+         OPENED_FILES=$OUTPUT
+         .system_variable @opening_user_$IDENTITY
+         OPENING_USER=$OUTPUT
+            @ifdef $CIYAM_USER
+            ~sudo chmod -R o-rx $OPENED_FILES/$IDENTITY
+               @ifdef $OPENING_USER
+               ~sudo chown -R $OPENING_USER:ciyam $OPENED_FILES/$IDENTITY
+               @endif
+            @endif
+         .system_variable @opened_$IDENTITY 1
+
+         .notifier -start $OPENED_FILES/$IDENTITY
+            @ifdef $ERROR
+            .system_variable @error_$IDENTITY "$ERROR"
+            @endif
+         @endif
+
+         @ifneq "$STORAGE" "@dummy"
+         .storage_term
+         @endif
+      @endif
+
+   .system_variable @opened_user_$IDENTITY "$OPENING_USER"
+
+   @endif
+
 .system_variable @opening_$IDENTITY ""
 .system_variable @opening_user_$IDENTITY ""
-;
+
 @endif

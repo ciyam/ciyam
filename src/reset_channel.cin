@@ -1,23 +1,23 @@
 ; Copyright (c) 2023-2026 CIYAM Developers
-;
+
 ; Distributed under the MIT/X11 software license, please refer to the file license.txt
 ; in the root project directory or http://www.opensource.org/licenses/mit-license.php.
-;
+
 @ifeq "$1" ""
 #Usage: reset_channel.cin <identity>
 @else
-;
+
 .system_variable $$$1_identity
 CHANNEL=$OUTPUT
-;
-@ifdef $CHANNEL
-REVERSE=@reverse:$CHANNEL
-;
-#Resetting archives and blockchain files for '$1' ($CHANNEL/$REVERSE).
-;
-<bc_reset.cin $CHANNEL
-<bc_reset.cin $REVERSE
-;
-@endif
-;
+
+   @ifdef $CHANNEL
+   REVERSE=@reverse:$CHANNEL
+
+   #Resetting archives and blockchain files for '$1' ($CHANNEL/$REVERSE).
+
+   <bc_reset.cin $CHANNEL
+   <bc_reset.cin $REVERSE
+
+   @endif
+
 @endif

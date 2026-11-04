@@ -1,8 +1,8 @@
 ; Copyright (c) 2021-2026 CIYAM Developers
-;
+
 ; Distributed under the MIT/X11 software license, please refer to the file license.txt
 ; in the root project directory or http://www.opensource.org/licenses/mit-license.php.
-;
+
 HUB=
 DATA=
 DEMO=
@@ -16,426 +16,426 @@ CHANNEL=
 DATA_KEY=
 TEST_CHAIN=
 EXTRA_SUFFIX=
-;
+
 @ifeq "$1" "-hub"
 HUB=1
 @else
-@ifeq "$1" "-data"
-DATA=1
-@else
-@ifeq "$1" "-shared"
-SHARED=1
-@else
-@ifeq "$1" "-backup"
-BACKUP=1
-@else
-OTHER=$1
-CHANNEL=1
+   @ifeq "$1" "-data"
+   DATA=1
+   @else
+      @ifeq "$1" "-shared"
+      SHARED=1
+      @else
+         @ifeq "$1" "-backup"
+         BACKUP=1
+         @else
+         OTHER=$1
+         CHANNEL=1
+         @endif
+      @endif
+   @endif
 @endif
-@endif
-@endif
-@endif
-;
+
 @ifeq "$SEED" ""
 #Usage: bc_gen.cin -hub|-data|-backup|-shared|<[alias:]other_ident> <seed> [<extra>]
 @else
 ERROR=
-;
+
 @label NEXT
-;
-@ifdef $EXTRA
-@ifdef $DATA
-ERROR=1
-@endif
-@ifdef $CHANNEL
-ERROR=1
-@endif
-@ifdef $ERROR
-ERROR=Can only use '<extra>' with '-hub', '-backup' or '-shared'.
-#Error: $ERROR
-@label END
-@else
-EXTRA_SUFFIX=_$EXTRA
-@endif
-@endif
+
+   @ifdef $EXTRA
+      @ifdef $DATA
+      ERROR=1
+      @endif
+      @ifdef $CHANNEL
+      ERROR=1
+      @endif
+      @ifdef $ERROR
+      ERROR=Can only use '<extra>' with '-hub', '-backup' or '-shared'.
+      #Error: $ERROR
+      @label END
+      @else
+      EXTRA_SUFFIX=_$EXTRA
+      @endif
+   @endif
 @skip
 @:NEXT
-;
+
 HEIGHT=0
-;
-@ifdef $DATA
-DATA_KEY=$SEED
-SEED=\@sid:$DATA_KEY
-@endif
-;
-@ifndef $EXTRA
-@ifdef $HUB
-.system_variable @blockchain_peer_hub_identity
-@ifdef $OUTPUT
-ERROR=Hub identity already exists.
-#Error: $ERROR
-@label END
-@endif
-@endif
-@endif
+
+   @ifdef $DATA
+   DATA_KEY=$SEED
+   SEED=\@sid:$DATA_KEY
+   @endif
+
+   @ifndef $EXTRA
+      @ifdef $HUB
+      .system_variable @blockchain_peer_hub_identity
+         @ifdef $OUTPUT
+         ERROR=Hub identity already exists.
+         #Error: $ERROR
+         @label END
+         @endif
+      @endif
+   @endif
 @skip
 @:NEXT
-;
-@ifndef $EXTRA
-@ifdef $BACKUP
-.system_variable @blockchain_backup_identity
-@ifdef $OUTPUT
-ERROR=Backup identity already exists.
-#Error: $ERROR
-@label END
-@endif
-@endif
-@endif
+
+   @ifndef $EXTRA
+      @ifdef $BACKUP
+      .system_variable @blockchain_backup_identity
+         @ifdef $OUTPUT
+         ERROR=Backup identity already exists.
+         #Error: $ERROR
+         @label END
+         @endif
+      @endif
+   @endif
 @skip
 @:NEXT
-;
-@ifndef $EXTRA
-@ifdef $SHARED
-.system_variable @blockchain_shared_identity
-@ifdef $OUTPUT
-ERROR=Shared identity already exists.
-#Error: $ERROR
-@label END
-@endif
-@endif
-@endif
+
+   @ifndef $EXTRA
+      @ifdef $SHARED
+      .system_variable @blockchain_shared_identity
+         @ifdef $OUTPUT
+         ERROR=Shared identity already exists.
+         #Error: $ERROR
+         @label END
+         @endif
+      @endif
+   @endif
 @skip
 @:NEXT
-;
-@ifdef $OTHER
-SPLIT=@repstr:\:/\n:$OTHER
-@ifdef %SPLIT:2%
-IDENT=%SPLIT:1%
-OTHER=%SPLIT:2%
-@endif
-@endif
-;
+
+   @ifdef $OTHER
+   SPLIT=@repstr:\:/\n:$OTHER
+      @ifdef %SPLIT:2%
+      IDENT=%SPLIT:1%
+      OTHER=%SPLIT:2%
+      @endif
+   @endif
+
 .system_variable @system_is_for_demo
-@ifdef $OUTPUT
-DEMO=1
-@endif
-;
-@ifeq "$SEED" "de604cee0755a3d81944ea96aed12681"
-MULTIPLE=5
-TEST_CHAIN=1
-@else
-MULTIPLE=50
-; NOTE: Raw identity values need to be checked for demo
-; systems as the "@system_is_for_demo" variable is only
-; set after initial blockchain creation occurs.
-.identity -raw
-@ifeq "$OUTPUT" "17b4687afd135573a47f1e64ff43de0b4a3c53be"
-DEMO=1
-@endif
-@ifeq "$OUTPUT" "4ce419d8ed69ebb1806f3deb975d8ed8c50c5239"
-DEMO=1
-@else
-@ifeq "$OUTPUT" "c38bb12065f512ef119022f56c22dce665afe8a0"
-DEMO=1
-@endif
-@endif
-@endif
-;
+   @ifdef $OUTPUT
+   DEMO=1
+   @endif
+
+   @ifeq "$SEED" "de604cee0755a3d81944ea96aed12681"
+   MULTIPLE=5
+   TEST_CHAIN=1
+   @else
+   MULTIPLE=50
+   ; NOTE: Raw identity values need to be checked for demo
+   ; systems as the "@system_is_for_demo" variable is only
+   ; set after initial blockchain creation occurs.
+   .identity -raw
+      @ifeq "$OUTPUT" "17b4687afd135573a47f1e64ff43de0b4a3c53be"
+      DEMO=1
+      @endif
+      @ifeq "$OUTPUT" "4ce419d8ed69ebb1806f3deb975d8ed8c50c5239"
+      DEMO=1
+      @else
+         @ifeq "$OUTPUT" "c38bb12065f512ef119022f56c22dce665afe8a0"
+         DEMO=1
+         @endif
+      @endif
+   @endif
+
 SQUARED=@$MULTIPLE*$MULTIPLE
-;
+
 MULTIPLE=@$MULTIPLE-1
 SQUARED=@$SQUARED-1
-;
+
 .session_variable @uuid
 UUID=$OUTPUT
-;
-@ifdef $CHANNEL
-@ifndef $IDENT
-.system_variable @blockchain_backup_identity
-@ifndef $OUTPUT
-ERROR=No backup blockchain identity was found.
-#Error: $ERROR
-@label END
-@else
-IDENT=$OUTPUT
-@endif
-@endif
-@endif
+
+   @ifdef $CHANNEL
+      @ifndef $IDENT
+      .system_variable @blockchain_backup_identity
+         @ifndef $OUTPUT
+         ERROR=No backup blockchain identity was found.
+         #Error: $ERROR
+         @label END
+         @else
+         IDENT=$OUTPUT
+         @endif
+      @endif
+   @endif
 @skip
 @:NEXT
-;
-@ifdef $CHANNEL
-@retain COMBINED,REVERSED
-<channel_identity.cin $IDENT $OTHER
-IDENT=$COMBINED
-@endif
-;
-@ifndef $HUB
-@ifndef $SHARED
-@ifndef $CHANNEL
-.=crypto_hash $SEED -s=-0
-ENTROPY_HASH_PRIMARY=$OUTPUT
-;
-.=crypto_hash $SEED -s=-$MULTIPLE
-ENTROPY_HASH_SECONDARY=$OUTPUT
-;
-.=crypto_hash $SEED -s=-$SQUARED
-ENTROPY_HASH_TERTIARY=$OUTPUT
-@else
-.=crypto_hash $SEED -s=%IDENT%0
-ENTROPY_HASH_PRIMARY=$OUTPUT
-;
-.=crypto_hash $SEED -s=$IDENT$MULTIPLE
-ENTROPY_HASH_SECONDARY=$OUTPUT
-;
-.=crypto_hash $SEED -s=$IDENT$SQUARED
-ENTROPY_HASH_TERTIARY=$OUTPUT
-@endif
-@else
-.=crypto_hash $SEED -s=+0
-ENTROPY_HASH_PRIMARY=$OUTPUT
-;
-.=crypto_hash $SEED -s=+$MULTIPLE
-ENTROPY_HASH_SECONDARY=$OUTPUT
-;
-.=crypto_hash $SEED -s=+$SQUARED
-ENTROPY_HASH_TERTIARY=$OUTPUT
-@endif
-@else
-.=crypto_hash $SEED -s=#0
-ENTROPY_HASH_PRIMARY=$OUTPUT
-;
-.=crypto_hash $SEED -s=#$MULTIPLE
-ENTROPY_HASH_SECONDARY=$OUTPUT
-;
-.=crypto_hash $SEED -s=#$SQUARED
-ENTROPY_HASH_TERTIARY=$OUTPUT
-@endif
-;
+
+   @ifdef $CHANNEL
+   @retain COMBINED,REVERSED
+   <channel_identity.cin $IDENT $OTHER
+   IDENT=$COMBINED
+   @endif
+
+   @ifndef $HUB
+      @ifndef $SHARED
+         @ifndef $CHANNEL
+         .=crypto_hash $SEED -s=-0
+         ENTROPY_HASH_PRIMARY=$OUTPUT
+
+         .=crypto_hash $SEED -s=-$MULTIPLE
+         ENTROPY_HASH_SECONDARY=$OUTPUT
+
+         .=crypto_hash $SEED -s=-$SQUARED
+         ENTROPY_HASH_TERTIARY=$OUTPUT
+         @else
+         .=crypto_hash $SEED -s=%IDENT%0
+         ENTROPY_HASH_PRIMARY=$OUTPUT
+
+         .=crypto_hash $SEED -s=$IDENT$MULTIPLE
+         ENTROPY_HASH_SECONDARY=$OUTPUT
+
+         .=crypto_hash $SEED -s=$IDENT$SQUARED
+         ENTROPY_HASH_TERTIARY=$OUTPUT
+         @endif
+      @else
+      .=crypto_hash $SEED -s=+0
+      ENTROPY_HASH_PRIMARY=$OUTPUT
+
+      .=crypto_hash $SEED -s=+$MULTIPLE
+      ENTROPY_HASH_SECONDARY=$OUTPUT
+
+      .=crypto_hash $SEED -s=+$SQUARED
+      ENTROPY_HASH_TERTIARY=$OUTPUT
+      @endif
+   @else
+   .=crypto_hash $SEED -s=#0
+   ENTROPY_HASH_PRIMARY=$OUTPUT
+
+   .=crypto_hash $SEED -s=#$MULTIPLE
+   ENTROPY_HASH_SECONDARY=$OUTPUT
+
+   .=crypto_hash $SEED -s=#$SQUARED
+   ENTROPY_HASH_TERTIARY=$OUTPUT
+   @endif
+
 .=crypto_lamport primary $ENTROPY_HASH_PRIMARY$EXTRA
 .=crypto_lamport secondary $ENTROPY_HASH_SECONDARY$EXTRA
 .=crypto_lamport tertiary $ENTROPY_HASH_TERTIARY$EXTRA
-;
+
 .file_put primary.pub bc.$UUID.0.pub
 .file_put secondary.pub bc.$UUID.$MULTIPLE.pub
 .file_put tertiary.pub bc.$UUID.$SQUARED.pub
-;
+
 ~rm primary.key secondary.key tertiary.key primary.pub secondary.pub tertiary.pub
-;
+
 .file_hash bc.$UUID.0.pub
 PRIMARY_PUBKEY_HASH=$OUTPUT
-;
+
 .encode $PRIMARY_PUBKEY_HASH
 PRIMARY_PUBKEY_HASH_ENC=$OUTPUT
-;
+
 .file_hash bc.$UUID.$MULTIPLE.pub
 SECONDARY_PUBKEY_HASH=$OUTPUT
-;
+
 .file_hash bc.$UUID.$SQUARED.pub
 TERTIARY_PUBKEY_HASH=$OUTPUT
-;
-@ifndef $SHARED
-@ifndef $CHANNEL
-.=crypto_hash $PRIMARY_PUBKEY_HASH$SECONDARY_PUBKEY_HASH$TERTIARY_PUBKEY_HASH
-IDENTITY_HASH=$OUTPUT
-;
-IDENT=@substr:0,9:$IDENTITY_HASH
-;
-; NOTE: If identity is palindromic then increment (or zero) the last character.
-;
-REVERSE=@reverse:$IDENT
-;
-@ifeq "$IDENT" "$REVERSE"
-LAST=@substr:8,1:$IDENT
-DEC=@hexdec:$LAST
-DEC=@$DEC+1
-@ifeq "$DEC" "16"
-DEC=0
-@endif
-HEX=@dechex:$DEC
-START=@substr:0,8:$IDENT
-IDENT=$START$HEX
-@endif
-@endif
-;
-@else
-.system_variable @blockchain_backup%EXTRA_SUFFIX%_identity
-@ifndef $OUTPUT
-ERROR=No backup blockchain identity was found.
-#Error: $ERROR
-@else
-IDENT=@reverse:$OUTPUT
-@endif
-@endif
-;
+
+   @ifndef $SHARED
+      @ifndef $CHANNEL
+      .=crypto_hash $PRIMARY_PUBKEY_HASH$SECONDARY_PUBKEY_HASH$TERTIARY_PUBKEY_HASH
+      IDENTITY_HASH=$OUTPUT
+
+      IDENT=@substr:0,9:$IDENTITY_HASH
+
+      ; NOTE: If identity is palindromic then increment (or zero) the last character.
+
+      REVERSE=@reverse:$IDENT
+
+         @ifeq "$IDENT" "$REVERSE"
+         LAST=@substr:8,1:$IDENT
+         DEC=@hexdec:$LAST
+         DEC=@$DEC+1
+            @ifeq "$DEC" "16"
+            DEC=0
+            @endif
+         HEX=@dechex:$DEC
+         START=@substr:0,8:$IDENT
+         IDENT=$START$HEX
+         @endif
+      @endif
+
+   @else
+   .system_variable @blockchain_backup%EXTRA_SUFFIX%_identity
+      @ifndef $OUTPUT
+      ERROR=No backup blockchain identity was found.
+      #Error: $ERROR
+      @else
+      IDENT=@reverse:$OUTPUT
+      @endif
+   @endif
+
 .session_variable @blockchain_identity $IDENT
-;
-@ifndef $ERROR
-.file_tag -remove bc.$UUID.0.pub
-.file_tag $PRIMARY_PUBKEY_HASH bc.$IDENT.0.pub
-;
-.file_tag -remove bc.$UUID.$MULTIPLE.pub
-.file_tag $SECONDARY_PUBKEY_HASH bc.$IDENT.$MULTIPLE.pub
-;
-.file_hash bc.$IDENT.$MULTIPLE.pub
-.encode $OUTPUT
-SECONDARY_PUBKEY_HASH_ENC=$OUTPUT
-;
-.file_tag -remove bc.$UUID.$SQUARED.pub
-.file_tag $TERTIARY_PUBKEY_HASH bc.$IDENT.$SQUARED.pub
-;
-.file_hash bc.$IDENT.$SQUARED.pub
-.encode $OUTPUT
-TERTIARY_PUBKEY_HASH_ENC=$OUTPUT
-;
-@ifdef $DATA
-.file_raw -core blob blk:h=0,i=$IDENT,t=@peer_data\n\
+
+   @ifndef $ERROR
+   .file_tag -remove bc.$UUID.0.pub
+   .file_tag $PRIMARY_PUBKEY_HASH bc.$IDENT.0.pub
+
+   .file_tag -remove bc.$UUID.$MULTIPLE.pub
+   .file_tag $SECONDARY_PUBKEY_HASH bc.$IDENT.$MULTIPLE.pub
+
+   .file_hash bc.$IDENT.$MULTIPLE.pub
+   .encode $OUTPUT
+   SECONDARY_PUBKEY_HASH_ENC=$OUTPUT
+
+   .file_tag -remove bc.$UUID.$SQUARED.pub
+   .file_tag $TERTIARY_PUBKEY_HASH bc.$IDENT.$SQUARED.pub
+
+   .file_hash bc.$IDENT.$SQUARED.pub
+   .encode $OUTPUT
+   TERTIARY_PUBKEY_HASH_ENC=$OUTPUT
+
+      @ifdef $DATA
+      .file_raw -core blob blk:h=0,i=$IDENT,t=@peer_data\n\
 p:$PRIMARY_PUBKEY_HASH_ENC,$SECONDARY_PUBKEY_HASH_ENC,$TERTIARY_PUBKEY_HASH_ENC bc.$IDENT.0.blk
-@else
-@ifndef $HUB
-@ifndef $SHARED
-@ifndef $CHANNEL
-.file_raw -core blob blk:h=0,i=$IDENT\n\
+      @else
+         @ifndef $HUB
+            @ifndef $SHARED
+               @ifndef $CHANNEL
+               .file_raw -core blob blk:h=0,i=$IDENT\n\
 p:$PRIMARY_PUBKEY_HASH_ENC,$SECONDARY_PUBKEY_HASH_ENC,$TERTIARY_PUBKEY_HASH_ENC bc.$IDENT.0.blk
-@else
-.file_raw -core blob blk:h=0,i=$IDENT,t=@peer_user\n\
+               @else
+               .file_raw -core blob blk:h=0,i=$IDENT,t=@peer_user\n\
 p:$PRIMARY_PUBKEY_HASH_ENC,$SECONDARY_PUBKEY_HASH_ENC,$TERTIARY_PUBKEY_HASH_ENC bc.$IDENT.0.blk
-@endif
-@else
-.file_raw -core blob blk:h=0,i=$IDENT,t=$IDENT\n\
+               @endif
+            @else
+            .file_raw -core blob blk:h=0,i=$IDENT,t=$IDENT\n\
 p:$PRIMARY_PUBKEY_HASH_ENC,$SECONDARY_PUBKEY_HASH_ENC,$TERTIARY_PUBKEY_HASH_ENC bc.$IDENT.0.blk
-@endif
-@else
-.file_raw -core blob blk:h=0,i=$IDENT,t=@peer_hub\n\
+            @endif
+         @else
+         .file_raw -core blob blk:h=0,i=$IDENT,t=@peer_hub\n\
 p:$PRIMARY_PUBKEY_HASH_ENC,$SECONDARY_PUBKEY_HASH_ENC,$TERTIARY_PUBKEY_HASH_ENC bc.$IDENT.0.blk
-@endif
-@endif
-;
-BLOCK_HASH=$OUTPUT
-;
-.file_hash -q bc.$IDENT.master
-@ifndef "$OUTPUT"
-.file_tag $BLOCK_HASH bc.$IDENT.master
-.file_tag $BLOCK_HASH bc.$IDENT.zenith
-@ifdef $DATA
-.system_variable >@blockchain_data_key_$IDENT $DATA_KEY
-.system_variable >@blockchain_identity_$DATA_KEY $IDENT
-@else
-@ifndef $CHANNEL
-@ifndef $HUB
-@ifndef $SHARED
-@ifndef $EXTRA_SUFFIX
-.string_message current_height_prefix
-CURRENT_HEIGHT_PROGRESS=$OUTPUT$HEIGHT
-.system_variable %$IDENT "$CURRENT_HEIGHT_PROGRESS"
-;
-.system_variable >@blockchain_backup_height 0
-.system_variable >@blockchain_backup_initial $BLOCK_HASH
-@endif
-.system_variable >@blockchain_backup%EXTRA_SUFFIX%_identity $IDENT
-@else
-@ifndef $EXTRA_SUFFIX
-.system_variable >@blockchain_shared_height 0
-.system_variable >@blockchain_shared_initial $BLOCK_HASH
-@endif
-.system_variable >@blockchain_shared%EXTRA_SUFFIX%_identity $IDENT
-@endif
-@else
-@ifndef $EXTRA_SUFFIX
-.system_variable >@blockchain_peer_hub_height 0
-.system_variable >@blockchain_peer_hub_initial $BLOCK_HASH
-@endif
-.system_variable >@blockchain_peer_hub%EXTRA_SUFFIX%_identity $IDENT
-@endif
-@endif
-@endif
-@endif
-;
-HUB_EXTRA_OR_TEST_CHAIN=
-@ifdef $HUB
-HUB_EXTRA_OR_TEST_CHAIN=1
-@endif
-@ifdef $EXTRA
-HUB_EXTRA_OR_TEST_CHAIN=1
-@endif
-@ifdef $TEST_CHAIN
-HUB_EXTRA_OR_TEST_CHAIN=1
-@endif
-;
-@ifndef $HUB_EXTRA_OR_TEST_CHAIN
-.system_variable @files_area_path
-FILES_AREA_DIR=$OUTPUT
-;
-@ifdef $DATA
-@ifndef $DEMO
-DATA_SIZE=1GB
-@else
-DATA_SIZE=100MB
-@endif
-@else
-@ifdef $DEMO
-BACKUP_SIZE=10GB
-SHARED_SIZE=1GB
-CHANNEL_SIZE=100MB
-@else
-BACKUP_SIZE=100GB
-SHARED_SIZE=10GB
-CHANNEL_SIZE=1GB
-@endif
-@endif
-;
-~mkdir $FILES_AREA_DIR/$IDENT
-@ifdef $DATA
-.file_archive -add $FILES_AREA_DIR/$IDENT $DATA_SIZE $IDENT
-@else
-@ifdef $CHANNEL
-~mkdir $FILES_AREA_DIR/$REVERSED
-.file_archive -add $FILES_AREA_DIR/$IDENT $CHANNEL_SIZE $IDENT
-.file_archive -add $FILES_AREA_DIR/$REVERSED $CHANNEL_SIZE $REVERSED
-@else
-@ifdef $SHARED
-.file_archive -add $FILES_AREA_DIR/$IDENT $SHARED_SIZE $IDENT
-@else
-.file_archive -add $FILES_AREA_DIR/$IDENT $BACKUP_SIZE $IDENT
-@endif
-@endif
-@endif
-@endif
-@endif
-;
-@ifndef $ERROR
-@ifdef $HUB
-@ifndef $EXTRA
-#Created keys and genesis block for hub identity '$IDENT'.
-@else
-#Created keys and genesis block for extra hub identity '$IDENT'.
-@endif
-@else
-@ifdef $EXTRA
-@ifndef $SHARED
-#Created keys and genesis block for extra backup identity '$IDENT'.
-@else
-#Created keys and genesis block for extra shared identity '$IDENT'.
-@endif
-@else
-@ifndef $CHANNEL
-@ifndef $SHARED
-@ifdef $DATA
-#Created keys, genesis block and file archive for data identity '$IDENT'.
-@else
-#Created keys, genesis block and file archive for backup identity '$IDENT'.
-@endif
-@else
-#Created keys, genesis block and file archive for shared identity '$IDENT'.
-@endif
-@else
-#Created keys, genesis block and file archives for identity '$IDENT'.
-@endif
-@endif
-@endif
-;
-@endif
-;
+         @endif
+      @endif
+
+   BLOCK_HASH=$OUTPUT
+
+   .file_hash -q bc.$IDENT.master
+      @ifndef "$OUTPUT"
+      .file_tag $BLOCK_HASH bc.$IDENT.master
+      .file_tag $BLOCK_HASH bc.$IDENT.zenith
+         @ifdef $DATA
+         .system_variable >@blockchain_data_key_$IDENT $DATA_KEY
+         .system_variable >@blockchain_identity_$DATA_KEY $IDENT
+         @else
+            @ifndef $CHANNEL
+               @ifndef $HUB
+                  @ifndef $SHARED
+                     @ifndef $EXTRA_SUFFIX
+                     .string_message current_height_prefix
+                     CURRENT_HEIGHT_PROGRESS=$OUTPUT$HEIGHT
+                     .system_variable %$IDENT "$CURRENT_HEIGHT_PROGRESS"
+
+                     .system_variable >@blockchain_backup_height 0
+                     .system_variable >@blockchain_backup_initial $BLOCK_HASH
+                     @endif
+                  .system_variable >@blockchain_backup%EXTRA_SUFFIX%_identity $IDENT
+                  @else
+                     @ifndef $EXTRA_SUFFIX
+                     .system_variable >@blockchain_shared_height 0
+                     .system_variable >@blockchain_shared_initial $BLOCK_HASH
+                     @endif
+                  .system_variable >@blockchain_shared%EXTRA_SUFFIX%_identity $IDENT
+                  @endif
+               @else
+                  @ifndef $EXTRA_SUFFIX
+                  .system_variable >@blockchain_peer_hub_height 0
+                  .system_variable >@blockchain_peer_hub_initial $BLOCK_HASH
+                  @endif
+               .system_variable >@blockchain_peer_hub%EXTRA_SUFFIX%_identity $IDENT
+               @endif
+            @endif
+         @endif
+      @endif
+
+   HUB_EXTRA_OR_TEST_CHAIN=
+      @ifdef $HUB
+      HUB_EXTRA_OR_TEST_CHAIN=1
+      @endif
+      @ifdef $EXTRA
+      HUB_EXTRA_OR_TEST_CHAIN=1
+      @endif
+      @ifdef $TEST_CHAIN
+      HUB_EXTRA_OR_TEST_CHAIN=1
+      @endif
+
+      @ifndef $HUB_EXTRA_OR_TEST_CHAIN
+      .system_variable @files_area_path
+      FILES_AREA_DIR=$OUTPUT
+
+         @ifdef $DATA
+            @ifndef $DEMO
+            DATA_SIZE=1GB
+            @else
+            DATA_SIZE=100MB
+            @endif
+         @else
+            @ifdef $DEMO
+            BACKUP_SIZE=10GB
+            SHARED_SIZE=1GB
+            CHANNEL_SIZE=100MB
+            @else
+            BACKUP_SIZE=100GB
+            SHARED_SIZE=10GB
+            CHANNEL_SIZE=1GB
+            @endif
+         @endif
+
+      ~mkdir $FILES_AREA_DIR/$IDENT
+         @ifdef $DATA
+         .file_archive -add $FILES_AREA_DIR/$IDENT $DATA_SIZE $IDENT
+         @else
+            @ifdef $CHANNEL
+            ~mkdir $FILES_AREA_DIR/$REVERSED
+            .file_archive -add $FILES_AREA_DIR/$IDENT $CHANNEL_SIZE $IDENT
+            .file_archive -add $FILES_AREA_DIR/$REVERSED $CHANNEL_SIZE $REVERSED
+            @else
+               @ifdef $SHARED
+               .file_archive -add $FILES_AREA_DIR/$IDENT $SHARED_SIZE $IDENT
+               @else
+               .file_archive -add $FILES_AREA_DIR/$IDENT $BACKUP_SIZE $IDENT
+               @endif
+            @endif
+         @endif
+      @endif
+   @endif
+
+   @ifndef $ERROR
+      @ifdef $HUB
+         @ifndef $EXTRA
+         #Created keys and genesis block for hub identity '$IDENT'.
+         @else
+         #Created keys and genesis block for extra hub identity '$IDENT'.
+         @endif
+      @else
+         @ifdef $EXTRA
+            @ifndef $SHARED
+            #Created keys and genesis block for extra backup identity '$IDENT'.
+            @else
+            #Created keys and genesis block for extra shared identity '$IDENT'.
+            @endif
+         @else
+            @ifndef $CHANNEL
+               @ifndef $SHARED
+                  @ifdef $DATA
+                  #Created keys, genesis block and file archive for data identity '$IDENT'.
+                  @else
+                  #Created keys, genesis block and file archive for backup identity '$IDENT'.
+                  @endif
+               @else
+               #Created keys, genesis block and file archive for shared identity '$IDENT'.
+               @endif
+            @else
+            #Created keys, genesis block and file archives for identity '$IDENT'.
+            @endif
+         @endif
+      @endif
+
+   @endif
+
 @:END
-;
+
 @endif

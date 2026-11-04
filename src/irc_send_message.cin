@@ -1,8 +1,8 @@
 ; Copyright (c) 2026 CIYAM Developers
-;
+
 ; Distributed under the MIT/X11 software license, please refer to the file license.txt
 ; in the root project directory or http://www.opensource.org/licenses/mit-license.php.
-;
+
 NUM_ARGS=0
 @ifdef $1
 NUM_ARGS=@$NUM_ARGS+1
@@ -19,592 +19,592 @@ NUM_ARGS=@$NUM_ARGS+1
 @ifdef $5
 NUM_ARGS=@$NUM_ARGS+1
 @endif
-;
+
 ERROR=
 RETURN=
-;
+
 @ifneq "$NUM_ARGS" "5"
 ERROR=Room, names, message, sender and session id are required for "irc_send_message".
 @else
-;
+
 ROOM=$1
 NAMES=$2
 MESSAGE=$3
 USER_NAME=$4
 SESSION_ID=$5
-;
+
 CHANGED=
 HAS_LOCK=
-;
+
 TARGET_ROOM=
-;
+
 ENTRANCE_ROOM=0000000
 RESERVED_ROOM=0000001
-;
+
 POS=@strpos:_:$ROOM
-@ifdef $POS
-TARGET_ROOM=@substr:0,$POS:$ROOM
-POS=@$POS+1
-ROOM=@substr:$POS:$ROOM
-@endif
-;
-@ifeq "$ROOM" "$ENTRANCE_ROOM"
-ROOM=$RESERVED_ROOM
-@endif
-;
+   @ifdef $POS
+   TARGET_ROOM=@substr:0,$POS:$ROOM
+   POS=@$POS+1
+   ROOM=@substr:$POS:$ROOM
+   @endif
+
+   @ifeq "$ROOM" "$ENTRANCE_ROOM"
+   ROOM=$RESERVED_ROOM
+   @endif
+
 ; NOTE: Checks all MESSAGE characters
 ; provided are in the base64 URL set.
 .regex "^([-_0-9a-zA-Z]+)$$" "$MESSAGE"
-;
-@ifneq "$MESSAGE" "$OUTPUT"
-ERROR=Invalid message format (needs to be base64).
-@else
-PREFIX=@substr:0,3:$MESSAGE
-;
-; NOTE: Special messages begin with "_:[a-z]"
-; and (unless is "admin") are the only type
-; of messages allowed in the "starting room".
-SPECIAL=
-@ifeq "$PREFIX" "Xzp"
-SPECIAL=1
-@endif
-;
-@ifeq "$ROOM" "$RESERVED_ROOM"
-@ifneq "$USER_NAME" "admin"
-@ifndef $SPECIAL
-ERROR=Normal messages for this room are disallowed.
-@endif
-@endif
-@endif
-;
-; NOTE: Attempts to push a "queue item" in order to check whether or not
-; the default maximum queue items size has been exceeded (uses a "dummy"
-; user name value so that this size is always the same for all users).
-DUMMY_USER_NAME=xxxxxxxxxxxx
-DUMMY_UNIX_UNIQUE=0000000000000
-;
-LEN_UNIX_UNIQUE=@strlen:$DUMMY_UNIX_UNIQUE
-;
-.system_variable @queue_irc "$DUMMY_UNIX_UNIQUE $DUMMY_USER_NAME $MESSAGE"
-@ifndef $ERROR
-.system_variable @queue_irc ""
-@endif
-;
-.system_variable @irc_lock 1 "" 100
-@ifneq "$OUTPUT" "0"
-HAS_LOCK=1
-@else
-ERROR=Unable to obtain the system IRC lock (try again later).
-@endif
-;
-.system_variable @irc_close_$ROOM
-@ifdef $OUTPUT
-NOW=@unix:
-@if $NOW #> $OUTPUT
-ERROR=This room has been closed.
-@endif
-@endif
-;
-ROOM_POSTS=
-@ifndef $ERROR
-.system_variable @irc_posts_$ROOM
-@ifdef $OUTPUT
-ROOM_POSTS=$OUTPUT
-@endif
-;
-IS_OWNER=
-.system_variable @irc_owner_$ROOM
-@ifeq "$OUTPUT" "$USER_NAME"
-IS_OWNER=1
-@endif
-;
-@ifeq "$ROOM_POSTS" "OWN"
-@ifndef $IS_OWNER
-@ifndef $SPECIAL
-ERROR=Message creation for this room is owner only.
-@endif
-@endif
-@elif "$ROOM_POSTS" = "NONE"
-@ifndef $SPECIAL
-ERROR=Message creation is not permitted for this room.
-@endif
-@elif "$ROOM_POSTS" = "REACT"
-@ifndef $SPECIAL
-IS_NOT_OKAY=
-@ifdef $IS_OWNER
-IS_NOT_OKAY=1
-@else
-MSG_LENGTH=@strlen:$MESSAGE
-@ifneq $MSG_LENGTH 7
-IS_NOT_OKAY=1
-@endif
-@endif
-@ifdef $IS_NOT_OKAY
-ERROR=Message reactions are only permitted for this room.
-@endif
-@endif
-@endif
-@endif
-;
-@ifndef $ERROR
-;
-TARGET=
-@ifeq "$PREFIX" "XyA"
-PREFIX=
-TARGET=public
-@elif "$PREFIX" = "XyB"
-PREFIX=
-TARGET=public
-@elif "$PREFIX" = "XyD"
-PREFIX=
-TARGET=public
-@elif "$PREFIX" = "XyE"
-PREFIX=
-TARGET=private
-@elif "$PREFIX" = "XyF"
-PREFIX=
-TARGET=private
-@elif "$PREFIX" = "XyH"
-PREFIX=
-TARGET=private
-@endif
-;
-@ifdef $PREFIX
-.session_variable  -id=$SESSION_ID @ip_addr
-@ifeq "$OUTPUT" "::1"
-PREFIX=
-@elif "$OUTPUT" = "127.0.0.1"
-PREFIX=
-@endif
-;
-@ifdef $PREFIX
-ERROR=Unexpected invalid message prefix.
-@endif
-;
-@endif
-;
-@endif
-@endif
-;
+
+   @ifneq "$MESSAGE" "$OUTPUT"
+   ERROR=Invalid message format (needs to be base64).
+   @else
+   PREFIX=@substr:0,3:$MESSAGE
+
+   ; NOTE: Special messages begin with "_:[a-z]"
+   ; and (unless is "admin") are the only type
+   ; of messages allowed in the "starting room".
+   SPECIAL=
+      @ifeq "$PREFIX" "Xzp"
+      SPECIAL=1
+      @endif
+
+      @ifeq "$ROOM" "$RESERVED_ROOM"
+         @ifneq "$USER_NAME" "admin"
+            @ifndef $SPECIAL
+            ERROR=Normal messages for this room are disallowed.
+            @endif
+         @endif
+      @endif
+
+   ; NOTE: Attempts to push a "queue item" in order to check whether or not
+   ; the default maximum queue items size has been exceeded (uses a "dummy"
+   ; user name value so that this size is always the same for all users).
+   DUMMY_USER_NAME=xxxxxxxxxxxx
+   DUMMY_UNIX_UNIQUE=0000000000000
+
+   LEN_UNIX_UNIQUE=@strlen:$DUMMY_UNIX_UNIQUE
+
+   .system_variable @queue_irc "$DUMMY_UNIX_UNIQUE $DUMMY_USER_NAME $MESSAGE"
+      @ifndef $ERROR
+      .system_variable @queue_irc ""
+      @endif
+
+   .system_variable @irc_lock 1 "" 100
+      @ifneq "$OUTPUT" "0"
+      HAS_LOCK=1
+      @else
+      ERROR=Unable to obtain the system IRC lock (try again later).
+      @endif
+
+   .system_variable @irc_close_$ROOM
+      @ifdef $OUTPUT
+      NOW=@unix:
+         @if $NOW #> $OUTPUT
+         ERROR=This room has been closed.
+         @endif
+      @endif
+
+   ROOM_POSTS=
+      @ifndef $ERROR
+      .system_variable @irc_posts_$ROOM
+         @ifdef $OUTPUT
+         ROOM_POSTS=$OUTPUT
+         @endif
+
+      IS_OWNER=
+      .system_variable @irc_owner_$ROOM
+         @ifeq "$OUTPUT" "$USER_NAME"
+         IS_OWNER=1
+         @endif
+
+         @ifeq "$ROOM_POSTS" "OWN"
+            @ifndef $IS_OWNER
+               @ifndef $SPECIAL
+               ERROR=Message creation for this room is owner only.
+               @endif
+            @endif
+         @elif "$ROOM_POSTS" = "NONE"
+            @ifndef $SPECIAL
+            ERROR=Message creation is not permitted for this room.
+            @endif
+         @elif "$ROOM_POSTS" = "REACT"
+            @ifndef $SPECIAL
+            IS_NOT_OKAY=
+               @ifdef $IS_OWNER
+               IS_NOT_OKAY=1
+               @else
+               MSG_LENGTH=@strlen:$MESSAGE
+                  @ifneq $MSG_LENGTH 7
+                  IS_NOT_OKAY=1
+                  @endif
+               @endif
+               @ifdef $IS_NOT_OKAY
+               ERROR=Message reactions are only permitted for this room.
+               @endif
+            @endif
+         @endif
+      @endif
+
+      @ifndef $ERROR
+
+      TARGET=
+         @ifeq "$PREFIX" "XyA"
+         PREFIX=
+         TARGET=public
+         @elif "$PREFIX" = "XyB"
+         PREFIX=
+         TARGET=public
+         @elif "$PREFIX" = "XyD"
+         PREFIX=
+         TARGET=public
+         @elif "$PREFIX" = "XyE"
+         PREFIX=
+         TARGET=private
+         @elif "$PREFIX" = "XyF"
+         PREFIX=
+         TARGET=private
+         @elif "$PREFIX" = "XyH"
+         PREFIX=
+         TARGET=private
+         @endif
+
+         @ifdef $PREFIX
+         .session_variable  -id=$SESSION_ID @ip_addr
+            @ifeq "$OUTPUT" "::1"
+            PREFIX=
+            @elif "$OUTPUT" = "127.0.0.1"
+            PREFIX=
+            @endif
+
+            @ifdef $PREFIX
+            ERROR=Unexpected invalid message prefix.
+            @endif
+
+         @endif
+
+      @endif
+   @endif
+
 EDIT_MESSAGE=
 USER_MESSAGE=
-;
+
 ISSUED_PREFIX=message
-;
+
 POS=@strpos:_:$NAMES
-@ifdef $POS
-ISSUED_PREFIX=@substr:0,$POS:$NAMES
-POS=@$POS+1
-NAMES=@substr:$POS:$NAMES
-@endif
-;
+   @ifdef $POS
+   ISSUED_PREFIX=@substr:0,$POS:$NAMES
+   POS=@$POS+1
+   NAMES=@substr:$POS:$NAMES
+   @endif
+
 NAMES_LEN=@strlen:$NAMES
-@ifeq "$NAMES_LEN" "13"
-.regex "^([0-9]{13})$$" "$NAMES"
-@ifeq "$OUTPUT" "$NAMES"
-EDIT_MESSAGE=1
-@endif
-@endif
-;
+   @ifeq "$NAMES_LEN" "13"
+   .regex "^([0-9]{13})$$" "$NAMES"
+      @ifeq "$OUTPUT" "$NAMES"
+      EDIT_MESSAGE=1
+      @endif
+   @endif
+
 ; NOTE: Will not allow the
 ; creation of any messages
 ; that are just spaces.
-@ifndef $EDIT_MESSAGE
-MLEN=@strlen:$MESSAGE
-;
-@ifeq "$TARGET" "public"
-CHECK_SPACES=XyA
-@else
-CHECK_SPACES=XyE
+   @ifndef $EDIT_MESSAGE
+   MLEN=@strlen:$MESSAGE
+
+      @ifeq "$TARGET" "public"
+      CHECK_SPACES=XyA
+      @else
+      CHECK_SPACES=XyE
+      @endif
+
+   NUM_TRAILING=0
+      @if $MLEN #> 3
+      MLEN=@$MLEN-3
+
+      NUM_REPEATED=@$MLEN/4
+      NUM_TRAILING=@$MLEN#4
+
+         @ifneq $NUM_REPEATED 0
+         PADDING=@padlen:$NUM_REPEATED,.:
+         PADDING=@repstr:./gICA:$PADDING
+         CHECK_SPACES=%CHECK_SPACES%$PADDING
+         @endif
+
+         @ifeq $NUM_TRAILING 1
+         CHECK_SPACES=%CHECK_SPACES%g
+         @elif $NUM_TRAILING = 2
+         CHECK_SPACES=%CHECK_SPACES%gI
+         @elif $NUM_TRAILING = 3
+         CHECK_SPACES=%CHECK_SPACES%gIA
+         @endif
+      @endif
+
+      @ifeq $MESSAGE $CHECK_SPACES
+      ERROR=Invalid blank message for IRC.
+      @endif
+
+   @endif
+
 @endif
-;
-NUM_TRAILING=0
-@if $MLEN #> 3
-MLEN=@$MLEN-3
-;
-NUM_REPEATED=@$MLEN/4
-NUM_TRAILING=@$MLEN#4
-;
-@ifneq $NUM_REPEATED 0
-PADDING=@padlen:$NUM_REPEATED,.:
-PADDING=@repstr:./gICA:$PADDING
-CHECK_SPACES=%CHECK_SPACES%$PADDING
-@endif
-;
-@ifeq $NUM_TRAILING 1
-CHECK_SPACES=%CHECK_SPACES%g
-@elif $NUM_TRAILING = 2
-CHECK_SPACES=%CHECK_SPACES%gI
-@elif $NUM_TRAILING = 3
-CHECK_SPACES=%CHECK_SPACES%gIA
-@endif
-@endif
-;
-@ifeq $MESSAGE $CHECK_SPACES
-ERROR=Invalid blank message for IRC.
-@endif
-;
-@endif
-;
-@endif
-;
+
 @ifndef $ERROR
-;
-@ifdef $EDIT_MESSAGE
-;
-NOT_FOUND=
-NOT_EDITABLE=
-.system_variable @keyed_irc_%ROOM%:$NAMES
-;
-@ifndef $OUTPUT
-NOT_FOUND=1
-@else
-SOURCE_MESSAGE=$OUTPUT
-;
-SOURCE_PARTS=@repstr: /\n:$SOURCE_MESSAGE
-;
-IS_REACTION=
-;
-PIN_AUTHOR=$USER_NAME
-;
-PRIVATE_PIN=
-;
-; NOTE: Only the room's owner can pin (or unpin)
-; messages but can do so for any user's message.
-;
-@ifneq "$USER_NAME" "%SOURCE_PARTS:1%"
-@ifeq "$MESSAGE" "XyAg"
-@ifdef $IS_OWNER
-PIN_AUTHOR=%SOURCE_PARTS:1%
-OLD_MESSAGE=%SOURCE_PARTS:2%
-;
-PREFIX=@substr:0,2:%SOURCE_PARTS:2%
-OLD_PREFIX=@substr:0,3:%SOURCE_PARTS:2%
-;
-@ifeq "$PREFIX" "Xz"
-NOT_EDITABLE=1
-@elif "$OLD_PREFIX" = "XyE"
-PRIVATE_PIN=1
-@elif "$OLD_PREFIX" = "XyF"
-PRIVATE_PIN=1
-@elif "$OLD_PREFIX" = "XyH"
-PRIVATE_PIN=1
+
+   @ifdef $EDIT_MESSAGE
+
+   NOT_FOUND=
+   NOT_EDITABLE=
+   .system_variable @keyed_irc_%ROOM%:$NAMES
+
+      @ifndef $OUTPUT
+      NOT_FOUND=1
+      @else
+      SOURCE_MESSAGE=$OUTPUT
+
+      SOURCE_PARTS=@repstr: /\n:$SOURCE_MESSAGE
+
+      IS_REACTION=
+
+      PIN_AUTHOR=$USER_NAME
+
+      PRIVATE_PIN=
+
+      ; NOTE: Only the room's owner can pin (or unpin)
+      ; messages but can do so for any user's message.
+
+         @ifneq "$USER_NAME" "%SOURCE_PARTS:1%"
+            @ifeq "$MESSAGE" "XyAg"
+               @ifdef $IS_OWNER
+               PIN_AUTHOR=%SOURCE_PARTS:1%
+               OLD_MESSAGE=%SOURCE_PARTS:2%
+
+               PREFIX=@substr:0,2:%SOURCE_PARTS:2%
+               OLD_PREFIX=@substr:0,3:%SOURCE_PARTS:2%
+
+                  @ifeq "$PREFIX" "Xz"
+                  NOT_EDITABLE=1
+                  @elif "$OLD_PREFIX" = "XyE"
+                  PRIVATE_PIN=1
+                  @elif "$OLD_PREFIX" = "XyF"
+                  PRIVATE_PIN=1
+                  @elif "$OLD_PREFIX" = "XyH"
+                  PRIVATE_PIN=1
+                  @endif
+               @else
+               NOT_FOUND=1
+               @endif
+            @else
+            NOT_FOUND=1
+            MSG_LENGTH=@strlen:$MESSAGE
+               @ifeq $MSG_LENGTH 7
+               IS_REACTION=1
+               @endif
+            @endif
+         @else
+         OLD_MESSAGE=%SOURCE_PARTS:2%
+
+         PREFIX=@substr:0,2:%SOURCE_PARTS:2%
+
+         OLD_PREFIX=@substr:0,3:%SOURCE_PARTS:2%
+         OLD_TARGET=public
+            @ifeq "$OLD_PREFIX" "XyE"
+            OLD_TARGET=private
+            @elif "$OLD_PREFIX" = "XyF"
+            OLD_TARGET=private
+            @elif "$OLD_PREFIX" = "XyH"
+            OLD_TARGET=private
+            @endif
+
+         BAD_TARGET=
+            @ifeq "$PREFIX" "Xz"
+            NOT_EDITABLE=1
+            @elif "$TARGET" != "$OLD_TARGET"
+            BAD_TARGET=1
+            @endif
+
+         @endif
+
+         @ifdef $NOT_FOUND
+            @ifndef $IS_REACTION
+            ERROR=Source message for edit was not found (or is not own).
+            @else
+            DECODED=@base64:$MESSAGE
+            REACTION=@substr:3:$DECODED
+
+            ; NOTE: Only accepts values
+            ; that are between 0 and 9.
+            REACT_NUM=@$REACTION+0
+               @if $REACT_NUM #> 9
+               REACTION=00
+               @endif
+
+            HASH_OFF=10
+            SHORT_LEN=6
+
+            HASH=@sha256:$USER_NAME
+            SHORT=@substr:$HASH_OFF,$SHORT_LEN:$HASH
+
+            .system_variable @keyed_irc_%ROOM%_MR:$NAMES
+            REACTIONS=$OUTPUT
+
+               @ifdef $REACTIONS
+
+               REPLACEMENT=
+
+               LINES=@repstr:o/\n:$REACTIONS
+
+               @label RNEXT
+
+               @:RLOOP
+               NEXT_LINE=%LINES:1%
+
+                  @ifndef $NEXT_LINE
+                  @label END_RLOOP
+                  @endif
+
+               @skip
+
+               @:RNEXT
+
+               EMOJI=@substr:0,2:$NEXT_LINE
+
+                  @ifdef $REACTION
+                     @if $REACTION #< $EMOJI
+                        @ifndef $REPLACEMENT
+                        REPLACEMENT=%REACTION%%SHORT%x
+                        @else
+                        REPLACEMENT=%REPLACEMENT%o%REACTION%%SHORT%x
+                        @endif
+                     REACTION=
+                     @endif
+                  @endif
+
+               SHORTS=@substr:2:$NEXT_LINE
+
+               REMOVE=@repstr:%SHORT%x/:$SHORTS
+                  @ifneq "$SHORTS" "$REMOVE"
+                  SHORTS=@strlit:$REMOVE
+                  @else
+                     @ifeq "$EMOJI" "$REACTION"
+                     SHORTS=@strlit:%SHORTS%%SHORT%x
+                     @endif
+                  @endif
+
+                  @ifeq "$EMOJI" "$REACTION"
+                  REACTION=
+                  @endif
+
+                  @ifdef $SHORTS
+                     @ifndef $REPLACEMENT
+                     REPLACEMENT=$EMOJI
+                     @else
+                     REPLACEMENT=%REPLACEMENT%o$EMOJI
+                     @endif
+                  REPLACEMENT=%REPLACEMENT%$SHORTS
+                  @endif
+
+                  @ifeq "$REPLACEMENT" "$EMOJI"
+                  REPLACEMENT=
+                  @endif
+
+               LINES=%LINES:-1%
+
+               !!@:RLOOP
+
+               @:END_RLOOP
+
+               @endif
+
+               @ifdef $REACTION
+                  @ifndef $REPLACEMENT
+                  REPLACEMENT=%REACTION%%SHORT%x
+                  @else
+                  REPLACEMENT=%REPLACEMENT%o%REACTION%%SHORT%x
+                  @endif
+               @endif
+
+            CHANGED=1
+            .system_variable @keyed_irc_%ROOM%_MR:$NAMES "$REPLACEMENT"
+            @endif
+         @elif "$BAD_TARGET" = "1"
+         ERROR=Source message must not be modified to or from private.
+         @elif "$NOT_EDITABLE" = "1"
+         ERROR=Source message is designated as a system generated message.
+         @else
+         ; NOTE: If the new message is just a space then will pin/unpin it.
+            @ifeq  "$MESSAGE" "XyEg"
+            ERROR=Pinning of private messages is not supported.
+            @elif "$PRIVATE_PIN" = "1"
+            ERROR=Pinning of private messages is not supported.
+            @else
+               @ifeq "$MESSAGE" "XyAg"
+                  @ifndef $IS_OWNER
+                  ERROR=Pinning messages for this room is owner only.
+                  @else
+                  .system_variable @keyed_irc_%ROOM%_MP:$NAMES
+                     @ifdef $OUTPUT
+                     .system_variable @keyed_irc_%ROOM%_MP:$NAMES ""
+                     @else
+                     .system_variable @keyed_irc_%ROOM%_MP
+                     PINNED=$OUTPUT
+                        @ifdef %PINNED:8%
+                        ERROR=Maximum pinned messages for this room already exist.
+                        @else
+                        .system_variable @keyed_irc_%ROOM%_MP:$NAMES "$PIN_AUTHOR $OLD_MESSAGE"
+                        @endif
+                     @endif
+                  @endif
+               @else
+               .system_gen_key -unix_unique
+               UNIX_UNIQUE=$OUTPUT
+
+               CHANGED=1
+                  @ifeq "$MESSAGE" "$OLD_MESSAGE"
+                  .system_variable @keyed_irc_%ROOM%_ME:$NAMES ""
+                  @else
+                  .system_variable @keyed_irc_%ROOM%_ME:$NAMES "$UNIX_UNIQUE $MESSAGE"
+                  @endif
+               @endif
+            @endif
+         @endif
+
+      @endif
+
+   @else
+   ROOM_AND_USER=@strlit:%ROOM%_$USER_NAME
+
+   NAMES_CHECK=@repstr:./_:$NAMES
+
+   ; NOTE: For multiple names use
+   ; a dot separator and if found
+   ; replaces as the following is
+   ; illustrating:
+
+   ; xxx.yyy
+   ; @xxx@yyy
+
+      @ifneq "$NAMES" "$NAMES_CHECK"
+      NAMES=.$NAMES
+      NAMES=@repstr:./@:.$NAMES
+      @endif
+
+   ; NOTE: This is for "_/?".
+      @ifeq "$MESSAGE" "Xy8_"
+      PREFIX=Xy9
+      @else
+      PREFIX=@substr:0,3:$MESSAGE
+      @endif
+
+   ; NOTE: Prefix being "_/".
+      @ifeq "$PREFIX" "Xy9"
+
+         @ifeq "$MESSAGE" "Xy9jbGVhcg"
+         CHANGED=1
+         .system_variable @queue_irc_$ROOM_AND_USER ""
+         RETURN=History for '$USER_NAME' in $ROOM cleared.
+         @else
+         RETURN=Available commands are:\n
+         RETURN=$RETURN\nhelp (show this output)
+         RETURN=$RETURN\nclear (clears room history)
+         @endif
+
+      @else
+
+      .system_variable @irc_users_$ROOM
+      IRC_USERS=@strlit:$OUTPUT
+
+      ; NOTE: IF has been removed will ensure that the
+      ; "remove" message is also sent to the USER (for
+      ; reference if is later re-joined).
+      .session_variable -id=$SESSION_ID @irc_is_remove
+         @ifdef $OUTPUT
+         IRC_USERS=@strlit:@$USER_NAME$IRC_USERS
+         @endif
+
+         @ifdef $IRC_USERS
+
+            @ifneq "$NAMES" "ALL"
+               @ifeq "$NAMES" "OTHERS"
+               IRC_USERS=@repstr:@%USER_NAME%@/@:%IRC_USERS%@
+               @elif "$NAMES" != "$USER_NAME"
+               IRC_USERS=@set_all_in:@:$NAMES $IRC_USERS
+
+               LIST=@repstr:@/,:$IRC_USERS
+               IRC_USERS=,$LIST
+               IRC_USERS=@repstr:,/@:$IRC_USERS
+
+                  @ifdef $TARGET_ROOM
+                  ISSUED_PREFIX=$ISSUED_PREFIX for $TARGET_ROOM
+                  @endif
+
+               USER_MESSAGE=_:issued ($ISSUED_PREFIX sent to $LIST)
+               USER_MESSAGE=@base64::$USER_MESSAGE
+               @endif
+            @endif
+
+         IRC_USER_SUFFIXES=@repstr:@/|:$IRC_USERS
+
+         CREATED_KEYED=
+
+         .system_gen_key -unix_unique
+         UNIX_UNIQUE=$OUTPUT
+
+            @ifdef $IRC_USER_SUFFIXES
+            CHANGED=1
+            .session_variable -id=$SESSION_ID @search
+               @ifdef $OUTPUT
+               .session_variable @search $OUTPUT
+               .session_variable -id=$SESSION_ID @replace
+               .session_variable @replace $OUTPUT
+               @else
+                  @ifndef $SPECIAL
+                  CREATED_KEYED=1
+                  .system_variable @keyed_irc_$ROOM:$UNIX_UNIQUE "$USER_NAME $MESSAGE"
+                  .system_variable @queue_irc_%ROOM%_$IRC_USER_SUFFIXES "$UNIX_UNIQUE @"
+                  @endif
+               @endif
+
+               @ifndef $CREATED_KEYED
+               .system_variable @queue_irc_%ROOM%_$IRC_USER_SUFFIXES "$UNIX_UNIQUE $USER_NAME $MESSAGE"
+               @endif
+
+               @ifdef $USER_MESSAGE
+               .system_variable @queue_irc_$ROOM_AND_USER "$UNIX_UNIQUE $USER_NAME $USER_MESSAGE"
+               @endif
+
+            @endif
+
+         @endif
+
+      @endif
+
+   @endif
+
 @endif
-@else
-NOT_FOUND=1
-@endif
-@else
-NOT_FOUND=1
-MSG_LENGTH=@strlen:$MESSAGE
-@ifeq $MSG_LENGTH 7
-IS_REACTION=1
-@endif
-@endif
-@else
-OLD_MESSAGE=%SOURCE_PARTS:2%
-;
-PREFIX=@substr:0,2:%SOURCE_PARTS:2%
-;
-OLD_PREFIX=@substr:0,3:%SOURCE_PARTS:2%
-OLD_TARGET=public
-@ifeq "$OLD_PREFIX" "XyE"
-OLD_TARGET=private
-@elif "$OLD_PREFIX" = "XyF"
-OLD_TARGET=private
-@elif "$OLD_PREFIX" = "XyH"
-OLD_TARGET=private
-@endif
-;
-BAD_TARGET=
-@ifeq "$PREFIX" "Xz"
-NOT_EDITABLE=1
-@elif "$TARGET" != "$OLD_TARGET"
-BAD_TARGET=1
-@endif
-;
-@endif
-;
-@ifdef $NOT_FOUND
-@ifndef $IS_REACTION
-ERROR=Source message for edit was not found (or is not own).
-@else
-DECODED=@base64:$MESSAGE
-REACTION=@substr:3:$DECODED
-;
-; NOTE: Only accepts values
-; that are between 0 and 9.
-REACT_NUM=@$REACTION+0
-@if $REACT_NUM #> 9
-REACTION=00
-@endif
-;
-HASH_OFF=10
-SHORT_LEN=6
-;
-HASH=@sha256:$USER_NAME
-SHORT=@substr:$HASH_OFF,$SHORT_LEN:$HASH
-;
-.system_variable @keyed_irc_%ROOM%_MR:$NAMES
-REACTIONS=$OUTPUT
-;
-@ifdef $REACTIONS
-;
-REPLACEMENT=
-;
-LINES=@repstr:o/\n:$REACTIONS
-;
-@label RNEXT
-;
-@:RLOOP
-NEXT_LINE=%LINES:1%
-;
-@ifndef $NEXT_LINE
-@label END_RLOOP
-@endif
-;
-@skip
-;
-@:RNEXT
-;
-EMOJI=@substr:0,2:$NEXT_LINE
-;
-@ifdef $REACTION
-@if $REACTION #< $EMOJI
-@ifndef $REPLACEMENT
-REPLACEMENT=%REACTION%%SHORT%x
-@else
-REPLACEMENT=%REPLACEMENT%o%REACTION%%SHORT%x
-@endif
-REACTION=
-@endif
-@endif
-;
-SHORTS=@substr:2:$NEXT_LINE
-;
-REMOVE=@repstr:%SHORT%x/:$SHORTS
-@ifneq "$SHORTS" "$REMOVE"
-SHORTS=@strlit:$REMOVE
-@else
-@ifeq "$EMOJI" "$REACTION"
-SHORTS=@strlit:%SHORTS%%SHORT%x
-@endif
-@endif
-;
-@ifeq "$EMOJI" "$REACTION"
-REACTION=
-@endif
-;
-@ifdef $SHORTS
-@ifndef $REPLACEMENT
-REPLACEMENT=$EMOJI
-@else
-REPLACEMENT=%REPLACEMENT%o$EMOJI
-@endif
-REPLACEMENT=%REPLACEMENT%$SHORTS
-@endif
-;
-@ifeq "$REPLACEMENT" "$EMOJI"
-REPLACEMENT=
-@endif
-;
-LINES=%LINES:-1%
-;
-!!@:RLOOP
-;
-@:END_RLOOP
-;
-@endif
-;
-@ifdef $REACTION
-@ifndef $REPLACEMENT
-REPLACEMENT=%REACTION%%SHORT%x
-@else
-REPLACEMENT=%REPLACEMENT%o%REACTION%%SHORT%x
-@endif
-@endif
-;
-CHANGED=1
-.system_variable @keyed_irc_%ROOM%_MR:$NAMES "$REPLACEMENT"
-@endif
-@elif "$BAD_TARGET" = "1"
-ERROR=Source message must not be modified to or from private.
-@elif "$NOT_EDITABLE" = "1"
-ERROR=Source message is designated as a system generated message.
-@else
-; NOTE: If the new message is just a space then will pin/unpin it.
-@ifeq  "$MESSAGE" "XyEg"
-ERROR=Pinning of private messages is not supported.
-@elif "$PRIVATE_PIN" = "1"
-ERROR=Pinning of private messages is not supported.
-@else
-@ifeq "$MESSAGE" "XyAg"
-@ifndef $IS_OWNER
-ERROR=Pinning messages for this room is owner only.
-@else
-.system_variable @keyed_irc_%ROOM%_MP:$NAMES
-@ifdef $OUTPUT
-.system_variable @keyed_irc_%ROOM%_MP:$NAMES ""
-@else
-.system_variable @keyed_irc_%ROOM%_MP
-PINNED=$OUTPUT
-@ifdef %PINNED:8%
-ERROR=Maximum pinned messages for this room already exist.
-@else
-.system_variable @keyed_irc_%ROOM%_MP:$NAMES "$PIN_AUTHOR $OLD_MESSAGE"
-@endif
-@endif
-@endif
-@else
-.system_gen_key -unix_unique
-UNIX_UNIQUE=$OUTPUT
-;
-CHANGED=1
-@ifeq "$MESSAGE" "$OLD_MESSAGE"
-.system_variable @keyed_irc_%ROOM%_ME:$NAMES ""
-@else
-.system_variable @keyed_irc_%ROOM%_ME:$NAMES "$UNIX_UNIQUE $MESSAGE"
-@endif
-@endif
-@endif
-@endif
-;
-@endif
-;
-@else
-ROOM_AND_USER=@strlit:%ROOM%_$USER_NAME
-;
-NAMES_CHECK=@repstr:./_:$NAMES
-;
-; NOTE: For multiple names use
-; a dot separator and if found
-; replaces as the following is
-; illustrating:
-;
-; xxx.yyy
-; @xxx@yyy
-;
-@ifneq "$NAMES" "$NAMES_CHECK"
-NAMES=.$NAMES
-NAMES=@repstr:./@:.$NAMES
-@endif
-;
-; NOTE: This is for "_/?".
-@ifeq "$MESSAGE" "Xy8_"
-PREFIX=Xy9
-@else
-PREFIX=@substr:0,3:$MESSAGE
-@endif
-;
-; NOTE: Prefix being "_/".
-@ifeq "$PREFIX" "Xy9"
-;
-@ifeq "$MESSAGE" "Xy9jbGVhcg"
-CHANGED=1
-.system_variable @queue_irc_$ROOM_AND_USER ""
-RETURN=History for '$USER_NAME' in $ROOM cleared.
-@else
-RETURN=Available commands are:\n
-RETURN=$RETURN\nhelp (show this output)
-RETURN=$RETURN\nclear (clears room history)
-@endif
-;
-@else
-;
-.system_variable @irc_users_$ROOM
-IRC_USERS=@strlit:$OUTPUT
-;
-; NOTE: IF has been removed will ensure that the
-; "remove" message is also sent to the USER (for
-; reference if is later re-joined).
-.session_variable -id=$SESSION_ID @irc_is_remove
-@ifdef $OUTPUT
-IRC_USERS=@strlit:@$USER_NAME$IRC_USERS
-@endif
-;
-@ifdef $IRC_USERS
-;
-@ifneq "$NAMES" "ALL"
-@ifeq "$NAMES" "OTHERS"
-IRC_USERS=@repstr:@%USER_NAME%@/@:%IRC_USERS%@
-@elif "$NAMES" != "$USER_NAME"
-IRC_USERS=@set_all_in:@:$NAMES $IRC_USERS
-;
-LIST=@repstr:@/,:$IRC_USERS
-IRC_USERS=,$LIST
-IRC_USERS=@repstr:,/@:$IRC_USERS
-;
-@ifdef $TARGET_ROOM
-ISSUED_PREFIX=$ISSUED_PREFIX for $TARGET_ROOM
-@endif
-;
-USER_MESSAGE=_:issued ($ISSUED_PREFIX sent to $LIST)
-USER_MESSAGE=@base64::$USER_MESSAGE
-@endif
-@endif
-;
-IRC_USER_SUFFIXES=@repstr:@/|:$IRC_USERS
-;
-CREATED_KEYED=
-;
-.system_gen_key -unix_unique
-UNIX_UNIQUE=$OUTPUT
-;
-@ifdef $IRC_USER_SUFFIXES
-CHANGED=1
-.session_variable -id=$SESSION_ID @search
-@ifdef $OUTPUT
-.session_variable @search $OUTPUT
-.session_variable -id=$SESSION_ID @replace
-.session_variable @replace $OUTPUT
-@else
-@ifndef $SPECIAL
-CREATED_KEYED=1
-.system_variable @keyed_irc_$ROOM:$UNIX_UNIQUE "$USER_NAME $MESSAGE"
-.system_variable @queue_irc_%ROOM%_$IRC_USER_SUFFIXES "$UNIX_UNIQUE @"
-@endif
-@endif
-;
-@ifndef $CREATED_KEYED
-.system_variable @queue_irc_%ROOM%_$IRC_USER_SUFFIXES "$UNIX_UNIQUE $USER_NAME $MESSAGE"
-@endif
-;
-@ifdef $USER_MESSAGE
-.system_variable @queue_irc_$ROOM_AND_USER "$UNIX_UNIQUE $USER_NAME $USER_MESSAGE"
-@endif
-;
-@endif
-;
-@endif
-;
-@endif
-;
-@endif
-;
-@endif
-;
+
 PREFIX=
 ERROR_OR_RETURN=
-;
+
 @ifdef $CHANGED
 .system_variable @irc_alter 1
 @endif
-;
+
 @ifdef $HAS_LOCK
 .system_variable @irc_lock ""
 @endif
-;
+
 @ifdef $ERROR
 PREFIX=Error:$SP
 ERROR_OR_RETURN=$ERROR
 @elif "$RETURN" != ""
 ERROR_OR_RETURN=:$RETURN
 @endif
-;
+
 @ifdef $ERROR_OR_RETURN
 .session_variable @args_file
-@ifndef $OUTPUT
-#$PREFIX$ERROR_OR_RETURN
-@else
-.system_variable $OUTPUT "$ERROR_OR_RETURN"
-@endif
+   @ifndef $OUTPUT
+   #$PREFIX$ERROR_OR_RETURN
+   @else
+   .system_variable $OUTPUT "$ERROR_OR_RETURN"
+   @endif
 @endif

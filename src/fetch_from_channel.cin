@@ -1,8 +1,8 @@
 ; Copyright (c) 2023-2026 CIYAM Developers
-;
+
 ; Distributed under the MIT/X11 software license, please refer to the file license.txt
 ; in the root project directory or http://www.opensource.org/licenses/mit-license.php.
-;
+
 NUM_ARGS=0
 @ifdef $1
 NUM_ARGS=@$NUM_ARGS+1
@@ -10,330 +10,330 @@ NUM_ARGS=@$NUM_ARGS+1
 @ifdef $2
 NUM_ARGS=@$NUM_ARGS+1
 @endif
-;
+
 @ifneq "$NUM_ARGS" "2"
 #Usage: fetch_from_channel.cin <storage> <identity>
 @else
 ERROR=
-;
+
 STORAGE=$1
 IDENTITY=$2
-;
+
 .system_variable @fetch_$IDENTITY 1 ""
-@ifeq $OUTPUT 1
-;
-MODULE=
-HAS_BLOG_CLASS=
-;
-.session_variable @uuid
-UUID=$OUTPUT
-;
-.system_variable $$%IDENTITY%_identity
-BLOCKCHAIN=$OUTPUT
-;
-@ifdef $BLOCKCHAIN
-IN_REVERSE=@reverse:$BLOCKCHAIN
-;
-.system_variable $$%IDENTITY%_error ""
-;
-CIYAM_STREAM_CIPHER=cc
-;
-@ifndef $ENCRYPTED_PASSWORD
-ENCRYPTED_PASSWORD=@shared_secret_$IDENTITY
-@endif
-;
-; NOTE: Is setting the session variables here so that the FCGI UI
-; will continue to wait until this script has finished executing.
-.session_variable $BLOCKCHAIN 1
-.session_variable $IN_REVERSE 1
-;
-; NOTE: Wait for both the submit and receive peers to synchronise.
-@:WAIT_LOOP
-;
-@label WAIT_NEXT
-;
-.system_variable $BLOCKCHAIN
-@ifndef $OUTPUT
-.session_variable -num_found $BLOCKCHAIN
-@ifeq "$OUTPUT" "1"
-.session_variable -num_found $IN_REVERSE
-@ifeq "$OUTPUT" "1"
-@label WAIT_DONE
-@endif
-@endif
-@endif
-;
-@skip
-;
-@:WAIT_NEXT
-.wait 250
-!!@:WAIT_LOOP
-;
-@:WAIT_DONE
-;
-@ifneq "$STORAGE" "@dummy"
-.storage_init $STORAGE
-@endif
-;
-@ifndef $ERROR
-.storage_channel_documents -height_retrieved $IDENTITY
-FETCH_HEIGHT=$OUTPUT
-.storage_channel_documents -height_submitted $IDENTITY
-SUBMIT_HEIGHT=$OUTPUT
-;
-@ifndef $ERROR
-.peer_channel_height -minimal $IDENTITY $SUBMIT_HEIGHT
-@ifdef $OUTPUT
-SUBMIT_HIGHEST=$OUTPUT
-;
-.peer_channel_height -minimal -reversed $IDENTITY $FETCH_HEIGHT
-@ifdef $OUTPUT
-FETCH_HIGHEST=$OUTPUT
-;
-SUBMIT_AFTER_FETCH=
-;
-.system_variable @files_area_path
-FILES_AREA_DIR=$OUTPUT
-;
-@:PRE_LOOP
-;
-@ifneq "$SUBMIT_HEIGHT" "$SUBMIT_HIGHEST"
-.session_variable @blockchain_archive_path $FILES_AREA_DIR/$BLOCKCHAIN
-;
-SUBMIT_HEIGHT=@$SUBMIT_HEIGHT+1
-@ifndef $CIYAM_NESTED_LEVEL
-#Processing submit block $SUBMIT_HEIGHT/$SUBMIT_HIGHEST...
-@endif
-<block_tree_hash.cin $BLOCKCHAIN $SUBMIT_HEIGHT
-;
-@ifdef $OUTPUT
-<tree_list.cin $OUTPUT 0 $BLOCKCHAIN.bun.gz
-BUNDLE_HASH=%OUTPUT:2%
-;
-<export_files.cin $BUNDLE_HASH .
-;
-~mkdir $UUID
-~./unbundle -qq $BLOCKCHAIN .fetch -d $UUID 2>&1
-;
-@ifneq $SYSTEM_RETVAL 0
-~rmdir $UUID
-.string_message incorrect_shared_secret
-ERROR=$OUTPUT
-#$ERROR
-@else
-SUBMIT_AFTER_FETCH=@file:$UUID/.fetch
-~rm $UUID/.fetch
-~rmdir $UUID
-PRE_IS_DONE=@$SUBMIT_AFTER_FETCH>$FETCH_HEIGHT
-@ifeq $PRE_IS_DONE 0
-.session_variable @updating_$IDENTITY $SUBMIT_HEIGHT
-.storage_channel_documents -update_submitted $IDENTITY
-@endif
-@endif
-@endif
-;
-@else
-PRE_IS_DONE=1
-@endif
-;
-@label PRE_NEXT
-@ifdef $ERROR
-@label FETCH_DONE
-@else
-@ifeq "$PRE_IS_DONE" "1"
-@label PRE_DONE
-@endif
-@endif
-;
-@skip
-;
-@:PRE_NEXT
-!!@:PRE_LOOP
-;
-@:PRE_DONE
-;
-@:FETCH_LOOP
-;
-@label NEXT_FETCH
-@ifeq $FETCH_HEIGHT $FETCH_HIGHEST
-@label FETCH_DONE
-@endif
-;
-@skip
-;
-@:NEXT_FETCH
-.session_variable @blockchain_archive_path $FILES_AREA_DIR/$IN_REVERSE
-;
-FETCH_HEIGHT=@$FETCH_HEIGHT+1
-@ifndef $CIYAM_NESTED_LEVEL
-#Processing fetch block $FETCH_HEIGHT/$FETCH_HIGHEST...
-@endif
-<block_tree_hash.cin $IN_REVERSE $FETCH_HEIGHT
-;
-@ifdef $OUTPUT
-<tree_list.cin $OUTPUT 0 $IN_REVERSE.bun.gz
-BUNDLE_HASH=%OUTPUT:2%
-;
-<export_files.cin $BUNDLE_HASH .
-;
-.session_variable @updating_$IDENTITY $FETCH_HEIGHT
-;
-.storage_transaction_start
-.storage_channel_documents -update_retrieved $IDENTITY
-;
-@ifndef $MODULE
-.module_list
-LINES=@repstr: /\n:$OUTPUT
-MODULE=%LINES:2%
-;
-@retain *
-<$MODULE.channel_data_information.vars.lst
-DATA_CLASS_NAME=$CLASS_NAME
-DATA_FLD_TYPE=$FLD_TYPE
-DATA_FLD_PEER_NODE=$FLD_PEER_NODE
-;
-@retain *
-<$MODULE.channel_user_information.vars.lst
-USER_CLASS_NAME=$CLASS_NAME
-USER_FLD_LOCAL=$FLD_LOCAL
-USER_FLD_USER=$FLD_USER
-USER_FLD_PEER_NODE=$FLD_PEER_NODE
-;
-@endif
-;
-BLOG_INFO_FILE=@files::$IN_REVERSE.blog_info.csv
-@ifdef $BLOG_INFO_FILE
-.session_variable @key_suffix $IDENTITY
-.session_variable @key_prefix_is_first 1
-.perform_bulk_ops admin @now $MODULE $DATA_CLASS_NAME $IN_REVERSE.blog_info.csv -f=$DATA_FLD_PEER_NODE=$IDENTITY,$DATA_FLD_TYPE=0
-~rm $IN_REVERSE.blog_info.csv
-~rm $IN_REVERSE.blog_info.log
-@endif
-;
-FORUM_INFO_FILE=@files::$IN_REVERSE.forum_info.csv
-@ifdef $FORUM_INFO_FILE
-.session_variable @key_suffix $IDENTITY
-.session_variable @key_prefix_is_first 1
-.perform_bulk_ops admin @now $MODULE $DATA_CLASS_NAME $IN_REVERSE.forum_info.csv -f=$DATA_FLD_PEER_NODE=$IDENTITY,$DATA_FLD_TYPE=1
-~rm $IN_REVERSE.forum_info.csv
-~rm $IN_REVERSE.forum_info.log
-@endif
-;
-USER_INFO_FILE=@files::$IN_REVERSE.user_info.csv
-@ifdef $USER_INFO_FILE
-.session_variable @key_suffix $IDENTITY
-.session_variable @key_prefix_is_first ""
-.perform_bulk_ops peer @now $MODULE $USER_CLASS_NAME $IN_REVERSE.user_info.csv -f=$USER_FLD_PEER_NODE=$IDENTITY,$USER_FLD_LOCAL=0,$USER_FLD_USER=admin
-~rm $IN_REVERSE.user_info.csv
-~rm $IN_REVERSE.user_info.log
-@endif
-;
-APP_LOG_INFO_FILE=@files::$IN_REVERSE.log
-@ifdef $APP_LOG_INFO_FILE
-.session_variable @key_suffix $IDENTITY
-.session_variable @key_prefix_is_first ""
-.session_restrict $UUID perform_create
-<$IN_REVERSE.log
-.session_restrict $UUID ""
-~rm $IN_REVERSE.log
-@endif
-;
-@ifndef $ERROR
-.storage_transaction_commit
-@else
-.storage_transaction_rollback
-@endif
-;
-@endif
-;
-NESTED_DONE=
-@:NESTED_LOOP
-;
-@ifeq "$FETCH_HEIGHT" "$SUBMIT_AFTER_FETCH"
-.session_variable @updating_$IDENTITY $SUBMIT_HEIGHT
-.storage_channel_documents -update_submitted $IDENTITY
-;
-@ifndef $ERROR
-@ifneq "$SUBMIT_HEIGHT" "$SUBMIT_HIGHEST"
-.session_variable @blockchain_archive_path $FILES_AREA_DIR/$BLOCKCHAIN
-;
-SUBMIT_HEIGHT=@$SUBMIT_HEIGHT+1
-@ifndef $CIYAM_NESTED_LEVEL
-#Processing submit block $SUBMIT_HEIGHT/$SUBMIT_HIGHEST...
-@endif
-<block_tree_hash.cin $BLOCKCHAIN $SUBMIT_HEIGHT
-;
-@ifdef $OUTPUT
-<tree_list.cin $OUTPUT 0 $BLOCKCHAIN.bun.gz
-BUNDLE_HASH=%OUTPUT:2%
-;
-<export_files.cin $BUNDLE_HASH .
-~mkdir $UUID
-~./unbundle -qq $BLOCKCHAIN .fetch -d $UUID 2>&1
-;
-@ifneq $SYSTEM_RETVAL 0
-~rmdir $UUID
-.string_message incorrect_shared_secret
-ERROR=$OUTPUT
-#$ERROR
-@else
-SUBMIT_AFTER_FETCH=@file:$UUID/.fetch
-NESTED_DONE=@$SUBMIT_AFTER_FETCH>$FETCH_HEIGHT
-~rm $UUID/.fetch
-~rmdir $UUID
-@endif
-@endif
-;
-@else
-NESTED_DONE=1
-@endif
-@else
-@label FETCH_DONE
-@endif
-;
-@else
-NESTED_DONE=1
-@endif
-;
-@ifdef $ERROR
-@label FETCH_DONE
-@else
-@label NESTED_NEXT
-@ifeq "$NESTED_DONE" "1"
-@label NESTED_DONE
-@endif
-@endif
-;
-@skip
-;
-@:NESTED_NEXT
-!!@:NESTED_LOOP
-;
-@:NESTED_DONE
-;
-!!@:FETCH_LOOP
-;
-@:FETCH_DONE
-;
-@ifneq "$STORAGE" "@dummy"
-.storage_term
-@endif
-;
-@ifdef $ERROR
-.system_variable $$%IDENTITY%_error "$ERROR"
-@endif
-;
-@ifdef $ENCRYPTED_PASSWORD
-.system_variable $ENCRYPTED_PASSWORD ""
-@endif
-;
-@endif
-@endif
-@endif
-@endif
-@endif
-;
-.system_variable @fetch_$IDENTITY ""
-@endif
-;
+   @ifeq $OUTPUT 1
+
+   MODULE=
+   HAS_BLOG_CLASS=
+
+   .session_variable @uuid
+   UUID=$OUTPUT
+
+   .system_variable $$%IDENTITY%_identity
+   BLOCKCHAIN=$OUTPUT
+
+      @ifdef $BLOCKCHAIN
+      IN_REVERSE=@reverse:$BLOCKCHAIN
+
+      .system_variable $$%IDENTITY%_error ""
+
+      CIYAM_STREAM_CIPHER=cc
+
+         @ifndef $ENCRYPTED_PASSWORD
+         ENCRYPTED_PASSWORD=@shared_secret_$IDENTITY
+         @endif
+
+      ; NOTE: Is setting the session variables here so that the FCGI UI
+      ; will continue to wait until this script has finished executing.
+      .session_variable $BLOCKCHAIN 1
+      .session_variable $IN_REVERSE 1
+
+      ; NOTE: Wait for both the submit and receive peers to synchronise.
+      @:WAIT_LOOP
+
+      @label WAIT_NEXT
+
+      .system_variable $BLOCKCHAIN
+         @ifndef $OUTPUT
+         .session_variable -num_found $BLOCKCHAIN
+            @ifeq "$OUTPUT" "1"
+            .session_variable -num_found $IN_REVERSE
+               @ifeq "$OUTPUT" "1"
+               @label WAIT_DONE
+               @endif
+            @endif
+         @endif
+
+      @skip
+
+      @:WAIT_NEXT
+      .wait 250
+      !!@:WAIT_LOOP
+
+      @:WAIT_DONE
+
+         @ifneq "$STORAGE" "@dummy"
+         .storage_init $STORAGE
+         @endif
+
+         @ifndef $ERROR
+         .storage_channel_documents -height_retrieved $IDENTITY
+         FETCH_HEIGHT=$OUTPUT
+         .storage_channel_documents -height_submitted $IDENTITY
+         SUBMIT_HEIGHT=$OUTPUT
+
+            @ifndef $ERROR
+            .peer_channel_height -minimal $IDENTITY $SUBMIT_HEIGHT
+               @ifdef $OUTPUT
+               SUBMIT_HIGHEST=$OUTPUT
+
+               .peer_channel_height -minimal -reversed $IDENTITY $FETCH_HEIGHT
+                  @ifdef $OUTPUT
+                  FETCH_HIGHEST=$OUTPUT
+
+                  SUBMIT_AFTER_FETCH=
+
+                  .system_variable @files_area_path
+                  FILES_AREA_DIR=$OUTPUT
+
+                  @:PRE_LOOP
+
+                     @ifneq "$SUBMIT_HEIGHT" "$SUBMIT_HIGHEST"
+                     .session_variable @blockchain_archive_path $FILES_AREA_DIR/$BLOCKCHAIN
+
+                     SUBMIT_HEIGHT=@$SUBMIT_HEIGHT+1
+                        @ifndef $CIYAM_NESTED_LEVEL
+                        #Processing submit block $SUBMIT_HEIGHT/$SUBMIT_HIGHEST...
+                        @endif
+                     <block_tree_hash.cin $BLOCKCHAIN $SUBMIT_HEIGHT
+
+                        @ifdef $OUTPUT
+                        <tree_list.cin $OUTPUT 0 $BLOCKCHAIN.bun.gz
+                        BUNDLE_HASH=%OUTPUT:2%
+
+                        <export_files.cin $BUNDLE_HASH .
+
+                        ~mkdir $UUID
+                        ~./unbundle -qq $BLOCKCHAIN .fetch -d $UUID 2>&1
+
+                           @ifneq $SYSTEM_RETVAL 0
+                           ~rmdir $UUID
+                           .string_message incorrect_shared_secret
+                           ERROR=$OUTPUT
+                           #$ERROR
+                           @else
+                           SUBMIT_AFTER_FETCH=@file:$UUID/.fetch
+                           ~rm $UUID/.fetch
+                           ~rmdir $UUID
+                           PRE_IS_DONE=@$SUBMIT_AFTER_FETCH>$FETCH_HEIGHT
+                              @ifeq $PRE_IS_DONE 0
+                              .session_variable @updating_$IDENTITY $SUBMIT_HEIGHT
+                              .storage_channel_documents -update_submitted $IDENTITY
+                              @endif
+                           @endif
+                        @endif
+
+                     @else
+                     PRE_IS_DONE=1
+                     @endif
+
+                  @label PRE_NEXT
+                     @ifdef $ERROR
+                     @label FETCH_DONE
+                     @else
+                        @ifeq "$PRE_IS_DONE" "1"
+                        @label PRE_DONE
+                        @endif
+                     @endif
+
+                  @skip
+
+                  @:PRE_NEXT
+                  !!@:PRE_LOOP
+
+                  @:PRE_DONE
+
+                  @:FETCH_LOOP
+
+                  @label NEXT_FETCH
+                     @ifeq $FETCH_HEIGHT $FETCH_HIGHEST
+                     @label FETCH_DONE
+                     @endif
+
+                  @skip
+
+                  @:NEXT_FETCH
+                  .session_variable @blockchain_archive_path $FILES_AREA_DIR/$IN_REVERSE
+
+                  FETCH_HEIGHT=@$FETCH_HEIGHT+1
+                     @ifndef $CIYAM_NESTED_LEVEL
+                     #Processing fetch block $FETCH_HEIGHT/$FETCH_HIGHEST...
+                     @endif
+                  <block_tree_hash.cin $IN_REVERSE $FETCH_HEIGHT
+
+                     @ifdef $OUTPUT
+                     <tree_list.cin $OUTPUT 0 $IN_REVERSE.bun.gz
+                     BUNDLE_HASH=%OUTPUT:2%
+
+                     <export_files.cin $BUNDLE_HASH .
+
+                     .session_variable @updating_$IDENTITY $FETCH_HEIGHT
+
+                     .storage_transaction_start
+                     .storage_channel_documents -update_retrieved $IDENTITY
+
+                        @ifndef $MODULE
+                        .module_list
+                        LINES=@repstr: /\n:$OUTPUT
+                        MODULE=%LINES:2%
+
+                        @retain *
+                        <$MODULE.channel_data_information.vars.lst
+                        DATA_CLASS_NAME=$CLASS_NAME
+                        DATA_FLD_TYPE=$FLD_TYPE
+                        DATA_FLD_PEER_NODE=$FLD_PEER_NODE
+
+                        @retain *
+                        <$MODULE.channel_user_information.vars.lst
+                        USER_CLASS_NAME=$CLASS_NAME
+                        USER_FLD_LOCAL=$FLD_LOCAL
+                        USER_FLD_USER=$FLD_USER
+                        USER_FLD_PEER_NODE=$FLD_PEER_NODE
+
+                        @endif
+
+                     BLOG_INFO_FILE=@files::$IN_REVERSE.blog_info.csv
+                        @ifdef $BLOG_INFO_FILE
+                        .session_variable @key_suffix $IDENTITY
+                        .session_variable @key_prefix_is_first 1
+                        .perform_bulk_ops admin @now $MODULE $DATA_CLASS_NAME $IN_REVERSE.blog_info.csv -f=$DATA_FLD_PEER_NODE=$IDENTITY,$DATA_FLD_TYPE=0
+                        ~rm $IN_REVERSE.blog_info.csv
+                        ~rm $IN_REVERSE.blog_info.log
+                        @endif
+
+                     FORUM_INFO_FILE=@files::$IN_REVERSE.forum_info.csv
+                        @ifdef $FORUM_INFO_FILE
+                        .session_variable @key_suffix $IDENTITY
+                        .session_variable @key_prefix_is_first 1
+                        .perform_bulk_ops admin @now $MODULE $DATA_CLASS_NAME $IN_REVERSE.forum_info.csv -f=$DATA_FLD_PEER_NODE=$IDENTITY,$DATA_FLD_TYPE=1
+                        ~rm $IN_REVERSE.forum_info.csv
+                        ~rm $IN_REVERSE.forum_info.log
+                        @endif
+
+                     USER_INFO_FILE=@files::$IN_REVERSE.user_info.csv
+                        @ifdef $USER_INFO_FILE
+                        .session_variable @key_suffix $IDENTITY
+                        .session_variable @key_prefix_is_first ""
+                        .perform_bulk_ops peer @now $MODULE $USER_CLASS_NAME $IN_REVERSE.user_info.csv -f=$USER_FLD_PEER_NODE=$IDENTITY,$USER_FLD_LOCAL=0,$USER_FLD_USER=admin
+                        ~rm $IN_REVERSE.user_info.csv
+                        ~rm $IN_REVERSE.user_info.log
+                        @endif
+
+                     APP_LOG_INFO_FILE=@files::$IN_REVERSE.log
+                        @ifdef $APP_LOG_INFO_FILE
+                        .session_variable @key_suffix $IDENTITY
+                        .session_variable @key_prefix_is_first ""
+                        .session_restrict $UUID perform_create
+                        <$IN_REVERSE.log
+                        .session_restrict $UUID ""
+                        ~rm $IN_REVERSE.log
+                        @endif
+
+                        @ifndef $ERROR
+                        .storage_transaction_commit
+                        @else
+                        .storage_transaction_rollback
+                        @endif
+
+                     @endif
+
+                  NESTED_DONE=
+                  @:NESTED_LOOP
+
+                     @ifeq "$FETCH_HEIGHT" "$SUBMIT_AFTER_FETCH"
+                     .session_variable @updating_$IDENTITY $SUBMIT_HEIGHT
+                     .storage_channel_documents -update_submitted $IDENTITY
+
+                        @ifndef $ERROR
+                           @ifneq "$SUBMIT_HEIGHT" "$SUBMIT_HIGHEST"
+                           .session_variable @blockchain_archive_path $FILES_AREA_DIR/$BLOCKCHAIN
+
+                           SUBMIT_HEIGHT=@$SUBMIT_HEIGHT+1
+                              @ifndef $CIYAM_NESTED_LEVEL
+                              #Processing submit block $SUBMIT_HEIGHT/$SUBMIT_HIGHEST...
+                              @endif
+                           <block_tree_hash.cin $BLOCKCHAIN $SUBMIT_HEIGHT
+
+                              @ifdef $OUTPUT
+                              <tree_list.cin $OUTPUT 0 $BLOCKCHAIN.bun.gz
+                              BUNDLE_HASH=%OUTPUT:2%
+
+                              <export_files.cin $BUNDLE_HASH .
+                              ~mkdir $UUID
+                              ~./unbundle -qq $BLOCKCHAIN .fetch -d $UUID 2>&1
+
+                                 @ifneq $SYSTEM_RETVAL 0
+                                 ~rmdir $UUID
+                                 .string_message incorrect_shared_secret
+                                 ERROR=$OUTPUT
+                                 #$ERROR
+                                 @else
+                                 SUBMIT_AFTER_FETCH=@file:$UUID/.fetch
+                                 NESTED_DONE=@$SUBMIT_AFTER_FETCH>$FETCH_HEIGHT
+                                 ~rm $UUID/.fetch
+                                 ~rmdir $UUID
+                                 @endif
+                              @endif
+
+                           @else
+                           NESTED_DONE=1
+                           @endif
+                        @else
+                        @label FETCH_DONE
+                        @endif
+
+                     @else
+                     NESTED_DONE=1
+                     @endif
+
+                     @ifdef $ERROR
+                     @label FETCH_DONE
+                     @else
+                     @label NESTED_NEXT
+                        @ifeq "$NESTED_DONE" "1"
+                        @label NESTED_DONE
+                        @endif
+                     @endif
+
+                  @skip
+
+                  @:NESTED_NEXT
+                  !!@:NESTED_LOOP
+
+                  @:NESTED_DONE
+
+                  !!@:FETCH_LOOP
+
+                  @:FETCH_DONE
+
+                     @ifneq "$STORAGE" "@dummy"
+                     .storage_term
+                     @endif
+
+                     @ifdef $ERROR
+                     .system_variable $$%IDENTITY%_error "$ERROR"
+                     @endif
+
+                     @ifdef $ENCRYPTED_PASSWORD
+                     .system_variable $ENCRYPTED_PASSWORD ""
+                     @endif
+
+                  @endif
+               @endif
+            @endif
+         @endif
+      @endif
+
+   .system_variable @fetch_$IDENTITY ""
+   @endif
+
 @endif

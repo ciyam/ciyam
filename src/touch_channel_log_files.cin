@@ -1,47 +1,47 @@
 ; Copyright (c) 2024-2026 CIYAM Developers
-;
+
 ; Distributed under the MIT/X11 software license, please refer to the file license.txt
 ; in the root project directory or http://www.opensource.org/licenses/mit-license.php.
-;
+
 NUM_ARGS=0
 @ifdef $1
 NUM_ARGS=@$NUM_ARGS+1
 @endif
-;
+
 @ifneq "$NUM_ARGS" "1"
 #Usage: touch_channel_log_files.cin <module>
 @else
 MODULE=$1
-;
+
 @retain *
 <$MODULE.channel_information.vars.lst
-;
+
 .session_variable @deque commence
-;
+
 .pf $MODULE $CLASS_NAME "$FLD_ACTIVE,$FLD_IDENTITY#1 1" $FLD_IDENTITY -min
-;
-@ifndef $ERROR
-.session_variable @deque "~$OUTPUT"
-;
-@:LOOP
-;
-@label NEXT
-.session_variable @deque front
-@ifdef $OUTPUT
-~touch $OUTPUT.log
-@else
-@label END_LOOP
-@endif
-;
-@skip
-@:NEXT
-.session_variable @deque pop_front
-!!@:LOOP
-;
-@:END_LOOP
-;
-@endif
-;
+
+   @ifndef $ERROR
+   .session_variable @deque "~$OUTPUT"
+
+   @:LOOP
+
+   @label NEXT
+   .session_variable @deque front
+      @ifdef $OUTPUT
+      ~touch $OUTPUT.log
+      @else
+      @label END_LOOP
+      @endif
+
+   @skip
+   @:NEXT
+   .session_variable @deque pop_front
+   !!@:LOOP
+
+   @:END_LOOP
+
+   @endif
+
 .session_variable @deque complete
-;
+
 @endif

@@ -1,20 +1,20 @@
 ; Copyright (c) 2024-2026 CIYAM Developers
-;
+
 ; Distributed under the MIT/X11 software license, please refer to the file license.txt
 ; in the root project directory or http://www.opensource.org/licenses/mit-license.php.
-;
+
 @ifeq "$1" ""
 #Usage: destroy_datachain_details.cin <storage> <identity>
 @else
 ERROR=
-;
+
 STORAGE=$1
 IDENTITY=$2
-;
+
 .storage_init $STORAGE
 .storage_datachain_details $IDENTITY -remove
 .storage_term
-;
+
 ~rm -f $IDENTITY.log
-;
+
 @endif

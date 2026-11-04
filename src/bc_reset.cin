@@ -1,63 +1,63 @@
 ; Copyright (c) 2022-2026 CIYAM Developers
-;
+
 ; Distributed under the MIT/X11 software license, please refer to the file license.txt
 ; in the root project directory or http://www.opensource.org/licenses/mit-license.php.
-;
+
 @ifndef $1
 #Usage: bc_reset.cin <identity>
 @else
 ERROR=
-;
+
 IDENT=$1
-;
+
 .session_variable @deque commence
-;
+
 .system_variable @blockchain_backup_identity
-@ifeq "$IDENT" "$OUTPUT"
-.system_variable @blockchain_backup_?_identity
-@ifdef $OUTPUT
-.session_variable @deque "~$OUTPUT"
-@endif
-@endif
-;
+   @ifeq "$IDENT" "$OUTPUT"
+   .system_variable @blockchain_backup_?_identity
+      @ifdef $OUTPUT
+      .session_variable @deque "~$OUTPUT"
+      @endif
+   @endif
+
 .system_variable @blockchain_shared_identity
-@ifeq "$IDENT" "$OUTPUT"
-.system_variable @blockchain_shared_?_identity
-@ifdef $OUTPUT
-.session_variable @deque "~$OUTPUT"
-@endif
-@endif
-;
+   @ifeq "$IDENT" "$OUTPUT"
+   .system_variable @blockchain_shared_?_identity
+      @ifdef $OUTPUT
+      .session_variable @deque "~$OUTPUT"
+      @endif
+   @endif
+
 .system_variable @blockchain_peer_hub_identity
-@ifeq "$IDENT" "$OUTPUT"
-.system_variable @blockchain_peer_hub_?_identity
-@ifdef $OUTPUT
-.session_variable @deque "~$OUTPUT"
-@endif
-@endif
-;
+   @ifeq "$IDENT" "$OUTPUT"
+   .system_variable @blockchain_peer_hub_?_identity
+      @ifdef $OUTPUT
+      .session_variable @deque "~$OUTPUT"
+      @endif
+   @endif
+
 <bc_reset_chain.cin $IDENT
-;
+
 @label NEXT
-;
+
 @:LOOP
 .session_variable @deque front
-@ifndef $OUTPUT
-@label END_LOOP
-@endif
-;
+   @ifndef $OUTPUT
+   @label END_LOOP
+   @endif
+
 @skip
-;
+
 @:NEXT
 LINES=@repstr: /\n:$OUTPUT
 NEXT_IDENT=%LINES:2%
-;
+
 <bc_reset_chain.cin $NEXT_IDENT
 .session_variable @deque pop_front
 !!@:LOOP
-;
+
 @:END_LOOP
-;
+
 .session_variable @deque complete
-;
+
 @endif

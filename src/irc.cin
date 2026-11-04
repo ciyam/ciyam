@@ -1,23 +1,23 @@
 ; Copyright (c) 2026 CIYAM Developers
-;
+
 ; Distributed under the MIT/X11 software license, please refer to the file license.txt
 ; in the root project directory or http://www.opensource.org/licenses/mit-license.php.
-;
+
 @retain *
 <ansi.cin
-;
+
 @ifndef $USER
 USER=anon
 @endif
-;
+
 @ifndef $LOCAL_USER
 LOCAL_USER=$USER
 @endif
-;
+
 @ifdef $1
 USER=$1
 @endif
-;
+
 @ifndef $CIYAM_HOST_NAME
 CIYAM_HOST_NAME=localhost
 @endif
@@ -28,61 +28,61 @@ CHECK_LOCAL_SHARE_FILE=@files:/home/$LOCAL_USER/.local/share/ciyam/$CIYAM_HOST_N
 #Error: Unable to access '/home/$LOCAL_USER/.local/share/ciyam/$CIYAM_HOST_NAME/.do_not_remove'.
 @else
 LOCAL_FILES_DIR=/home/$LOCAL_USER/.local/share/ciyam/$CIYAM_HOST_NAME
-;
+
 PKEY=
 SKEY=
-;
+
 ERROR=
-;
+
 EYE_EMOJI=👁️
 LOCK_EMOJI=🔒
 POLL_EMOJI=📊
 WARN_EMOJI=⚠️
-;
+
 UNLOCK_SCRIPT=.irc_$USER.unlock
 STORED_SECRET=.irc_$USER.secret
-;
+
 EXISTS_UNLOCK=@files:$LOCAL_FILES_DIR:$UNLOCK_SCRIPT
-@ifdef $EXISTS_UNLOCK
-SECRET_ENTROPY=@file:~$LOCAL_FILES_DIR/$UNLOCK_SCRIPT
-@else
-EXISTS_SECRET=@files:$LOCAL_FILES_DIR:$STORED_SECRET
-@ifndef $EXISTS_SECRET
-~touch $LOCAL_FILES_DIR/$STORED_SECRET
-~chmod 600 $LOCAL_FILES_DIR/$STORED_SECRET
-~xxd -l 16 -p /dev/urandom > $LOCAL_FILES_DIR/$STORED_SECRET
-@endif
-SECRET_ENTROPY=@file:$LOCAL_FILES_DIR/$STORED_SECRET
-@endif
-;
+   @ifdef $EXISTS_UNLOCK
+   SECRET_ENTROPY=@file:~$LOCAL_FILES_DIR/$UNLOCK_SCRIPT
+   @else
+   EXISTS_SECRET=@files:$LOCAL_FILES_DIR:$STORED_SECRET
+      @ifndef $EXISTS_SECRET
+      ~touch $LOCAL_FILES_DIR/$STORED_SECRET
+      ~chmod 600 $LOCAL_FILES_DIR/$STORED_SECRET
+      ~xxd -l 16 -p /dev/urandom > $LOCAL_FILES_DIR/$STORED_SECRET
+      @endif
+   SECRET_ENTROPY=@file:$LOCAL_FILES_DIR/$STORED_SECRET
+   @endif
+
 CHECK_ENTROPY=@lower:$SECRET_ENTROPY
-;
+
 POS=@strpos:error:$CHECK_ENTROPY
-;
-@ifdef $POS
-ERROR=$SECRET_ENTROPY
-#$ERROR
-@else
-CHECK_ENTROPY=
-;
-CHECK_SECRET_ENTROPY=@regex:^[0-9a-fA-F]{32,64}$$:$SECRET_ENTROPY
-;
-@ifeq "$SECRET_ENTROPY" "$CHECK_SECRET_ENTROPY"
-CHECK_SECRET_ENTROPY=
-;
-TERCES_ENTROPY=@reverse:$SECRET_ENTROPY
-;
-PKEY=@secret:$~SECRET_ENTROPY
-SKEY=@secret:$~TERCES_ENTROPY
-;
-@else
-SECRET_ENTROPY=
-CHECK_SECRET_ENTROPY=
-ERROR=Invalid secret entropy (incorrect size or content).
-#Error: $ERROR
-@endif
-@endif
-;
+
+   @ifdef $POS
+   ERROR=$SECRET_ENTROPY
+   #$ERROR
+   @else
+   CHECK_ENTROPY=
+
+   CHECK_SECRET_ENTROPY=@regex:^[0-9a-fA-F]{32,64}$$:$SECRET_ENTROPY
+
+      @ifeq "$SECRET_ENTROPY" "$CHECK_SECRET_ENTROPY"
+      CHECK_SECRET_ENTROPY=
+
+      TERCES_ENTROPY=@reverse:$SECRET_ENTROPY
+
+      PKEY=@secret:$~SECRET_ENTROPY
+      SKEY=@secret:$~TERCES_ENTROPY
+
+      @else
+      SECRET_ENTROPY=
+      CHECK_SECRET_ENTROPY=
+      ERROR=Invalid secret entropy (incorrect size or content).
+      #Error: $ERROR
+      @endif
+   @endif
+
 QUIT=
 MESSAGE=
 RESTRICT=
@@ -96,1155 +96,1155 @@ MESSAGE_LINES=
 EDIT_UNIX_UNIQUE=
 DIRECT_PUB_SUFFIX=
 PINNED_LAST_MSG_UNIX=
-;
+
 ENTRANCE_ROOM=0000000
 RESERVED_ROOM=0000001
 STARTING_ROOM=0000002
-;
+
 DUMMY_JOIN_UUID=00000000000000000000000000000000
-;
+
 ENCRYPTED_PREFIX=X\r
-;
+
 INVITATION_INFORMATION=
-;
+
 ROOM=$ENTRANCE_ROOM
-;
+
 ROOM_LEN=@strlen:$ROOM
-;
-@ifndef $ERROR
-IS_NEW=
-CHECK_START_POINTS=@files:$LOCAL_FILES_DIR:.irc_$USER
-@ifndef $CHECK_START_POINTS
-IS_NEW=1
-@endif
-.run_script !irc_join "@name=$USER,@room=$ROOM"
-@endif
-;
-@ifndef $ERROR
-~touch $LOCAL_FILES_DIR/.irc_$USER
-;
-@ifdef $IS_NEW
-.run_script !irc_join "@name=$USER,@room=$STARTING_ROOM"
-IS_NEW=
-@endif
-@endif
-;
-@ifdef $ERROR
-@label END_LOOP
-@endif
-;
+
+   @ifndef $ERROR
+   IS_NEW=
+   CHECK_START_POINTS=@files:$LOCAL_FILES_DIR:.irc_$USER
+      @ifndef $CHECK_START_POINTS
+      IS_NEW=1
+      @endif
+   .run_script !irc_join "@name=$USER,@room=$ROOM"
+   @endif
+
+   @ifndef $ERROR
+   ~touch $LOCAL_FILES_DIR/.irc_$USER
+
+      @ifdef $IS_NEW
+      .run_script !irc_join "@name=$USER,@room=$STARTING_ROOM"
+      IS_NEW=
+      @endif
+   @endif
+
+   @ifdef $ERROR
+   @label END_LOOP
+   @endif
+
 @skip
-;
+
 CHECK_PRIOR=1
-;
+
 CIYAM_PAUSE_SECONDS=1
-;
+
 @:LOOP
-;
+
 IS_DIRECT=
-;
-@ifdef $INVITATION_INFORMATION
-.run_script !irc_add_room "@name=$INVITATION_INFORMATION"
-@ifdef $ERROR
-ERROR=
-@endif
-;
-INVITATION_INFORMATION=
-@endif
-;
-@ifndef $CHECK_PRIOR
-NOT_TO_SELF=
-^[hit 'a' for ANSI help, 'e' to edit, 'k' to add a key, 'n' for new room, 'q' to quit, 'r' to change room, 'u' for users, 's/v' to scan/view a QR Code or space to type]
-;
-@ifdef $CIYAM_KEY_PRESSED
-;
-@ifeq "$CIYAM_KEY_PRESSED" "a"
-#
-#ANSI escape examples:
-#=====================
-~grep -o "; Th.*" ansi.cin | cut -c 3-
-#
-@elif "$CIYAM_KEY_PRESSED" = "q"
-QUIT=1
-;
-@elif "$CIYAM_KEY_PRESSED" = "e"
-@ifeq "$ROOM" "$ENTRANCE_ROOM"
-&Enter Room No: :ROOM_NO=
-@ifdef $ROOM_NO
-LEN=@strlen:$ROOM_NO
-@if $LEN #< $ROOM_LEN
-ROOM_NO=@padlen:$ROOM_LEN,0:$ROOM_NO
-@endif
-&Enter New Room Name: :NAME=
-@ifdef $NAME
-.run_script !irc_add_room "@name=%ROOM_NO%_$NAME"
-@ifdef $ERROR
-ERROR=
-@else
-ROOM_RENAME=1
-@endif
-@endif
-@endif
-@else
-&Enter Message #: :EDIT_LINE_NUM=
-;
-@ifeq "$EDIT_LINE_NUM" "0"
-EDIT_LINE_NUM=
-@endif
-;
-@ifndef $EDIT_LINE_NUM
-EDIT_UNIX_UNIQUE=
-@endif
-;
-@ifdef $EDIT_LINE_NUM
-MESSAGE_PROMPT=CHECK_MESSAGE=?MESSAGE_LINES:$EDIT_LINE_NUM?
-MESSAGE_PROMPT=@repstr:?/%%:$MESSAGE_PROMPT
-$MESSAGE_PROMPT
-;
-@ifdef $CHECK_MESSAGE
-EDIT_MSG_PARTS=@repstr: /\n:$CHECK_MESSAGE
-EDIT_UNIX_UNIQUE=%EDIT_MSG_PARTS:1%
-EDIT_MSG_OWNER=%EDIT_MSG_PARTS:2%
-EDIT_MSG_CONTENT=@base64:%EDIT_MSG_PARTS:3%
-EDIT_MSG_REACTIONS=%EDIT_MSG_PARTS:4%
-EDIT_MSG_PREFIX=@substr:0,2:$EDIT_MSG_CONTENT
-;
-; NOTE: If was pinned then remove the prefix.
-FIRST=@substr:0,1:$EDIT_MSG_OWNER
-@ifeq "$FIRST" "!"
-EDIT_MSG_OWNER=@substr:1:$EDIT_MSG_OWNER
-@endif
-;
-; NOTE: If was edited then remove the suffix.
-POS=@strpos:*:$EDIT_MSG_OWNER
-@ifdef $POS
-EDIT_MSG_OWNER=@substr:0,$POS:$EDIT_MSG_OWNER
-@endif
-;
-IS_REACTION=
-@ifneq "$USER" "$EDIT_MSG_OWNER"
-IS_REACTION=1
-@endif
-;
-@ifeq "$EDIT_MSG_PREFIX" "_:"
-EDIT_UNIX_UNIQUE=
-#(system messages are not editable)
-@else
-MESSAGE_CONTENT=@substr:1:$EDIT_MSG_CONTENT
-CHECK_ENCRYPTED=@substr:1,2:$MESSAGE_CONTENT
-;
-@ifeq "$CHECK_ENCRYPTED" "$ENCRYPTED_PREFIX"
-;
-@ifdef $KEY_FILE_DATA
-;
-PREFIX=_
-@ifdef $DIRECT_PUB_SUFFIX
-PREFIX=_!
-@endif
-;
-@retain MESSAGE
-<irc_extra.cin %PREFIX%decrypt "$MESSAGE_CONTENT" "$KEY_FILE_DATA" $PKEY $SKEY
-;
-EDIT_MSG_CONTENT=$MESSAGE
-MESSAGE=
-;
-@else
-;
-@ifdef $DIRECT_PUB_SUFFIX
-EDIT_MSG_CONTENT=$LOCK_EMOJI ($CHECK_USER_NAME)
-@else
-EDIT_MSG_CONTENT=$LOCK_EMOJI (room key unknown)
-@endif
-@endif
-;
-@endif
-;
-EDIT_MSG_CONTENT=@substr:2:$EDIT_MSG_CONTENT
-;
-IS_POLL=
-NUM_OPTS=1
-;
-POS=@strpos:$POLL_EMOJI:$EDIT_MSG_CONTENT
-;
-@ifeq "$POS" "0"
-IS_POLL=1
-POS=@strpos:\nB):$EDIT_MSG_CONTENT
-@ifdef $POS
-NUM_OPTS=@$NUM_OPTS+1
-POS=@strpos:\nC):$EDIT_MSG_CONTENT
-@ifdef $POS
-NUM_OPTS=@$NUM_OPTS+1
-POS=@strpos:\nD):$EDIT_MSG_CONTENT
-@ifdef $POS
-NUM_OPTS=@$NUM_OPTS+1
-POS=@strpos:\nE):$EDIT_MSG_CONTENT
-@ifdef $POS
-NUM_OPTS=@$NUM_OPTS+1
-POS=@strpos:\nF):$EDIT_MSG_CONTENT
-@ifdef $POS
-NUM_OPTS=@$NUM_OPTS+1
-POS=@strpos:\nG):$EDIT_MSG_CONTENT
-@ifdef $POS
-NUM_OPTS=@$NUM_OPTS+1
-POS=@strpos:\nH):$EDIT_MSG_CONTENT
-@ifdef $POS
-NUM_OPTS=@$NUM_OPTS+1
-POS=@strpos:\nI):$EDIT_MSG_CONTENT
-@ifdef $POS
-NUM_OPTS=@$NUM_OPTS+1
-POS=@strpos:\nJ):$EDIT_MSG_CONTENT
-@ifdef $POS
-NUM_OPTS=@$NUM_OPTS+1
-@endif
-@endif
-@endif
-@endif
-@endif
-@endif
-@endif
-@endif
-@endif
-@endif
-;
-#$EDIT_MSG_CONTENT
-@ifndef $IS_REACTION
-#(type new content or one space to pin/upin and two spaces to delete or just enter to cancel)
-@else
-@ifndef $EDIT_MSG_REACTIONS
-#(none current)
-@else
-@retain ALL_EMOJIS
-<reactions.cin $EDIT_MSG_REACTIONS $USER $IS_POLL
-@ifdef $ALL_EMOJIS
-#(current choice) $ALL_EMOJIS
-@endif
-@endif
-@endif
-@endif
-;
-@else
-#(message $EDIT_LINE_NUM not found)
-@endif
-;
-@ifdef $EDIT_UNIX_UNIQUE
-@ifndef $IS_REACTION
-&:EDITED_MESSAGE=_
-@else
-;
-@ifndef $IS_POLL
-;
-OPTS_PREFIX=[EDITED_MESSAGE:_==_|a 👌=_ 00
-;
-OPTS_OTHERS=|b 👍=_ 01
-OPTS_OTHERS=$OPTS_OTHERS|c 👎=_ 02
-OPTS_OTHERS=$OPTS_OTHERS|d 🙂=_ 03
-OPTS_OTHERS=$OPTS_OTHERS|e 🙁=_ 04
-OPTS_OTHERS=$OPTS_OTHERS|f 😀=_ 05
-OPTS_OTHERS=$OPTS_OTHERS|g 😲=_ 06
-OPTS_OTHERS=$OPTS_OTHERS|h 🤓=_ 07
-OPTS_OTHERS=$OPTS_OTHERS|i 🤦‍♂️=_ 08
-OPTS_OTHERS=$OPTS_OTHERS|j ❤️=_ 09
-;
-@else
-;
-OPTS_PREFIX=[EDITED_MESSAGE:_==_|a 🇦=_ 00
-;
-OPTS_OTHERS=
-;
-@if $NUM_OPTS #> 1
-OPTS_OTHERS=|b 🇧=_ 01
-@endif
-@if $NUM_OPTS #> 2
-OPTS_OTHERS=$OPTS_OTHERS|c 🇨=_ 02
-@endif
-@if $NUM_OPTS #> 3
-OPTS_OTHERS=$OPTS_OTHERS|d 🇩=_ 03
-@endif
-@if $NUM_OPTS #> 4
-OPTS_OTHERS=$OPTS_OTHERS|e 🇪=_ 04
-@endif
-@if $NUM_OPTS #> 5
-OPTS_OTHERS=$OPTS_OTHERS|f 🇫=_ 05
-@endif
-@if $NUM_OPTS #> 6
-OPTS_OTHERS=$OPTS_OTHERS|g 🇬=_ 06
-@endif
-@if $NUM_OPTS #> 7
-OPTS_OTHERS=$OPTS_OTHERS|h ​🇭=_ 07
-@endif
-@if $NUM_OPTS #> 8
-OPTS_OTHERS=$OPTS_OTHERS|i 🇮=_ 08
-@endif
-@if $NUM_OPTS #> 9
-OPTS_OTHERS=$OPTS_OTHERS|j 🇯=_ 09
-@endif
-;
-@endif
-;
-OPTS_SUFFIX=] (hit letter or Enter)
-;
-CHOOSE_OPTS=&Choose option: $OPTS_PREFIX$OPTS_OTHERS$OPTS_SUFFIX
-;
-$CHOOSE_OPTS
-;
-@endif
-;
-MLEN=@strlen:$EDITED_MESSAGE
-@ifeq "$MLEN" "1"
-EDIT_LINE_NUM=
-EDITED_MESSAGE=
-EDIT_UNIX_UNIQUE=
-@else
-;
-CAN_ENCRYPT=
-;
-@ifndef $IS_REACTION
-@ifdef $KEY_FILE_DATA
-CAN_ENCRYPT=1
-@endif
-;
-@ifeq "$EDITED_MESSAGE" "_$SP"
-CAN_ENCRYPT=
-@elif "$EDITED_MESSAGE" = "_$SP$SP"
-CAN_ENCRYPT=
-@endif
-@endif
-;
-; NOTE: If is able to encrypt the message then will now do so.
-@ifdef $CAN_ENCRYPT
-;
-PREFIX=
-@ifdef $DIRECT_PUB_SUFFIX
-PREFIX=!
-@endif
-;
-; NOTE: Convert message text
-; to hex in order to prevent
-; parsing issues.
-EDITED_MESSAGE=@substr:1:$EDITED_MESSAGE
-EDITED_MESSAGE=@aschex:$EDITED_MESSAGE
-EDITED_MESSAGE=$SP$EDITED_MESSAGE
-;
-@retain MESSAGE
-<irc_extra.cin %PREFIX%encrypt "_$EDITED_MESSAGE" "$KEY_FILE_DATA" $PKEY $SKEY
-;
-EDITED_MESSAGE=@substr:1:$MESSAGE
-MESSAGE=
-;
-@endif
-;
-EDITED_MESSAGE=@substr:1:$EDITED_MESSAGE
-EDITED_MESSAGE=$EDIT_MSG_PREFIX$EDITED_MESSAGE
-ENCODED=@base64::$EDITED_MESSAGE
-.run_script !irc_send_message "@room=$ROOM,@names=$EDIT_UNIX_UNIQUE,@message=$ENCODED"
-@ifdef $ERROR
-ERROR=
-@endif
-;
-@endif
-@endif
-@endif
-@endif
-;
-@elif "$CIYAM_KEY_PRESSED" = "k"
-;
-@ifneq "$ROOM" "$ENTRANCE_ROOM"
-@ifdef $KEY_FILE_DATA
-#(room $ROOM already has a key)
-@elif "$ROOM" = "$RESERVED_ROOM"
-#(a key may not be provided for this room)
-@else
-ENTROPY=@entropy:32:hex_digits
-#(enter 'r' then copy and paste the following to add a key for room $ROOM)
-#$ROOM#$ENTROPY
-@endif
-@else
-~echo ""
-PPUB=@public:$PKEY
-USER_HEX=@aschex:$USER
-USER_HEX=%USER_HEX%I
-LEN=@strlen:$USER_HEX
-@if $LEN #< 25
-APPEND=@25-$LEN
-RANDOM=@entropy:$APPEND:hex_digits
-USER_HEX=$USER_HEX$RANDOM
-@endif
-#$USER_HEX:$PPUB
-~qrencode -tANSI $USER_HEX:$~PPUB
-;
-USER_FOR_PUB=
-;
-&(either copy the contact information or just hit the Enter key in order to scan a QR code)\n:QR_CODE=
-@ifndef $QR_CODE
-QR_CODE=@file:~zbarcam -1 -q --raw
-@endif
-;
-POS=@strpos:\::$QR_CODE
-@ifdef $POS
-USER_FOR_PUB=@substr:0,$POS:$QR_CODE
-POS=@$POS+1
-QR_CODE=@substr:$POS:$QR_CODE
-POS=@strpos:I:$USER_FOR_PUB
-@ifndef $POS
-USER_FOR_PUB=
-@else
-USER_FOR_PUB=@substr:0,$POS:$USER_FOR_PUB
-USER_FOR_PUB=@hexasc:$USER_FOR_PUB
-@endif
-@endif
-;
-@ifndef $USER_FOR_PUB
-#Error: Invalid user information format (or camera usage was not permitted).
-QR_CODE=
-@else
-LEN=@strlen:$USER_FOR_PUB
-@if $LEN #< 3
-#Error: User name has too few characters.
-QR_CODE=
-@elif $LEN #> 12
-#Error: User name has too many characters.
-QR_CODE=
-@endif
-@endif
-;
-@ifeq "$USER" "$USER_FOR_PUB"
-#Error: User name must not be your own one.
-QR_CODE=
-@endif
-;
-@ifdef $QR_CODE
-CHECK_QR_CODE=@regex:^[0-9a-fA-F]{64}$$:$QR_CODE
-@ifneq "$QR_CODE" "$CHECK_QR_CODE"
-#(invalid) $QR_CODE
-@else
-FILE_NAME=.irc_$USER.public.$USER_FOR_PUB
-~echo "Saving public key for '$USER_FOR_PUB' ($LOCAL_FILES_DIR/$FILE_NAME)."
-~echo ""
-SALT=@file:~xxd -l 16 -p /dev/urandom
-SPUB=@public:$SKEY
-OWN_ECDHE=@shared:$PKEY:$~SPUB
-ENCRTYPED=@crypt:cc $~OWN_ECDHE$SALT:$~QR_CODE
-~printf "%b\n" "$SALT\r$ENCRTYPED" > $LOCAL_FILES_DIR/$FILE_NAME
-@endif
-@endif
-;
-@endif
-;
-@elif "$CIYAM_KEY_PRESSED" = "n"
-&Enter Room Name: :NAME=
-@ifndef $NAME
-ERROR=1
-@else
-.run_script !irc_add_room "@name=$NAME"
-@endif
-@ifdef $ERROR
-ERROR=
-@else
-ROOM=$OUTPUT
-POS=@strpos:-:$ROOM
-NEW_ROOM_NAME=$NAME
-@ifdef $POS
-JPOS=@$POS+1
-JOIN_TOKEN=@substr:$JPOS:$ROOM
-ROOM=@substr:0,$POS:$ROOM
-;
-FIRST=@substr:0,1:$NEW_ROOM_NAME
-@ifeq "$FIRST" "."
-NAMES=@substr:1:$NEW_ROOM_NAME
-@else
-#Select invitees
-@retain NAMES
-;
-OTHER_USERS=$ALL_USERS
-;
-CHECK_USER=@strlit:@$USER@
-CHECK_USERS=@strlit:$OTHER_USERS@
-;
-POS=@strpos:$CHECK_USER:$CHECK_USERS
-;
-@ifdef $POS
-USER_LENGTH=@strlen:@$USER
-CHECK_USER_LENGTH=@strlen:$CHECK_USER
-CHECK_USERS_LENGTH=@strlen:$CHECK_USERS
-;
-AFTER_POS=@$POS+$CHECK_USER_LENGTH
-;
-@ifeq "$AFTER_POS" "$CHECK_USERS_LENGTH"
-OTHER_USERS=@substr:0,$POS:$CHECK_USERS
-@elif "$POS" = "0"
-POS=@$POS+$USER_LENGTH
-OTHER_USERS=@substr:$POS:$ALL_USERS
-@else
-OTHER_USERS=@substr:0,$POS:$ALL_USERS
-;
-APPEND_POS=@$POS+$USER_LENGTH
-APPEND_USERS=@substr:$APPEND_POS:$ALL_USERS
-;
-OTHER_USERS=$OTHER_USERS$APPEND_USERS
-@endif
-;
-@endif
-;
-<names.cin $OTHER_USERS
-@endif
-;
-@ifdef $NAMES
-INVITATION_USERS=@repstr:,/.:$NAMES
-INVITATION_INFORMATION=%ROOM%_%JOIN_TOKEN%_$INVITATION_USERS
-@endif
-@endif
-.run_script !irc_join "@name=$USER,@room=$ROOM"
-@ifdef $ERROR
-ERROR=
-@endif
-NAMES=
-@endif
-;
-@elif "$CIYAM_KEY_PRESSED" = "r"
-OLD_ROOM=$ROOM
-SHOW_CHANGED=
-PINNED_LAST_MSG_UNIX=
-&Enter Room No: :ROOM=
-@ifndef $ROOM
-ROOM=$OLD_ROOM
-@elif "$ROOM" = "~"
-ROOM=$OLD_ROOM
-FETCH_PREFIX=~!
-MESSAGE_LINES=
-@elif "$ROOM" = "!"
-ROOM=$OLD_ROOM
-FETCH_PREFIX=!
-MESSAGE_LINES=
-PINNED_LAST_MSG_UNIX=
-@endif
-;
-PREFIX=
-SUFFIX=
-TRANSFER=
-EXTRA_PREFIX=
-;
-POS=@strpos:=:$ROOM
-;
-@ifdef $POS
-TRANSFER=1
-SUFFIX=@substr:$POS:$ROOM
-ROOM=@substr:0,$POS:$ROOM
-@endif
-;
-FIRST=@substr:0,1:$ROOM
-@ifeq "$FIRST" "~"
-PREFIX=~
-ROOM=@substr:1:$ROOM
-@endif
-;
-POS=@strpos:#:$ROOM
-;
-@ifdef $POS
-KPOS=@$POS+1
-ROOM_KEY=@substr:$KPOS:$ROOM
-ROOM=@substr:0,$POS:$ROOM
-;
-FILE_NAME=.irc_$USER.secret.$ROOM
-;
-SALT=@file:~xxd -l 16 -p /dev/urandom
-SPUB=@public:$SKEY
-OWN_ECDHE=@shared:$PKEY:$~SPUB
-ENCRTYPED=@crypt:cc $~OWN_ECDHE$SALT:$~ROOM_KEY
-~printf "%b\n" "$SALT\r$ENCRTYPED" > $LOCAL_FILES_DIR/$FILE_NAME
-@endif
-;
-LEN=@strlen:$ROOM
-@if $LEN #< $ROOM_LEN
-ROOM=@padlen:$ROOM_LEN,0:$ROOM
-@endif
-;
-@ifdef $TRANSFER
-.run_script !irc_add_room "@name=$ROOM$SUFFIX"
-TRANSFER=
-ROOM=$OLD_ROOM
-@else
-.run_script !irc_join "@name=$USER,@room=$PREFIX$ROOM"
-@ifdef $PREFIX
-ROOM=$ENTRANCE_ROOM
-@endif
-@endif
-;
-@ifdef $ERROR
-ERROR=
-ROOM=$OLD_ROOM
-@else
-FIRST=@substr:0,1:$ROOM
-@ifeq "$FIRST" "~"
-ROOM=$ENTRANCE_ROOM
-@endif
-@ifneq "$ROOM" "$OLD_ROOM"
-MESSAGE_LINES=
-;
-EDIT_LINE_NUM=
-EDIT_UNIX_UNIQUE=
-;
-DIRECT_PUB_SUFFIX=
-@endif
-;
-CHECK_PRIOR=1
-;
-LAST_MSG_UNIX=
-LAST_START_POINT=@files:$LOCAL_FILES_DIR:.irc_%USER%_%ROOM%
-@ifdef $LAST_START_POINT
-START_POINT_INFO=@file:$LOCAL_FILES_DIR/.irc_%USER%_%ROOM%
-@ifdef $START_POINT_INFO
-START_POINT_INFO=@strlit:@$START_POINT_INFO
-@endif
-@endif
-;
-POS=@strpos:-:$ROOM
-@ifdef $POS
-ROOM=@substr:0,$POS:$ROOM
-@endif
-@endif
-@ifeq "$ROOM" "$ENTRANCE_ROOM"
-FORCE_OUTPUT=1
-@endif
-@elif "$CIYAM_KEY_PRESSED" = "u"
-@retain NAMES
-<names.cin $ALL_USERS
-RESTRICT=@repstr:,/.:$NAMES
-@ifdef $RESTRICT
-@ifeq "$ROOM" "$ENTRANCE_ROOM"
-&Invite to Room No: :INV_ROOM=
-@ifdef $INV_ROOM
-LEN=@strlen:$INV_ROOM
-@if $LEN #< $ROOM_LEN
-INV_ROOM=@padlen:$ROOM_LEN,0:$INV_ROOM
-@endif
-.run_script !irc_add_room @name=%INV_ROOM%_%DUMMY_JOIN_UUID%_$RESTRICT
-@ifdef $ERROR
-ERROR=
-@endif
-;
-RESTRICT=
-@endif
-@endif
-@endif
-;
-@elif "$CIYAM_KEY_PRESSED" = "v"
-&Enter QR Code: :QR_CODE=
-#^^Entered QR Code: $QR_CODE
-~qrencode -tANSI $QR_CODE
-;
-@elif "$CIYAM_KEY_PRESSED" = "s"
-#Scan QR_CODE:
-QR_CODE=@file:~zbarcam -1 -q --raw
-#^^Scanned QR Code: $QR_CODE
-;
-@elif "$CIYAM_KEY_PRESSED" = "/"
-&/:MESSAGE=_/
-@ifeq "$MESSAGE" "_/"
-MESSAGE=_/help
-@endif
-;
-@elif "$CIYAM_KEY_PRESSED" = "$SP"
-&:MESSAGE=_
-MLEN=@strlen:$MESSAGE
-@ifeq "$MLEN" "1"
-MESSAGE=
-@else
-@ifeq "$ROOM" "$ENTRANCE_ROOM"
-FORCE_OUTPUT=1
-MESSAGE=@substr:1:$MESSAGE
-; NOTE: If using "readline"
-; this saves the message as
-; the only history line.
-:$MESSAGE
-MESSAGE=
-SHOW_CHANGED=
-@else
-MESSAGE=@substr:1:$MESSAGE
-FIRST=@substr:0,1:$MESSAGE
-@ifeq "$FIRST" "@"
-FILE_NAME=@substr:1:$MESSAGE
-FILE_NAME=@files::$FILE_NAME
-@ifdef $FILE_NAME
-MESSAGE=@file:$FILE_NAME
-@endif
-@endif
-;
-; NOTE: If the message will
-; be encrypted then convert
-; it to hex now in order to
-; prevent parsing issues.
-@ifdef $KEY_FILE_DATA
-MESSAGE=@aschex:$MESSAGE
-@endif
-;
-@ifndef $NAMES
-MESSAGE=_ $MESSAGE
-@else
-MESSAGE=_!$MESSAGE
-@endif
-;
-; NOTE: If is able to encrypt the message then will now do so.
-@ifdef $KEY_FILE_DATA
-;
-PREFIX=
-@ifdef $DIRECT_PUB_SUFFIX
-PREFIX=!
-@endif
-;
-@retain MESSAGE
-<irc_extra.cin %PREFIX%encrypt "$MESSAGE" "$KEY_FILE_DATA" $PKEY $SKEY
-;
-@endif
-;
-@endif
-@endif
-@endif
-;
-@endif
-@endif
-;
-@ifdef $CHECK_PRIOR
-@ifdef $OUTPUT
-LINES=@repstr:|/\n:$OUTPUT
-;
-LOCAL=@strlit:%LINES:1%
-REMOTE=@strlit:%LINES:2%
-ALL_USERS=@strlit:%LINES:3%
-ALL_USERS_EXTRA=@strlit:%LINES:4%
-;
-@ifndef $ALL_USERS
-ALL_USERS=@strlit:$LOCAL
-ALL_USERS_EXTRA=@strlit:$REMOTE
-LOCAL=:
-REMOTE=
-@endif
-;
-DISPLAY_USERS=
-;
-@ifeq "$LOCAL" "dummy"
-LOCAL=:
-@endif
-;
-IS_DIRECT=
-KEY_FILE_DATA=
-DIRECT_PUB_SUFFIX=
-;
-POS=@strpos:_:$ALL_USERS
-;
-@ifdef $POS
-ROOM_NAME=@substr:0,$POS:$ALL_USERS
-FIRST=@substr:0,1:$ROOM_NAME
-@ifeq "$FIRST" "/"
-IS_DIRECT=1
-@endif
-;
-POS=@$POS+1
-ALL_USERS=@substr:$POS:$ALL_USERS
-OTHER_USER=$ALL_USERS@
-OTHER_USER=@repstr:@$USER@/:$OTHER_USER
-OTHER_USER=@repstr:@/:$OTHER_USER
-;
-@ifdef $IS_DIRECT
-DIRECT_PUB_SUFFIX=$OTHER_USER
-@endif
-;
-@ifndef $DIRECT_PUB_SUFFIX
-HAS_KEY_FILE=@files:$LOCAL_FILES_DIR:.irc_$USER.secret.$ROOM
-@else
-HAS_KEY_FILE=@files:$LOCAL_FILES_DIR:.irc_$USER.public.$DIRECT_PUB_SUFFIX
-@endif
-;
-@ifdef $HAS_KEY_FILE
-@ifndef $DIRECT_PUB_SUFFIX
-KEY_FILE_DATA=@file:$LOCAL_FILES_DIR/.irc_$USER.secret.$ROOM
-@else
-KEY_FILE_DATA=@file:$LOCAL_FILES_DIR/.irc_$USER.public.$DIRECT_PUB_SUFFIX
-@endif
-@endif
-@endif
-;
-@retain ALL_IRC_USERS
-<names_extra.cin $USER "$ALL_USERS_EXTRA"
-DISPLAY_USERS=@strlit:$ALL_IRC_USERS
-;
-@ifdef $DISPLAY_USERS
-DISPLAY_USERS= $DISPLAY_USERS
-@endif
-;
-@ifdef $LOCAL
-#$LOCAL$DISPLAY_USERS
-@endif
-;
-@ifeq "$REMOTE" "dummy"
-REMOTE=
-@endif
-;
-@endif
-@endif
-;
-@ifdef $MESSAGE
-;
-NAMES=ALL
-@ifdef $NOT_TO_SELF
-NAMES=OTHERS
-@endif
-;
-@ifdef $RESTRICT
-NAMES=$RESTRICT
-RESTRICT=
-@endif
-;
-ENCODED=@base64::$MESSAGE
-;
-.run_script !irc_send_message "@room=$ROOM,@names=$NAMES,@message=$ENCODED"
-@ifdef $ERROR
-ERROR=
-@else
-CLEAR_READLINE_HISTORY=
-:$CLEAR_READLINE_HISTORY
-@endif
-;
-NAMES=
-;
-@ifdef $OUTPUT
-#$OUTPUT
-@endif
-;
-@endif
-;
-@ifdef $QUIT
-OUTPUT=
-@else
-;
-@ifeq "$ROOM" "$ENTRANCE_ROOM"
-~rm -f $LOCAL_FILES_DIR/.irc_$USER
-;
-USER_SP_FILES=%USER%_
-USER_SP_FILES=%USER_SP_FILES%0*
-;
-CHECK_SP_FILES=@files:$LOCAL_FILES_DIR:.irc_$USER_SP_FILES
-;
-@ifdef $CHECK_SP_FILES
-~sep=''; for f in $LOCAL_FILES_DIR/.irc_$USER_SP_FILES; do echo -n "$$sep$${f##*_}=$$(cat "$$f")"; sep=';'; done > $LOCAL_FILES_DIR/.irc_$USER
-;
-START_POINTS=@files:$LOCAL_FILES_DIR:.irc_$USER
-@endif
-;
-@ifdef $START_POINTS
-START_POINTS=@file:$LOCAL_FILES_DIR/.irc_$USER
-START_POINT_INFO=@strlit:@@$START_POINTS
-@endif
-@endif
-;
-; NOTE: As OUTPUT is limited to 100K uses a temporary
-; file to store the output (read in to MESSAGES using
-; the "@file" environment variable assignment).
->/tmp/$ROOM.$USER.tmp
-run_script !irc_fetch_messages "@room=$FETCH_PREFIX$ROOM$START_POINT_INFO"
->
-@ifdef $ERROR
-#$ERROR
-ERROR=
-@endif
-;
-FETCH_PREFIX=
-START_POINT_INFO=
-@endif
-;
-@ifndef $OUTPUT
-~rm -f /tmp/$ROOM.$USER.tmp
-@else
-MESSAGES=@file:/tmp/$ROOM.$USER.tmp
-;
-; FUTURE: It would be possible to use
-; "@line" in order to read "MESSAGES"
-; line by line (without requiring all
-; of it to be read) but MESSAGE_LINES
-; is being used to get any particular
-; specific message by its line number
-; for message "editing".
-@ifndef $MESSAGE_LINES
-MESSAGE_LINES=$MESSAGES
-@endif
-;
-~rm -f /tmp/$ROOM.$USER.tmp
-;
-PAD_LEN=1
-@ifneq "%MESSAGES:10%" ""
-PAD_LEN=@$PAD_LEN+1
-@ifneq "%MESSAGES:100%" ""
-PAD_LEN=@$PAD_LEN+1
-@ifneq "%MESSAGES:1000%" ""
-PAD_LEN=@$PAD_LEN+1
-@ifneq "%MESSAGES:10000%" ""
-PAD_LEN=@$PAD_LEN+1
-@ifneq "%MESSAGES:100000%" ""
-PAD_LEN=@$PAD_LEN+1
-@endif
-@endif
-@endif
-@endif
-@endif
-;
-LINE_NUM=1
-;
-@label MSG_NEXT
-;
-KEEP_LAST_MSG_UNIX=
-;
-@:MSG_LOOP
-NEXT_MESSAGE=@strlit:%MESSAGES:1%
-;
-@ifndef $NEXT_MESSAGE
-@label END_MSG_LOOP
-@endif
-;
-@skip
-;
-@:MSG_NEXT
-PADDING_EXTRA=$SP
-;
-NEXT_MSG_PARTS=@repstr: /\n:$NEXT_MESSAGE
-;
-EXTRA_MESSAGE=@strlit:%NEXT_MSG_PARTS:4%
-ENCODED_MESSAGE=@strlit:%NEXT_MSG_PARTS:3%
-;
-DECODED_MESSAGE=@base64:$ENCODED_MESSAGE
-DECODED_MESSAGE=@substr:1,0:$DECODED_MESSAGE
-;
-LAST_MSG_UNIX=%NEXT_MSG_PARTS:1%
-;
-LOCAL=@date:%NEXT_MSG_PARTS:1%:yyyy-mm-dd hh:mm:ss
-;
-USER_NAME=@strlit:%NEXT_MSG_PARTS:2%
-;
-CHECK_ENCRYPTED=@substr:1,2:$DECODED_MESSAGE
-;
-@ifeq "$CHECK_ENCRYPTED" "$ENCRYPTED_PREFIX"
-;
-@ifdef $KEY_FILE_DATA
-;
-PREFIX=
-@ifdef $DIRECT_PUB_SUFFIX
-PREFIX=!
-@endif
-;
-@retain MESSAGE
-<irc_extra.cin %PREFIX%decrypt "$DECODED_MESSAGE" "$KEY_FILE_DATA" $PKEY $SKEY
-;
-DECODED_MESSAGE=$MESSAGE
-MESSAGE=
-;
-PREFIX=@substr:0,2:$DECODED_MESSAGE
-DECODED_MESSAGE=@substr:2:$DECODED_MESSAGE
-;
-@ifeq "$PREFIX" "!X"
-DECODED_MESSAGE=$EYE_EMOJI$DECODED_MESSAGE
-@endif
-;
-@else
-@ifdef $DIRECT_PUB_SUFFIX
-DECODED_MESSAGE=$LOCK_EMOJI ($CHECK_USER_NAME)
-@else
-DECODED_MESSAGE=$LOCK_EMOJI (room key unknown)
-@endif
-@endif
-;
-@else
-@ifneq "$ROOM" "$ENTRANCE_ROOM"
-FIRST=@substr:0,1:$DECODED_MESSAGE
-@ifeq "$FIRST" "$SP"
-CHECK_MESSAGE=@repstr: /:$DECODED_MESSAGE
-@ifneq "$CHECK_MESSAGE" ""
-DECODED_MESSAGE=$WARN_EMOJI$DECODED_MESSAGE
-@endif
-@else
-; NOTE: If found "closes" then replace
-; "unix time" with a local time stamp.
-POS=@strpos:closes :$DECODED_MESSAGE
-@ifeq "$POS" "1"
-PARTS=@repstr: /\n:$DECODED_MESSAGE
-WHEN=@date:%PARTS:4%:yyyy-mm-dd hh:mm
-DECODED_MESSAGE=@repstr:%PARTS:4%/:$DECODED_MESSAGE
-DECODED_MESSAGE=@strlit:$DECODED_MESSAGE$WHEN
-@endif
-@endif
-@endif
-@endif
-;
-@ifdef $EXTRA_MESSAGE
-IS_POLL=
-;
-POS=@strpos:$POLL_EMOJI:$DECODED_MESSAGE
-@ifdef $POS
-IS_POLL=1
-@endif
-;
-@retain ALL_EMOJIS
-<reactions.cin $EXTRA_MESSAGE ALL $IS_POLL
-;
-@ifdef $ALL_EMOJIS
-DECODED_MESSAGE=$DECODED_MESSAGE\n$ALL_EMOJIS
-@endif
-@endif
-;
-; NOTE: Pad the start of each line if is multi-line.
-SPACES=@padlen:39, :
-SPACES=$SPACES$PADDING_EXTRA
-DECODED_MESSAGE=@repstr:\n/\n$SPACES:$DECODED_MESSAGE
-;
-IS_PINNED=
-FIRST=@substr:0,1:$USER_NAME
-@ifeq "$FIRST" "!"
-IS_PINNED=1
-LOCAL= * * * * * * * * *$SP
-USER_NAME=@substr:1:$USER_NAME
-@endif
-;
-USER_NAME_PADDED=@padlen:-15, :$USER_NAME
-;
-@ifneq "$ROOM" "$ENTRANCE_ROOM"
-MESSAGE_ROOM_NUM=
-;
-; NOTE: As normal messages can be
-; expected to contain quotes only
-; check if is a special message.
-FIRST=@substr:0,1:$DECODED_MESSAGE
-@if "$FIRST" = ":"
-@ifeq "$DECODED_MESSAGE" ":joined"
-ALL_USERS=@strlit:$ALL_USERS@$USER_NAME
-ALL_USERS=@set_sort:@:$ALL_USERS
-@endif
-@endif
-;
-@else
-MESSAGE_PARTS=@repstr: /\n:$DECODED_MESSAGE
-;
-MESSAGE_ROOM_NUM=@strlit:%MESSAGE_PARTS:1%
-MESSAGE_ROOM_LENGTH=@strlen:$MESSAGE_ROOM_NUM
-;
-DECODED_MESSAGE=@substr:$MESSAGE_ROOM_LENGTH:$DECODED_MESSAGE
-;
-MESSAGE_ROOM_NUM=@padlen:-20, :$MESSAGE_ROOM_NUM
-@endif
-;
-SKIP_MESSAGE=
-;
-; NOTE: If a message is just spaces then
-; will skip it (i.e. a deleted message).
-CHECK_MESSAGE=@repstr: /:$DECODED_MESSAGE
-;
-LEN=@strlen:$CHECK_MESSAGE
-@ifeq "$LEN" "0"
-SKIP_MESSAGE=1
-@endif
-;
-@ifneq "$ROOM" "$ENTRANCE_ROOM"
-@ifdef $IS_PINNED
-@ifdef $PINNED_LAST_MSG_UNIX
-@if $LAST_MSG_UNIX #<= $PINNED_LAST_MSG_UNIX
-SKIP_MESSAGE=1
-@endif
-@endif
-@endif
-@endif
-;
-@ifeq "$ROOM" "$ENTRANCE_ROOM"
-UNDECORATED=@substr:1,$ROOM_LEN:$MESSAGE_ROOM_NUM
-CHECK=@strlit:LAST_CHECK=@strlit:$$LAST_$UNDECORATED
-$CHECK
-@ifneq "$LAST_CHECK$FORCE_OUTPUT" "$DECODED_MESSAGE"
-ASSIGN=@strlit:LAST_$UNDECORATED=@strlit:$DECODED_MESSAGE
-$ASSIGN
-@else
-SKIP_MESSAGE=1
-@endif
-@endif
-;
-@ifdef $MESSAGE_ROOM_NUM
-DECODED_MESSAGE=$MESSAGE_ROOM_NUM $DECODED_MESSAGE
-@endif
-;
-NEXT_MESSAGE=[$LOCAL] $USER_NAME_PADDED $DECODED_MESSAGE
-;
-PREFIX=
-;
-@ifeq "$ROOM" "$ENTRANCE_ROOM"
-NOT_TO_SELF=1
-@endif
-;
-@ifdef $MESSAGE
-@ifndef $NOT_TO_SELF
-PREFIX=^^
-@endif
-@endif
-;
-LINE_NUM=@padlen:$PAD_LEN :$LINE_NUM
-;
-@ifndef $SKIP_MESSAGE
-@ifdef $SHOW_CHANGED
-@ifdef $ROOM_RENAME
-ROOM_RENAME=
-#(room renamed)
-@else
-#(found new messages)
-@endif
-SHOW_CHANGED=
-@endif
-#$PREFIX$LINE_NUM $NEXT_MESSAGE
-@endif
-;
-LINE_NUM=@$LINE_NUM+1
-MESSAGES=%MESSAGES:-1%
-;
-@ifndef $IS_PINNED
-KEEP_LAST_MSG_UNIX=$LAST_MSG_UNIX
-@endif
-;
-@ifdef $IS_PINNED
-KEEP_PINNED=
-@ifndef $PINNED_LAST_MSG_UNIX
-KEEP_PINNED=1
-@elif $LAST_MSG_UNIX #> $PINNED_LAST_MSG_UNIX
-KEEP_PINNED=1
-@endif
-;
-@ifdef $KEEP_PINNED
-PINNED_LAST_MSG_UNIX=$LAST_MSG_UNIX
-@endif
-@endif
-;
-!!@:MSG_LOOP
-;
-@:END_MSG_LOOP
-;
-@ifdef $KEEP_LAST_MSG_UNIX
-@ifneq "$ROOM" "$ENTRANCE_ROOM"
-NEW_START_POINT=@$KEEP_LAST_MSG_UNIX+1
-~echo -n $NEW_START_POINT>$LOCAL_FILES_DIR/.irc_%USER%_%ROOM%
-@endif
-@endif
-;
-@endif
-;
+
+   @ifdef $INVITATION_INFORMATION
+   .run_script !irc_add_room "@name=$INVITATION_INFORMATION"
+      @ifdef $ERROR
+      ERROR=
+      @endif
+
+   INVITATION_INFORMATION=
+   @endif
+
+   @ifndef $CHECK_PRIOR
+   NOT_TO_SELF=
+   ^[hit 'a' for ANSI help, 'e' to edit, 'k' to add a key, 'n' for new room, 'q' to quit, 'r' to change room, 'u' for users, 's/v' to scan/view a QR Code or space to type]
+
+      @ifdef $CIYAM_KEY_PRESSED
+
+         @ifeq "$CIYAM_KEY_PRESSED" "a"
+         #
+         #ANSI escape examples:
+         #=====================
+         ~grep -o "; Th.*" ansi.cin | cut -c 3-
+         #
+         @elif "$CIYAM_KEY_PRESSED" = "q"
+         QUIT=1
+
+         @elif "$CIYAM_KEY_PRESSED" = "e"
+            @ifeq "$ROOM" "$ENTRANCE_ROOM"
+            &Enter Room No: :ROOM_NO=
+               @ifdef $ROOM_NO
+               LEN=@strlen:$ROOM_NO
+                  @if $LEN #< $ROOM_LEN
+                  ROOM_NO=@padlen:$ROOM_LEN,0:$ROOM_NO
+                  @endif
+               &Enter New Room Name: :NAME=
+                  @ifdef $NAME
+                  .run_script !irc_add_room "@name=%ROOM_NO%_$NAME"
+                     @ifdef $ERROR
+                     ERROR=
+                     @else
+                     ROOM_RENAME=1
+                     @endif
+                  @endif
+               @endif
+            @else
+            &Enter Message #: :EDIT_LINE_NUM=
+
+               @ifeq "$EDIT_LINE_NUM" "0"
+               EDIT_LINE_NUM=
+               @endif
+
+               @ifndef $EDIT_LINE_NUM
+               EDIT_UNIX_UNIQUE=
+               @endif
+
+               @ifdef $EDIT_LINE_NUM
+               MESSAGE_PROMPT=CHECK_MESSAGE=?MESSAGE_LINES:$EDIT_LINE_NUM?
+               MESSAGE_PROMPT=@repstr:?/%%:$MESSAGE_PROMPT
+               $MESSAGE_PROMPT
+
+                  @ifdef $CHECK_MESSAGE
+                  EDIT_MSG_PARTS=@repstr: /\n:$CHECK_MESSAGE
+                  EDIT_UNIX_UNIQUE=%EDIT_MSG_PARTS:1%
+                  EDIT_MSG_OWNER=%EDIT_MSG_PARTS:2%
+                  EDIT_MSG_CONTENT=@base64:%EDIT_MSG_PARTS:3%
+                  EDIT_MSG_REACTIONS=%EDIT_MSG_PARTS:4%
+                  EDIT_MSG_PREFIX=@substr:0,2:$EDIT_MSG_CONTENT
+
+                  ; NOTE: If was pinned then remove the prefix.
+                  FIRST=@substr:0,1:$EDIT_MSG_OWNER
+                     @ifeq "$FIRST" "!"
+                     EDIT_MSG_OWNER=@substr:1:$EDIT_MSG_OWNER
+                     @endif
+
+                  ; NOTE: If was edited then remove the suffix.
+                  POS=@strpos:*:$EDIT_MSG_OWNER
+                     @ifdef $POS
+                     EDIT_MSG_OWNER=@substr:0,$POS:$EDIT_MSG_OWNER
+                     @endif
+
+                  IS_REACTION=
+                     @ifneq "$USER" "$EDIT_MSG_OWNER"
+                     IS_REACTION=1
+                     @endif
+
+                     @ifeq "$EDIT_MSG_PREFIX" "_:"
+                     EDIT_UNIX_UNIQUE=
+                     #(system messages are not editable)
+                     @else
+                     MESSAGE_CONTENT=@substr:1:$EDIT_MSG_CONTENT
+                     CHECK_ENCRYPTED=@substr:1,2:$MESSAGE_CONTENT
+
+                        @ifeq "$CHECK_ENCRYPTED" "$ENCRYPTED_PREFIX"
+
+                           @ifdef $KEY_FILE_DATA
+
+                           PREFIX=_
+                              @ifdef $DIRECT_PUB_SUFFIX
+                              PREFIX=_!
+                              @endif
+
+                           @retain MESSAGE
+                           <irc_extra.cin %PREFIX%decrypt "$MESSAGE_CONTENT" "$KEY_FILE_DATA" $PKEY $SKEY
+
+                           EDIT_MSG_CONTENT=$MESSAGE
+                           MESSAGE=
+
+                           @else
+
+                              @ifdef $DIRECT_PUB_SUFFIX
+                              EDIT_MSG_CONTENT=$LOCK_EMOJI ($CHECK_USER_NAME)
+                              @else
+                              EDIT_MSG_CONTENT=$LOCK_EMOJI (room key unknown)
+                              @endif
+                           @endif
+
+                        @endif
+
+                     EDIT_MSG_CONTENT=@substr:2:$EDIT_MSG_CONTENT
+
+                     IS_POLL=
+                     NUM_OPTS=1
+
+                     POS=@strpos:$POLL_EMOJI:$EDIT_MSG_CONTENT
+
+                        @ifeq "$POS" "0"
+                        IS_POLL=1
+                        POS=@strpos:\nB):$EDIT_MSG_CONTENT
+                           @ifdef $POS
+                           NUM_OPTS=@$NUM_OPTS+1
+                           POS=@strpos:\nC):$EDIT_MSG_CONTENT
+                              @ifdef $POS
+                              NUM_OPTS=@$NUM_OPTS+1
+                              POS=@strpos:\nD):$EDIT_MSG_CONTENT
+                                 @ifdef $POS
+                                 NUM_OPTS=@$NUM_OPTS+1
+                                 POS=@strpos:\nE):$EDIT_MSG_CONTENT
+                                    @ifdef $POS
+                                    NUM_OPTS=@$NUM_OPTS+1
+                                    POS=@strpos:\nF):$EDIT_MSG_CONTENT
+                                       @ifdef $POS
+                                       NUM_OPTS=@$NUM_OPTS+1
+                                       POS=@strpos:\nG):$EDIT_MSG_CONTENT
+                                          @ifdef $POS
+                                          NUM_OPTS=@$NUM_OPTS+1
+                                          POS=@strpos:\nH):$EDIT_MSG_CONTENT
+                                             @ifdef $POS
+                                             NUM_OPTS=@$NUM_OPTS+1
+                                             POS=@strpos:\nI):$EDIT_MSG_CONTENT
+                                                @ifdef $POS
+                                                NUM_OPTS=@$NUM_OPTS+1
+                                                POS=@strpos:\nJ):$EDIT_MSG_CONTENT
+                                                   @ifdef $POS
+                                                   NUM_OPTS=@$NUM_OPTS+1
+                                                   @endif
+                                                @endif
+                                             @endif
+                                          @endif
+                                       @endif
+                                    @endif
+                                 @endif
+                              @endif
+                           @endif
+                        @endif
+
+                     #$EDIT_MSG_CONTENT
+                        @ifndef $IS_REACTION
+                        #(type new content or one space to pin/upin and two spaces to delete or just enter to cancel)
+                        @else
+                           @ifndef $EDIT_MSG_REACTIONS
+                           #(none current)
+                           @else
+                           @retain ALL_EMOJIS
+                           <reactions.cin $EDIT_MSG_REACTIONS $USER $IS_POLL
+                              @ifdef $ALL_EMOJIS
+                              #(current choice) $ALL_EMOJIS
+                              @endif
+                           @endif
+                        @endif
+                     @endif
+
+                  @else
+                  #(message $EDIT_LINE_NUM not found)
+                  @endif
+
+                  @ifdef $EDIT_UNIX_UNIQUE
+                     @ifndef $IS_REACTION
+                     &:EDITED_MESSAGE=_
+                     @else
+
+                        @ifndef $IS_POLL
+
+                        OPTS_PREFIX=[EDITED_MESSAGE:_==_|a 👌=_ 00
+
+                        OPTS_OTHERS=|b 👍=_ 01
+                        OPTS_OTHERS=$OPTS_OTHERS|c 👎=_ 02
+                        OPTS_OTHERS=$OPTS_OTHERS|d 🙂=_ 03
+                        OPTS_OTHERS=$OPTS_OTHERS|e 🙁=_ 04
+                        OPTS_OTHERS=$OPTS_OTHERS|f 😀=_ 05
+                        OPTS_OTHERS=$OPTS_OTHERS|g 😲=_ 06
+                        OPTS_OTHERS=$OPTS_OTHERS|h 🤓=_ 07
+                        OPTS_OTHERS=$OPTS_OTHERS|i 🤦‍♂️=_ 08
+                        OPTS_OTHERS=$OPTS_OTHERS|j ❤️=_ 09
+
+                        @else
+
+                        OPTS_PREFIX=[EDITED_MESSAGE:_==_|a 🇦=_ 00
+
+                        OPTS_OTHERS=
+
+                           @if $NUM_OPTS #> 1
+                           OPTS_OTHERS=|b 🇧=_ 01
+                           @endif
+                           @if $NUM_OPTS #> 2
+                           OPTS_OTHERS=$OPTS_OTHERS|c 🇨=_ 02
+                           @endif
+                           @if $NUM_OPTS #> 3
+                           OPTS_OTHERS=$OPTS_OTHERS|d 🇩=_ 03
+                           @endif
+                           @if $NUM_OPTS #> 4
+                           OPTS_OTHERS=$OPTS_OTHERS|e 🇪=_ 04
+                           @endif
+                           @if $NUM_OPTS #> 5
+                           OPTS_OTHERS=$OPTS_OTHERS|f 🇫=_ 05
+                           @endif
+                           @if $NUM_OPTS #> 6
+                           OPTS_OTHERS=$OPTS_OTHERS|g 🇬=_ 06
+                           @endif
+                           @if $NUM_OPTS #> 7
+                           OPTS_OTHERS=$OPTS_OTHERS|h ​🇭=_ 07
+                           @endif
+                           @if $NUM_OPTS #> 8
+                           OPTS_OTHERS=$OPTS_OTHERS|i 🇮=_ 08
+                           @endif
+                           @if $NUM_OPTS #> 9
+                           OPTS_OTHERS=$OPTS_OTHERS|j 🇯=_ 09
+                           @endif
+
+                        @endif
+
+                     OPTS_SUFFIX=] (hit letter or Enter)
+
+                     CHOOSE_OPTS=&Choose option: $OPTS_PREFIX$OPTS_OTHERS$OPTS_SUFFIX
+
+                     $CHOOSE_OPTS
+
+                     @endif
+
+                  MLEN=@strlen:$EDITED_MESSAGE
+                     @ifeq "$MLEN" "1"
+                     EDIT_LINE_NUM=
+                     EDITED_MESSAGE=
+                     EDIT_UNIX_UNIQUE=
+                     @else
+
+                     CAN_ENCRYPT=
+
+                        @ifndef $IS_REACTION
+                           @ifdef $KEY_FILE_DATA
+                           CAN_ENCRYPT=1
+                           @endif
+
+                           @ifeq "$EDITED_MESSAGE" "_$SP"
+                           CAN_ENCRYPT=
+                           @elif "$EDITED_MESSAGE" = "_$SP$SP"
+                           CAN_ENCRYPT=
+                           @endif
+                        @endif
+
+                     ; NOTE: If is able to encrypt the message then will now do so.
+                        @ifdef $CAN_ENCRYPT
+
+                        PREFIX=
+                           @ifdef $DIRECT_PUB_SUFFIX
+                           PREFIX=!
+                           @endif
+
+                        ; NOTE: Convert message text
+                        ; to hex in order to prevent
+                        ; parsing issues.
+                        EDITED_MESSAGE=@substr:1:$EDITED_MESSAGE
+                        EDITED_MESSAGE=@aschex:$EDITED_MESSAGE
+                        EDITED_MESSAGE=$SP$EDITED_MESSAGE
+
+                        @retain MESSAGE
+                        <irc_extra.cin %PREFIX%encrypt "_$EDITED_MESSAGE" "$KEY_FILE_DATA" $PKEY $SKEY
+
+                        EDITED_MESSAGE=@substr:1:$MESSAGE
+                        MESSAGE=
+
+                        @endif
+
+                     EDITED_MESSAGE=@substr:1:$EDITED_MESSAGE
+                     EDITED_MESSAGE=$EDIT_MSG_PREFIX$EDITED_MESSAGE
+                     ENCODED=@base64::$EDITED_MESSAGE
+                     .run_script !irc_send_message "@room=$ROOM,@names=$EDIT_UNIX_UNIQUE,@message=$ENCODED"
+                        @ifdef $ERROR
+                        ERROR=
+                        @endif
+
+                     @endif
+                  @endif
+               @endif
+            @endif
+
+         @elif "$CIYAM_KEY_PRESSED" = "k"
+
+            @ifneq "$ROOM" "$ENTRANCE_ROOM"
+               @ifdef $KEY_FILE_DATA
+               #(room $ROOM already has a key)
+               @elif "$ROOM" = "$RESERVED_ROOM"
+               #(a key may not be provided for this room)
+               @else
+               ENTROPY=@entropy:32:hex_digits
+               #(enter 'r' then copy and paste the following to add a key for room $ROOM)
+               #$ROOM#$ENTROPY
+               @endif
+            @else
+            ~echo ""
+            PPUB=@public:$PKEY
+            USER_HEX=@aschex:$USER
+            USER_HEX=%USER_HEX%I
+            LEN=@strlen:$USER_HEX
+               @if $LEN #< 25
+               APPEND=@25-$LEN
+               RANDOM=@entropy:$APPEND:hex_digits
+               USER_HEX=$USER_HEX$RANDOM
+               @endif
+            #$USER_HEX:$PPUB
+            ~qrencode -tANSI $USER_HEX:$~PPUB
+
+            USER_FOR_PUB=
+
+            &(either copy the contact information or just hit the Enter key in order to scan a QR code)\n:QR_CODE=
+               @ifndef $QR_CODE
+               QR_CODE=@file:~zbarcam -1 -q --raw
+               @endif
+
+            POS=@strpos:\::$QR_CODE
+               @ifdef $POS
+               USER_FOR_PUB=@substr:0,$POS:$QR_CODE
+               POS=@$POS+1
+               QR_CODE=@substr:$POS:$QR_CODE
+               POS=@strpos:I:$USER_FOR_PUB
+                  @ifndef $POS
+                  USER_FOR_PUB=
+                  @else
+                  USER_FOR_PUB=@substr:0,$POS:$USER_FOR_PUB
+                  USER_FOR_PUB=@hexasc:$USER_FOR_PUB
+                  @endif
+               @endif
+
+               @ifndef $USER_FOR_PUB
+               #Error: Invalid user information format (or camera usage was not permitted).
+               QR_CODE=
+               @else
+               LEN=@strlen:$USER_FOR_PUB
+                  @if $LEN #< 3
+                  #Error: User name has too few characters.
+                  QR_CODE=
+                  @elif $LEN #> 12
+                  #Error: User name has too many characters.
+                  QR_CODE=
+                  @endif
+               @endif
+
+               @ifeq "$USER" "$USER_FOR_PUB"
+               #Error: User name must not be your own one.
+               QR_CODE=
+               @endif
+
+               @ifdef $QR_CODE
+               CHECK_QR_CODE=@regex:^[0-9a-fA-F]{64}$$:$QR_CODE
+                  @ifneq "$QR_CODE" "$CHECK_QR_CODE"
+                  #(invalid) $QR_CODE
+                  @else
+                  FILE_NAME=.irc_$USER.public.$USER_FOR_PUB
+                  ~echo "Saving public key for '$USER_FOR_PUB' ($LOCAL_FILES_DIR/$FILE_NAME)."
+                  ~echo ""
+                  SALT=@file:~xxd -l 16 -p /dev/urandom
+                  SPUB=@public:$SKEY
+                  OWN_ECDHE=@shared:$PKEY:$~SPUB
+                  ENCRTYPED=@crypt:cc $~OWN_ECDHE$SALT:$~QR_CODE
+                  ~printf "%b\n" "$SALT\r$ENCRTYPED" > $LOCAL_FILES_DIR/$FILE_NAME
+                  @endif
+               @endif
+
+            @endif
+
+         @elif "$CIYAM_KEY_PRESSED" = "n"
+         &Enter Room Name: :NAME=
+            @ifndef $NAME
+            ERROR=1
+            @else
+            .run_script !irc_add_room "@name=$NAME"
+            @endif
+            @ifdef $ERROR
+            ERROR=
+            @else
+            ROOM=$OUTPUT
+            POS=@strpos:-:$ROOM
+            NEW_ROOM_NAME=$NAME
+               @ifdef $POS
+               JPOS=@$POS+1
+               JOIN_TOKEN=@substr:$JPOS:$ROOM
+               ROOM=@substr:0,$POS:$ROOM
+
+               FIRST=@substr:0,1:$NEW_ROOM_NAME
+                  @ifeq "$FIRST" "."
+                  NAMES=@substr:1:$NEW_ROOM_NAME
+                  @else
+                  #Select invitees
+                  @retain NAMES
+
+                  OTHER_USERS=$ALL_USERS
+
+                  CHECK_USER=@strlit:@$USER@
+                  CHECK_USERS=@strlit:$OTHER_USERS@
+
+                  POS=@strpos:$CHECK_USER:$CHECK_USERS
+
+                     @ifdef $POS
+                     USER_LENGTH=@strlen:@$USER
+                     CHECK_USER_LENGTH=@strlen:$CHECK_USER
+                     CHECK_USERS_LENGTH=@strlen:$CHECK_USERS
+
+                     AFTER_POS=@$POS+$CHECK_USER_LENGTH
+
+                        @ifeq "$AFTER_POS" "$CHECK_USERS_LENGTH"
+                        OTHER_USERS=@substr:0,$POS:$CHECK_USERS
+                        @elif "$POS" = "0"
+                        POS=@$POS+$USER_LENGTH
+                        OTHER_USERS=@substr:$POS:$ALL_USERS
+                        @else
+                        OTHER_USERS=@substr:0,$POS:$ALL_USERS
+
+                        APPEND_POS=@$POS+$USER_LENGTH
+                        APPEND_USERS=@substr:$APPEND_POS:$ALL_USERS
+
+                        OTHER_USERS=$OTHER_USERS$APPEND_USERS
+                        @endif
+
+                     @endif
+
+                  <names.cin $OTHER_USERS
+                  @endif
+
+                  @ifdef $NAMES
+                  INVITATION_USERS=@repstr:,/.:$NAMES
+                  INVITATION_INFORMATION=%ROOM%_%JOIN_TOKEN%_$INVITATION_USERS
+                  @endif
+               @endif
+            .run_script !irc_join "@name=$USER,@room=$ROOM"
+               @ifdef $ERROR
+               ERROR=
+               @endif
+            NAMES=
+            @endif
+
+         @elif "$CIYAM_KEY_PRESSED" = "r"
+         OLD_ROOM=$ROOM
+         SHOW_CHANGED=
+         PINNED_LAST_MSG_UNIX=
+         &Enter Room No: :ROOM=
+            @ifndef $ROOM
+            ROOM=$OLD_ROOM
+            @elif "$ROOM" = "~"
+            ROOM=$OLD_ROOM
+            FETCH_PREFIX=~!
+            MESSAGE_LINES=
+            @elif "$ROOM" = "!"
+            ROOM=$OLD_ROOM
+            FETCH_PREFIX=!
+            MESSAGE_LINES=
+            PINNED_LAST_MSG_UNIX=
+            @endif
+
+         PREFIX=
+         SUFFIX=
+         TRANSFER=
+         EXTRA_PREFIX=
+
+         POS=@strpos:=:$ROOM
+
+            @ifdef $POS
+            TRANSFER=1
+            SUFFIX=@substr:$POS:$ROOM
+            ROOM=@substr:0,$POS:$ROOM
+            @endif
+
+         FIRST=@substr:0,1:$ROOM
+            @ifeq "$FIRST" "~"
+            PREFIX=~
+            ROOM=@substr:1:$ROOM
+            @endif
+
+         POS=@strpos:#:$ROOM
+
+            @ifdef $POS
+            KPOS=@$POS+1
+            ROOM_KEY=@substr:$KPOS:$ROOM
+            ROOM=@substr:0,$POS:$ROOM
+
+            FILE_NAME=.irc_$USER.secret.$ROOM
+
+            SALT=@file:~xxd -l 16 -p /dev/urandom
+            SPUB=@public:$SKEY
+            OWN_ECDHE=@shared:$PKEY:$~SPUB
+            ENCRTYPED=@crypt:cc $~OWN_ECDHE$SALT:$~ROOM_KEY
+            ~printf "%b\n" "$SALT\r$ENCRTYPED" > $LOCAL_FILES_DIR/$FILE_NAME
+            @endif
+
+         LEN=@strlen:$ROOM
+            @if $LEN #< $ROOM_LEN
+            ROOM=@padlen:$ROOM_LEN,0:$ROOM
+            @endif
+
+            @ifdef $TRANSFER
+            .run_script !irc_add_room "@name=$ROOM$SUFFIX"
+            TRANSFER=
+            ROOM=$OLD_ROOM
+            @else
+            .run_script !irc_join "@name=$USER,@room=$PREFIX$ROOM"
+               @ifdef $PREFIX
+               ROOM=$ENTRANCE_ROOM
+               @endif
+            @endif
+
+            @ifdef $ERROR
+            ERROR=
+            ROOM=$OLD_ROOM
+            @else
+            FIRST=@substr:0,1:$ROOM
+               @ifeq "$FIRST" "~"
+               ROOM=$ENTRANCE_ROOM
+               @endif
+               @ifneq "$ROOM" "$OLD_ROOM"
+               MESSAGE_LINES=
+
+               EDIT_LINE_NUM=
+               EDIT_UNIX_UNIQUE=
+
+               DIRECT_PUB_SUFFIX=
+               @endif
+
+            CHECK_PRIOR=1
+
+            LAST_MSG_UNIX=
+            LAST_START_POINT=@files:$LOCAL_FILES_DIR:.irc_%USER%_%ROOM%
+               @ifdef $LAST_START_POINT
+               START_POINT_INFO=@file:$LOCAL_FILES_DIR/.irc_%USER%_%ROOM%
+                  @ifdef $START_POINT_INFO
+                  START_POINT_INFO=@strlit:@$START_POINT_INFO
+                  @endif
+               @endif
+
+            POS=@strpos:-:$ROOM
+               @ifdef $POS
+               ROOM=@substr:0,$POS:$ROOM
+               @endif
+            @endif
+            @ifeq "$ROOM" "$ENTRANCE_ROOM"
+            FORCE_OUTPUT=1
+            @endif
+         @elif "$CIYAM_KEY_PRESSED" = "u"
+         @retain NAMES
+         <names.cin $ALL_USERS
+         RESTRICT=@repstr:,/.:$NAMES
+            @ifdef $RESTRICT
+               @ifeq "$ROOM" "$ENTRANCE_ROOM"
+               &Invite to Room No: :INV_ROOM=
+                  @ifdef $INV_ROOM
+                  LEN=@strlen:$INV_ROOM
+                     @if $LEN #< $ROOM_LEN
+                     INV_ROOM=@padlen:$ROOM_LEN,0:$INV_ROOM
+                     @endif
+                  .run_script !irc_add_room @name=%INV_ROOM%_%DUMMY_JOIN_UUID%_$RESTRICT
+                     @ifdef $ERROR
+                     ERROR=
+                     @endif
+
+                  RESTRICT=
+                  @endif
+               @endif
+            @endif
+
+         @elif "$CIYAM_KEY_PRESSED" = "v"
+         &Enter QR Code: :QR_CODE=
+         #^^Entered QR Code: $QR_CODE
+         ~qrencode -tANSI $QR_CODE
+
+         @elif "$CIYAM_KEY_PRESSED" = "s"
+         #Scan QR_CODE:
+         QR_CODE=@file:~zbarcam -1 -q --raw
+         #^^Scanned QR Code: $QR_CODE
+
+         @elif "$CIYAM_KEY_PRESSED" = "/"
+         &/:MESSAGE=_/
+            @ifeq "$MESSAGE" "_/"
+            MESSAGE=_/help
+            @endif
+
+         @elif "$CIYAM_KEY_PRESSED" = "$SP"
+         &:MESSAGE=_
+         MLEN=@strlen:$MESSAGE
+            @ifeq "$MLEN" "1"
+            MESSAGE=
+            @else
+               @ifeq "$ROOM" "$ENTRANCE_ROOM"
+               FORCE_OUTPUT=1
+               MESSAGE=@substr:1:$MESSAGE
+               ; NOTE: If using "readline"
+               ; this saves the message as
+               ; the only history line.
+               :$MESSAGE
+               MESSAGE=
+               SHOW_CHANGED=
+               @else
+               MESSAGE=@substr:1:$MESSAGE
+               FIRST=@substr:0,1:$MESSAGE
+                  @ifeq "$FIRST" "@"
+                  FILE_NAME=@substr:1:$MESSAGE
+                  FILE_NAME=@files::$FILE_NAME
+                     @ifdef $FILE_NAME
+                     MESSAGE=@file:$FILE_NAME
+                     @endif
+                  @endif
+
+               ; NOTE: If the message will
+               ; be encrypted then convert
+               ; it to hex now in order to
+               ; prevent parsing issues.
+                  @ifdef $KEY_FILE_DATA
+                  MESSAGE=@aschex:$MESSAGE
+                  @endif
+
+                  @ifndef $NAMES
+                  MESSAGE=_ $MESSAGE
+                  @else
+                  MESSAGE=_!$MESSAGE
+                  @endif
+
+               ; NOTE: If is able to encrypt the message then will now do so.
+                  @ifdef $KEY_FILE_DATA
+
+                  PREFIX=
+                     @ifdef $DIRECT_PUB_SUFFIX
+                     PREFIX=!
+                     @endif
+
+                  @retain MESSAGE
+                  <irc_extra.cin %PREFIX%encrypt "$MESSAGE" "$KEY_FILE_DATA" $PKEY $SKEY
+
+                  @endif
+
+               @endif
+            @endif
+         @endif
+
+      @endif
+   @endif
+
+   @ifdef $CHECK_PRIOR
+      @ifdef $OUTPUT
+      LINES=@repstr:|/\n:$OUTPUT
+
+      LOCAL=@strlit:%LINES:1%
+      REMOTE=@strlit:%LINES:2%
+      ALL_USERS=@strlit:%LINES:3%
+      ALL_USERS_EXTRA=@strlit:%LINES:4%
+
+         @ifndef $ALL_USERS
+         ALL_USERS=@strlit:$LOCAL
+         ALL_USERS_EXTRA=@strlit:$REMOTE
+         LOCAL=:
+         REMOTE=
+         @endif
+
+      DISPLAY_USERS=
+
+         @ifeq "$LOCAL" "dummy"
+         LOCAL=:
+         @endif
+
+      IS_DIRECT=
+      KEY_FILE_DATA=
+      DIRECT_PUB_SUFFIX=
+
+      POS=@strpos:_:$ALL_USERS
+
+         @ifdef $POS
+         ROOM_NAME=@substr:0,$POS:$ALL_USERS
+         FIRST=@substr:0,1:$ROOM_NAME
+            @ifeq "$FIRST" "/"
+            IS_DIRECT=1
+            @endif
+
+         POS=@$POS+1
+         ALL_USERS=@substr:$POS:$ALL_USERS
+         OTHER_USER=$ALL_USERS@
+         OTHER_USER=@repstr:@$USER@/:$OTHER_USER
+         OTHER_USER=@repstr:@/:$OTHER_USER
+
+            @ifdef $IS_DIRECT
+            DIRECT_PUB_SUFFIX=$OTHER_USER
+            @endif
+
+            @ifndef $DIRECT_PUB_SUFFIX
+            HAS_KEY_FILE=@files:$LOCAL_FILES_DIR:.irc_$USER.secret.$ROOM
+            @else
+            HAS_KEY_FILE=@files:$LOCAL_FILES_DIR:.irc_$USER.public.$DIRECT_PUB_SUFFIX
+            @endif
+
+            @ifdef $HAS_KEY_FILE
+               @ifndef $DIRECT_PUB_SUFFIX
+               KEY_FILE_DATA=@file:$LOCAL_FILES_DIR/.irc_$USER.secret.$ROOM
+               @else
+               KEY_FILE_DATA=@file:$LOCAL_FILES_DIR/.irc_$USER.public.$DIRECT_PUB_SUFFIX
+               @endif
+            @endif
+         @endif
+
+      @retain ALL_IRC_USERS
+      <names_extra.cin $USER "$ALL_USERS_EXTRA"
+      DISPLAY_USERS=@strlit:$ALL_IRC_USERS
+
+         @ifdef $DISPLAY_USERS
+         DISPLAY_USERS= $DISPLAY_USERS
+         @endif
+
+         @ifdef $LOCAL
+         #$LOCAL$DISPLAY_USERS
+         @endif
+
+         @ifeq "$REMOTE" "dummy"
+         REMOTE=
+         @endif
+
+      @endif
+   @endif
+
+   @ifdef $MESSAGE
+
+   NAMES=ALL
+      @ifdef $NOT_TO_SELF
+      NAMES=OTHERS
+      @endif
+
+      @ifdef $RESTRICT
+      NAMES=$RESTRICT
+      RESTRICT=
+      @endif
+
+   ENCODED=@base64::$MESSAGE
+
+   .run_script !irc_send_message "@room=$ROOM,@names=$NAMES,@message=$ENCODED"
+      @ifdef $ERROR
+      ERROR=
+      @else
+      CLEAR_READLINE_HISTORY=
+      :$CLEAR_READLINE_HISTORY
+      @endif
+
+   NAMES=
+
+      @ifdef $OUTPUT
+      #$OUTPUT
+      @endif
+
+   @endif
+
+   @ifdef $QUIT
+   OUTPUT=
+   @else
+
+      @ifeq "$ROOM" "$ENTRANCE_ROOM"
+      ~rm -f $LOCAL_FILES_DIR/.irc_$USER
+
+      USER_SP_FILES=%USER%_
+      USER_SP_FILES=%USER_SP_FILES%0*
+
+      CHECK_SP_FILES=@files:$LOCAL_FILES_DIR:.irc_$USER_SP_FILES
+
+         @ifdef $CHECK_SP_FILES
+         ~sep=''; for f in $LOCAL_FILES_DIR/.irc_$USER_SP_FILES; do echo -n "$$sep$${f##*_}=$$(cat "$$f")"; sep=';'; done > $LOCAL_FILES_DIR/.irc_$USER
+
+         START_POINTS=@files:$LOCAL_FILES_DIR:.irc_$USER
+         @endif
+
+         @ifdef $START_POINTS
+         START_POINTS=@file:$LOCAL_FILES_DIR/.irc_$USER
+         START_POINT_INFO=@strlit:@@$START_POINTS
+         @endif
+      @endif
+
+   ; NOTE: As OUTPUT is limited to 100K uses a temporary
+   ; file to store the output (read in to MESSAGES using
+   ; the "@file" environment variable assignment).
+   >/tmp/$ROOM.$USER.tmp
+   run_script !irc_fetch_messages "@room=$FETCH_PREFIX$ROOM$START_POINT_INFO"
+   >
+      @ifdef $ERROR
+      #$ERROR
+      ERROR=
+      @endif
+
+   FETCH_PREFIX=
+   START_POINT_INFO=
+   @endif
+
+   @ifndef $OUTPUT
+   ~rm -f /tmp/$ROOM.$USER.tmp
+   @else
+   MESSAGES=@file:/tmp/$ROOM.$USER.tmp
+
+   ; FUTURE: It would be possible to use
+   ; "@line" in order to read "MESSAGES"
+   ; line by line (without requiring all
+   ; of it to be read) but MESSAGE_LINES
+   ; is being used to get any particular
+   ; specific message by its line number
+   ; for message "editing".
+      @ifndef $MESSAGE_LINES
+      MESSAGE_LINES=$MESSAGES
+      @endif
+
+   ~rm -f /tmp/$ROOM.$USER.tmp
+
+   PAD_LEN=1
+      @ifneq "%MESSAGES:10%" ""
+      PAD_LEN=@$PAD_LEN+1
+         @ifneq "%MESSAGES:100%" ""
+         PAD_LEN=@$PAD_LEN+1
+            @ifneq "%MESSAGES:1000%" ""
+            PAD_LEN=@$PAD_LEN+1
+               @ifneq "%MESSAGES:10000%" ""
+               PAD_LEN=@$PAD_LEN+1
+                  @ifneq "%MESSAGES:100000%" ""
+                  PAD_LEN=@$PAD_LEN+1
+                  @endif
+               @endif
+            @endif
+         @endif
+      @endif
+
+   LINE_NUM=1
+
+   @label MSG_NEXT
+
+   KEEP_LAST_MSG_UNIX=
+
+   @:MSG_LOOP
+   NEXT_MESSAGE=@strlit:%MESSAGES:1%
+
+      @ifndef $NEXT_MESSAGE
+      @label END_MSG_LOOP
+      @endif
+
+   @skip
+
+   @:MSG_NEXT
+   PADDING_EXTRA=$SP
+
+   NEXT_MSG_PARTS=@repstr: /\n:$NEXT_MESSAGE
+
+   EXTRA_MESSAGE=@strlit:%NEXT_MSG_PARTS:4%
+   ENCODED_MESSAGE=@strlit:%NEXT_MSG_PARTS:3%
+
+   DECODED_MESSAGE=@base64:$ENCODED_MESSAGE
+   DECODED_MESSAGE=@substr:1,0:$DECODED_MESSAGE
+
+   LAST_MSG_UNIX=%NEXT_MSG_PARTS:1%
+
+   LOCAL=@date:%NEXT_MSG_PARTS:1%:yyyy-mm-dd hh:mm:ss
+
+   USER_NAME=@strlit:%NEXT_MSG_PARTS:2%
+
+   CHECK_ENCRYPTED=@substr:1,2:$DECODED_MESSAGE
+
+      @ifeq "$CHECK_ENCRYPTED" "$ENCRYPTED_PREFIX"
+
+         @ifdef $KEY_FILE_DATA
+
+         PREFIX=
+            @ifdef $DIRECT_PUB_SUFFIX
+            PREFIX=!
+            @endif
+
+         @retain MESSAGE
+         <irc_extra.cin %PREFIX%decrypt "$DECODED_MESSAGE" "$KEY_FILE_DATA" $PKEY $SKEY
+
+         DECODED_MESSAGE=$MESSAGE
+         MESSAGE=
+
+         PREFIX=@substr:0,2:$DECODED_MESSAGE
+         DECODED_MESSAGE=@substr:2:$DECODED_MESSAGE
+
+            @ifeq "$PREFIX" "!X"
+            DECODED_MESSAGE=$EYE_EMOJI$DECODED_MESSAGE
+            @endif
+
+         @else
+            @ifdef $DIRECT_PUB_SUFFIX
+            DECODED_MESSAGE=$LOCK_EMOJI ($CHECK_USER_NAME)
+            @else
+            DECODED_MESSAGE=$LOCK_EMOJI (room key unknown)
+            @endif
+         @endif
+
+      @else
+         @ifneq "$ROOM" "$ENTRANCE_ROOM"
+         FIRST=@substr:0,1:$DECODED_MESSAGE
+            @ifeq "$FIRST" "$SP"
+            CHECK_MESSAGE=@repstr: /:$DECODED_MESSAGE
+               @ifneq "$CHECK_MESSAGE" ""
+               DECODED_MESSAGE=$WARN_EMOJI$DECODED_MESSAGE
+               @endif
+            @else
+            ; NOTE: If found "closes" then replace
+            ; "unix time" with a local time stamp.
+            POS=@strpos:closes :$DECODED_MESSAGE
+               @ifeq "$POS" "1"
+               PARTS=@repstr: /\n:$DECODED_MESSAGE
+               WHEN=@date:%PARTS:4%:yyyy-mm-dd hh:mm
+               DECODED_MESSAGE=@repstr:%PARTS:4%/:$DECODED_MESSAGE
+               DECODED_MESSAGE=@strlit:$DECODED_MESSAGE$WHEN
+               @endif
+            @endif
+         @endif
+      @endif
+
+      @ifdef $EXTRA_MESSAGE
+      IS_POLL=
+
+      POS=@strpos:$POLL_EMOJI:$DECODED_MESSAGE
+         @ifdef $POS
+         IS_POLL=1
+         @endif
+
+      @retain ALL_EMOJIS
+      <reactions.cin $EXTRA_MESSAGE ALL $IS_POLL
+
+         @ifdef $ALL_EMOJIS
+         DECODED_MESSAGE=$DECODED_MESSAGE\n$ALL_EMOJIS
+         @endif
+      @endif
+
+   ; NOTE: Pad the start of each line if is multi-line.
+   SPACES=@padlen:39, :
+   SPACES=$SPACES$PADDING_EXTRA
+   DECODED_MESSAGE=@repstr:\n/\n$SPACES:$DECODED_MESSAGE
+
+   IS_PINNED=
+   FIRST=@substr:0,1:$USER_NAME
+      @ifeq "$FIRST" "!"
+      IS_PINNED=1
+      LOCAL= * * * * * * * * *$SP
+      USER_NAME=@substr:1:$USER_NAME
+      @endif
+
+   USER_NAME_PADDED=@padlen:-15, :$USER_NAME
+
+      @ifneq "$ROOM" "$ENTRANCE_ROOM"
+      MESSAGE_ROOM_NUM=
+
+      ; NOTE: As normal messages can be
+      ; expected to contain quotes only
+      ; check if is a special message.
+      FIRST=@substr:0,1:$DECODED_MESSAGE
+         @if "$FIRST" = ":"
+            @ifeq "$DECODED_MESSAGE" ":joined"
+            ALL_USERS=@strlit:$ALL_USERS@$USER_NAME
+            ALL_USERS=@set_sort:@:$ALL_USERS
+            @endif
+         @endif
+
+      @else
+      MESSAGE_PARTS=@repstr: /\n:$DECODED_MESSAGE
+
+      MESSAGE_ROOM_NUM=@strlit:%MESSAGE_PARTS:1%
+      MESSAGE_ROOM_LENGTH=@strlen:$MESSAGE_ROOM_NUM
+
+      DECODED_MESSAGE=@substr:$MESSAGE_ROOM_LENGTH:$DECODED_MESSAGE
+
+      MESSAGE_ROOM_NUM=@padlen:-20, :$MESSAGE_ROOM_NUM
+      @endif
+
+   SKIP_MESSAGE=
+
+   ; NOTE: If a message is just spaces then
+   ; will skip it (i.e. a deleted message).
+   CHECK_MESSAGE=@repstr: /:$DECODED_MESSAGE
+
+   LEN=@strlen:$CHECK_MESSAGE
+      @ifeq "$LEN" "0"
+      SKIP_MESSAGE=1
+      @endif
+
+      @ifneq "$ROOM" "$ENTRANCE_ROOM"
+         @ifdef $IS_PINNED
+            @ifdef $PINNED_LAST_MSG_UNIX
+               @if $LAST_MSG_UNIX #<= $PINNED_LAST_MSG_UNIX
+               SKIP_MESSAGE=1
+               @endif
+            @endif
+         @endif
+      @endif
+
+      @ifeq "$ROOM" "$ENTRANCE_ROOM"
+      UNDECORATED=@substr:1,$ROOM_LEN:$MESSAGE_ROOM_NUM
+      CHECK=@strlit:LAST_CHECK=@strlit:$$LAST_$UNDECORATED
+      $CHECK
+         @ifneq "$LAST_CHECK$FORCE_OUTPUT" "$DECODED_MESSAGE"
+         ASSIGN=@strlit:LAST_$UNDECORATED=@strlit:$DECODED_MESSAGE
+         $ASSIGN
+         @else
+         SKIP_MESSAGE=1
+         @endif
+      @endif
+
+      @ifdef $MESSAGE_ROOM_NUM
+      DECODED_MESSAGE=$MESSAGE_ROOM_NUM $DECODED_MESSAGE
+      @endif
+
+   NEXT_MESSAGE=[$LOCAL] $USER_NAME_PADDED $DECODED_MESSAGE
+
+   PREFIX=
+
+      @ifeq "$ROOM" "$ENTRANCE_ROOM"
+      NOT_TO_SELF=1
+      @endif
+
+      @ifdef $MESSAGE
+         @ifndef $NOT_TO_SELF
+         PREFIX=^^
+         @endif
+      @endif
+
+   LINE_NUM=@padlen:$PAD_LEN :$LINE_NUM
+
+      @ifndef $SKIP_MESSAGE
+         @ifdef $SHOW_CHANGED
+            @ifdef $ROOM_RENAME
+            ROOM_RENAME=
+            #(room renamed)
+            @else
+            #(found new messages)
+            @endif
+         SHOW_CHANGED=
+         @endif
+      #$PREFIX$LINE_NUM $NEXT_MESSAGE
+      @endif
+
+   LINE_NUM=@$LINE_NUM+1
+   MESSAGES=%MESSAGES:-1%
+
+      @ifndef $IS_PINNED
+      KEEP_LAST_MSG_UNIX=$LAST_MSG_UNIX
+      @endif
+
+      @ifdef $IS_PINNED
+      KEEP_PINNED=
+         @ifndef $PINNED_LAST_MSG_UNIX
+         KEEP_PINNED=1
+         @elif $LAST_MSG_UNIX #> $PINNED_LAST_MSG_UNIX
+         KEEP_PINNED=1
+         @endif
+
+         @ifdef $KEEP_PINNED
+         PINNED_LAST_MSG_UNIX=$LAST_MSG_UNIX
+         @endif
+      @endif
+
+   !!@:MSG_LOOP
+
+   @:END_MSG_LOOP
+
+      @ifdef $KEEP_LAST_MSG_UNIX
+         @ifneq "$ROOM" "$ENTRANCE_ROOM"
+         NEW_START_POINT=@$KEEP_LAST_MSG_UNIX+1
+         ~echo -n $NEW_START_POINT>$LOCAL_FILES_DIR/.irc_%USER%_%ROOM%
+         @endif
+      @endif
+
+   @endif
+
 CHECK_PRIOR=
 FORCE_OUTPUT=
 SHOW_CHANGED=1
-;
+
 @label NEXT
-;
-@ifdef $QUIT
-@label END_LOOP
-@endif
-;
+
+   @ifdef $QUIT
+   @label END_LOOP
+   @endif
+
 @skip
-;
+
 @:NEXT
-;
+
 MESSAGE=
-;
+
 !!@:LOOP
-;
+
 @:END_LOOP
-;
+
 @endif

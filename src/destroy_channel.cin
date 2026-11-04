@@ -1,45 +1,45 @@
 ; Copyright (c) 2023-2026 CIYAM Developers
-;
+
 ; Distributed under the MIT/X11 software license, please refer to the file license.txt
 ; in the root project directory or http://www.opensource.org/licenses/mit-license.php.
-;
+
 @ifeq "$1" ""
 #Usage: destroy_channel.cin <identity>
 @else
-;
+
 IDENT=$1
-;
+
 PREFIX=$$
-;
+
 IDENTITY_VAR=%PREFIX%$%IDENT%_identity
-;
+
 ~rm -rf $IDENT.files
-;
+
 .system_variable $IDENTITY_VAR
-;
-@ifdef "$OUTPUT"
-CHANNEL=$OUTPUT
-REVERSE=@reverse:$CHANNEL
-;
-.file_archive -destroy $CHANNEL
-.file_archive -destroy $REVERSE
-;
-.system_variable @files_area_path
-FILES_AREA_DIR=$OUTPUT
-;
-~rmdir $FILES_AREA_DIR/$CHANNEL
-~rmdir $FILES_AREA_DIR/$REVERSE
-;
-.file_kill -q -p=bc.$CHANNEL.*
-.file_kill -q -p=bc.$REVERSE.*
-;
-.system_variable %%$IDENT ""
-.system_variable $$%IDENT%_error ""
-;
-.system_variable >$IDENTITY_VAR ""
-.system_variable >@secret_hash_$CHANNEL ""
-;
-#Removed archive and all blockchain files for '$IDENT' ($CHANNEL/$REVERSE).
-@endif
-;
+
+   @ifdef "$OUTPUT"
+   CHANNEL=$OUTPUT
+   REVERSE=@reverse:$CHANNEL
+
+   .file_archive -destroy $CHANNEL
+   .file_archive -destroy $REVERSE
+
+   .system_variable @files_area_path
+   FILES_AREA_DIR=$OUTPUT
+
+   ~rmdir $FILES_AREA_DIR/$CHANNEL
+   ~rmdir $FILES_AREA_DIR/$REVERSE
+
+   .file_kill -q -p=bc.$CHANNEL.*
+   .file_kill -q -p=bc.$REVERSE.*
+
+   .system_variable %%$IDENT ""
+   .system_variable $$%IDENT%_error ""
+
+   .system_variable >$IDENTITY_VAR ""
+   .system_variable >@secret_hash_$CHANNEL ""
+
+   #Removed archive and all blockchain files for '$IDENT' ($CHANNEL/$REVERSE).
+   @endif
+
 @endif

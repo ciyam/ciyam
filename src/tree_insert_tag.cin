@@ -1,8 +1,8 @@
 ; Copyright (c) 2019-2026 CIYAM Developers
-;
+
 ; Distributed under the MIT/X11 software license, please refer to the file license.txt
 ; in the root project directory or http://www.opensource.org/licenses/mit-license.php.
-;
+
 NUM_ARGS=0
 @ifdef $1
 NUM_ARGS=@$NUM_ARGS+1
@@ -19,44 +19,44 @@ NUM_ARGS=@$NUM_ARGS+1
 @ifdef $5
 NUM_ARGS=@$NUM_ARGS+1
 @endif
-;
+
 @ifneq "$NUM_ARGS" "5"
 #NOTE: This script needs tree tag, trunk name, branch expr, item name and tag name.
 @else
-;
+
 TREE=$1
 TRUNK=$2
 BRANCH=$3
 ITEM=$4
 NAME=$5
-;
+
 TTRUNK=Tags
-;
+
 .file_tags -i=$TREE
-@ifndef $OUTPUT
-#Error: Tree '$TREE' does not exist.
-@else
-;
-.session_variable @deque commence
-;
-.session_variable @deque ""
-LINES=@repstr:\:/\n:$TRUNK:$BRANCH:xxx
-.session_variable @deque "~$LINES"
-.session_variable @deque size
-DEPTH=$OUTPUT
-;
-.session_variable @deque ""
-.file_info -recurse -d=-$DEPTH -p=$TRUNK:$BRANCH $TREE
-.session_variable @deque "~$OUTPUT"
-.session_variable @deque "retain $ITEM ("
-.session_variable @deque
-@ifdef $OUTPUT
-LINES=@repstr: /\n:$OUTPUT
-HASH=%LINES:2%
-.file_list "-a=$HASH ?" "-d=$ITEM" -sort $TREE:$TTRUNK:$NAME:$TRUNK:$BRANCH !$TREE
-@endif
-;
-.session_variable @deque complete
-;
-@endif
+   @ifndef $OUTPUT
+   #Error: Tree '$TREE' does not exist.
+   @else
+
+   .session_variable @deque commence
+
+   .session_variable @deque ""
+   LINES=@repstr:\:/\n:$TRUNK:$BRANCH:xxx
+   .session_variable @deque "~$LINES"
+   .session_variable @deque size
+   DEPTH=$OUTPUT
+
+   .session_variable @deque ""
+   .file_info -recurse -d=-$DEPTH -p=$TRUNK:$BRANCH $TREE
+   .session_variable @deque "~$OUTPUT"
+   .session_variable @deque "retain $ITEM ("
+   .session_variable @deque
+      @ifdef $OUTPUT
+      LINES=@repstr: /\n:$OUTPUT
+      HASH=%LINES:2%
+      .file_list "-a=$HASH ?" "-d=$ITEM" -sort $TREE:$TTRUNK:$NAME:$TRUNK:$BRANCH !$TREE
+      @endif
+
+   .session_variable @deque complete
+
+   @endif
 @endif

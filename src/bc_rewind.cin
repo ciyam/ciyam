@@ -1,8 +1,8 @@
 ; Copyright (c) 2022-2026 CIYAM Developers
-;
+
 ; Distributed under the MIT/X11 software license, please refer to the file license.txt
 ; in the root project directory or http://www.opensource.org/licenses/mit-license.php.
-;
+
 ERROR=
 @ifeq "$1" ""
 ERROR=1
@@ -10,223 +10,223 @@ ERROR=1
 @ifeq "$2" ""
 ERROR=1
 @endif
-;
+
 @ifeq "$ERROR" "1"
 #Usage: bc_rewind.cin <ident> <height> [<seed>]
 @else
-;
+
 IDENT=$1
 HEIGHT=$2
 SEED=$3
-;
-@ifeq "$IDENT" "e3733d121"
-TEST_CHAIN=1
-@endif
-@ifeq "$IDENT" "121d3373e"
-TEST_CHAIN=1
-@endif
-;
-@ifdef $TEST_CHAIN
-MULTIPLE=5
-@else
-MULTIPLE=50
-@endif
-;
+
+   @ifeq "$IDENT" "e3733d121"
+   TEST_CHAIN=1
+   @endif
+   @ifeq "$IDENT" "121d3373e"
+   TEST_CHAIN=1
+   @endif
+
+   @ifdef $TEST_CHAIN
+   MULTIPLE=5
+   @else
+   MULTIPLE=50
+   @endif
+
 SQUARED=@$MULTIPLE*$MULTIPLE
-;
+
 TARGET_HEIGHT=$HEIGHT
-;
+
 .file_core -header bc.$IDENT.zenith h
 CURRENT=$OUTPUT
-@ifndef $ERROR
-FIRST=@substr:0,1:$HEIGHT
-@ifeq "$FIRST" "-"
-TARGET_HEIGHT=@$CURRENT$HEIGHT
-@endif
-;
-FIRST=@substr:0,1:$TARGET_HEIGHT
-@ifeq "$FIRST" "-"
-ERROR=Invalid target height: $HEIGHT
-#$ERROR
-@else
-;
-HEIGHT=$TARGET_HEIGHT
-;
-NORMAL_MODULUS=@$HEIGHT#$MULTIPLE
-;
-SECONDARY_HEIGHT=@$HEIGHT+$MULTIPLE
-SECONDARY_HEIGHT=@$SECONDARY_HEIGHT-$NORMAL_MODULUS
-SECONDARY_HEIGHT=@$SECONDARY_HEIGHT-1
-;
-SQUARED_MODULUS=@$HEIGHT#$SQUARED
-;
-TERTIARY_HEIGHT=@$HEIGHT+$SQUARED
-TERTIARY_HEIGHT=@$TERTIARY_HEIGHT-$SQUARED_MODULUS
-TERTIARY_HEIGHT=@$TERTIARY_HEIGHT-1
-;
-@retain BACKUP_EXTRAS,SHARED_EXTRAS,PEER_HUB_EXTRAS
-<bc_all_extras.cin
-;
-ERROR=
-BACKUP=
-SHARED=
-PEER_HUB=
-;
-.session_variable @deque commence
-;
-.session_variable @deque "push_back $IDENT"
-;
-.system_variable @blockchain_backup_identity
-@ifeq "$OUTPUT" "$IDENT"
-BACKUP=1
-@ifdef $BACKUP_EXTRAS
-EXTRAS=@repstr:,/\n:$BACKUP_EXTRAS
-.session_variable @deque "~$EXTRAS"
-@endif
-@endif
-;
-.system_variable @blockchain_shared_identity
-@ifeq "$OUTPUT" "$IDENT"
-SHARED=1
-@ifdef $SHARED_EXTRAS
-EXTRAS=@repstr:,/\n:$SHARED_EXTRAS
-.session_variable @deque "~$EXTRAS"
-@endif
-@endif
-;
-.system_variable @blockchain_peer_hub_identity
-@ifeq "$OUTPUT" "$IDENT"
-PEER_HUB=1
-@ifdef $PEER_HUB_EXTRAS
-EXTRAS=@repstr:,/\n:$PEER_HUB_EXTRAS
-.session_variable @deque "~$EXTRAS"
-@endif
-@endif
-;
-@:LOOP
-;
-@label NEXT
-.session_variable @deque front
-@ifndef $OUTPUT
-@label DONE
-@endif
-NEXT_IDENT=$OUTPUT
-;
-@skip
-;
-@:NEXT
-.session_variable @deque pop_front
-;
-.file_core -header bc.$NEXT_IDENT.zenith h
-@ifndef $ERROR
-BLK_HEIGHT=$OUTPUT
-;
-.file_info -content bc.$NEXT_IDENT.$HEIGHT.blk
-@ifndef $ERROR
-;
-@:BLK_LOOP
-;
-@label BLK_NEXT
-@ifeq $BLK_HEIGHT $HEIGHT
-@label BLK_DONE
-@endif
-;
-@skip
-;
-@:BLK_NEXT
-@label BLK_NEXT2
-LAST_HEIGHT=$BLK_HEIGHT
-BLK_HEIGHT=@$BLK_HEIGHT-1
-.file_hash bc.$NEXT_IDENT.$BLK_HEIGHT.blk
-@ifdef $ERROR
-@label BLK_DONE
-@endif
-;
-@skip
-;
-@:BLK_NEXT2
-.file_tag $OUTPUT bc.$NEXT_IDENT.zenith
-;
-.file_kill -q bc.$NEXT_IDENT.$LAST_HEIGHT.blk
-.file_kill -q bc.$NEXT_IDENT.$LAST_HEIGHT.opl
-;
-.file_kill -q bc.$NEXT_IDENT.$BLK_HEIGHT.sig
-;
-CHECK_HEIGHT=@$LAST_HEIGHT+1
-;
-MODULUS=@$CHECK_HEIGHT#$MULTIPLE
-;
-@ifneq "$MODULUS" "0"
-.file_kill -q bc.$NEXT_IDENT.$LAST_HEIGHT.key
-.file_kill -q bc.$NEXT_IDENT.$LAST_HEIGHT.pub
-@else
-;
-SECONDARY=@$LAST_HEIGHT+$MULTIPLE
-;
-@ifneq "$SECONDARY" "$SECONDARY_HEIGHT"
-@ifneq "$SECONDARY" "$TERTIARY_HEIGHT"
-.file_kill -q bc.$NEXT_IDENT.$SECONDARY.key
-.file_kill -q bc.$NEXT_IDENT.$SECONDARY.pub
-@endif
-@endif
-;
-SMODULUS=@$CHECK_HEIGHT#$SQUARED
-;
-@ifeq "$SMODULUS" "0"
-TERTIARY=@$LAST_HEIGHT+$SQUARED
-.file_kill -q bc.$NEXT_IDENT.$TERTIARY.key
-.file_kill -q bc.$NEXT_IDENT.$TERTIARY.pub
-@endif
-;
-@endif
-;
-!!@:BLK_LOOP
-;
-@:BLK_DONE
-;
-@ifndef $ERROR
-.file_hash bc.$NEXT_IDENT.$HEIGHT.blk
-.file_tag $OUTPUT bc.$NEXT_IDENT.zenith
-;
-@ifdef $BACKUP
-.system_variable @blockchain_backup_height $HEIGHT
-.system_variable @backup_files
-BACKUP_PATH=$OUTPUT
-@ifdef $BACKUP_PATH
-BACKUP_HEIGHT_FILE=@files:$BACKUP_PATH:.backup.height
-@ifdef $BACKUP_HEIGHT_FILE
-~echo $HEIGHT >$BACKUP_PATH/$BACKUP_HEIGHT_FILE
-~rm -f $BACKUP_PATH/.imported.time
-@endif
-@endif
-@endif
-;
-@ifdef $SHARED
-.system_variable @blockchain_shared_height $HEIGHT
-@endif
-;
-@ifdef $PEER_HUB
-.system_variable @blockchain_peer_hub_height $HEIGHT
-@endif
-;
-.string_message current_height_prefix
-CURRENT_HEIGHT_PROGRESS=$OUTPUT$HEIGHT
-.system_variable %$NEXT_IDENT "$CURRENT_HEIGHT_PROGRESS"
-;
-@ifneq "$SEED" ""
-<bc_gen_keys.cin $SEED $NEXT_IDENT $HEIGHT
-@endif
-@endif
-;
-@endif
-@endif
-;
-!!@:LOOP
-;
-@:DONE
-;
-.session_variable @deque complete
-;
-@endif
-@endif
+   @ifndef $ERROR
+   FIRST=@substr:0,1:$HEIGHT
+      @ifeq "$FIRST" "-"
+      TARGET_HEIGHT=@$CURRENT$HEIGHT
+      @endif
+
+   FIRST=@substr:0,1:$TARGET_HEIGHT
+      @ifeq "$FIRST" "-"
+      ERROR=Invalid target height: $HEIGHT
+      #$ERROR
+      @else
+
+      HEIGHT=$TARGET_HEIGHT
+
+      NORMAL_MODULUS=@$HEIGHT#$MULTIPLE
+
+      SECONDARY_HEIGHT=@$HEIGHT+$MULTIPLE
+      SECONDARY_HEIGHT=@$SECONDARY_HEIGHT-$NORMAL_MODULUS
+      SECONDARY_HEIGHT=@$SECONDARY_HEIGHT-1
+
+      SQUARED_MODULUS=@$HEIGHT#$SQUARED
+
+      TERTIARY_HEIGHT=@$HEIGHT+$SQUARED
+      TERTIARY_HEIGHT=@$TERTIARY_HEIGHT-$SQUARED_MODULUS
+      TERTIARY_HEIGHT=@$TERTIARY_HEIGHT-1
+
+      @retain BACKUP_EXTRAS,SHARED_EXTRAS,PEER_HUB_EXTRAS
+      <bc_all_extras.cin
+
+      ERROR=
+      BACKUP=
+      SHARED=
+      PEER_HUB=
+
+      .session_variable @deque commence
+
+      .session_variable @deque "push_back $IDENT"
+
+      .system_variable @blockchain_backup_identity
+         @ifeq "$OUTPUT" "$IDENT"
+         BACKUP=1
+            @ifdef $BACKUP_EXTRAS
+            EXTRAS=@repstr:,/\n:$BACKUP_EXTRAS
+            .session_variable @deque "~$EXTRAS"
+            @endif
+         @endif
+
+      .system_variable @blockchain_shared_identity
+         @ifeq "$OUTPUT" "$IDENT"
+         SHARED=1
+            @ifdef $SHARED_EXTRAS
+            EXTRAS=@repstr:,/\n:$SHARED_EXTRAS
+            .session_variable @deque "~$EXTRAS"
+            @endif
+         @endif
+
+      .system_variable @blockchain_peer_hub_identity
+         @ifeq "$OUTPUT" "$IDENT"
+         PEER_HUB=1
+            @ifdef $PEER_HUB_EXTRAS
+            EXTRAS=@repstr:,/\n:$PEER_HUB_EXTRAS
+            .session_variable @deque "~$EXTRAS"
+            @endif
+         @endif
+
+      @:LOOP
+
+      @label NEXT
+      .session_variable @deque front
+         @ifndef $OUTPUT
+         @label DONE
+         @endif
+      NEXT_IDENT=$OUTPUT
+
+      @skip
+
+      @:NEXT
+      .session_variable @deque pop_front
+
+      .file_core -header bc.$NEXT_IDENT.zenith h
+         @ifndef $ERROR
+         BLK_HEIGHT=$OUTPUT
+
+         .file_info -content bc.$NEXT_IDENT.$HEIGHT.blk
+            @ifndef $ERROR
+
+            @:BLK_LOOP
+
+            @label BLK_NEXT
+               @ifeq $BLK_HEIGHT $HEIGHT
+               @label BLK_DONE
+               @endif
+
+            @skip
+
+            @:BLK_NEXT
+            @label BLK_NEXT2
+            LAST_HEIGHT=$BLK_HEIGHT
+            BLK_HEIGHT=@$BLK_HEIGHT-1
+            .file_hash bc.$NEXT_IDENT.$BLK_HEIGHT.blk
+               @ifdef $ERROR
+               @label BLK_DONE
+               @endif
+
+            @skip
+
+            @:BLK_NEXT2
+            .file_tag $OUTPUT bc.$NEXT_IDENT.zenith
+
+            .file_kill -q bc.$NEXT_IDENT.$LAST_HEIGHT.blk
+            .file_kill -q bc.$NEXT_IDENT.$LAST_HEIGHT.opl
+
+            .file_kill -q bc.$NEXT_IDENT.$BLK_HEIGHT.sig
+
+            CHECK_HEIGHT=@$LAST_HEIGHT+1
+
+            MODULUS=@$CHECK_HEIGHT#$MULTIPLE
+
+               @ifneq "$MODULUS" "0"
+               .file_kill -q bc.$NEXT_IDENT.$LAST_HEIGHT.key
+               .file_kill -q bc.$NEXT_IDENT.$LAST_HEIGHT.pub
+               @else
+
+               SECONDARY=@$LAST_HEIGHT+$MULTIPLE
+
+                  @ifneq "$SECONDARY" "$SECONDARY_HEIGHT"
+                     @ifneq "$SECONDARY" "$TERTIARY_HEIGHT"
+                     .file_kill -q bc.$NEXT_IDENT.$SECONDARY.key
+                     .file_kill -q bc.$NEXT_IDENT.$SECONDARY.pub
+                     @endif
+                  @endif
+
+               SMODULUS=@$CHECK_HEIGHT#$SQUARED
+
+                  @ifeq "$SMODULUS" "0"
+                  TERTIARY=@$LAST_HEIGHT+$SQUARED
+                  .file_kill -q bc.$NEXT_IDENT.$TERTIARY.key
+                  .file_kill -q bc.$NEXT_IDENT.$TERTIARY.pub
+                  @endif
+
+               @endif
+
+            !!@:BLK_LOOP
+
+            @:BLK_DONE
+
+               @ifndef $ERROR
+               .file_hash bc.$NEXT_IDENT.$HEIGHT.blk
+               .file_tag $OUTPUT bc.$NEXT_IDENT.zenith
+
+                  @ifdef $BACKUP
+                  .system_variable @blockchain_backup_height $HEIGHT
+                  .system_variable @backup_files
+                  BACKUP_PATH=$OUTPUT
+                     @ifdef $BACKUP_PATH
+                     BACKUP_HEIGHT_FILE=@files:$BACKUP_PATH:.backup.height
+                        @ifdef $BACKUP_HEIGHT_FILE
+                        ~echo $HEIGHT >$BACKUP_PATH/$BACKUP_HEIGHT_FILE
+                        ~rm -f $BACKUP_PATH/.imported.time
+                        @endif
+                     @endif
+                  @endif
+
+                  @ifdef $SHARED
+                  .system_variable @blockchain_shared_height $HEIGHT
+                  @endif
+
+                  @ifdef $PEER_HUB
+                  .system_variable @blockchain_peer_hub_height $HEIGHT
+                  @endif
+
+               .string_message current_height_prefix
+               CURRENT_HEIGHT_PROGRESS=$OUTPUT$HEIGHT
+               .system_variable %$NEXT_IDENT "$CURRENT_HEIGHT_PROGRESS"
+
+                  @ifneq "$SEED" ""
+                  <bc_gen_keys.cin $SEED $NEXT_IDENT $HEIGHT
+                  @endif
+               @endif
+
+            @endif
+         @endif
+
+      !!@:LOOP
+
+      @:DONE
+
+      .session_variable @deque complete
+
+      @endif
+   @endif
 @endif

@@ -1,8 +1,8 @@
 ; Copyright (c) 2019-2026 CIYAM Developers
-;
+
 ; Distributed under the MIT/X11 software license, please refer to the file license.txt
 ; in the root project directory or http://www.opensource.org/licenses/mit-license.php.
-;
+
 NUM_ARGS=0
 @ifdef $1
 NUM_ARGS=@$NUM_ARGS+1
@@ -10,71 +10,71 @@ NUM_ARGS=@$NUM_ARGS+1
 @ifdef $2
 NUM_ARGS=@$NUM_ARGS+1
 @endif
-;
+
 @ifneq "$NUM_ARGS" "2"
 #NOTE: This script needs a tree tag and trunk name with an optional branch expression.
 @else
-;
+
 TREE=$1
 TRUNK=$2
 BRANCH=X$3
-;
+
 WANT_INFO=
 PREFIX=$TRUNK
-;
+
 .session_variable @deque commence
-;
+
 BRANCH=@substr:1:$BRANCH
-;
-@ifdef $BRANCH
-FIRST=@substr:0,1:$BRANCH
-@ifeq "$FIRST" "?"
-WANT_INFO=1
-PREFIX=$FIRST$PREFIX
-BRANCH=@substr:1:$BRANCH
-@endif
-@endif
-;
+
+   @ifdef $BRANCH
+   FIRST=@substr:0,1:$BRANCH
+      @ifeq "$FIRST" "?"
+      WANT_INFO=1
+      PREFIX=$FIRST$PREFIX
+      BRANCH=@substr:1:$BRANCH
+      @endif
+   @endif
+
 PREFIX=$PREFIX:$BRANCH
 .session_variable @deque ""
 LINES=@repstr:\:/\n:$PREFIX
 .session_variable @deque "~$LINES"
 .session_variable @deque size
 DEPTH=@$OUTPUT+1
-;
+
 .session_variable @deque ""
 .file_info -recurse -d=-$DEPTH -p=$PREFIX* $TREE
 .session_variable @deque "~$OUTPUT"
 @:LOOP
 @label NEXT
 .session_variable @deque front
-@ifndef $OUTPUT
-@label END_LOOP
-@endif
+   @ifndef $OUTPUT
+   @label END_LOOP
+   @endif
 @skip
-;
+
 @:NEXT
 LINES=@repstr: /\n:$OUTPUT
 INFO=%LINES:1%
-@ifneq "$INFO" "[list]"
-HASH=%LINES:2%
-NAME=%LINES:3%
-SIZE=%LINES:4%
-; NOTE: The size is expected to include a space so is split across two lines.
-EXTRA=%LINES:5%
-@ifdef $EXTRA
-SIZE=$SIZE $EXTRA
-@endif
-@ifndef $WANT_INFO
-#$NAME
-@else
-#$NAME $HASH $SIZE
-@endif
-@endif
+   @ifneq "$INFO" "[list]"
+   HASH=%LINES:2%
+   NAME=%LINES:3%
+   SIZE=%LINES:4%
+   ; NOTE: The size is expected to include a space so is split across two lines.
+   EXTRA=%LINES:5%
+      @ifdef $EXTRA
+      SIZE=$SIZE $EXTRA
+      @endif
+      @ifndef $WANT_INFO
+      #$NAME
+      @else
+      #$NAME $HASH $SIZE
+      @endif
+   @endif
 .session_variable @deque pop_front
 !!@:LOOP
 @:END_LOOP
-;
+
 .session_variable @deque complete
-;
+
 @endif

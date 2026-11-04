@@ -1,46 +1,46 @@
 ; Copyright (c) 2019-2026 CIYAM Developers
-;
+
 ; Distributed under the MIT/X11 software license, please refer to the file license.txt
 ; in the root project directory or http://www.opensource.org/licenses/mit-license.php.
-;
+
 @ifndef $1
 #NOTE: This script requires the tag or hash of the "tree list" that is to be recursed.
 @else
-;
+
 TREE=$1
 DEPTH=$2
 PREFIX=$3
-;
-@ifndef $DEPTH
-DEPTH=2
-@endif
-;
-@ifdef $CIYAM_ARCHIVE_PATH
-.session_variable @blockchain_archive_path "$CIYAM_ARCHIVE_PATH"
-@else
-@ifdef $USE_BACKUP_ARCHIVE
-.system_variable @blockchain_backup_identity
-.file_archives -path_only $OUTPUT
-.session_variable @blockchain_archive_path "$OUTPUT"
-@else
-@ifdef $USE_SHARED_ARCHIVE
-.system_variable @blockchain_shared_identity
-.file_archives -path_only $OUTPUT
-.session_variable @blockchain_archive_path "$OUTPUT"
-@endif
-@endif
-@endif
-;
-@ifndef $PREFIX
-.file_info -recurse -d=$DEPTH $TREE
-@else
-.file_info -recurse -d=$DEPTH -p=$PREFIX $TREE
-@endif
-;
-@ifdef $OUTPUT
-@ifndef $CIYAM_NESTED_LEVEL
-#$OUTPUT
-@endif
-@endif
-;
+
+   @ifndef $DEPTH
+   DEPTH=2
+   @endif
+
+   @ifdef $CIYAM_ARCHIVE_PATH
+   .session_variable @blockchain_archive_path "$CIYAM_ARCHIVE_PATH"
+   @else
+      @ifdef $USE_BACKUP_ARCHIVE
+      .system_variable @blockchain_backup_identity
+      .file_archives -path_only $OUTPUT
+      .session_variable @blockchain_archive_path "$OUTPUT"
+      @else
+         @ifdef $USE_SHARED_ARCHIVE
+         .system_variable @blockchain_shared_identity
+         .file_archives -path_only $OUTPUT
+         .session_variable @blockchain_archive_path "$OUTPUT"
+         @endif
+      @endif
+   @endif
+
+   @ifndef $PREFIX
+   .file_info -recurse -d=$DEPTH $TREE
+   @else
+   .file_info -recurse -d=$DEPTH -p=$PREFIX $TREE
+   @endif
+
+   @ifdef $OUTPUT
+      @ifndef $CIYAM_NESTED_LEVEL
+      #$OUTPUT
+      @endif
+   @endif
+
 @endif

@@ -1,50 +1,50 @@
 ; Copyright (c) 2019-2026 CIYAM Developers
-;
+
 ; Distributed under the MIT/X11 software license, please refer to the file license.txt
 ; in the root project directory or http://www.opensource.org/licenses/mit-license.php.
-;
+
 @ifndef $2
 #NOTE: This script requires an application directory and a list file hash.
 @else
 ERROR=
-;
+
 APPDIR=$1
 LIST_HASH=$2
-;
-@ifdef $3
-WEBDIR=$3
-@endif
-;
+
+   @ifdef $3
+   WEBDIR=$3
+   @endif
+
 .session_variable @deque commence
-;
-@ifndef $WEBDIR
-PREFIX=
-.storage_web_root -expand
-FIRST=@substr:0,1:$OUTPUT
-@ifeq "/" "$FIRST"
-PREFIX=/
-OUTPUT=@substr:1:$OUTPUT
-@endif
-LINES=@repstr:\//\n:$OUTPUT
-.session_variable @deque "~$LINES"
-.session_variable @deque pop_back
-.session_variable @deque
-WEBDIR=@repstr:\n/\/:$OUTPUT
-WEBDIR=$PREFIX$WEBDIR
-@endif
-;
+
+   @ifndef $WEBDIR
+   PREFIX=
+   .storage_web_root -expand
+   FIRST=@substr:0,1:$OUTPUT
+      @ifeq "/" "$FIRST"
+      PREFIX=/
+      OUTPUT=@substr:1:$OUTPUT
+      @endif
+   LINES=@repstr:\//\n:$OUTPUT
+   .session_variable @deque "~$LINES"
+   .session_variable @deque pop_back
+   .session_variable @deque
+   WEBDIR=@repstr:\n/\/:$OUTPUT
+   WEBDIR=$PREFIX$WEBDIR
+   @endif
+
 .file_retrieve $LIST_HASH
-@ifndef $ERROR
-;
-; NOTE: This ensures that all of the file parts are retrieved into the
-; files area (just in case any of these had been previously archived).
-.file_info -content $LIST_HASH
-@ifndef $ERROR
-;
-.file_get $LIST_HASH *$WEBDIR/$APPDIR/files/
-@endif
-@endif
-;
+   @ifndef $ERROR
+
+   ; NOTE: This ensures that all of the file parts are retrieved into the
+   ; files area (just in case any of these had been previously archived).
+   .file_info -content $LIST_HASH
+      @ifndef $ERROR
+
+      .file_get $LIST_HASH *$WEBDIR/$APPDIR/files/
+      @endif
+   @endif
+
 .session_variable @deque complete
-;
+
 @endif

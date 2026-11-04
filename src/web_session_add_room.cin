@@ -1,8 +1,8 @@
 ; Copyright (c) 2026 CIYAM Developers
-;
+
 ; Distributed under the MIT/X11 software license, please refer to the file license.txt
 ; in the root project directory or http://www.opensource.org/licenses/mit-license.php.
-;
+
 NUM_ARGS=0
 @ifdef $1
 NUM_ARGS=@$NUM_ARGS+1
@@ -10,68 +10,68 @@ NUM_ARGS=@$NUM_ARGS+1
 @ifdef $2
 NUM_ARGS=@$NUM_ARGS+1
 @endif
-;
+
 @ifneq "$NUM_ARGS" "2"
 ERROR=Room and User names are required for "web_session_add_room".
 @else
 NAME=$1
 USER=$2
 NAMES=$3
-;
+
 ASSIGN=
 RENAME=
-;
+
 RESERVED_ROOM=0000001
-;
+
 DUMMY_JOIN_UUID=00000000000000000000000000000000
-;
+
 POS=@strpos:=:$NAME
-;
-@ifdef $POS
-ASSIGN=1
-@endif
-;
-@ifndef $ASSIGN
-; NOTE: If User names are instead
-; a room number then will attempt
-; to rename the room instead.
-@ifdef $NAMES
-.regex "^(0[0-9]{6})$$" "$NAMES"
-@ifeq "$NAMES" "$OUTPUT"
-RENAME=1
-NAME=%NAMES%_$NAME
-@endif
-@endif
-@endif
-;
-@ifeq "$NAME" "$NAMES"
-NAMES=
-@endif
-;
+
+   @ifdef $POS
+   ASSIGN=1
+   @endif
+
+   @ifndef $ASSIGN
+   ; NOTE: If User names are instead
+   ; a room number then will attempt
+   ; to rename the room instead.
+      @ifdef $NAMES
+      .regex "^(0[0-9]{6})$$" "$NAMES"
+         @ifeq "$NAMES" "$OUTPUT"
+         RENAME=1
+         NAME=%NAMES%_$NAME
+         @endif
+      @endif
+   @endif
+
+   @ifeq "$NAME" "$NAMES"
+   NAMES=
+   @endif
+
 run_script !irc_add_room "@name=$NAME"
-;
-@ifdef $OUTPUT
-@ifndef $ASSIGN
-@ifndef $RENAME
-NEW_ROOM=$OUTPUT
-;
-POS=@strpos:-:$NEW_ROOM
-@ifdef $POS
-JPOS=@$POS+1
-JOIN_TOKEN=@substr:$JPOS:$NEW_ROOM
-NEW_ROOM=@substr:0,$POS:$NEW_ROOM
-@endif
-;
-.run_script !irc_join "@name=$USER,@room=$NEW_ROOM"
-;
-@ifndef $ERROR
-@ifdef $NAMES
-.run_script !irc_add_room "@name=%NEW_ROOM%_%DUMMY_JOIN_UUID%_$NAMES"
-@endif
-@endif
-;
-@endif
-@endif
-@endif
-;
+
+   @ifdef $OUTPUT
+      @ifndef $ASSIGN
+         @ifndef $RENAME
+         NEW_ROOM=$OUTPUT
+
+         POS=@strpos:-:$NEW_ROOM
+            @ifdef $POS
+            JPOS=@$POS+1
+            JOIN_TOKEN=@substr:$JPOS:$NEW_ROOM
+            NEW_ROOM=@substr:0,$POS:$NEW_ROOM
+            @endif
+
+         .run_script !irc_join "@name=$USER,@room=$NEW_ROOM"
+
+            @ifndef $ERROR
+               @ifdef $NAMES
+               .run_script !irc_add_room "@name=%NEW_ROOM%_%DUMMY_JOIN_UUID%_$NAMES"
+               @endif
+            @endif
+
+         @endif
+      @endif
+   @endif
+
 @endif

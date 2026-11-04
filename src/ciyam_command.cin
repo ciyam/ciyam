@@ -1,52 +1,52 @@
 ; Copyright (c) 2022-2026 CIYAM Developers
-;
+
 ; Distributed under the MIT/X11 software license, please refer to the file license.txt
 ; in the root project directory or http://www.opensource.org/licenses/mit-license.php.
-;
+
 @ifndef $1
 #NOTE: This script requires an application protocol command name.
 @else
-;
+
 CMD_AND_ARGS=$1
-;
+
 ; NOTE: If need more than eight command arguments then use '-' as
 ; the first command argument and then use comma separators so the
 ; second command argument will becomes all the other args.
-;
-@ifdef "$2"
-@ifeq "$2" "-"
-SPACED=@repstr:,/ :$3
-CMD_AND_ARGS=$1 $SPACED
-@else
-CMD_AND_ARGS=$1 $2
-@ifdef "$3"
-CMD_AND_ARGS=$1 $2 $3
-@ifdef "$4"
-CMD_AND_ARGS=$1 $2 $3 $4
-@ifdef "$5"
-CMD_AND_ARGS=$1 $2 $3 $4 $5
-@ifdef "$6"
-CMD_AND_ARGS=$1 $2 $3 $4 $5 $6
-@ifdef "$7"
-CMD_AND_ARGS=$1 $2 $3 $4 $5 $6 $7
-@ifdef "$8"
-CMD_AND_ARGS=$1 $2 $3 $4 $5 $6 $7 $8
-@ifdef "$9"
-CMD_AND_ARGS=$1 $2 $3 $4 $5 $6 $7 $8 $9
-@endif
-@endif
-@endif
-@endif
-@endif
-@endif
-@endif
-@endif
-@endif
-;
+
+   @ifdef "$2"
+      @ifeq "$2" "-"
+      SPACED=@repstr:,/ :$3
+      CMD_AND_ARGS=$1 $SPACED
+      @else
+      CMD_AND_ARGS=$1 $2
+         @ifdef "$3"
+         CMD_AND_ARGS=$1 $2 $3
+            @ifdef "$4"
+            CMD_AND_ARGS=$1 $2 $3 $4
+               @ifdef "$5"
+               CMD_AND_ARGS=$1 $2 $3 $4 $5
+                  @ifdef "$6"
+                  CMD_AND_ARGS=$1 $2 $3 $4 $5 $6
+                     @ifdef "$7"
+                     CMD_AND_ARGS=$1 $2 $3 $4 $5 $6 $7
+                        @ifdef "$8"
+                        CMD_AND_ARGS=$1 $2 $3 $4 $5 $6 $7 $8
+                           @ifdef "$9"
+                           CMD_AND_ARGS=$1 $2 $3 $4 $5 $6 $7 $8 $9
+                           @endif
+                        @endif
+                     @endif
+                  @endif
+               @endif
+            @endif
+         @endif
+      @endif
+   @endif
+
 .$CMD_AND_ARGS
-;
-@ifdef $OUTPUT
-#$OUTPUT
-@endif
-;
+
+   @ifdef $OUTPUT
+   #$OUTPUT
+   @endif
+
 @endif

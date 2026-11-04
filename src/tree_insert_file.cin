@@ -1,8 +1,8 @@
 ; Copyright (c) 2019-2026 CIYAM Developers
-;
+
 ; Distributed under the MIT/X11 software license, please refer to the file license.txt
 ; in the root project directory or http://www.opensource.org/licenses/mit-license.php.
-;
+
 NUM_ARGS=0
 @ifdef $1
 NUM_ARGS=@$NUM_ARGS+1
@@ -22,11 +22,11 @@ NUM_ARGS=@$NUM_ARGS+1
 @ifdef $6
 NUM_ARGS=@$NUM_ARGS+1
 @endif
-;
+
 @ifneq "$NUM_ARGS" "6"
 #NOTE: This script needs tree tag, trunk name, branch expr, sub-directory path, file and base path.
 @else
-;
+
 TREE=$1
 TRUNK=$2
 BRANCH=$3
@@ -34,22 +34,22 @@ SUBDIR=$4
 FILE=$5
 BASE_PATH=$6
 PREFIX=$7
-;
+
 TAGP=@repstr:\//.:$SUBDIR
-@ifdef $PREFIX
-TAGP=$PREFIX$TAGP
-@endif
-;
-@ifndef $MAX_FILE_SIZE
-MAX_FILE_SIZE=1M
-@endif
-;
+   @ifdef $PREFIX
+   TAGP=$PREFIX$TAGP
+   @endif
+
+   @ifndef $MAX_FILE_SIZE
+   MAX_FILE_SIZE=1M
+   @endif
+
 CIYAM_FILE_NAME=$BASE_PATH/$SUBDIR/$FILE
-;
+
 .file_put $MAX_FILE_SIZE*$BASE_PATH/$SUBDIR/$FILE $BASE_PATH/?$TAGP.$FILE
 .file_list -a=?$TAGP.$FILE -d=$SUBDIR/$FILE -sort $TREE:$TRUNK:$BRANCH !$TREE
-@ifndef $PREFIX
-.file_tag -remove $TAGP.$FILE
-@endif
-;
+   @ifndef $PREFIX
+   .file_tag -remove $TAGP.$FILE
+   @endif
+
 @endif

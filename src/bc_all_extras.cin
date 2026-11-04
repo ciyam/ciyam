@@ -1,17 +1,17 @@
 ; Copyright (c) 2023-2026 CIYAM Developers
-;
+
 ; Distributed under the MIT/X11 software license, please refer to the file license.txt
 ; in the root project directory or http://www.opensource.org/licenses/mit-license.php.
-;
+
 BACKUP_EXTRAS=
 SHARED_EXTRAS=
 PEER_HUB_EXTRAS=
-;
+
 EXTRA=1
 SEPARATOR=
-;
+
 @:LOOP
-;
+
 @label NEXT
 .system_variable @blockchain_backup_%EXTRA%_identity
 @ifndef $OUTPUT
@@ -19,21 +19,21 @@ SEPARATOR=
 @else
 BACKUP_EXTRAS=$BACKUP_EXTRAS$SEPARATOR$OUTPUT
 .system_variable @blockchain_shared_%EXTRA%_identity
-@ifdef $OUTPUT
-SHARED_EXTRAS=$SHARED_EXTRAS$SEPARATOR$OUTPUT
-@endif
+   @ifdef $OUTPUT
+   SHARED_EXTRAS=$SHARED_EXTRAS$SEPARATOR$OUTPUT
+   @endif
 .system_variable @blockchain_peer_hub_%EXTRA%_identity
-@ifdef $OUTPUT
-PEER_HUB_EXTRAS=$PEER_HUB_EXTRAS$SEPARATOR$OUTPUT
+   @ifdef $OUTPUT
+   PEER_HUB_EXTRAS=$PEER_HUB_EXTRAS$SEPARATOR$OUTPUT
+   @endif
 @endif
-@endif
-;
+
 @skip
-;
+
 @:NEXT
-;
+
 SEPARATOR=,
 EXTRA=@$EXTRA+1
 !!@:LOOP
-;
+
 @:DONE

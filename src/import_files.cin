@@ -1,323 +1,323 @@
 ; Copyright (c) 2019-2026 CIYAM Developers
-;
+
 ; Distributed under the MIT/X11 software license, please refer to the file license.txt
 ; in the root project directory or http://www.opensource.org/licenses/mit-license.php.
-;
+
 @ifndef $1
 #NOTE: The script requires a starting directory point to import from the branch below.
 @else
 ERROR=
-;
+
 TAG_PREFIX=$2
 SUB_DIRECTORY=$3
 FILES_EXPRESSION=@repstr:;/,:$4
 PATHS_EXPRESSION=@repstr:;/,:$5
-;
+
 .session_variable @set commence
 .session_variable @deque commence
-;
-@ifdef $CIYAM_STREAM_CIPHER
-.session_variable @stream_cipher $CIYAM_STREAM_CIPHER
-@endif
-;
+
+   @ifdef $CIYAM_STREAM_CIPHER
+   .session_variable @stream_cipher $CIYAM_STREAM_CIPHER
+   @endif
+
 HAS_REPO_LIST_INFO=
 .system_variable @blockchain_backup_identity
-@ifdef $OUTPUT
-@ifdef $REPO_CRYPT_PASSWORD
-HAS_REPO_LIST_INFO=1
-.session_variable @repo_crypt_password $REPO_CRYPT_PASSWORD
-@endif
-@endif
-;
-@ifndef $HAS_REPO_LIST_INFO
-.system_variable @blockchain_shared_identity
-@ifdef $OUTPUT
-@ifdef $USE_SHARED_ARCHIVE
-.file_archive -clear $OUTPUT
-@endif
-@ifdef $ENCRYPTED_PASSWORD
-.system_variable $ENCRYPTED_PASSWORD
-.session_variable @encrypted_password "$OUTPUT"
-@endif
-@endif
-@endif
-;
-@ifdef $CIYAM_ARCHIVE_PATH
-.session_variable @blockchain_archive_path "$CIYAM_ARCHIVE_PATH"
-@else
-@ifdef $USE_BACKUP_ARCHIVE
-.system_variable @blockchain_backup_identity
-.file_archives -path_only $OUTPUT
-.session_variable @blockchain_archive_path "$OUTPUT"
-@else
-@ifdef $USE_SHARED_ARCHIVE
-.system_variable @blockchain_shared_identity
-.file_archives -path_only $OUTPUT
-.session_variable @blockchain_archive_path "$OUTPUT"
-@endif
-@endif
-@endif
-;
+   @ifdef $OUTPUT
+      @ifdef $REPO_CRYPT_PASSWORD
+      HAS_REPO_LIST_INFO=1
+      .session_variable @repo_crypt_password $REPO_CRYPT_PASSWORD
+      @endif
+   @endif
+
+   @ifndef $HAS_REPO_LIST_INFO
+   .system_variable @blockchain_shared_identity
+      @ifdef $OUTPUT
+         @ifdef $USE_SHARED_ARCHIVE
+         .file_archive -clear $OUTPUT
+         @endif
+         @ifdef $ENCRYPTED_PASSWORD
+         .system_variable $ENCRYPTED_PASSWORD
+         .session_variable @encrypted_password "$OUTPUT"
+         @endif
+      @endif
+   @endif
+
+   @ifdef $CIYAM_ARCHIVE_PATH
+   .session_variable @blockchain_archive_path "$CIYAM_ARCHIVE_PATH"
+   @else
+      @ifdef $USE_BACKUP_ARCHIVE
+      .system_variable @blockchain_backup_identity
+      .file_archives -path_only $OUTPUT
+      .session_variable @blockchain_archive_path "$OUTPUT"
+      @else
+         @ifdef $USE_SHARED_ARCHIVE
+         .system_variable @blockchain_shared_identity
+         .file_archives -path_only $OUTPUT
+         .session_variable @blockchain_archive_path "$OUTPUT"
+         @endif
+      @endif
+   @endif
+
 IS_CURRENT=
-@ifeq "$1" "."
-@ifeq "$1" "$3"
-IS_CURRENT=1
-@endif
-@endif
-;
-@ifndef $MAX_SIZE
-MAX_SIZE=10.8G
-@endif
-;
+   @ifeq "$1" "."
+      @ifeq "$1" "$3"
+      IS_CURRENT=1
+      @endif
+   @endif
+
+   @ifndef $MAX_SIZE
+   MAX_SIZE=10.8G
+   @endif
+
 FILES_EXTRA=
-@ifndef $FILES_EXPRESSION
-FILES_EXTRA=::$MAX_SIZE
-@else
-FILES_EXTRA=:$FILES_EXPRESSION:$MAX_SIZE
-@endif
-;
+   @ifndef $FILES_EXPRESSION
+   FILES_EXTRA=::$MAX_SIZE
+   @else
+   FILES_EXTRA=:$FILES_EXPRESSION:$MAX_SIZE
+   @endif
+
 PATHS_EXTRA=
-@ifdef $PATHS_EXPRESSION
-PATHS_EXTRA=:$PATHS_EXPRESSION
-@endif
-;
-@ifndef $MAX_FILE_SIZE
-MAX_FILE_SIZE=1M
-@endif
-;
+   @ifdef $PATHS_EXPRESSION
+   PATHS_EXTRA=:$PATHS_EXPRESSION
+   @endif
+
+   @ifndef $MAX_FILE_SIZE
+   MAX_FILE_SIZE=1M
+   @endif
+
 SUB_DIR_IS_LEAF=
-;
+
 START=@fullpath:$1
-@ifndef $ERROR
-.session_variable @uuid
-UUID=$OUTPUT
-;
-@ifeq "$SUB_DIRECTORY" ":"
-PATHS=.
-SUB_DIRECTORY=
-SUB_DIR_IS_LEAF=1
-@else
-@ifndef $SUB_DIRECTORY
-PATHS=@paths:$START$PATHS_EXTRA
-@else
-@ifndef $IS_CURRENT
-PATHS=@paths:$START$PATHS_EXTRA/$SUB_DIRECTORY
-@endif
-@ifndef $PATHS
-.session_variable @deque ""
-DIRS=@repstr:\//\n:$SUB_DIRECTORY
-@ifneq $SUB_DIRECTORY "$DIRS"
-SUB_DIR_IS_LEAF=1
-TAG_PREFIX=@substr:0,-1:$TAG_PREFIX
-.session_variable @deque "~$DIRS"
-.session_variable @deque back
-PATHS=$OUTPUT
-.session_variable @deque pop_back
-.session_variable @deque
-SUB_DIRECTORY=@repstr:\n/\/:$OUTPUT
-@else
-SUB_DIR_IS_LEAF=1
-PATHS=$SUB_DIRECTORY
-SUB_DIRECTORY=
-@endif
-@endif
-@endif
-@endif
-.session_variable @set ""
-.session_variable @set "~$PATHS"
-;
-@ifdef $CIYAM_SECONDS
-.session_variable @progress_seconds $CIYAM_SECONDS
-@endif
-;
-@:PATH_LOOP
-@label NEXT_PATH
-.session_variable @deque ""
-.session_variable @deque @set
-.session_variable @set ""
-;
-.session_variable @deque front
-NEXT_PATH=$OUTPUT
-;
-@ifndef $NEXT_PATH
-@label EXIT_PATH
-@endif
-;
-@skip
-@:NEXT_PATH
-IS_FIRST=
-HAD_ANY_FILES=
-.session_variable @deque pop_front
-.session_variable @set @deque
-;
-@ifndef $SUB_DIRECTORY
-FILES=@files:$START/$NEXT_PATH$FILES_EXTRA
-@else
-FILES=@files:$START/$SUB_DIRECTORY/$NEXT_PATH$FILES_EXTRA
-@endif
-.session_variable @deque ""
-.session_variable @deque "~$FILES"
-;
-LAST_PREFIX=
-;
-@:FILE_LOOP
-@label NEXT_FILE
-;
-.session_variable @deque front
-NEXT_FILE=$OUTPUT
-;
-@ifndef $NEXT_FILE
-@label EXIT_FILE
-@endif
-;
-@skip
-@:NEXT_FILE
-;
-@ifdef $HAD_ANY_FILES
-IS_FIRST=
-@else
-IS_FIRST=1
-@endif
-HAD_ANY_FILES=1
-.session_variable @deque pop_front
-;
-; NOTE: If file name has had an offset and chunk size
-; appended then separate this into prefix and suffix.
-NEXT_NAME=@repstr:\:/\n:$NEXT_FILE
-NAME_PREFIX=%NEXT_NAME:1%
-NAME_SUFFIX=%NEXT_NAME:2%
-;
-@ifneq "$NAME_PREFIX" "$LAST_PREFIX"
-PART_SUFFIX=0
-@else
-PART_SUFFIX=@$PART_SUFFIX+1
-@endif
-;
-LAST_PREFIX=$NAME_PREFIX
-;
-@ifneq "$NAME_SUFFIX" ""
-NAME_SUFFIX=:$PART_SUFFIX
-@endif
-;
-NEXT_NAME=$NAME_PREFIX$NAME_SUFFIX
-;
-; NOTE: The CIYAM_FILE_NAME variable is being
-; used by "ciyam_client" for progress output.
-@ifneq "$CIYAM_FILE_NAME" "@dummy"
-@ifdef $CIYAM_FILE_NAME_ONLY
-CIYAM_FILE_NAME=$NEXT_NAME
-@else
-@ifndef $SUB_DIRECTORY
-@ifeq "." "$NEXT_PATH"
-@ifdef $IS_CURRENT
-CIYAM_FILE_NAME=$NEXT_NAME
-@else
-CIYAM_FILE_NAME=$1/$NEXT_NAME
-@endif
-@else
-CIYAM_FILE_NAME=$1/$NEXT_PATH/$NEXT_NAME
-@endif
-@else
-CIYAM_FILE_NAME=$1/$SUB_DIRECTORY/$NEXT_PATH/$NEXT_NAME
-@endif
-@endif
-@endif
-;
-; NOTE: Each file is split into MAX_FILE_SIZE chunks and
-; the UUID variable is used to tag the "list" file which
-; will be automatically created by "ciyam_client".
-@ifndef $SUB_DIRECTORY
-.file_put $MAX_FILE_SIZE*$1//$NEXT_PATH/$NEXT_FILE $START/?$UUID
-@else
-.file_put $MAX_FILE_SIZE*$1//$SUB_DIRECTORY/$NEXT_PATH/$NEXT_FILE $START/?$UUID
-@endif
-;
-@ifdef $ERROR
-ERROR=
-@ifdef $IS_FIRST
-HAD_ANY_FILES=
-@endif
-@else
-;
-; NOTE: Get the file hash of the tagged "list" of chunks
-; and append it to a "list" that will be effectively the
-; list of files that are in a specific directory.
-.file_hash $UUID
-HASH=$OUTPUT
-;
->>~$UUID
-@ifndef $SUB_DIRECTORY
-@ifeq "." "$NEXT_PATH"
-#$HASH $NEXT_NAME
-@else
-#$HASH $NEXT_PATH/$NEXT_NAME
-@endif
-@else
-#$HASH $SUB_DIRECTORY/$NEXT_PATH/$NEXT_NAME
-@endif
->>
-;
-@ifdef $HAS_REPO_LIST_INFO
-.file_hash $UUID.info
-HASH=$OUTPUT
-;
->>~$UUID.info
-@ifndef $SUB_DIRECTORY
-@ifeq "." "$NEXT_PATH"
-#$HASH $NEXT_NAME
-@else
-#$HASH $NEXT_PATH/$NEXT_NAME
-@endif
-@else
-#$HASH $SUB_DIRECTORY/$NEXT_PATH/$NEXT_NAME
-@endif
->>
-@endif
-;
-@endif
-;
-!!@:FILE_LOOP
-;
-@:EXIT_FILE
-;
-@ifdef $HAD_ANY_FILES
-@ifdef $SUB_DIR_IS_LEAF
-TAG_NAME=
-@else
-; NOTE: Change '/' to '.' for the tag.
-TAG_NAME=@repstr:\//.:$NEXT_PATH
-@endif
-;
-.file_put ?~$UUID $TAG_PREFIX$TAG_NAME
-~rm "~$UUID"
-.file_tag -remove $UUID
-;
-@ifdef $HAS_REPO_LIST_INFO
-.file_put ?~$UUID.info .$TAG_PREFIX$TAG_NAME
-~rm "~$UUID.info"
-.file_tag -remove $UUID.info
-@endif
-;
-@endif
-;
-!!@:PATH_LOOP
-;
-@:EXIT_PATH
-;
-@ifdef $CIYAM_STREAM_CIPHER
-.session_variable @stream_cipher ""
-@endif
-;
-@ifdef $REPO_CRYPT_PASSWORD
-.session_variable @repo_crypt_password ""
-@else
-@ifdef $ENCRYPTED_PASSWORD
-.session_variable @encrypted_password ""
-@endif
-@endif
-;
-.session_variable @set complete
-.session_variable @deque complete
-;
-@endif
+   @ifndef $ERROR
+   .session_variable @uuid
+   UUID=$OUTPUT
+
+      @ifeq "$SUB_DIRECTORY" ":"
+      PATHS=.
+      SUB_DIRECTORY=
+      SUB_DIR_IS_LEAF=1
+      @else
+         @ifndef $SUB_DIRECTORY
+         PATHS=@paths:$START$PATHS_EXTRA
+         @else
+            @ifndef $IS_CURRENT
+            PATHS=@paths:$START$PATHS_EXTRA/$SUB_DIRECTORY
+            @endif
+            @ifndef $PATHS
+            .session_variable @deque ""
+            DIRS=@repstr:\//\n:$SUB_DIRECTORY
+               @ifneq $SUB_DIRECTORY "$DIRS"
+               SUB_DIR_IS_LEAF=1
+               TAG_PREFIX=@substr:0,-1:$TAG_PREFIX
+               .session_variable @deque "~$DIRS"
+               .session_variable @deque back
+               PATHS=$OUTPUT
+               .session_variable @deque pop_back
+               .session_variable @deque
+               SUB_DIRECTORY=@repstr:\n/\/:$OUTPUT
+               @else
+               SUB_DIR_IS_LEAF=1
+               PATHS=$SUB_DIRECTORY
+               SUB_DIRECTORY=
+               @endif
+            @endif
+         @endif
+      @endif
+   .session_variable @set ""
+   .session_variable @set "~$PATHS"
+
+      @ifdef $CIYAM_SECONDS
+      .session_variable @progress_seconds $CIYAM_SECONDS
+      @endif
+
+   @:PATH_LOOP
+   @label NEXT_PATH
+   .session_variable @deque ""
+   .session_variable @deque @set
+   .session_variable @set ""
+
+   .session_variable @deque front
+   NEXT_PATH=$OUTPUT
+
+      @ifndef $NEXT_PATH
+      @label EXIT_PATH
+      @endif
+
+   @skip
+   @:NEXT_PATH
+   IS_FIRST=
+   HAD_ANY_FILES=
+   .session_variable @deque pop_front
+   .session_variable @set @deque
+
+      @ifndef $SUB_DIRECTORY
+      FILES=@files:$START/$NEXT_PATH$FILES_EXTRA
+      @else
+      FILES=@files:$START/$SUB_DIRECTORY/$NEXT_PATH$FILES_EXTRA
+      @endif
+   .session_variable @deque ""
+   .session_variable @deque "~$FILES"
+
+   LAST_PREFIX=
+
+   @:FILE_LOOP
+   @label NEXT_FILE
+
+   .session_variable @deque front
+   NEXT_FILE=$OUTPUT
+
+      @ifndef $NEXT_FILE
+      @label EXIT_FILE
+      @endif
+
+   @skip
+   @:NEXT_FILE
+
+      @ifdef $HAD_ANY_FILES
+      IS_FIRST=
+      @else
+      IS_FIRST=1
+      @endif
+   HAD_ANY_FILES=1
+   .session_variable @deque pop_front
+
+   ; NOTE: If file name has had an offset and chunk size
+   ; appended then separate this into prefix and suffix.
+   NEXT_NAME=@repstr:\:/\n:$NEXT_FILE
+   NAME_PREFIX=%NEXT_NAME:1%
+   NAME_SUFFIX=%NEXT_NAME:2%
+
+      @ifneq "$NAME_PREFIX" "$LAST_PREFIX"
+      PART_SUFFIX=0
+      @else
+      PART_SUFFIX=@$PART_SUFFIX+1
+      @endif
+
+   LAST_PREFIX=$NAME_PREFIX
+
+      @ifneq "$NAME_SUFFIX" ""
+      NAME_SUFFIX=:$PART_SUFFIX
+      @endif
+
+   NEXT_NAME=$NAME_PREFIX$NAME_SUFFIX
+
+   ; NOTE: The CIYAM_FILE_NAME variable is being
+   ; used by "ciyam_client" for progress output.
+      @ifneq "$CIYAM_FILE_NAME" "@dummy"
+         @ifdef $CIYAM_FILE_NAME_ONLY
+         CIYAM_FILE_NAME=$NEXT_NAME
+         @else
+            @ifndef $SUB_DIRECTORY
+               @ifeq "." "$NEXT_PATH"
+                  @ifdef $IS_CURRENT
+                  CIYAM_FILE_NAME=$NEXT_NAME
+                  @else
+                  CIYAM_FILE_NAME=$1/$NEXT_NAME
+                  @endif
+               @else
+               CIYAM_FILE_NAME=$1/$NEXT_PATH/$NEXT_NAME
+               @endif
+            @else
+            CIYAM_FILE_NAME=$1/$SUB_DIRECTORY/$NEXT_PATH/$NEXT_NAME
+            @endif
+         @endif
+      @endif
+
+   ; NOTE: Each file is split into MAX_FILE_SIZE chunks and
+   ; the UUID variable is used to tag the "list" file which
+   ; will be automatically created by "ciyam_client".
+      @ifndef $SUB_DIRECTORY
+      .file_put $MAX_FILE_SIZE*$1//$NEXT_PATH/$NEXT_FILE $START/?$UUID
+      @else
+      .file_put $MAX_FILE_SIZE*$1//$SUB_DIRECTORY/$NEXT_PATH/$NEXT_FILE $START/?$UUID
+      @endif
+
+      @ifdef $ERROR
+      ERROR=
+         @ifdef $IS_FIRST
+         HAD_ANY_FILES=
+         @endif
+      @else
+
+      ; NOTE: Get the file hash of the tagged "list" of chunks
+      ; and append it to a "list" that will be effectively the
+      ; list of files that are in a specific directory.
+      .file_hash $UUID
+      HASH=$OUTPUT
+
+      >>~$UUID
+         @ifndef $SUB_DIRECTORY
+            @ifeq "." "$NEXT_PATH"
+            #$HASH $NEXT_NAME
+            @else
+            #$HASH $NEXT_PATH/$NEXT_NAME
+            @endif
+         @else
+         #$HASH $SUB_DIRECTORY/$NEXT_PATH/$NEXT_NAME
+         @endif
+      >>
+
+         @ifdef $HAS_REPO_LIST_INFO
+         .file_hash $UUID.info
+         HASH=$OUTPUT
+
+         >>~$UUID.info
+            @ifndef $SUB_DIRECTORY
+               @ifeq "." "$NEXT_PATH"
+               #$HASH $NEXT_NAME
+               @else
+               #$HASH $NEXT_PATH/$NEXT_NAME
+               @endif
+            @else
+            #$HASH $SUB_DIRECTORY/$NEXT_PATH/$NEXT_NAME
+            @endif
+         >>
+         @endif
+
+      @endif
+
+   !!@:FILE_LOOP
+
+   @:EXIT_FILE
+
+      @ifdef $HAD_ANY_FILES
+         @ifdef $SUB_DIR_IS_LEAF
+         TAG_NAME=
+         @else
+         ; NOTE: Change '/' to '.' for the tag.
+         TAG_NAME=@repstr:\//.:$NEXT_PATH
+         @endif
+
+      .file_put ?~$UUID $TAG_PREFIX$TAG_NAME
+      ~rm "~$UUID"
+      .file_tag -remove $UUID
+
+         @ifdef $HAS_REPO_LIST_INFO
+         .file_put ?~$UUID.info .$TAG_PREFIX$TAG_NAME
+         ~rm "~$UUID.info"
+         .file_tag -remove $UUID.info
+         @endif
+
+      @endif
+
+   !!@:PATH_LOOP
+
+   @:EXIT_PATH
+
+      @ifdef $CIYAM_STREAM_CIPHER
+      .session_variable @stream_cipher ""
+      @endif
+
+      @ifdef $REPO_CRYPT_PASSWORD
+      .session_variable @repo_crypt_password ""
+      @else
+         @ifdef $ENCRYPTED_PASSWORD
+         .session_variable @encrypted_password ""
+         @endif
+      @endif
+
+   .session_variable @set complete
+   .session_variable @deque complete
+
+   @endif
 @endif

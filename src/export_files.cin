@@ -1,58 +1,58 @@
 ; Copyright (c) 2019-2026 CIYAM Developers
-;
+
 ; Distributed under the MIT/X11 software license, please refer to the file license.txt
 ; in the root project directory or http://www.opensource.org/licenses/mit-license.php.
-;
+
 @ifndef $2
 #NOTE: The script requires a list tag and a local directory to export the files below.
 @else
-;
-@ifdef $CIYAM_STREAM_CIPHER
-.session_variable @stream_cipher $CIYAM_STREAM_CIPHER
-@endif
-;
-@ifdef $REPO_CRYPT_PASSWORD
-.session_variable @repo_crypt_password $REPO_CRYPT_PASSWORD
-@else
-@ifdef $ENCRYPTED_PASSWORD
-.system_variable $ENCRYPTED_PASSWORD
-.session_variable @encrypted_password "$OUTPUT"
-@endif
-@endif
-;
+
+   @ifdef $CIYAM_STREAM_CIPHER
+   .session_variable @stream_cipher $CIYAM_STREAM_CIPHER
+   @endif
+
+   @ifdef $REPO_CRYPT_PASSWORD
+   .session_variable @repo_crypt_password $REPO_CRYPT_PASSWORD
+   @else
+      @ifdef $ENCRYPTED_PASSWORD
+      .system_variable $ENCRYPTED_PASSWORD
+      .session_variable @encrypted_password "$OUTPUT"
+      @endif
+   @endif
+
 .session_variable @blockchain_archive_path
 OLD_ARCHIVE_PATH=$OUTPUT
-;
-@ifdef $CIYAM_ARCHIVE_PATH
-.session_variable @blockchain_archive_path "$CIYAM_ARCHIVE_PATH"
-@else
-@ifdef $USE_BACKUP_ARCHIVE
-.system_variable @blockchain_backup_identity
-.file_archives -path_only $OUTPUT
-.session_variable @blockchain_archive_path "$OUTPUT"
-@else
-@ifdef $USE_SHARED_ARCHIVE
-.system_variable @blockchain_shared_identity
-.file_archives -path_only $OUTPUT
-.session_variable @blockchain_archive_path "$OUTPUT"
-@endif
-@endif
-@endif
-;
+
+   @ifdef $CIYAM_ARCHIVE_PATH
+   .session_variable @blockchain_archive_path "$CIYAM_ARCHIVE_PATH"
+   @else
+      @ifdef $USE_BACKUP_ARCHIVE
+      .system_variable @blockchain_backup_identity
+      .file_archives -path_only $OUTPUT
+      .session_variable @blockchain_archive_path "$OUTPUT"
+      @else
+         @ifdef $USE_SHARED_ARCHIVE
+         .system_variable @blockchain_shared_identity
+         .file_archives -path_only $OUTPUT
+         .session_variable @blockchain_archive_path "$OUTPUT"
+         @endif
+      @endif
+   @endif
+
 .file_get $1 *$2/
-;
-@ifdef $CIYAM_STREAM_CIPHER
-.session_variable @stream_cipher ""
-@endif
-;
-@ifdef $REPO_CRYPT_PASSWORD
-.session_variable @repo_crypt_password ""
-@else
-@ifdef $ENCRYPTED_PASSWORD
-.session_variable @encrypted_password ""
-@endif
-@endif
-;
+
+   @ifdef $CIYAM_STREAM_CIPHER
+   .session_variable @stream_cipher ""
+   @endif
+
+   @ifdef $REPO_CRYPT_PASSWORD
+   .session_variable @repo_crypt_password ""
+   @else
+      @ifdef $ENCRYPTED_PASSWORD
+      .session_variable @encrypted_password ""
+      @endif
+   @endif
+
 .session_variable @blockchain_archive_path "$OLD_ARCHIVE_PATH"
-;
+
 @endif

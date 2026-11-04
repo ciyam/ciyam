@@ -1,132 +1,132 @@
 ; Copyright (c) 2024-2026 CIYAM Developers
-;
+
 ; Distributed under the MIT/X11 software license, please refer to the file license.txt
 ; in the root project directory or http://www.opensource.org/licenses/mit-license.php.
-;
+
 @ifndef $1
 #Usage: complete_restore.cin <storage>
 @else
-;
+
 STORAGE=$1
-;
+
 APP_DIR=@lower:$STORAGE
-;
+
 .system_variable @restore_system 1 ""
-@ifeq "$OUTPUT" "1"
-.system_variable @restore_in_progress 1
-~echo "(restore completion is now commencing)" > Backup.txt
-;
-.wait -no_progress 5000
-;
-@ifdef $WEBDIR
-~touch $WEBDIR/$APP_DIR/.prepare.restore
-@endif
-;
-.system_variable @disallow_connections 1
-;
-.session_kill *
-;
-CHECK=0
-;
-NUM_TRIES=0
-MAX_TRIES=60
-;
-@label NEXT
-@:LOOP
-;
-.wait 1000
-NUM_TRIES=@$NUM_TRIES+1
-;
-.session_list -min
-SECOND_LINE=%OUTPUT:2%
-;
-@ifndef $SECOND_LINE
-@label END_LOOP
-@endif
-;
-CHECK=@$NUM_TRIES>$MAX_TRIES
-;
-@ifeq "$CHECK" "1"
-@label END_LOOP
-@endif
-;
-@skip
-;
-@:NEXT
-;
-!!@:LOOP
-;
-@:END_LOOP
-.system_variable @disallow_connections ""
-;
-@ifeq "$CHECK" "1"
-.system_variable @preparing_restore ""
-ERROR=Failed due to active sessions not being automatically terminated.
-~echo "*** ERROR: RESTORE FAILED DUE TO ACTIVE SESSIONS NOT AUTOMATICALLY TERMINATED ***" > Backup.txt
-@else
-@ifdef $WEBDIR
-CIYAM_EXEC_SYSTEM_APPEND=$WEBDIR/$APP_DIR/restore.log
-~rm -f Backup.txt
-~./log_head.sh $CIYAM_EXEC_SYSTEM_APPEND
-;
-.system_variable @backup_files
-BACKUP_FILES_PATH=$OUTPUT
-;
-@ifdef $BACKUP_FILES_PATH
-~cp $BACKUP_FILES_PATH/.ciyam/$STORAGE.backup*.bun.gz .
-;
-WEB_DIRS=@file:~find $WEBDIR -maxdepth 1 -type d -printf "%P?"
-APP_DIR_REMOVED=@repstr:?$APP_DIR?/?:$WEB_DIRS
-;
-@ifeq "$WEB_DIRS" "$APP_DIR_REMOVED"
-.system_variable @preparing_restore ""
-ERROR=Failed due to unexpected missing '$STORAGE' application directory.
-~echo "Error: $ERROR" >> $CIYAM_EXEC_SYSTEM_APPEND
-@else
-~tar -xf $BACKUP_FILES_PATH/.ciyam/System_Files_And_Archives.tar -m
-#Restored application server files, archives and databases.
-.session_lock -capture 0
-;
-~./ciyam_restore $STORAGE $APP_DIR >> $CIYAM_EXEC_SYSTEM_APPEND
-.system_variable @preparing_restore ""
-;
-NO_ADD_USER=@files::.no_add_user
-@ifdef $NO_ADD_USER
-~echo "(skipped adding users due to '.no_add_user')" >> $CIYAM_EXEC_SYSTEM_APPEND
-@else
-@ifdef $CIYAM_USER
-<add_all_users.cin $STORAGE
-@else
-~echo "(skipped adding users due to missing CIYAM_USER)" >> $CIYAM_EXEC_SYSTEM_APPEND
-@endif
-@endif
-;
-.system_export_repo
-~touch ciyam_base.restore
-@endif
-;
-@endif
-~./log_tail.sh $CIYAM_EXEC_SYSTEM_APPEND
-@else
-.system_variable @preparing_restore ""
-ERROR=Failed due to a WEBDIR environment variable not having being set.
-~echo "*** ERROR: RESTORE FAILED DUE TO UNEXPECTED EMPTY WEBDIR ENVIRONMENT VARIABLE ***" > Backup.txt
-@endif
-@endif
-;
-~rm -f .complete_restore_needed
-.system_variable @restore_in_progress ""
-;
-@ifdef $WEBDIR
-; NOTE: Restart the web server in order to force the FCGI UI to reload all application server information.
-~sudo systemctl stop apache2
-~touch $WEBDIR/ciyam_interface.stop
-~rm -f $WEBDIR/$APP_DIR/.prepare.restore
-~sudo systemctl start apache2
-@endif
-;
-.system_variable @restore_system ""
-.session_lock -release 0
-@endif
-;
+   @ifeq "$OUTPUT" "1"
+   .system_variable @restore_in_progress 1
+   ~echo "(restore completion is now commencing)" > Backup.txt
+
+   .wait -no_progress 5000
+
+      @ifdef $WEBDIR
+      ~touch $WEBDIR/$APP_DIR/.prepare.restore
+      @endif
+
+   .system_variable @disallow_connections 1
+
+   .session_kill *
+
+   CHECK=0
+
+   NUM_TRIES=0
+   MAX_TRIES=60
+
+   @label NEXT
+   @:LOOP
+
+   .wait 1000
+   NUM_TRIES=@$NUM_TRIES+1
+
+   .session_list -min
+   SECOND_LINE=%OUTPUT:2%
+
+      @ifndef $SECOND_LINE
+      @label END_LOOP
+      @endif
+
+   CHECK=@$NUM_TRIES>$MAX_TRIES
+
+      @ifeq "$CHECK" "1"
+      @label END_LOOP
+      @endif
+
+   @skip
+
+   @:NEXT
+
+   !!@:LOOP
+
+   @:END_LOOP
+   .system_variable @disallow_connections ""
+
+      @ifeq "$CHECK" "1"
+      .system_variable @preparing_restore ""
+      ERROR=Failed due to active sessions not being automatically terminated.
+      ~echo "*** ERROR: RESTORE FAILED DUE TO ACTIVE SESSIONS NOT AUTOMATICALLY TERMINATED ***" > Backup.txt
+      @else
+         @ifdef $WEBDIR
+         CIYAM_EXEC_SYSTEM_APPEND=$WEBDIR/$APP_DIR/restore.log
+         ~rm -f Backup.txt
+         ~./log_head.sh $CIYAM_EXEC_SYSTEM_APPEND
+
+         .system_variable @backup_files
+         BACKUP_FILES_PATH=$OUTPUT
+
+            @ifdef $BACKUP_FILES_PATH
+            ~cp $BACKUP_FILES_PATH/.ciyam/$STORAGE.backup*.bun.gz .
+
+            WEB_DIRS=@file:~find $WEBDIR -maxdepth 1 -type d -printf "%P?"
+            APP_DIR_REMOVED=@repstr:?$APP_DIR?/?:$WEB_DIRS
+
+               @ifeq "$WEB_DIRS" "$APP_DIR_REMOVED"
+               .system_variable @preparing_restore ""
+               ERROR=Failed due to unexpected missing '$STORAGE' application directory.
+               ~echo "Error: $ERROR" >> $CIYAM_EXEC_SYSTEM_APPEND
+               @else
+               ~tar -xf $BACKUP_FILES_PATH/.ciyam/System_Files_And_Archives.tar -m
+               #Restored application server files, archives and databases.
+               .session_lock -capture 0
+
+               ~./ciyam_restore $STORAGE $APP_DIR >> $CIYAM_EXEC_SYSTEM_APPEND
+               .system_variable @preparing_restore ""
+
+               NO_ADD_USER=@files::.no_add_user
+                  @ifdef $NO_ADD_USER
+                  ~echo "(skipped adding users due to '.no_add_user')" >> $CIYAM_EXEC_SYSTEM_APPEND
+                  @else
+                     @ifdef $CIYAM_USER
+                     <add_all_users.cin $STORAGE
+                     @else
+                     ~echo "(skipped adding users due to missing CIYAM_USER)" >> $CIYAM_EXEC_SYSTEM_APPEND
+                     @endif
+                  @endif
+
+               .system_export_repo
+               ~touch ciyam_base.restore
+               @endif
+
+            @endif
+         ~./log_tail.sh $CIYAM_EXEC_SYSTEM_APPEND
+         @else
+         .system_variable @preparing_restore ""
+         ERROR=Failed due to a WEBDIR environment variable not having being set.
+         ~echo "*** ERROR: RESTORE FAILED DUE TO UNEXPECTED EMPTY WEBDIR ENVIRONMENT VARIABLE ***" > Backup.txt
+         @endif
+      @endif
+
+   ~rm -f .complete_restore_needed
+   .system_variable @restore_in_progress ""
+
+      @ifdef $WEBDIR
+      ; NOTE: Restart the web server in order to force the FCGI UI to reload all application server information.
+      ~sudo systemctl stop apache2
+      ~touch $WEBDIR/ciyam_interface.stop
+      ~rm -f $WEBDIR/$APP_DIR/.prepare.restore
+      ~sudo systemctl start apache2
+      @endif
+
+   .system_variable @restore_system ""
+   .session_lock -release 0
+   @endif
+
 @endif

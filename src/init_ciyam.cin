@@ -1,36 +1,36 @@
 ; Copyright (c) 2022-2026 CIYAM Developers
-;
+
 ; Distributed under the MIT/X11 software license, please refer to the file license.txt
 ; in the root project directory or http://www.opensource.org/licenses/mit-license.php.
-;
+
 .system_variable @blockchain_backup_identity
-;
+
 @ifeq "$OUTPUT" ""
 <bc_gen.cin -hub @sid
 <bc_gen.cin -hub @sid 1
 <bc_gen.cin -hub @sid 2
 <bc_gen.cin -hub @sid 3
-;
+
 .system_variable >@blockchain_next_extra 1
-;
+
 .system_variable @blockchain_peer_hub_1_identity
 .system_variable >@blockchain_next_peer_hub $OUTPUT
-;
+
 <bc_gen.cin -backup @sid
 <bc_gen.cin -backup @sid 1
 <bc_gen.cin -backup @sid 2
 <bc_gen.cin -backup @sid 3
-;
+
 .system_variable @blockchain_backup_1_identity
 .system_variable >@blockchain_next_backup $OUTPUT
-;
+
 <bc_gen.cin -shared @sid
 <bc_gen.cin -shared @sid 1
 <bc_gen.cin -shared @sid 2
 <bc_gen.cin -shared @sid 3
-;
+
 .system_variable @blockchain_shared_1_identity
 .system_variable >@blockchain_next_shared $OUTPUT
-;
+
 <init_ciyam_peer.cin
 @endif

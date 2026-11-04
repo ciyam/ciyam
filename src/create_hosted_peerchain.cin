@@ -1,8 +1,8 @@
 ; Copyright (c) 2022-2026 CIYAM Developers
-;
+
 ; Distributed under the MIT/X11 software license, please refer to the file license.txt
 ; in the root project directory or http://www.opensource.org/licenses/mit-license.php.
-;
+
 NUM_ARGS=0
 @ifdef $1
 NUM_ARGS=@$NUM_ARGS+1
@@ -10,84 +10,84 @@ NUM_ARGS=@$NUM_ARGS+1
 @ifdef $2
 NUM_ARGS=@$NUM_ARGS+1
 @endif
-;
+
 @ifneq "$NUM_ARGS" "2"
 #NOTE: This script requires an identity and a description.
 @else
 ERROR=
-;
+
 IDENTITY=$1
 DESCRIPTION=$2
 SHARED_SECRET_HASH=$3
-;
+
 REVERSED=@reverse:$IDENTITY
-;
+
 PEER_HUB=
 PEER_TYPE=1
-;
+
 .system_variable @blockchain_peer_hub_identity
-@ifeq "$IDENTITY" "$OUTPUT"
-PEER_HUB=1
-PEER_TYPE=-2
-@endif
-;
+   @ifeq "$IDENTITY" "$OUTPUT"
+   PEER_HUB=1
+   PEER_TYPE=-2
+   @endif
+
 DEMO=
 DEMO_IDENTITIES=@file:ciyam_demo_identities.lst
-;
+
 DEMO_WITHOUT_IDENTITY=@repstr:$IDENTITY/:$DEMO_IDENTITIES
-@ifneq "$DEMO_IDENTITIES" "$DEMO_WITHOUT_IDENTITY"
-DEMO=1
-@endif
-;
+   @ifneq "$DEMO_IDENTITIES" "$DEMO_WITHOUT_IDENTITY"
+   DEMO=1
+   @endif
+
 .system_variable @peer_port
 PEER_PORT=$OUTPUT
-@ifeq "$PEER_PORT" ""
-#Error: Found empty '@peer_port' system variable value.
-@else
-@ifdef $PEER_HUB
-.peer_listen $PEER_PORT $IDENTITY
-@else
-.peer_listen $PEER_PORT $IDENTITY,$REVERSED
-@endif
-;
-@ifndef $ERROR
-;
-.system_peerchain_create -num=0 -auto=1 -type=$PEER_TYPE $IDENTITY localhost:$PEER_PORT "$DESCRIPTION"
-;
-@ifndef $ERROR
-@ifdef $SHARED_SECRET_HASH
-.identity -raw
-.=crypto_hash $IDENTITY$REVERSED$OUTPUT
-OBFUSCATED_IDENTITY=@substr:0,9:$OUTPUT
-;
-.=system_variable >@secret_hash_$OBFUSCATED_IDENTITY $SHARED_SECRET_HASH
-@endif
-;
-@ifdef $PEER_HUB
-#Created global peerchain entry for identity '$IDENTITY'.
-@else
-;
-@ifdef $DEMO
-BACKUP_SIZE=10GB
-SHARED_SIZE=1GB
-@else
-BACKUP_SIZE=100GB
-SHARED_SIZE=10GB
-@endif
-;
-.system_variable @files_area_path
-FILES_AREA_DIR=$OUTPUT
-;
-~mkdir $FILES_AREA_DIR/$IDENTITY
-~mkdir $FILES_AREA_DIR/$REVERSED
-;
-.file_archive -add $FILES_AREA_DIR/$IDENTITY $BACKUP_SIZE $IDENTITY
-.file_archive -add $FILES_AREA_DIR/$REVERSED $SHARED_SIZE $REVERSED
-;
-#Created global peerchain entry and file archives for identity '$IDENTITY'.
-@endif
-@endif
-@endif
-@endif
-;
+   @ifeq "$PEER_PORT" ""
+   #Error: Found empty '@peer_port' system variable value.
+   @else
+      @ifdef $PEER_HUB
+      .peer_listen $PEER_PORT $IDENTITY
+      @else
+      .peer_listen $PEER_PORT $IDENTITY,$REVERSED
+      @endif
+
+      @ifndef $ERROR
+
+      .system_peerchain_create -num=0 -auto=1 -type=$PEER_TYPE $IDENTITY localhost:$PEER_PORT "$DESCRIPTION"
+
+         @ifndef $ERROR
+            @ifdef $SHARED_SECRET_HASH
+            .identity -raw
+            .=crypto_hash $IDENTITY$REVERSED$OUTPUT
+            OBFUSCATED_IDENTITY=@substr:0,9:$OUTPUT
+
+            .=system_variable >@secret_hash_$OBFUSCATED_IDENTITY $SHARED_SECRET_HASH
+            @endif
+
+            @ifdef $PEER_HUB
+            #Created global peerchain entry for identity '$IDENTITY'.
+            @else
+
+               @ifdef $DEMO
+               BACKUP_SIZE=10GB
+               SHARED_SIZE=1GB
+               @else
+               BACKUP_SIZE=100GB
+               SHARED_SIZE=10GB
+               @endif
+
+            .system_variable @files_area_path
+            FILES_AREA_DIR=$OUTPUT
+
+            ~mkdir $FILES_AREA_DIR/$IDENTITY
+            ~mkdir $FILES_AREA_DIR/$REVERSED
+
+            .file_archive -add $FILES_AREA_DIR/$IDENTITY $BACKUP_SIZE $IDENTITY
+            .file_archive -add $FILES_AREA_DIR/$REVERSED $SHARED_SIZE $REVERSED
+
+            #Created global peerchain entry and file archives for identity '$IDENTITY'.
+            @endif
+         @endif
+      @endif
+   @endif
+
 @endif

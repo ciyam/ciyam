@@ -1,8 +1,8 @@
 ; Copyright (c) 2022-2026 CIYAM Developers
-;
+
 ; Distributed under the MIT/X11 software license, please refer to the file license.txt
 ; in the root project directory or http://www.opensource.org/licenses/mit-license.php.
-;
+
 NUM_ARGS=0
 @ifdef $1
 NUM_ARGS=@$NUM_ARGS+1
@@ -25,12 +25,12 @@ NUM_ARGS=@$NUM_ARGS+1
 @ifdef $7
 NUM_ARGS=@$NUM_ARGS+1
 @endif
-;
+
 @ifneq "$NUM_ARGS" "7"
 #NOTE: This script requires an identity, auto-start, peer type, description, host name, port number and number of helpers.
 @else
 ERROR=
-;
+
 IDENTITY=$1
 AUTO_START=$2
 PEER_TYPE=$3
@@ -40,98 +40,98 @@ HOST_PORT=$6
 NUM_HELPERS=$7
 EXTRA_VALUE=$8
 SHARED_SECRET=$9
-;
+
 IS_ONLY=
 BACKUP_ONLY=
 SHARED_ONLY=
 PEERCHAIN_HUB=
-;
-@ifeq "$PEER_TYPE" "2"
-BACKUP_ONLY=1
-@endif
-;
-@ifeq "$PEER_TYPE" "3"
-SHARED_ONLY=1
-@endif
-;
-@ifeq "$PEER_TYPE" "4"
-PEERCHAIN_HUB=1
-@endif
-;
-@ifdef $BACKUP_ONLY
-IS_ONLY=1
-@else
-@ifdef $SHARED_ONLY
-IS_ONLY=1
-@else
-@ifdef $PEERCHAIN_HUB
-IS_ONLY=1
-@endif
-@endif
-@endif
-;
+
+   @ifeq "$PEER_TYPE" "2"
+   BACKUP_ONLY=1
+   @endif
+
+   @ifeq "$PEER_TYPE" "3"
+   SHARED_ONLY=1
+   @endif
+
+   @ifeq "$PEER_TYPE" "4"
+   PEERCHAIN_HUB=1
+   @endif
+
+   @ifdef $BACKUP_ONLY
+   IS_ONLY=1
+   @else
+      @ifdef $SHARED_ONLY
+      IS_ONLY=1
+      @else
+         @ifdef $PEERCHAIN_HUB
+         IS_ONLY=1
+         @endif
+      @endif
+   @endif
+
 REVERSED=@reverse:$IDENTITY
-;
+
 .system_peerchain_create -num=$NUM_HELPERS -auto=$AUTO_START -type=$PEER_TYPE -extra=$EXTRA_VALUE -secret=$SHARED_SECRET $IDENTITY $HOST_NAME-$HOST_PORT "$DESCRIPTION"
-;
-@ifndef $ERROR
-;
-@ifdef $SHARED_SECRET
-.decrypt $SHARED_SECRET
-.=crypto_hash -hex -x=100000 $OUTPUT
-.=system_variable >@secret_hash_$IDENTITY $OUTPUT
-@endif
-;
-@ifndef $PEERCHAIN_HUB
-.system_variable @files_area_path
-FILES_AREA_DIR=$OUTPUT
-;
-<bc_next_extra.cin
-;
-DEMO=
-@ifeq "$IDENTITY" "735d12ca9"
-DEMO=1
-@endif
-@ifeq "$IDENTITY" "9ac21d537"
-DEMO=1
-@endif
-@ifeq "$IDENTITY" "27a7bd560"
-DEMO=1
-@endif
-@ifeq "$IDENTITY" "065db7a72"
-DEMO=1
-@endif
-;
-@ifdef $DEMO
-BACKUP_SIZE=10GB
-SHARED_SIZE=1GB
-@else
-BACKUP_SIZE=100GB
-SHARED_SIZE=10GB
-@endif
-;
-@ifdef $SHARED_ONLY
-~mkdir $FILES_AREA_DIR/$REVERSED
-.file_archive -add $FILES_AREA_DIR/$REVERSED $SHARED_SIZE $REVERSED
-@else
-~mkdir $FILES_AREA_DIR/$IDENTITY
-.file_archive -add $FILES_AREA_DIR/$IDENTITY $BACKUP_SIZE $IDENTITY
-@endif
-;
-@ifndef $IS_ONLY
-~mkdir $FILES_AREA_DIR/$REVERSED
-.file_archive -add $FILES_AREA_DIR/$REVERSED $SHARED_SIZE $REVERSED
-@endif
-@endif
-;
-@ifdef $PEERCHAIN_HUB
-#Created global peerchain entry for identity '$IDENTITY'.
-@else
-@ifdef $IS_ONLY
-#Created global peerchain entry and file archive for identity '$IDENTITY'.
-@else
-#Created global peerchain entry and file archives for identity '$IDENTITY'.
-@endif
-@endif
-@endif
+
+   @ifndef $ERROR
+
+      @ifdef $SHARED_SECRET
+      .decrypt $SHARED_SECRET
+      .=crypto_hash -hex -x=100000 $OUTPUT
+      .=system_variable >@secret_hash_$IDENTITY $OUTPUT
+      @endif
+
+      @ifndef $PEERCHAIN_HUB
+      .system_variable @files_area_path
+      FILES_AREA_DIR=$OUTPUT
+
+      <bc_next_extra.cin
+
+      DEMO=
+         @ifeq "$IDENTITY" "735d12ca9"
+         DEMO=1
+         @endif
+         @ifeq "$IDENTITY" "9ac21d537"
+         DEMO=1
+         @endif
+         @ifeq "$IDENTITY" "27a7bd560"
+         DEMO=1
+         @endif
+         @ifeq "$IDENTITY" "065db7a72"
+         DEMO=1
+         @endif
+
+         @ifdef $DEMO
+         BACKUP_SIZE=10GB
+         SHARED_SIZE=1GB
+         @else
+         BACKUP_SIZE=100GB
+         SHARED_SIZE=10GB
+         @endif
+
+         @ifdef $SHARED_ONLY
+         ~mkdir $FILES_AREA_DIR/$REVERSED
+         .file_archive -add $FILES_AREA_DIR/$REVERSED $SHARED_SIZE $REVERSED
+         @else
+         ~mkdir $FILES_AREA_DIR/$IDENTITY
+         .file_archive -add $FILES_AREA_DIR/$IDENTITY $BACKUP_SIZE $IDENTITY
+         @endif
+
+         @ifndef $IS_ONLY
+         ~mkdir $FILES_AREA_DIR/$REVERSED
+         .file_archive -add $FILES_AREA_DIR/$REVERSED $SHARED_SIZE $REVERSED
+         @endif
+      @endif
+
+      @ifdef $PEERCHAIN_HUB
+      #Created global peerchain entry for identity '$IDENTITY'.
+      @else
+         @ifdef $IS_ONLY
+         #Created global peerchain entry and file archive for identity '$IDENTITY'.
+         @else
+         #Created global peerchain entry and file archives for identity '$IDENTITY'.
+         @endif
+      @endif
+   @endif
 @endif

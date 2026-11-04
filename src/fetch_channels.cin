@@ -1,102 +1,102 @@
 ; Copyright (c) 2023-2026 CIYAM Developers
-;
+
 ; Distributed under the MIT/X11 software license, please refer to the file license.txt
 ; in the root project directory or http://www.opensource.org/licenses/mit-license.php.
-;
+
 @ifndef $1
 #Usage: fetch_channels.cin <storage>
 @else
 ERROR=
-;
+
 STORAGE=$1
-;
+
 .system_variable @fetch_channels 1 ""
-@ifeq $OUTPUT 1
-;
-.session_variable @deque commence
-;
-.system_variable @skip_fetch_connects
-SKIP_CONNECTS=$OUTPUT
-;
-.storage_init $STORAGE
-@ifndef $ERROR
-.module_list
-MODULES=$OUTPUT
-MODULES=@repstr: /\n:$MODULES
-MODULE=%MODULES:2%
-;
-@retain *
-<$MODULE.channel_information.vars.lst
-;
-@ifndef $FLD_ACTIVE
-.pf $MODULE $CLASS_NAME "$FLD_IDENTITY " $FLD_IDENTITY,$FLD_SHARED_SECRET,$FLD_SUBMIT_CHAIN_ID,$FLD_RECEIVE_CHAIN_ID,$FLD_HOST_NAME,$FLD_PORT_NUMBER -min
-@else
-.pf $MODULE $CLASS_NAME "$FLD_ACTIVE,$FLD_IDENTITY#1 1" $FLD_IDENTITY,$FLD_SHARED_SECRET,$FLD_SUBMIT_CHAIN_ID,$FLD_RECEIVE_CHAIN_ID,$FLD_HOST_NAME,$FLD_PORT_NUMBER -min
-@endif
-LINES=$OUTPUT
-.session_variable @deque "~$LINES"
-.storage_term
-;
-@ifdef $LINES
-@:LOOP
-;
-@label NEXT
-.session_variable @deque front
-NEXT_LINE=$OUTPUT
-;
-@ifndef $NEXT_LINE
-@label DONE
-@endif
-;
-@skip
-;
-@:NEXT
-NEXT_LINE=@repstr:,/\n:$NEXT_LINE
-IDENTITY=%NEXT_LINE:1%
-SHARED_SECRET=%NEXT_LINE:2%
-SUBMIT_IDENTITY=%NEXT_LINE:3%
-RECEIVE_IDENTITY=%NEXT_LINE:4%
-HOST_NAME=%NEXT_LINE:5%
-HOST_PORT=%NEXT_LINE:6%
-;
-@ifndef $SKIP_CONNECTS
-@ifneq "$HOST_NAME" "ciyam.peer"
-.system_variable @secret_hash_$SUBMIT_IDENTITY
-@ifdef $OUTPUT
-.session_variable @secret_hash @secret_hash_$SUBMIT_IDENTITY
-@endif
-.peer_connect $RECEIVE_IDENTITY:$SUBMIT_IDENTITY $HOST_NAME-$HOST_PORT -user
-@ifdef $ERROR
-ERROR=
-@else
-.wait 250
-@endif
-@endif
-@endif
-;
-.system_variable @shared_secret_$IDENTITY $SHARED_SECRET
-ENCRYPTED_PASSWORD=@shared_secret_$IDENTITY
-;
-<fetch_from_channel.cin $STORAGE $IDENTITY
-;
-.session_variable @deque pop_front
-!!@:LOOP
-@:END_LOOP
-;
-@:DONE
-@endif
-;
-@endif
-;
-.session_variable @deque complete
-;
-.system_variable @fetch_channels ""
-;
-; NOTE: It is expected that both of these system
-; variables are assigned before script execution.
-.system_variable @fetching_channels ""
-.system_variable @skip_fetch_connects ""
-;
-@endif
-;
+   @ifeq $OUTPUT 1
+
+   .session_variable @deque commence
+
+   .system_variable @skip_fetch_connects
+   SKIP_CONNECTS=$OUTPUT
+
+   .storage_init $STORAGE
+      @ifndef $ERROR
+      .module_list
+      MODULES=$OUTPUT
+      MODULES=@repstr: /\n:$MODULES
+      MODULE=%MODULES:2%
+
+      @retain *
+      <$MODULE.channel_information.vars.lst
+
+         @ifndef $FLD_ACTIVE
+         .pf $MODULE $CLASS_NAME "$FLD_IDENTITY " $FLD_IDENTITY,$FLD_SHARED_SECRET,$FLD_SUBMIT_CHAIN_ID,$FLD_RECEIVE_CHAIN_ID,$FLD_HOST_NAME,$FLD_PORT_NUMBER -min
+         @else
+         .pf $MODULE $CLASS_NAME "$FLD_ACTIVE,$FLD_IDENTITY#1 1" $FLD_IDENTITY,$FLD_SHARED_SECRET,$FLD_SUBMIT_CHAIN_ID,$FLD_RECEIVE_CHAIN_ID,$FLD_HOST_NAME,$FLD_PORT_NUMBER -min
+         @endif
+      LINES=$OUTPUT
+      .session_variable @deque "~$LINES"
+      .storage_term
+
+         @ifdef $LINES
+         @:LOOP
+
+         @label NEXT
+         .session_variable @deque front
+         NEXT_LINE=$OUTPUT
+
+            @ifndef $NEXT_LINE
+            @label DONE
+            @endif
+
+         @skip
+
+         @:NEXT
+         NEXT_LINE=@repstr:,/\n:$NEXT_LINE
+         IDENTITY=%NEXT_LINE:1%
+         SHARED_SECRET=%NEXT_LINE:2%
+         SUBMIT_IDENTITY=%NEXT_LINE:3%
+         RECEIVE_IDENTITY=%NEXT_LINE:4%
+         HOST_NAME=%NEXT_LINE:5%
+         HOST_PORT=%NEXT_LINE:6%
+
+            @ifndef $SKIP_CONNECTS
+               @ifneq "$HOST_NAME" "ciyam.peer"
+               .system_variable @secret_hash_$SUBMIT_IDENTITY
+                  @ifdef $OUTPUT
+                  .session_variable @secret_hash @secret_hash_$SUBMIT_IDENTITY
+                  @endif
+               .peer_connect $RECEIVE_IDENTITY:$SUBMIT_IDENTITY $HOST_NAME-$HOST_PORT -user
+                  @ifdef $ERROR
+                  ERROR=
+                  @else
+                  .wait 250
+                  @endif
+               @endif
+            @endif
+
+         .system_variable @shared_secret_$IDENTITY $SHARED_SECRET
+         ENCRYPTED_PASSWORD=@shared_secret_$IDENTITY
+
+         <fetch_from_channel.cin $STORAGE $IDENTITY
+
+         .session_variable @deque pop_front
+         !!@:LOOP
+         @:END_LOOP
+
+         @:DONE
+         @endif
+
+      @endif
+
+   .session_variable @deque complete
+
+   .system_variable @fetch_channels ""
+
+   ; NOTE: It is expected that both of these system
+   ; variables are assigned before script execution.
+   .system_variable @fetching_channels ""
+   .system_variable @skip_fetch_connects ""
+
+   @endif
+
 @endif

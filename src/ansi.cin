@@ -1,15 +1,15 @@
 ; Copyright (c) 2026 CIYAM Developers
-;
+
 ; Distributed under the MIT/X11 software license, please refer to the file license.txt
 ; in the root project directory or http://www.opensource.org/licenses/mit-license.php.
-;
+
 @ifndef $CIYAM_ANSI
 CIYAM_ANSI=1
-;
+
 ; NOTE: Colors and other ANSI
 ; escape codes can be handled
 ; as per these examples:
-;
+
 ; This is %OR%on red%N%.
 ; This is %R%red text%N%.
 ; This is %LR%light red%N%.
@@ -22,7 +22,7 @@ CIYAM_ANSI=1
 ; These words are %BW%%OR%bold on red%N%.
 ; These words are %O%%I%orange italics%N%.
 ; These words are %K%%OG%black on green%N%.
-;
+
 A=\e[34m
 C=\e[36m
 G=\e[32m
@@ -31,7 +31,7 @@ O=\e[33m
 P=\e[35m
 R=\e[31m
 W=\e[37m
-;
+
 LA=\e[94m
 LC=\e[96m
 LG=\e[92m
@@ -40,7 +40,7 @@ LO=\e[93m
 LP=\e[95m
 LR=\e[91m
 LW=\e[97m
-;
+
 OA=\e[44m
 OC=\e[46m
 OG=\e[42m
@@ -49,15 +49,15 @@ OO=\e[43m
 OP=\e[45m
 OR=\e[41m
 OW=\e[47m
-;
+
 B=\e[1m
 I=\e[3m
 S=\e[9m
 U=\e[4m
-;
+
 ; NOTE: Reset to normal.
 N=\e[0m
-;
+
 ; NOTE: Bold works best if it
 ; is paired with a color - so
 ; these are combinations.
@@ -68,7 +68,7 @@ BK=$B$K
 BO=$B$O
 BR=$B$R
 BW=$B$W
-;
+
 BI=$B$I
-;
+
 @endif

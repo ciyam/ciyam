@@ -1,58 +1,58 @@
 @ifeq "$1" ""
 #Usage: tree_crypt.cin [-repo|-repo_decrypt|-repo_encrypt <repository>] <tag_or_hash> [<password>]
 @else
-;
+
 ARGS=
 OPTS=
 IS_REPO=
 PREFIX=-recurse
 REPOSITORY=
-;
-@ifeq "$1" "-repo"
-IS_REPO=1
-REPOSITORY=$2
-@endif
-;
-@ifeq "$1" "-repo_decrypt"
-IS_REPO=1
-PREFIX=-decrypt -recurse
-REPOSITORY=$2
-;
-.string_message decrypting
-PROGRESS_PREFIX=$OUTPUT
-@endif
-;
-@ifeq "$1" "-repo_encrypt"
-IS_REPO=1
-PREFIX=-encrypt -recurse
-REPOSITORY=$2
-;
-.string_message encrypting
-PROGRESS_PREFIX=$OUTPUT
-@endif
-;
-@ifndef $IS_REPO
-TAG_OR_HASH=$1
-ARGS=$2
-OPTS=-blobs_only
-@else
-TAG_OR_HASH=$3
-ARGS=$4
-OPTS=-blobs_only_repo
-@endif
-;
-@ifdef $REPOSITORY
-OPTS=$OPTS $REPOSITORY
-@endif
-;
-@ifeq "$ARGS" ""
-.session_variable @pubkey
-EXT_PUBKEY=$OUTPUT
-DATA_AND_PUBKEY=@password:Enter Password:$EXT_PUBKEY
-ARGS=@repstr:\:/ -k=:$DATA_AND_PUBKEY
-@endif
-;
-@ifdef $ARGS
-.=file_crypt $PREFIX $OPTS -cipher=cc $TAG_OR_HASH $~ARGS
-@endif
+
+   @ifeq "$1" "-repo"
+   IS_REPO=1
+   REPOSITORY=$2
+   @endif
+
+   @ifeq "$1" "-repo_decrypt"
+   IS_REPO=1
+   PREFIX=-decrypt -recurse
+   REPOSITORY=$2
+
+   .string_message decrypting
+   PROGRESS_PREFIX=$OUTPUT
+   @endif
+
+   @ifeq "$1" "-repo_encrypt"
+   IS_REPO=1
+   PREFIX=-encrypt -recurse
+   REPOSITORY=$2
+
+   .string_message encrypting
+   PROGRESS_PREFIX=$OUTPUT
+   @endif
+
+   @ifndef $IS_REPO
+   TAG_OR_HASH=$1
+   ARGS=$2
+   OPTS=-blobs_only
+   @else
+   TAG_OR_HASH=$3
+   ARGS=$4
+   OPTS=-blobs_only_repo
+   @endif
+
+   @ifdef $REPOSITORY
+   OPTS=$OPTS $REPOSITORY
+   @endif
+
+   @ifeq "$ARGS" ""
+   .session_variable @pubkey
+   EXT_PUBKEY=$OUTPUT
+   DATA_AND_PUBKEY=@password:Enter Password:$EXT_PUBKEY
+   ARGS=@repstr:\:/ -k=:$DATA_AND_PUBKEY
+   @endif
+
+   @ifdef $ARGS
+   .=file_crypt $PREFIX $OPTS -cipher=cc $TAG_OR_HASH $~ARGS
+   @endif
 @endif

@@ -1,8 +1,8 @@
 ; Copyright (c) 2026 CIYAM Developers
-;
+
 ; Distributed under the MIT/X11 software license, please refer to the file license.txt
 ; in the root project directory or http://www.opensource.org/licenses/mit-license.php.
-;
+
 NUM_ARGS=0
 @ifdef $1
 NUM_ARGS=@$NUM_ARGS+1
@@ -10,29 +10,29 @@ NUM_ARGS=@$NUM_ARGS+1
 @ifdef $2
 NUM_ARGS=@$NUM_ARGS+1
 @endif
-;
+
 @ifneq "$NUM_ARGS" "2"
 ERROR=Encoded reactions and user are required for "reactions".
 @else
-;
+
 ENCODED=$1
 USER_NAME=$2
 IS_FOR_POLL=$3
-;
-@ifndef $CIYAM_ANSI
-@retain *
-<ansi.cin
-@endif
-;
+
+   @ifndef $CIYAM_ANSI
+   @retain *
+   <ansi.cin
+   @endif
+
 USER_SHORT=
-@ifneq "$USER_NAME" "ALL"
-HASH_OFF=10
-SHORT_LEN=6
-;
-HASH=@sha256:$USER_NAME
-USER_SHORT=@substr:$HASH_OFF,$SHORT_LEN:$HASH
-@endif
-;
+   @ifneq "$USER_NAME" "ALL"
+   HASH_OFF=10
+   SHORT_LEN=6
+
+   HASH=@sha256:$USER_NAME
+   USER_SHORT=@substr:$HASH_OFF,$SHORT_LEN:$HASH
+   @endif
+
 POLL_00=🇦
 POLL_01=🇧
 POLL_02=🇨
@@ -43,7 +43,7 @@ POLL_06=​​🇬
 POLL_07=​🇭
 POLL_08=​🇮
 POLL_09=​​🇯
-;
+
 EMOJI_00=👌
 EMOJI_01=👍
 EMOJI_02=👎
@@ -54,67 +54,67 @@ EMOJI_06=😲
 EMOJI_07=🤓
 EMOJI_08=🤦‍♂️
 EMOJI_09=❤️
-;
+
 RLINES=@repstr:o/\n:$ENCODED
-;
+
 ALL_EMOJIS=
 SHORT_LEN=6
-;
+
 @label RNEXT
-;
+
 @:RLOOP
 NEXT_RLINE=%RLINES:1%
-;
-@ifndef $NEXT_RLINE
-@label END_RLOOP
-@endif
-;
+
+   @ifndef $NEXT_RLINE
+   @label END_RLOOP
+   @endif
+
 @skip
-;
+
 @:RNEXT
-;
+
 EMOJI=@substr:0,2:$NEXT_RLINE
-;
+
 SHORTS=@substr:2:$NEXT_RLINE
-;
-@ifdef $USER_SHORT
-CHECK_SHORTS=@repstr:%USER_SHORT%x/:$SHORTS
-@ifeq "$SHORTS" "$CHECK_SHORTS"
-SHORTS=
-@endif
-@endif
-;
+
+   @ifdef $USER_SHORT
+   CHECK_SHORTS=@repstr:%USER_SHORT%x/:$SHORTS
+      @ifeq "$SHORTS" "$CHECK_SHORTS"
+      SHORTS=
+      @endif
+   @endif
+
 NUM_USERS=0
-@ifdef $SHORTS
-SHORTS=@repstr:x/:$SHORTS
-;
-SHORTS_LEN=@strlen:$SHORTS
-NUM_USERS=@$SHORTS_LEN/$SHORT_LEN
-@endif
-;
-@if $NUM_USERS #> 0
-NUM_EXTRA=@$NUM_USERS-1
-@ifeq $NUM_EXTRA 0
-@ifdef $IS_FOR_POLL
-NEXT_EMOJI=@strlit:$POLL_%EMOJI%($NUM_USERS)
-@else
-NEXT_EMOJI=@strlit:$EMOJI_%EMOJI%
-@endif
-@else
-@ifdef $IS_FOR_POLL
-NEXT_EMOJI=@strlit:$POLL_%EMOJI%($NUM_USERS)
-@else
-NEXT_EMOJI=@strlit:$EMOJI_%EMOJI%(+$NUM_EXTRA)
-@endif
-@endif
-;
-ALL_EMOJIS=@strlit:$ALL_EMOJIS$NEXT_EMOJI
-@endif
-;
+   @ifdef $SHORTS
+   SHORTS=@repstr:x/:$SHORTS
+
+   SHORTS_LEN=@strlen:$SHORTS
+   NUM_USERS=@$SHORTS_LEN/$SHORT_LEN
+   @endif
+
+   @if $NUM_USERS #> 0
+   NUM_EXTRA=@$NUM_USERS-1
+      @ifeq $NUM_EXTRA 0
+         @ifdef $IS_FOR_POLL
+         NEXT_EMOJI=@strlit:$POLL_%EMOJI%($NUM_USERS)
+         @else
+         NEXT_EMOJI=@strlit:$EMOJI_%EMOJI%
+         @endif
+      @else
+         @ifdef $IS_FOR_POLL
+         NEXT_EMOJI=@strlit:$POLL_%EMOJI%($NUM_USERS)
+         @else
+         NEXT_EMOJI=@strlit:$EMOJI_%EMOJI%(+$NUM_EXTRA)
+         @endif
+      @endif
+
+   ALL_EMOJIS=@strlit:$ALL_EMOJIS$NEXT_EMOJI
+   @endif
+
 RLINES=%RLINES:-1%
-;
+
 !!@:RLOOP
-;
+
 @:END_RLOOP
-;
+
 @endif

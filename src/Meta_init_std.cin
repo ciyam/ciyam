@@ -1,8 +1,8 @@
 ; Copyright (c) 2017-2026 CIYAM Developers
-;
+
 ; Distributed under the MIT/X11 software license, please refer to the file license.txt
 ; in the root project directory or http://www.opensource.org/licenses/mit-license.php.
-;
+
 storage_comment "meta std (start)"
 pc sys 20120102 100 102100 string "102101=string,102102=0,102109=1,102111=T000"
 pc sys 20120102 100 102100 datetime "102101=datetime,102102=1,102109=1,102111=T001"

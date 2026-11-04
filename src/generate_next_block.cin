@@ -1,179 +1,179 @@
 ; Copyright (c) 2022-2026 CIYAM Developers
-;
+
 ; Distributed under the MIT/X11 software license, please refer to the file license.txt
 ; in the root project directory or http://www.opensource.org/licenses/mit-license.php.
-;
+
 @ifndef $1
 #NOTE: This script requires a blockchain identity (else "-hub", "-backup" or "-shared").
 @else
 ERROR=
-;
+
 IDENT=$1
-;
+
 SEED=$2
 TREE=$3
 UTIME=$4
-;
+
 FIRST=1
 BACKUP=
 SHARED=
 PEER_HUB=
 EXTRA_VAL=
 HAS_NO_OPL=
-;
+
 .session_variable @deque commence
-;
+
 @label NEXT
-;
-@ifdef $TREE
-.file_hash $TREE
-@ifdef $ERROR
-@label END_LOOP
-@endif
-@endif
-;
+
+   @ifdef $TREE
+   .file_hash $TREE
+      @ifdef $ERROR
+      @label END_LOOP
+      @endif
+   @endif
+
 @skip
-;
+
 @:NEXT
-@ifeq "$SEED" "dummy"
-SEED=
-@endif
-;
-@ifeq "$IDENT" "-backup"
-BACKUP=1
-@endif
-;
-@ifdef $CIYAM_SECONDS
-.session_variable @progress_seconds $CIYAM_SECONDS
-@endif
-;
-@ifdef $BACKUP
-.system_variable @blockchain_backup_identity
-IDENT=$OUTPUT
-.system_variable @blockchain_backup_?_identity
-@ifdef $OUTPUT
-.session_variable @deque "~$OUTPUT"
-@endif
-@endif
-;
-@ifeq "$1" "-shared"
-.system_variable @blockchain_shared_identity
-IDENT=$OUTPUT
-SHARED=1
-.system_variable @blockchain_shared_?_identity
-@ifdef $OUTPUT
-.session_variable @deque "~$OUTPUT"
-@endif
-@endif
-;
-@ifeq "$1" "-hub"
-.system_variable @blockchain_peer_hub_identity
-IDENT=$OUTPUT
-PEER_HUB=1
-.system_variable @blockchain_peer_hub_?_identity
-@ifdef $OUTPUT
-.session_variable @deque "~$OUTPUT"
-@endif
-@endif
-;
-@ifeq "$SEED" ""
-.system_variable @blockchain_data_key_$IDENT
-@ifndef $OUTPUT
-SEED=@sid
-@else
-; NOTE: Double escape is required as this variable
-; is being passed to other scripts as an argument.
-SEED=\\@sid:$OUTPUT
-@endif
-@endif
-;
-@ifndef $UTIME
-UTIME=@unix:
-@endif
-;
+   @ifeq "$SEED" "dummy"
+   SEED=
+   @endif
+
+   @ifeq "$IDENT" "-backup"
+   BACKUP=1
+   @endif
+
+   @ifdef $CIYAM_SECONDS
+   .session_variable @progress_seconds $CIYAM_SECONDS
+   @endif
+
+   @ifdef $BACKUP
+   .system_variable @blockchain_backup_identity
+   IDENT=$OUTPUT
+   .system_variable @blockchain_backup_?_identity
+      @ifdef $OUTPUT
+      .session_variable @deque "~$OUTPUT"
+      @endif
+   @endif
+
+   @ifeq "$1" "-shared"
+   .system_variable @blockchain_shared_identity
+   IDENT=$OUTPUT
+   SHARED=1
+   .system_variable @blockchain_shared_?_identity
+      @ifdef $OUTPUT
+      .session_variable @deque "~$OUTPUT"
+      @endif
+   @endif
+
+   @ifeq "$1" "-hub"
+   .system_variable @blockchain_peer_hub_identity
+   IDENT=$OUTPUT
+   PEER_HUB=1
+   .system_variable @blockchain_peer_hub_?_identity
+      @ifdef $OUTPUT
+      .session_variable @deque "~$OUTPUT"
+      @endif
+   @endif
+
+   @ifeq "$SEED" ""
+   .system_variable @blockchain_data_key_$IDENT
+      @ifndef $OUTPUT
+      SEED=@sid
+      @else
+      ; NOTE: Double escape is required as this variable
+      ; is being passed to other scripts as an argument.
+      SEED=\\@sid:$OUTPUT
+      @endif
+   @endif
+
+   @ifndef $UTIME
+   UTIME=@unix:
+   @endif
+
 @:LOOP
-;
-@ifdef $EXTRA_VAL
-EXTRA_VAL=@$EXTRA_VAL+1
-@endif
-;
-@ifneq "$IDENT" ""
-.file_core -header bc.$IDENT.zenith h
-@ifndef $ERROR
-BLK_HEIGHT=$OUTPUT
-NEW_HEIGHT=@$BLK_HEIGHT+1
-;
-@ifdef $PEER_HUB
-<bc_gen_put_list.cin $IDENT $NEW_HEIGHT
-.file_tags bc.$IDENT.$NEW_HEIGHT.opl*
-@ifndef $OUTPUT
-HAS_NO_OPL=1
-@endif
-@endif
-;
-@ifndef $HAS_NO_OPL
-;
-; NOTE: Will not regenerate keys for the current height if the
-; private key file already exists (to allow changes to be made
-; to the key entropy being used for new blocks whilst ensuring
-; that signatures for any existing public keys can then easily
-; still be generated after such a change has been introduced).
-;
-.file_tags bc.$IDENT.$BLK_HEIGHT.key*
-@ifndef $OUTPUT
-; NOTE: Negative height value used to create just one key pair.
-<bc_gen_keys.cin $SEED $IDENT -$BLK_HEIGHT $EXTRA_VAL
-@endif
-;
-<bc_gen_keys.cin $SEED $IDENT $NEW_HEIGHT $EXTRA_VAL
-;
-; NOTE: The .key file for the new height
-; is removed (as only the current height
-; key is used for the block signature).
-.file_kill -q bc.$IDENT.$NEW_HEIGHT.key
-;
-<bc_gen_block.cin $IDENT $NEW_HEIGHT $TREE
-;
-@ifndef $ERROR
-.string_message current_height_prefix
-.system_variable %$IDENT "$OUTPUT$NEW_HEIGHT"
-@endif
-;
-@ifdef $FIRST
-FIRST=
-@ifndef $SHARED
-@ifndef $PEER_HUB
-.file_repo_entries -remove_obsolete $IDENT
-@endif
-@endif
-@endif
-;
-@endif
-@endif
-@endif
-;
+
+   @ifdef $EXTRA_VAL
+   EXTRA_VAL=@$EXTRA_VAL+1
+   @endif
+
+   @ifneq "$IDENT" ""
+   .file_core -header bc.$IDENT.zenith h
+      @ifndef $ERROR
+      BLK_HEIGHT=$OUTPUT
+      NEW_HEIGHT=@$BLK_HEIGHT+1
+
+         @ifdef $PEER_HUB
+         <bc_gen_put_list.cin $IDENT $NEW_HEIGHT
+         .file_tags bc.$IDENT.$NEW_HEIGHT.opl*
+            @ifndef $OUTPUT
+            HAS_NO_OPL=1
+            @endif
+         @endif
+
+         @ifndef $HAS_NO_OPL
+
+         ; NOTE: Will not regenerate keys for the current height if the
+         ; private key file already exists (to allow changes to be made
+         ; to the key entropy being used for new blocks whilst ensuring
+         ; that signatures for any existing public keys can then easily
+         ; still be generated after such a change has been introduced).
+
+         .file_tags bc.$IDENT.$BLK_HEIGHT.key*
+            @ifndef $OUTPUT
+            ; NOTE: Negative height value used to create just one key pair.
+            <bc_gen_keys.cin $SEED $IDENT -$BLK_HEIGHT $EXTRA_VAL
+            @endif
+
+         <bc_gen_keys.cin $SEED $IDENT $NEW_HEIGHT $EXTRA_VAL
+
+         ; NOTE: The .key file for the new height
+         ; is removed (as only the current height
+         ; key is used for the block signature).
+         .file_kill -q bc.$IDENT.$NEW_HEIGHT.key
+
+         <bc_gen_block.cin $IDENT $NEW_HEIGHT $TREE
+
+            @ifndef $ERROR
+            .string_message current_height_prefix
+            .system_variable %$IDENT "$OUTPUT$NEW_HEIGHT"
+            @endif
+
+            @ifdef $FIRST
+            FIRST=
+               @ifndef $SHARED
+                  @ifndef $PEER_HUB
+                  .file_repo_entries -remove_obsolete $IDENT
+                  @endif
+               @endif
+            @endif
+
+         @endif
+      @endif
+   @endif
+
 @label NEXT
 .session_variable @deque front
-@ifdef $OUTPUT
-LINES=@repstr: /\n:$OUTPUT
-IDENT=%LINES:2%
-@else
-@label END_LOOP
-@endif
-;
+   @ifdef $OUTPUT
+   LINES=@repstr: /\n:$OUTPUT
+   IDENT=%LINES:2%
+   @else
+   @label END_LOOP
+   @endif
+
 @skip
-;
+
 @:NEXT
-;
-@ifndef $EXTRA_VAL
-EXTRA_VAL=0
-@endif
-;
+
+   @ifndef $EXTRA_VAL
+   EXTRA_VAL=0
+   @endif
+
 .session_variable @deque pop_front
 !!@:LOOP
-;
+
 @:END_LOOP
-;
+
 .session_variable @deque complete
-;
+
 @endif

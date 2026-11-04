@@ -1,8 +1,8 @@
 ; Copyright (c) 2026 CIYAM Developers
-;
+
 ; Distributed under the MIT/X11 software license, please refer to the file license.txt
 ; in the root project directory or http://www.opensource.org/licenses/mit-license.php.
-;
+
 NUM_ARGS=0
 @ifdef $1
 NUM_ARGS=@$NUM_ARGS+1
@@ -13,265 +13,265 @@ NUM_ARGS=@$NUM_ARGS+1
 @ifdef $3
 NUM_ARGS=@$NUM_ARGS+1
 @endif
-;
+
 @ifneq "$NUM_ARGS" "3"
 ERROR=Need device, session and username values.
 @else
-;
+
 DEVICE=$1
 SESSION=$2
 USERNAME=$3
-;
+
 ENTRANCE_ROOM=0000000
 RESERVED_ROOM=0000001
 STARTING_ROOM=0000002
-;
+
 CIYAM_TMP_DIR=/tmp/ciyam
-;
+
 ~mkdir -p $CIYAM_TMP_DIR/$SESSION
-;
+
 .session_variable @uuid
 TEMP_NAME=$OUTPUT
-;
+
 TEMP_FILE=$CIYAM_TMP_DIR/$SESSION/$TEMP_NAME
-;
+
 OUTPUT_FILE=$CIYAM_TMP_DIR/web.$USERNAME.$DEVICE
-;
+
 ~rm -f $OUTPUT_FILE
-;
+
 LOCKED=
-;
+
 .system_variable @sid_locked
-@ifdef $OUTPUT
-EXTEND=@files::.web_extend_admin
-@ifdef $EXTEND
-LOCKED=-1
-@else
-EXTERN=@files::.web_extern_admin
-@ifdef $EXTERN
-LOCKED=-2
-@else
-LOCKED=-0
-@endif
-@endif
-@endif
-;
+   @ifdef $OUTPUT
+   EXTEND=@files::.web_extend_admin
+      @ifdef $EXTEND
+      LOCKED=-1
+      @else
+      EXTERN=@files::.web_extern_admin
+         @ifdef $EXTERN
+         LOCKED=-2
+         @else
+         LOCKED=-0
+         @endif
+      @endif
+   @endif
+
 IRC_ROOM=$ENTRANCE_ROOM
-;
+
 IRC_ALLOWED=
-;
+
 .system_variable @irc_test
-@ifdef $OUTPUT
-IRC_ALLOWED=1
-@else
-; NOTE: If just started (or a reload has just taken place)
-; then may need to wait for a second for the "auto script"
-; session to have executed "irc_store_or_restore" (use the
-; system variable "@no_irc" to skip if not using - it will
-; will be cleared if "irc_store_or_restore" is later run).
-.system_variable @no_irc
-@ifndef $OUTPUT
-.system_variable @auto_script
-@ifdef $OUTPUT
-IRC_ALLOWED=1
-.system_variable @irc_allow
-@ifndef $OUTPUT
-.wait 200
-.system_variable @irc_allow
-@ifndef $OUTPUT
-.wait 300
-.system_variable @irc_allow
-@ifndef $OUTPUT
-.wait 500
-.system_variable @irc_allow
-@ifndef $OUTPUT
-IRC_ALLOWED=
-@endif
-@endif
-@endif
-@endif
-@endif
-;
-@endif
-;
-@endif
-;
-@ifdef $USERNAME
-@ifdef $IRC_ALLOWED
-IS_NEW_USER=
-; KLUDGE: The '?' is used to prevent removing
-; an item (but could match incorrect queues).
-.system_variable @queue_i?c_%RESERVED_ROOM%_$USERNAME
-@ifndef $OUTPUT
-IS_NEW_USER=1
-@endif
-;
-@retain IRC_USERS
-<web_session_join.cin "$USERNAME" "$IRC_ROOM"
-;
-; NOTE: If not a member then will now join STARTING_ROOM.
-@ifdef $IS_NEW_USER
-<web_session_join.cin "$USERNAME" "$STARTING_ROOM"
-IS_NEW_USER=
-@endif
-@endif
-@endif
-;
-@ifdef $IRC_ALLOWED
-.=system_variable @web.$USERNAME.$DEVICE.0*
-@ifdef $OUTPUT
-ALL_START_POINTS=$OUTPUT
-ALL_START_POINTS=@repstr:@web.$USERNAME.$DEVICE./:$ALL_START_POINTS
-ALL_START_POINTS=@repstr: /=:$ALL_START_POINTS
-ALL_START_POINTS=@repstr:\n/,:$ALL_START_POINTS
-;
-.session_variable @irc_start_points $ALL_START_POINTS
-@endif
-@endif
-;
-@ifeq "admin" "$USERNAME"
-.=system_variable @web.$USERNAME.$DEVICE.message "[adm]$LOCKED"
-@else
-@ifdef $LOCKED
-LOCKED=?
-@endif
-.=system_variable @web.$USERNAME.$DEVICE.message "[std]$LOCKED"
-@endif
-;
+   @ifdef $OUTPUT
+   IRC_ALLOWED=1
+   @else
+   ; NOTE: If just started (or a reload has just taken place)
+   ; then may need to wait for a second for the "auto script"
+   ; session to have executed "irc_store_or_restore" (use the
+   ; system variable "@no_irc" to skip if not using - it will
+   ; will be cleared if "irc_store_or_restore" is later run).
+   .system_variable @no_irc
+      @ifndef $OUTPUT
+      .system_variable @auto_script
+         @ifdef $OUTPUT
+         IRC_ALLOWED=1
+         .system_variable @irc_allow
+            @ifndef $OUTPUT
+            .wait 200
+            .system_variable @irc_allow
+               @ifndef $OUTPUT
+               .wait 300
+               .system_variable @irc_allow
+                  @ifndef $OUTPUT
+                  .wait 500
+                  .system_variable @irc_allow
+                     @ifndef $OUTPUT
+                     IRC_ALLOWED=
+                     @endif
+                  @endif
+               @endif
+            @endif
+         @endif
+
+      @endif
+
+   @endif
+
+   @ifdef $USERNAME
+      @ifdef $IRC_ALLOWED
+      IS_NEW_USER=
+      ; KLUDGE: The '?' is used to prevent removing
+      ; an item (but could match incorrect queues).
+      .system_variable @queue_i?c_%RESERVED_ROOM%_$USERNAME
+         @ifndef $OUTPUT
+         IS_NEW_USER=1
+         @endif
+
+      @retain IRC_USERS
+      <web_session_join.cin "$USERNAME" "$IRC_ROOM"
+
+      ; NOTE: If not a member then will now join STARTING_ROOM.
+         @ifdef $IS_NEW_USER
+         <web_session_join.cin "$USERNAME" "$STARTING_ROOM"
+         IS_NEW_USER=
+         @endif
+      @endif
+   @endif
+
+   @ifdef $IRC_ALLOWED
+   .=system_variable @web.$USERNAME.$DEVICE.0*
+      @ifdef $OUTPUT
+      ALL_START_POINTS=$OUTPUT
+      ALL_START_POINTS=@repstr:@web.$USERNAME.$DEVICE./:$ALL_START_POINTS
+      ALL_START_POINTS=@repstr: /=:$ALL_START_POINTS
+      ALL_START_POINTS=@repstr:\n/,:$ALL_START_POINTS
+
+      .session_variable @irc_start_points $ALL_START_POINTS
+      @endif
+   @endif
+
+   @ifeq "admin" "$USERNAME"
+   .=system_variable @web.$USERNAME.$DEVICE.message "[adm]$LOCKED"
+   @else
+      @ifdef $LOCKED
+      LOCKED=?
+      @endif
+   .=system_variable @web.$USERNAME.$DEVICE.message "[std]$LOCKED"
+   @endif
+
 .=session_variable @storage_var_name @web.$USERNAME.$DEVICE.storage
-;
+
 @label NEXT
-;
+
 @:LOOP
-;
+
 @skip
-;
+
 @:NEXT
-;
+
 .=wait -variable=@web.$USERNAME.$DEVICE.command -no_progress 60000 web_session
-;
+
 .=system_variable @web.$USERNAME.$DEVICE.command
 COMMAND=$OUTPUT
-;
-@ifndef $COMMAND
-@label END_LOOP
-@else
-.=system_variable @web.$USERNAME.$DEVICE.command ""
-;
-@ifneq "$COMMAND" ";@web_session_check"
-; NOTE: Supports up to eight commands.
->$TEMP_FILE
-COMMAND_1=%COMMAND:1%
-$COMMAND_1
-@ifndef $ERROR
-@ifdef "%COMMAND:2%"
-COMMAND_2=%COMMAND:2%
-$COMMAND_2
-@endif
-@ifndef $ERROR
-@ifdef "%COMMAND:3%"
-COMMAND_3=%COMMAND:3%
-$COMMAND_3
-@endif
-@ifndef $ERROR
-@ifdef "%COMMAND:4%"
-COMMAND_4=%COMMAND:4%
-$COMMAND_4
-@endif
-@ifndef $ERROR
-@ifdef "%COMMAND:5%"
-COMMAND_5=%COMMAND:5%
-$COMMAND_5
-@endif
-@ifndef $ERROR
-@ifdef "%COMMAND:6%"
-COMMAND_6=%COMMAND:6%
-$COMMAND_6
-@endif
-@ifndef $ERROR
-@ifdef "%COMMAND:7%"
-COMMAND_7=%COMMAND:7%
-$COMMAND_7
-@endif
-@ifndef $ERROR
-@ifdef "%COMMAND:8%"
-COMMAND_8=%COMMAND:8%
-$COMMAND_8
-@endif
-@ifdef "%COMMAND:9%"
-POS=@strpos:;:%COMMAND:9%
-@ifneq "$POS" "0"
-#IGNORED: %COMMAND:9%
-@endif
-@endif
-@endif
-@endif
-@endif
-@endif
-@endif
-@endif
-@endif
->
-; NOTE: As the command might take some time
-; need to initially use a temporary file so
-; the web session code will only detect the
-; output file after completing the command.
-~mv "$TEMP_FILE" "$OUTPUT_FILE"
-;
-ERROR=
-;
-@endif
-@endif
-;
+
+   @ifndef $COMMAND
+   @label END_LOOP
+   @else
+   .=system_variable @web.$USERNAME.$DEVICE.command ""
+
+      @ifneq "$COMMAND" ";@web_session_check"
+      ; NOTE: Supports up to eight commands.
+      >$TEMP_FILE
+      COMMAND_1=%COMMAND:1%
+      $COMMAND_1
+         @ifndef $ERROR
+            @ifdef "%COMMAND:2%"
+            COMMAND_2=%COMMAND:2%
+            $COMMAND_2
+            @endif
+            @ifndef $ERROR
+               @ifdef "%COMMAND:3%"
+               COMMAND_3=%COMMAND:3%
+               $COMMAND_3
+               @endif
+               @ifndef $ERROR
+                  @ifdef "%COMMAND:4%"
+                  COMMAND_4=%COMMAND:4%
+                  $COMMAND_4
+                  @endif
+                  @ifndef $ERROR
+                     @ifdef "%COMMAND:5%"
+                     COMMAND_5=%COMMAND:5%
+                     $COMMAND_5
+                     @endif
+                     @ifndef $ERROR
+                        @ifdef "%COMMAND:6%"
+                        COMMAND_6=%COMMAND:6%
+                        $COMMAND_6
+                        @endif
+                        @ifndef $ERROR
+                           @ifdef "%COMMAND:7%"
+                           COMMAND_7=%COMMAND:7%
+                           $COMMAND_7
+                           @endif
+                           @ifndef $ERROR
+                              @ifdef "%COMMAND:8%"
+                              COMMAND_8=%COMMAND:8%
+                              $COMMAND_8
+                              @endif
+                              @ifdef "%COMMAND:9%"
+                              POS=@strpos:;:%COMMAND:9%
+                                 @ifneq "$POS" "0"
+                                 #IGNORED: %COMMAND:9%
+                                 @endif
+                              @endif
+                           @endif
+                        @endif
+                     @endif
+                  @endif
+               @endif
+            @endif
+         @endif
+      >
+      ; NOTE: As the command might take some time
+      ; need to initially use a temporary file so
+      ; the web session code will only detect the
+      ; output file after completing the command.
+      ~mv "$TEMP_FILE" "$OUTPUT_FILE"
+
+      ERROR=
+
+      @endif
+   @endif
+
 .session_variable @script_executed
-@ifeq "$OUTPUT" "irc_fetch_messages"
-.session_variable @script_executed ""
-;
-@ifneq "$IRC_ROOM" "$ENTRANCE_ROOM"
-.session_variable @irc_last_unique
-UNIX_UNIQUE=$OUTPUT
-;
-@ifdef $UNIX_UNIQUE
-.session_variable @irc_last_unique ""
-;
-UNIX_UNIQUE=@$UNIX_UNIQUE+1
-.session_variable @irc_start_point_$IRC_ROOM $UNIX_UNIQUE
-.session_variable @irc_start_prior_$IRC_ROOM $UNIX_UNIQUE
-;
-.=system_variable @web.$USERNAME.$DEVICE.$IRC_ROOM
-@ifneq "$OUTPUT" "$UNIX_UNIQUE"
-.system_variable @irc_alter 1
-.=system_variable @web.$USERNAME.$DEVICE.$IRC_ROOM $UNIX_UNIQUE
-@endif
-@endif
-@endif
-;
-@endif
-;
+   @ifeq "$OUTPUT" "irc_fetch_messages"
+   .session_variable @script_executed ""
+
+      @ifneq "$IRC_ROOM" "$ENTRANCE_ROOM"
+      .session_variable @irc_last_unique
+      UNIX_UNIQUE=$OUTPUT
+
+         @ifdef $UNIX_UNIQUE
+         .session_variable @irc_last_unique ""
+
+         UNIX_UNIQUE=@$UNIX_UNIQUE+1
+         .session_variable @irc_start_point_$IRC_ROOM $UNIX_UNIQUE
+         .session_variable @irc_start_prior_$IRC_ROOM $UNIX_UNIQUE
+
+         .=system_variable @web.$USERNAME.$DEVICE.$IRC_ROOM
+            @ifneq "$OUTPUT" "$UNIX_UNIQUE"
+            .system_variable @irc_alter 1
+            .=system_variable @web.$USERNAME.$DEVICE.$IRC_ROOM $UNIX_UNIQUE
+            @endif
+         @endif
+      @endif
+
+   @endif
+
 .=system_variable @web.$USERNAME.$DEVICE.session
-;
-@ifneq "$OUTPUT" "$SESSION"
-ERROR=Session has been terminated.
-@endif
-;
-@ifdef $ERROR
-@label END_LOOP
-@endif
-;
+
+   @ifneq "$OUTPUT" "$SESSION"
+   ERROR=Session has been terminated.
+   @endif
+
+   @ifdef $ERROR
+   @label END_LOOP
+   @endif
+
 !!@:LOOP
-;
+
 @:END_LOOP
-;
+
 ~rm -rf $CIYAM_TMP_DIR/$SESSION
-;
-@ifdef $IRC_ALLOWED
-.session_variable @irc_* ""
-.session_variable @queue_irc_* ""
-@endif
-;
+
+   @ifdef $IRC_ALLOWED
+   .session_variable @irc_* ""
+   .session_variable @queue_irc_* ""
+   @endif
+
 .session_variable @script_executed ""
 .session_variable @storage_var_name ""
-;
+
 .=system_variable @web.$USERNAME.$DEVICE.message ""
-;
+
 @endif

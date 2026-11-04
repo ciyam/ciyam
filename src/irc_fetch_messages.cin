@@ -1,8 +1,8 @@
 ; Copyright (c) 2026 CIYAM Developers
-;
+
 ; Distributed under the MIT/X11 software license, please refer to the file license.txt
 ; in the root project directory or http://www.opensource.org/licenses/mit-license.php.
-;
+
 NUM_ARGS=0
 @ifdef $1
 NUM_ARGS=@$NUM_ARGS+1
@@ -13,488 +13,488 @@ NUM_ARGS=@$NUM_ARGS+1
 @ifdef $3
 NUM_ARGS=@$NUM_ARGS+1
 @endif
-;
+
 ERROR=
 RETURN=
-;
+
 @ifneq "$NUM_ARGS" "3"
 ERROR=Room, user name and session id are required for "irc_fetch_messages".
 @else
-;
+
 ROOM=$1
 USER=$2
 SESSION=$3
-;
+
 ENTRANCE_ROOM=0000000
 RESERVED_ROOM=0000001
-;
+
 SKIP_EDITS=
 IS_WEB_SESSION=
-;
+
 ; NOTE: Prefix "ROOM"
 ; with an underbar to
 ; prevent padding.
 FIRST=@substr:0,1:$ROOM
-@ifeq "$FIRST" "_"
-IS_WEB_SESSION=1
-ROOM=@substr:1:$ROOM
-@endif
-;
+   @ifeq "$FIRST" "_"
+   IS_WEB_SESSION=1
+   ROOM=@substr:1:$ROOM
+   @endif
+
 ; NOTE: Prefix "ROOM"
 ; with a "~" in order
 ; skip any "edits".
 FIRST=@substr:0,1:$ROOM
-@ifeq "$FIRST" "~"
-SKIP_EDITS=1
-ROOM=@substr:1:$ROOM
-@endif
-;
+   @ifeq "$FIRST" "~"
+   SKIP_EDITS=1
+   ROOM=@substr:1:$ROOM
+   @endif
+
 FORCED=
 CHANGED=
 START_POINT=
 START_POINTS=
 WAS_ENTRANCE=
-;
+
 .session_variable @deque commence
-;
+
 ; NOTE: ROOM and START_POINT can be provided as '<room>@<start_point>'.
 POS=@strpos:@:$ROOM
-@ifdef $POS
-SPOS=@$POS+1
-START_POINT=@substr:$SPOS:$ROOM
-ROOM=@substr:0,$POS:$ROOM
-@endif
-;
+   @ifdef $POS
+   SPOS=@$POS+1
+   START_POINT=@substr:$SPOS:$ROOM
+   ROOM=@substr:0,$POS:$ROOM
+   @endif
+
 ; NOTE: ROOM and START_POINTS can be provided as '<room>@@<start_point_1>[;<start_point_2[...]]'
 ; (with semi-colon separators being necessary due to the 'run_script' command argument parsing).
-@ifdef $START_POINT
-FIRST=@substr:0,1:$START_POINT
-@ifeq "$FIRST" "@"
-START_POINTS=@substr:1:$START_POINT
-START_POINTS=@repstr:;/,:$START_POINTS
-START_POINT=
-@endif
-@endif
-;
+   @ifdef $START_POINT
+   FIRST=@substr:0,1:$START_POINT
+      @ifeq "$FIRST" "@"
+      START_POINTS=@substr:1:$START_POINT
+      START_POINTS=@repstr:;/,:$START_POINTS
+      START_POINT=
+      @endif
+   @endif
+
 ; NOTE: If the ROOM has a
 ; '!' prefix then removes
 ; it (setting START_POINT
 ; so a RELOAD is forced).
 FIRST=@substr:0,1:$ROOM
-;
-@ifeq "$FIRST" "!"
-FORCED=1
-START_POINT=0
-ROOM=@substr:1:$ROOM
-@endif
-;
+
+   @ifeq "$FIRST" "!"
+   FORCED=1
+   START_POINT=0
+   ROOM=@substr:1:$ROOM
+   @endif
+
 ENTRANCE_ROOM=0000000
-;
+
 ROOM_LEN=@strlen:$ENTRANCE_ROOM
-;
+
 RELOAD=
 ROOM_AND_USER=@strlit:%ROOM%_$USER
-;
+
 .session_variable @uuid
 UUID=$OUTPUT
-;
-@ifeq "$ROOM" "$ENTRANCE_ROOM"
-WAS_ENTRANCE=1
-;
-.system_variable @session_@queue_irc_*_$USER
-INPUT_LINES=@strlit:$OUTPUT
-;
-@ifndef $START_POINTS
-.session_variable -id=$SESSION @irc_start_points
-START_POINTS=$OUTPUT
-@endif
-;
-@ifdef $START_POINTS
-FORCED=1
-START_POINTS=,$START_POINTS
-.session_variable -id=$SESSION @irc_start_points ""
-@endif
-;
-OUTPUT_LINES=
-;
-@:LOOP
-;
-@label NEXT
-;
-NEXT_LINE=@strlit:%INPUT_LINES:1%
-;
-@ifeq "$NEXT_LINE" ""
-@label END_LOOP
-@endif
-;
-@skip
-;
-@:NEXT
-ROOM_NO_AND_INFO=@repstr:@session_@queue_irc_:$NEXT_LINE
-ROOM_NO=@repstr:_$USER 1/:$ROOM_NO_AND_INFO
-;
-.system_variable @irc_names_$ROOM_NO
-ROOM_NAME=@strlit:$OUTPUT
-;
-NUM_NEW_MESSAGES=0
-NUM_TOTAL_MESSAGES=0
-;
-; KLUDGE: The '?' is used to prevent removing
-; an item (but could match incorrect queues).
-QUEUE_NAME_WITH_WILDCARD=@strlit:@queue_i?c_%ROOM_NO%_$USER
-;
-.system_variable $QUEUE_NAME_WITH_WILDCARD
-@ifdef $OUTPUT
-QUEUE_INFORMATION=@strlit:$OUTPUT
-POS=@strpos:[:$QUEUE_INFORMATION
-@ifdef $POS
-NUM_TOTAL_MESSAGES=1
-ADDITIONAL_MESSAGES=@substr:$POS:$QUEUE_INFORMATION
-ADDITIONAL_MESSAGES=@substr:1:$ADDITIONAL_MESSAGES
-ADDITIONAL_MESSAGES=@substr:0,-1:$ADDITIONAL_MESSAGES
-NUM_TOTAL_MESSAGES=@$NUM_TOTAL_MESSAGES$ADDITIONAL_MESSAGES
-@endif
-@endif
-;
-FORCED_OR_UNCHECKED=
-;
-@ifdef $FORCED
-FORCED_OR_UNCHECKED=1
-@else
-.session_variable -id=$SESSION $QUEUE_NAME_WITH_WILDCARD
-@ifndef $OUTPUT
-.session_variable -id=$SESSION @irc_$ROOM_NO
-@ifndef $OUTPUT
-FORCED_OR_UNCHECKED=1
-@endif
-@endif
-@endif
-;
-@ifdef $FORCED_OR_UNCHECKED
-.system_variable @session_@queue_irc_%ROOM_NO%_$USER
-@ifndef $OUTPUT
-CHANGED=1
-.system_variable @session_@queue_irc_%ROOM_NO%_$USER 1
-@endif
-;
-@ifneq "$START_POINTS" ""
-RPOS=@strpos:,%ROOM_NO%=:$START_POINTS
-;
-@ifndef $RPOS
-START_POINT=
-@else
-ROOM_AND_START=@substr:$RPOS,22:$START_POINTS
-;
-SPOS=@strpos:=:$ROOM_AND_START
-SPOS=@$SPOS+1
-;
-START_POINT=@substr:$SPOS:$ROOM_AND_START
-.session_variable -id=$SESSION @gteq_session_queue $START_POINT
-@endif
-@endif
-;
-.session_variable -id=$SESSION @irc_$ROOM_NO 1
-.session_variable -id=$SESSION !@queue_irc_%ROOM_NO%_$USER @system
-;
-.session_variable -id=$SESSION $QUEUE_NAME_WITH_WILDCARD
-@endif
-;
-@ifdef $OUTPUT
-POS=@strpos:+:$OUTPUT
-;
-@ifdef $POS
-UNREAD_MESSAGES=@substr:$POS:$OUTPUT
-UNREAD_MESSAGES=@repstr:]/:$UNREAD_MESSAGES
-;
-NUM_NEW_MESSAGES=@$UNREAD_MESSAGES+1
-@endif
-@endif
-;
-@ifndef $START_POINT
-START_POINT=0000000000000
-@endif
-;
-SUFFIX=
-@ifneq "$ROOM_NO" "$RESERVED_ROOM"
-.system_variable @irc_posts_$ROOM_NO
-@ifeq "$OUTPUT" "OWN"
-SUFFIX=!
-@elif "$OUTPUT" = "NONE"
-SUFFIX=~
-@elif "$OUTPUT" = "REACT"
-SUFFIX=?
-@endif
-@endif
-;
-.system_variable @irc_close_$ROOM_NO
-UNIX_CLOSE=$OUTPUT
-@ifdef $UNIX_CLOSE
-@ifdef $IS_WEB_SESSION
-SUFFIX=$SUFFIX@$UNIX_CLOSE
-@else
-NOW=@unix:
-@if $NOW #> $UNIX_CLOSE
-SUFFIX=$SUFFIX [CLOSED]
-@else
-REMAINING=@$UNIX_CLOSE-$NOW
-DURATION=@duration:mins:$REMAINING
-SUFFIX=$SUFFIX [Closing in $DURATION]
-@endif
-@endif
-@endif
-;
-NEW_AND_TOTAL_MESSAGES=$NUM_NEW_MESSAGES/$NUM_TOTAL_MESSAGES$SUFFIX
-;
-@ifndef $IS_WEB_SESSION
-NEW_AND_TOTAL_MESSAGES=@padlen:-25, :$NEW_AND_TOTAL_MESSAGES
-@endif
-;
-MESSAGE=_#$ROOM_NO $NEW_AND_TOTAL_MESSAGES $ROOM_NAME
-;
-ENCODED=@base64::$MESSAGE
-;
-@ifdef $OUTPUT_LINES
-OUTPUT_LINES=$OUTPUT_LINES\n
-@endif
-;
-.system_variable @irc_owner_$ROOM_NO
-OWNER=$OUTPUT
-;
-OUTPUT_LINES=$OUTPUT_LINES$START_POINT $OWNER $ENCODED
-;
-INPUT_LINES=@strlit:%INPUT_LINES:-1%
-!!@:LOOP
-;
-@:END_LOOP
-;
-OUTPUT=$OUTPUT_LINES
-;
-@else
-;
-@ifndef $START_POINT
-.session_variable -id=$SESSION @irc_start_point_$ROOM
-START_POINT=$OUTPUT
-.session_variable -id=$SESSION @irc_start_prior_$ROOM
-START_PRIOR=$OUTPUT
-@endif
-;
-@ifneq "$START_POINT" "$START_PRIOR"
-RELOAD=1
-@endif
-;
-@ifdef $RELOAD
-.system_variable @session_@queue_irc_$ROOM_AND_USER
-@ifndef $OUTPUT
-CHANGED=1
-.system_variable @session_@queue_irc_$ROOM_AND_USER 1
-@endif
-.session_variable -id=$SESSION !@queue_irc_$ROOM_AND_USER @system
-@endif
-;
-@ifdef $START_POINT
-.session_variable @gteq_session_queue $START_POINT
-@endif
-;
-NUM_PINNED=0
-.system_variable @keyed_irc_%ROOM%_MP
-@ifdef $OUTPUT
-.session_variable @deque "~$OUTPUT"
-.session_variable @deque size
-NUM_PINNED=$OUTPUT
-@endif
-.session_variable -p=@ -s=_$USER -sys_keyed -id=$SESSION @queue_irc_$ROOM_AND_USER @deque
-;
-.session_variable @deque size
-@ifeq "$OUTPUT" "0"
-OUTPUT=
-@endif
-@endif
-;
+
+   @ifeq "$ROOM" "$ENTRANCE_ROOM"
+   WAS_ENTRANCE=1
+
+   .system_variable @session_@queue_irc_*_$USER
+   INPUT_LINES=@strlit:$OUTPUT
+
+      @ifndef $START_POINTS
+      .session_variable -id=$SESSION @irc_start_points
+      START_POINTS=$OUTPUT
+      @endif
+
+      @ifdef $START_POINTS
+      FORCED=1
+      START_POINTS=,$START_POINTS
+      .session_variable -id=$SESSION @irc_start_points ""
+      @endif
+
+   OUTPUT_LINES=
+
+   @:LOOP
+
+   @label NEXT
+
+   NEXT_LINE=@strlit:%INPUT_LINES:1%
+
+      @ifeq "$NEXT_LINE" ""
+      @label END_LOOP
+      @endif
+
+   @skip
+
+   @:NEXT
+   ROOM_NO_AND_INFO=@repstr:@session_@queue_irc_:$NEXT_LINE
+   ROOM_NO=@repstr:_$USER 1/:$ROOM_NO_AND_INFO
+
+   .system_variable @irc_names_$ROOM_NO
+   ROOM_NAME=@strlit:$OUTPUT
+
+   NUM_NEW_MESSAGES=0
+   NUM_TOTAL_MESSAGES=0
+
+   ; KLUDGE: The '?' is used to prevent removing
+   ; an item (but could match incorrect queues).
+   QUEUE_NAME_WITH_WILDCARD=@strlit:@queue_i?c_%ROOM_NO%_$USER
+
+   .system_variable $QUEUE_NAME_WITH_WILDCARD
+      @ifdef $OUTPUT
+      QUEUE_INFORMATION=@strlit:$OUTPUT
+      POS=@strpos:[:$QUEUE_INFORMATION
+         @ifdef $POS
+         NUM_TOTAL_MESSAGES=1
+         ADDITIONAL_MESSAGES=@substr:$POS:$QUEUE_INFORMATION
+         ADDITIONAL_MESSAGES=@substr:1:$ADDITIONAL_MESSAGES
+         ADDITIONAL_MESSAGES=@substr:0,-1:$ADDITIONAL_MESSAGES
+         NUM_TOTAL_MESSAGES=@$NUM_TOTAL_MESSAGES$ADDITIONAL_MESSAGES
+         @endif
+      @endif
+
+   FORCED_OR_UNCHECKED=
+
+      @ifdef $FORCED
+      FORCED_OR_UNCHECKED=1
+      @else
+      .session_variable -id=$SESSION $QUEUE_NAME_WITH_WILDCARD
+         @ifndef $OUTPUT
+         .session_variable -id=$SESSION @irc_$ROOM_NO
+            @ifndef $OUTPUT
+            FORCED_OR_UNCHECKED=1
+            @endif
+         @endif
+      @endif
+
+      @ifdef $FORCED_OR_UNCHECKED
+      .system_variable @session_@queue_irc_%ROOM_NO%_$USER
+         @ifndef $OUTPUT
+         CHANGED=1
+         .system_variable @session_@queue_irc_%ROOM_NO%_$USER 1
+         @endif
+
+         @ifneq "$START_POINTS" ""
+         RPOS=@strpos:,%ROOM_NO%=:$START_POINTS
+
+            @ifndef $RPOS
+            START_POINT=
+            @else
+            ROOM_AND_START=@substr:$RPOS,22:$START_POINTS
+
+            SPOS=@strpos:=:$ROOM_AND_START
+            SPOS=@$SPOS+1
+
+            START_POINT=@substr:$SPOS:$ROOM_AND_START
+            .session_variable -id=$SESSION @gteq_session_queue $START_POINT
+            @endif
+         @endif
+
+      .session_variable -id=$SESSION @irc_$ROOM_NO 1
+      .session_variable -id=$SESSION !@queue_irc_%ROOM_NO%_$USER @system
+
+      .session_variable -id=$SESSION $QUEUE_NAME_WITH_WILDCARD
+      @endif
+
+      @ifdef $OUTPUT
+      POS=@strpos:+:$OUTPUT
+
+         @ifdef $POS
+         UNREAD_MESSAGES=@substr:$POS:$OUTPUT
+         UNREAD_MESSAGES=@repstr:]/:$UNREAD_MESSAGES
+
+         NUM_NEW_MESSAGES=@$UNREAD_MESSAGES+1
+         @endif
+      @endif
+
+      @ifndef $START_POINT
+      START_POINT=0000000000000
+      @endif
+
+   SUFFIX=
+      @ifneq "$ROOM_NO" "$RESERVED_ROOM"
+      .system_variable @irc_posts_$ROOM_NO
+         @ifeq "$OUTPUT" "OWN"
+         SUFFIX=!
+         @elif "$OUTPUT" = "NONE"
+         SUFFIX=~
+         @elif "$OUTPUT" = "REACT"
+         SUFFIX=?
+         @endif
+      @endif
+
+   .system_variable @irc_close_$ROOM_NO
+   UNIX_CLOSE=$OUTPUT
+      @ifdef $UNIX_CLOSE
+         @ifdef $IS_WEB_SESSION
+         SUFFIX=$SUFFIX@$UNIX_CLOSE
+         @else
+         NOW=@unix:
+            @if $NOW #> $UNIX_CLOSE
+            SUFFIX=$SUFFIX [CLOSED]
+            @else
+            REMAINING=@$UNIX_CLOSE-$NOW
+            DURATION=@duration:mins:$REMAINING
+            SUFFIX=$SUFFIX [Closing in $DURATION]
+            @endif
+         @endif
+      @endif
+
+   NEW_AND_TOTAL_MESSAGES=$NUM_NEW_MESSAGES/$NUM_TOTAL_MESSAGES$SUFFIX
+
+      @ifndef $IS_WEB_SESSION
+      NEW_AND_TOTAL_MESSAGES=@padlen:-25, :$NEW_AND_TOTAL_MESSAGES
+      @endif
+
+   MESSAGE=_#$ROOM_NO $NEW_AND_TOTAL_MESSAGES $ROOM_NAME
+
+   ENCODED=@base64::$MESSAGE
+
+      @ifdef $OUTPUT_LINES
+      OUTPUT_LINES=$OUTPUT_LINES\n
+      @endif
+
+   .system_variable @irc_owner_$ROOM_NO
+   OWNER=$OUTPUT
+
+   OUTPUT_LINES=$OUTPUT_LINES$START_POINT $OWNER $ENCODED
+
+   INPUT_LINES=@strlit:%INPUT_LINES:-1%
+   !!@:LOOP
+
+   @:END_LOOP
+
+   OUTPUT=$OUTPUT_LINES
+
+   @else
+
+      @ifndef $START_POINT
+      .session_variable -id=$SESSION @irc_start_point_$ROOM
+      START_POINT=$OUTPUT
+      .session_variable -id=$SESSION @irc_start_prior_$ROOM
+      START_PRIOR=$OUTPUT
+      @endif
+
+      @ifneq "$START_POINT" "$START_PRIOR"
+      RELOAD=1
+      @endif
+
+      @ifdef $RELOAD
+      .system_variable @session_@queue_irc_$ROOM_AND_USER
+         @ifndef $OUTPUT
+         CHANGED=1
+         .system_variable @session_@queue_irc_$ROOM_AND_USER 1
+         @endif
+      .session_variable -id=$SESSION !@queue_irc_$ROOM_AND_USER @system
+      @endif
+
+      @ifdef $START_POINT
+      .session_variable @gteq_session_queue $START_POINT
+      @endif
+
+   NUM_PINNED=0
+   .system_variable @keyed_irc_%ROOM%_MP
+      @ifdef $OUTPUT
+      .session_variable @deque "~$OUTPUT"
+      .session_variable @deque size
+      NUM_PINNED=$OUTPUT
+      @endif
+   .session_variable -p=@ -s=_$USER -sys_keyed -id=$SESSION @queue_irc_$ROOM_AND_USER @deque
+
+   .session_variable @deque size
+      @ifeq "$OUTPUT" "0"
+      OUTPUT=
+      @endif
+   @endif
+
 LAST_UNIQUE=
-;
-@ifdef $OUTPUT
->/tmp/ciyam/$UUID
-@ifndef $WAS_ENTRANCE
-;
-@:MSG_LOOP
-;
-@label MSG_NEXT
-;
-.session_variable @deque front
-@ifndef $OUTPUT
-@label END_MSG_LOOP
+
+   @ifdef $OUTPUT
+   >/tmp/ciyam/$UUID
+      @ifndef $WAS_ENTRANCE
+
+      @:MSG_LOOP
+
+      @label MSG_NEXT
+
+      .session_variable @deque front
+         @ifndef $OUTPUT
+         @label END_MSG_LOOP
+         @endif
+
+      @skip
+
+      @:MSG_NEXT
+      NEXT_MESSAGE=$OUTPUT
+
+      MESSAGE_PARTS=@repstr: /\n:$NEXT_MESSAGE
+
+      MSG_UNIQUE=%MESSAGE_PARTS:1%
+      MSG_AUTHOR=%MESSAGE_PARTS:2%
+      MSG_BASE64=%MESSAGE_PARTS:3%
+
+      IS_POLL=
+         @if $NUM_PINNED #> 0
+         MSG_AUTHOR=!$MSG_AUTHOR
+         NEXT_MESSAGE=$MSG_UNIQUE $MSG_AUTHOR $MSG_BASE64
+
+         POS=@strpos:XyDwn5OK:$MSG_BASE64
+            @ifdef $POS
+            IS_POLL=1
+            @endif
+         @else
+         LAST_UNIQUE=@strlit:$MSG_UNIQUE
+         @endif
+
+      MSG_PREFIX=@substr:0,3:$MSG_BASE64
+
+      IS_INVITE=
+      POS=@strpos:XzppbnZpdGUgcm9vbSAw:$MSG_BASE64
+         @ifeq "$POS" "0"
+         IS_INVITE=1
+         @endif
+
+      NON_SYSTEM=
+         @ifneq "$MSG_PREFIX" "Xzp"
+         NON_SYSTEM=1
+         @endif
+
+      INVITE_OR_NON_SYSTEM=
+         @ifdef $IS_INVITE
+         INVITE_OR_NON_SYSTEM=1
+         @elif "$NON_SYSTEM" != ""
+         INVITE_OR_NON_SYSTEM=1
+         @endif
+
+         @ifdef $INVITE_OR_NON_SYSTEM
+
+            @ifdef $SKIP_EDITS
+            OUTPUT=
+            @else
+            .system_variable @keyed_irc_%ROOM%_ME:$MSG_UNIQUE
+            @endif
+
+            @ifdef $OUTPUT
+            NEW_MSG_PARTS=@repstr: /\n:$OUTPUT
+
+            NEW_MSG_UNIQUE=%NEW_MSG_PARTS:1%
+            NEW_MSG_BASE64=%NEW_MSG_PARTS:2%
+
+            NEXT_MESSAGE=$MSG_UNIQUE $MSG_AUTHOR* $NEW_MSG_BASE64
+            @else
+
+            ; NOTE: If message is an "invite" then
+            ; will decode and if already joined is
+            ; replaced with an "ignore" message.
+               @ifdef $IS_INVITE
+               IGNORE=
+               DECODED=@base64:$MSG_BASE64
+               POS=@strpos:0:$DECODED
+                  @ifdef $POS
+                  DECODED=@substr:$POS:$DECODED
+                  POS=@strpos:-:$DECODED
+                  DECODED=@substr:0,$POS:$DECODED
+                  LEN=@strlen:$DECODED
+                     @ifeq "$LEN" "$ROOM_LEN"
+                     .system_variable @irc_xinvr_%DECODED%_$USER
+                        @ifdef $OUTPUT
+                        IGNORE=1
+                        @else
+                        .system_variable @session_@queue_irc_%DECODED%_$USER
+                           @ifdef $OUTPUT
+                           IGNORE=1
+                           @endif
+                        @endif
+
+                     @endif
+
+                     @ifdef $IGNORE
+                     NEW_MSG=_:ignore (invite for $DECODED was processed)
+                     NEW_MSG_BASE64=@base64::$NEW_MSG
+                     NEXT_MESSAGE=$MSG_UNIQUE $MSG_AUTHOR* $NEW_MSG_BASE64
+                     @endif
+
+                  @endif
+               @endif
+            @endif
+         @endif
+
+      .system_variable @keyed_irc_%ROOM%_MR:$MSG_UNIQUE
+         @ifdef $OUTPUT
+         REACTIONS=$OUTPUT
+
+         NEXT_MESSAGE=$NEXT_MESSAGE $REACTIONS
+
+         @endif
+
+         @ifneq "$NUM_PINNED" "0"
+         NUM_PINNED=@$NUM_PINNED-1
+         @else
+         .system_variable @keyed_irc_%ROOM%_MP:$MSG_UNIQUE
+            @ifdef $OUTPUT
+            NEXT_MESSAGE=
+            @endif
+         @endif
+
+         @ifdef $NEXT_MESSAGE
+         #$NEXT_MESSAGE
+         @endif
+
+      .session_variable @deque pop_front
+
+      !!@:MSG_LOOP
+
+      @:END_MSG_LOOP
+
+         @ifdef $LAST_UNIQUE
+         .system_variable @irc_times_$ROOM_AND_USER $LAST_UNIQUE
+         @endif
+
+      OUTPUT=1
+      @endif
+   >
+   @endif
+
+   @ifndef $ERROR
+      @ifdef $OUTPUT
+         @ifneq "$OUTPUT" "1"
+         >/tmp/ciyam/$UUID
+         #$OUTPUT
+         >
+         @endif
+         @ifdef $LAST_UNIQUE
+         .session_variable -id=$SESSION @irc_last_unique $LAST_UNIQUE
+         @endif
+      RETURN=@strlit:@/tmp/ciyam/$UUID
+      @endif
+   @endif
+
 @endif
-;
-@skip
-;
-@:MSG_NEXT
-NEXT_MESSAGE=$OUTPUT
-;
-MESSAGE_PARTS=@repstr: /\n:$NEXT_MESSAGE
-;
-MSG_UNIQUE=%MESSAGE_PARTS:1%
-MSG_AUTHOR=%MESSAGE_PARTS:2%
-MSG_BASE64=%MESSAGE_PARTS:3%
-;
-IS_POLL=
-@if $NUM_PINNED #> 0
-MSG_AUTHOR=!$MSG_AUTHOR
-NEXT_MESSAGE=$MSG_UNIQUE $MSG_AUTHOR $MSG_BASE64
-;
-POS=@strpos:XyDwn5OK:$MSG_BASE64
-@ifdef $POS
-IS_POLL=1
-@endif
-@else
-LAST_UNIQUE=@strlit:$MSG_UNIQUE
-@endif
-;
-MSG_PREFIX=@substr:0,3:$MSG_BASE64
-;
-IS_INVITE=
-POS=@strpos:XzppbnZpdGUgcm9vbSAw:$MSG_BASE64
-@ifeq "$POS" "0"
-IS_INVITE=1
-@endif
-;
-NON_SYSTEM=
-@ifneq "$MSG_PREFIX" "Xzp"
-NON_SYSTEM=1
-@endif
-;
-INVITE_OR_NON_SYSTEM=
-@ifdef $IS_INVITE
-INVITE_OR_NON_SYSTEM=1
-@elif "$NON_SYSTEM" != ""
-INVITE_OR_NON_SYSTEM=1
-@endif
-;
-@ifdef $INVITE_OR_NON_SYSTEM
-;
-@ifdef $SKIP_EDITS
-OUTPUT=
-@else
-.system_variable @keyed_irc_%ROOM%_ME:$MSG_UNIQUE
-@endif
-;
-@ifdef $OUTPUT
-NEW_MSG_PARTS=@repstr: /\n:$OUTPUT
-;
-NEW_MSG_UNIQUE=%NEW_MSG_PARTS:1%
-NEW_MSG_BASE64=%NEW_MSG_PARTS:2%
-;
-NEXT_MESSAGE=$MSG_UNIQUE $MSG_AUTHOR* $NEW_MSG_BASE64
-@else
-;
-; NOTE: If message is an "invite" then
-; will decode and if already joined is
-; replaced with an "ignore" message.
-@ifdef $IS_INVITE
-IGNORE=
-DECODED=@base64:$MSG_BASE64
-POS=@strpos:0:$DECODED
-@ifdef $POS
-DECODED=@substr:$POS:$DECODED
-POS=@strpos:-:$DECODED
-DECODED=@substr:0,$POS:$DECODED
-LEN=@strlen:$DECODED
-@ifeq "$LEN" "$ROOM_LEN"
-.system_variable @irc_xinvr_%DECODED%_$USER
-@ifdef $OUTPUT
-IGNORE=1
-@else
-.system_variable @session_@queue_irc_%DECODED%_$USER
-@ifdef $OUTPUT
-IGNORE=1
-@endif
-@endif
-;
-@endif
-;
-@ifdef $IGNORE
-NEW_MSG=_:ignore (invite for $DECODED was processed)
-NEW_MSG_BASE64=@base64::$NEW_MSG
-NEXT_MESSAGE=$MSG_UNIQUE $MSG_AUTHOR* $NEW_MSG_BASE64
-@endif
-;
-@endif
-@endif
-@endif
-@endif
-;
-.system_variable @keyed_irc_%ROOM%_MR:$MSG_UNIQUE
-@ifdef $OUTPUT
-REACTIONS=$OUTPUT
-;
-NEXT_MESSAGE=$NEXT_MESSAGE $REACTIONS
-;
-@endif
-;
-@ifneq "$NUM_PINNED" "0"
-NUM_PINNED=@$NUM_PINNED-1
-@else
-.system_variable @keyed_irc_%ROOM%_MP:$MSG_UNIQUE
-@ifdef $OUTPUT
-NEXT_MESSAGE=
-@endif
-@endif
-;
-@ifdef $NEXT_MESSAGE
-#$NEXT_MESSAGE
-@endif
-;
-.session_variable @deque pop_front
-;
-!!@:MSG_LOOP
-;
-@:END_MSG_LOOP
-;
-@ifdef $LAST_UNIQUE
-.system_variable @irc_times_$ROOM_AND_USER $LAST_UNIQUE
-@endif
-;
-OUTPUT=1
-@endif
->
-@endif
-;
-@ifndef $ERROR
-@ifdef $OUTPUT
-@ifneq "$OUTPUT" "1"
->/tmp/ciyam/$UUID
-#$OUTPUT
->
-@endif
-@ifdef $LAST_UNIQUE
-.session_variable -id=$SESSION @irc_last_unique $LAST_UNIQUE
-@endif
-RETURN=@strlit:@/tmp/ciyam/$UUID
-@endif
-@endif
-;
-@endif
-;
+
 PREFIX=
 ERROR_OR_RETURN=
-;
+
 .session_variable @deque complete
-;
+
 @ifdef $CHANGED
 .system_variable @irc_alter 1
 @endif
-;
+
 @ifdef $ERROR
 PREFIX=Error:$SP
 ERROR_OR_RETURN=$ERROR
 @elif "$RETURN" != ""
 ERROR_OR_RETURN=:$RETURN
 @endif
-;
+
 @ifdef $ERROR_OR_RETURN
 .session_variable @args_file
-@ifndef $OUTPUT
-#$PREFIX$ERROR_OR_RETURN
-@else
-.system_variable $OUTPUT "$ERROR_OR_RETURN"
-@endif
+   @ifndef $OUTPUT
+   #$PREFIX$ERROR_OR_RETURN
+   @else
+   .system_variable $OUTPUT "$ERROR_OR_RETURN"
+   @endif
 @endif

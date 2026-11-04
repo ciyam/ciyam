@@ -1,8 +1,8 @@
 ; Copyright (c) 2026 CIYAM Developers
-;
+
 ; Distributed under the MIT/X11 software license, please refer to the file license.txt
 ; in the root project directory or http://www.opensource.org/licenses/mit-license.php.
-;
+
 NUM_ARGS=0
 @ifdef $1
 NUM_ARGS=@$NUM_ARGS+1
@@ -10,545 +10,545 @@ NUM_ARGS=@$NUM_ARGS+1
 @ifdef $2
 NUM_ARGS=@$NUM_ARGS+1
 @endif
-;
+
 ERROR=
 RETURN=
-;
+
 @ifneq "$NUM_ARGS" "2"
 ERROR=Room and User names are required for "irc_add_room".
 @else
-;
+
 NAME=$1
 USER=$2
-;
+
 POSTS=
 ASSIGN=
 PRIVATE=
 EXISTING=
 NEW_ROOM=
-;
+
 ENTRANCE_ROOM=0000000
 RESERVED_ROOM=0000001
 STARTING_ROOM=0000002
-;
+
 DUMMY_JOIN_UUID=00000000000000000000000000000000
-;
+
 DUMMY_JOIN_SUFFIX=-$DUMMY_JOIN_UUID
 DUMMY_JOIN_SUFFIX=@base64::$DUMMY_JOIN_SUFFIX
-;
+
 .session_variable @uuid
 UUID=$OUTPUT
-;
+
 ASSIGN_OR_PRIVATE=
-;
+
 POS=@strpos:=:$NAME
-;
-@ifdef $POS
-EXISTING=@substr:0,$POS:$NAME
-POS=@$POS+1
-NAME=@substr:$POS:$NAME
-ASSIGN=1
-ASSIGN_OR_PRIVATE=1
-@else
-POS=@strpos:.:$NAME
-@ifeq "$POS" "0"
-NAME=@substr:1:$NAME
-PRIVATE=1
-ASSIGN_OR_PRIVATE=1
-@endif
-@endif
-;
-@ifndef $ASSIGN_OR_PRIVATE
-;
-POS=@strpos:_:$NAME
-;
-; NOTE: If NAME is in the form
-; "<room>_<name>" then instead
-; of adding rename an existing
-; room (if USER is either room
-; owner or 'admin').
-@ifdef $POS
-EXISTING=@substr:0,$POS:$NAME
-.=regex "^(0[0-9]{6})$$" "$EXISTING"
-@ifeq "$OUTPUT" "$EXISTING"
-@ifeq "$EXISTING" "0000000"
-EXISTING=
-@else
-POS=@$POS+1
-NAME=@substr:$POS:$NAME
-@endif
-@else
-EXISTING=
-@endif
-@endif
-;
-@endif
-;
+
+   @ifdef $POS
+   EXISTING=@substr:0,$POS:$NAME
+   POS=@$POS+1
+   NAME=@substr:$POS:$NAME
+   ASSIGN=1
+   ASSIGN_OR_PRIVATE=1
+   @else
+   POS=@strpos:.:$NAME
+      @ifeq "$POS" "0"
+      NAME=@substr:1:$NAME
+      PRIVATE=1
+      ASSIGN_OR_PRIVATE=1
+      @endif
+   @endif
+
+   @ifndef $ASSIGN_OR_PRIVATE
+
+   POS=@strpos:_:$NAME
+
+   ; NOTE: If NAME is in the form
+   ; "<room>_<name>" then instead
+   ; of adding rename an existing
+   ; room (if USER is either room
+   ; owner or 'admin').
+      @ifdef $POS
+      EXISTING=@substr:0,$POS:$NAME
+      .=regex "^(0[0-9]{6})$$" "$EXISTING"
+         @ifeq "$OUTPUT" "$EXISTING"
+            @ifeq "$EXISTING" "0000000"
+            EXISTING=
+            @else
+            POS=@$POS+1
+            NAME=@substr:$POS:$NAME
+            @endif
+         @else
+         EXISTING=
+         @endif
+      @endif
+
+   @endif
+
 NAMES=
 TOKEN=
-;
+
 ; NOTE: Join invitations can be
 ; issued if NAME is provided as
 ; "<room>_<uuid>_<names>" where
 ; <names> are user names of one
 ; or more other users.
 LEN=@strlen:$NAME
-@if "$LEN" #> 35
-POS=@strpos:_:$NAME
-@ifdef $POS
-TOKEN=@substr:0,$POS:$NAME
-POS=@$POS+1
-NAMES=@substr:$POS:$NAME
-@endif
-@endif
-;
+   @if "$LEN" #> 35
+   POS=@strpos:_:$NAME
+      @ifdef $POS
+      TOKEN=@substr:0,$POS:$NAME
+      POS=@$POS+1
+      NAMES=@substr:$POS:$NAME
+      @endif
+   @endif
+
 CHANGED=
-;
-@ifndef $TOKEN
-;
-@ifdef $ASSIGN_OR_PRIVATE
-NAME_CHECK=$NAME
-@else
-;
-; NOTE: Room name is between five and fifty characters including letters, numbers and some specials.
-.regex -chain "^[a-zA-Z][-+&()' a-zA-Z0-9]+$$&&^.*[)a-zA-Z0-9]$$&&^[-+&()' a-zA-Z0-9]{5,50}$$" "$NAME"
-NAME_CHECK=$OUTPUT
-;
-@ifdef $NAME_CHECK
-; NOTE: Limit specials for repeats.
-NAME_CHECK=@repstr:&&/&:$NAME_CHECK
-NAME_CHECK=@repstr:()/@:$NAME_CHECK
-NAME_CHECK=@repstr:''/@:$NAME_CHECK
-NAME_CHECK=@repstr:  / :$NAME_CHECK
-;
-; NOTE: Only allow one pair of parentheses
-; (and checks that the left one was placed
-; before the right one).
-NAME_LEN=@strlen:$NAME
-ALLOWED_LEN=@$NAME_LEN-1
-LEFT_LEN_CHECK=@repstr:(/:$NAME
-LEFT_LEN_CHECK=@strlen:$LEFT_LEN_CHECK
-@if "$LEFT_LEN_CHECK" #< "$ALLOWED_LEN"
-NAME_CHECK=
-@else
-RIGHT_LEN_CHECK=@repstr:)/:$NAME
-RIGHT_LEN_CHECK=@strlen:$RIGHT_LEN_CHECK
-@if "$RIGHT_LEN_CHECK" #< "$ALLOWED_LEN"
-NAME_CHECK=
-@else
-@ifneq "$LEFT_LEN_CHECK" "$RIGHT_LEN_CHECK"
-NAME_CHECK=
-@else
-LPOS=@strpos:(:$NAME
-RPOS=@strpos:):$NAME
-@if "$RPOS" #< "$LPOS"
-NAME_CHECK=
+
+   @ifndef $TOKEN
+
+      @ifdef $ASSIGN_OR_PRIVATE
+      NAME_CHECK=$NAME
+      @else
+
+      ; NOTE: Room name is between five and fifty characters including letters, numbers and some specials.
+      .regex -chain "^[a-zA-Z][-+&()' a-zA-Z0-9]+$$&&^.*[)a-zA-Z0-9]$$&&^[-+&()' a-zA-Z0-9]{5,50}$$" "$NAME"
+      NAME_CHECK=$OUTPUT
+
+         @ifdef $NAME_CHECK
+         ; NOTE: Limit specials for repeats.
+         NAME_CHECK=@repstr:&&/&:$NAME_CHECK
+         NAME_CHECK=@repstr:()/@:$NAME_CHECK
+         NAME_CHECK=@repstr:''/@:$NAME_CHECK
+         NAME_CHECK=@repstr:  / :$NAME_CHECK
+
+         ; NOTE: Only allow one pair of parentheses
+         ; (and checks that the left one was placed
+         ; before the right one).
+         NAME_LEN=@strlen:$NAME
+         ALLOWED_LEN=@$NAME_LEN-1
+         LEFT_LEN_CHECK=@repstr:(/:$NAME
+         LEFT_LEN_CHECK=@strlen:$LEFT_LEN_CHECK
+            @if "$LEFT_LEN_CHECK" #< "$ALLOWED_LEN"
+            NAME_CHECK=
+            @else
+            RIGHT_LEN_CHECK=@repstr:)/:$NAME
+            RIGHT_LEN_CHECK=@strlen:$RIGHT_LEN_CHECK
+               @if "$RIGHT_LEN_CHECK" #< "$ALLOWED_LEN"
+               NAME_CHECK=
+               @else
+                  @ifneq "$LEFT_LEN_CHECK" "$RIGHT_LEN_CHECK"
+                  NAME_CHECK=
+                  @else
+                  LPOS=@strpos:(:$NAME
+                  RPOS=@strpos:):$NAME
+                     @if "$RPOS" #< "$LPOS"
+                     NAME_CHECK=
+                     @endif
+                  @endif
+               @endif
+            @endif
+         @endif
+
+      @endif
+
+      @ifneq "$NAME" "$NAME_CHECK"
+      ERROR=Invalid room name '$NAME'.
+      @else
+
+      .system_variable @irc_lock 1 "" 100
+
+         @ifeq "$OUTPUT" "0"
+         ERROR=Unable to obtain the system IRC lock (try again later).
+         @else
+
+            @ifdef $EXISTING
+            .system_variable @irc_close_$EXISTING
+               @ifdef $OUTPUT
+               NOW=@unix:
+                  @if $NOW #> $OUTPUT
+                  ERROR=This room has been closed.
+                  @endif
+               @endif
+            @endif
+
+            @ifdef $ASSIGN
+            FIRST=@substr:0,1:$NAME
+               @ifeq "$FIRST" "~"
+               CLOSE=1
+               WHEN=@substr:1,10:$NAME
+               DISALLOWED=
+                  @ifeq "$EXISTING" "$ENTRANCE_ROOM"
+                  DISALLOWED=1
+                  @elif "$EXISTING" = "$RESERVED_ROOM"
+                  DISALLOWED=1
+                  @elif "$EXISTING" = "$STARTING_ROOM"
+                  DISALLOWED=1
+                  @endif
+                  @ifdef $DISALLOWED
+                  ERROR=This room may not be closed.
+                  @endif
+               @elif "$FIRST" = "@"
+               POSTS=1
+               NAME=@substr:1:$NAME
+                  @ifneq "$NAME" "ANY"
+                     @ifneq "$NAME" "OWN"
+                        @ifneq "$NAME" "NONE"
+                           @ifneq "$NAME" "REACT"
+                           ERROR=Unknown room posts value '$NAME'.
+                           @endif
+                        @endif
+                     @endif
+                  @endif
+                  @ifeq "$EXISTING" "$RESERVED_ROOM"
+                  ERROR=Posts assignment for this room is not permitted.
+                  @endif
+               @else
+                  @ifeq "$EXISTING" "$RESERVED_ROOM"
+                  ERROR=Ownership assignment for this room is not permitted.
+                  @else
+                  .system_variable @irc_users_$EXISTING
+                  ALL_USERS=$OUTPUT@
+                  CHECK_USERS=@repstr:@$NAME@/:$ALL_USERS
+
+                     @ifeq "$ALL_USERS" "$CHECK_USERS"
+                     ERROR=User '$NAME' is not a room member.
+                     @endif
+                  @endif
+               @endif
+
+            @else
+
+               @ifdef $PRIVATE
+               .system_variable @irc_users_$RESERVED_ROOM
+               ALL_USERS=@strlit:$OUTPUT@
+               CHECK_USERS=@repstr:@$NAME@/:$ALL_USERS
+                  @ifeq "$ALL_USERS" "$CHECK_USERS"
+                  ERROR=User '$NAME' is not known.
+                  @elif "$USER" = "$NAME"
+                  ERROR=Private rooms can only be created for separate users.
+                  @elif "$USER" = "admin"
+                  ERROR=Private rooms are not permitted for the administrator.
+                  @elif "$NAME" = "admin"
+                  ERROR=Private rooms are not permitted with the administrator.
+                  @else
+                     @if "$USER" < "$NAME"
+                     NAME=/$USER/$NAME
+                     @else
+                     NAME=/$NAME/$USER
+                     @endif
+                  NAMES=$NAME
+                  @endif
+               @endif
+
+            .session_variable @filter "$NAME"
+            .system_variable @irc_names_***
+
+               @ifdef $OUTPUT
+               ERROR=Room '$NAME' already exists.
+               @endif
+
+            @endif
+
+            @ifndef $ERROR
+
+               @ifdef $EXISTING
+
+               ADMIN_OR_OWNER=
+                  @ifeq "$USER" "admin"
+                  ADMIN_OR_OWNER=1
+                  @endif
+
+                  @ifndef $ADMIN_OR_OWNER
+                  .system_variable @irc_owner_$EXISTING
+                     @ifeq "$OUTPUT" "$USER"
+                     ADMIN_OR_OWNER=1
+                     @endif
+                  @endif
+
+                  @ifndef $ADMIN_OR_OWNER
+                  ERROR=A room can only be changed by its owner or the administrator.
+                  @else
+                  .system_variable @irc_names_$EXISTING
+                  FIRST=@substr:0,1:$OUTPUT
+                     @ifeq "$FIRST" "/"
+                     ERROR=A private messages room may not be changed.
+                     @endif
+                  @endif
+
+                  @ifndef $ERROR
+
+                     @ifdef $CLOSE
+                     .system_variable @irc_close_$EXISTING
+                        @ifdef $OUTPUT
+                           @if $WHEN #> $OUTPUT
+                           ERROR=Room opening may not be extended.
+                           @endif
+                        @else
+                        NOW=@unix:
+                           @if $WHEN #< $NOW
+                           ERROR=Room closing may not be in the past.
+                           @endif
+                        @endif
+                        @ifndef $ERROR
+                        .system_variable @irc_close_$EXISTING "$WHEN"
+                        @endif
+                     @else
+                        @ifdef $POSTS
+                        .system_variable @irc_posts_$EXISTING "$NAME"
+                        @else
+                           @ifdef $ASSIGN
+                           .system_variable @irc_owner_$EXISTING
+                           OLD_NAME=$OUTPUT
+                           .system_variable @irc_owner_$EXISTING "$NAME"
+                           @else
+                           .system_variable @irc_names_$EXISTING
+                           OLD_NAME=$OUTPUT
+
+                           .system_variable @irc_names_$EXISTING "$NAME"
+                           @endif
+                        @endif
+                     @endif
+
+                  CHANGED=1
+
+                  @endif
+
+               @else
+               .system_variable @irc_rooms
+               NEW_ROOM=$OUTPUT
+
+               RETURN=$NEW_ROOM-$UUID
+
+               CHANGED=1
+               .system_variable @irc_names_$NEW_ROOM "$NAME"
+               .system_variable @irc_owner_$NEW_ROOM "$USER"
+               .system_variable @irc_posts_$NEW_ROOM "ANY"
+               .system_variable @irc_users_$NEW_ROOM "@$USER"
+               .system_variable @irc_uuids_$NEW_ROOM "$UUID"
+
+               NEXT_ROOM=$NEW_ROOM
+               LEN=@strlen:$NEXT_ROOM
+               NEXT_ROOM=@$NEXT_ROOM+1
+
+               NEXT_ROOM=@padlen:$LEN,0:$NEXT_ROOM
+
+               .system_variable @irc_rooms $NEXT_ROOM
+               @endif
+
+            @endif
+
+         .system_variable @irc_lock ""
+
+            @ifdef $CHANGED
+               @ifdef $NEW_ROOM
+               SEND_NAME=$USER
+               SEND_ROOM=$NEW_ROOM
+               MESSAGE=@strlit:_:create $NEW_ROOM-$UUID $NAME
+               @else
+               SEND_NAME=ALL
+               SEND_ROOM=$EXISTING
+                  @ifdef $POSTS
+                  MESSAGE=@strlit:_:allows set to $NAME
+                  @else
+                     @ifdef $CLOSE
+                     MESSAGE=@strlit:_:closes set to $WHEN
+                     @else
+                        @ifdef $ASSIGN
+                        MESSAGE=@strlit:_:assign '$OLD_NAME' to '$NAME'
+                        @else
+                        MESSAGE=@strlit:_:rename '$OLD_NAME' to '$NAME'
+                        @endif
+                     @endif
+                  @endif
+               @endif
+
+            ENCODED=@base64::$MESSAGE
+
+            .session_variable @irc_user
+            OLD_IRC_USER=$OUTPUT
+            .session_variable @irc_user $USER
+
+            .run_script !irc_send_message "@room=$SEND_ROOM,@names=$SEND_NAME,@message=$ENCODED"
+            .session_variable @irc_user "$OLD_IRC_USER"
+            @endif
+
+         @endif
+
+      @endif
+
+   @endif
+
 @endif
-@endif
-@endif
-@endif
-@endif
-;
-@endif
-;
-@ifneq "$NAME" "$NAME_CHECK"
-ERROR=Invalid room name '$NAME'.
-@else
-;
-.system_variable @irc_lock 1 "" 100
-;
-@ifeq "$OUTPUT" "0"
-ERROR=Unable to obtain the system IRC lock (try again later).
-@else
-;
-@ifdef $EXISTING
-.system_variable @irc_close_$EXISTING
-@ifdef $OUTPUT
-NOW=@unix:
-@if $NOW #> $OUTPUT
-ERROR=This room has been closed.
-@endif
-@endif
-@endif
-;
-@ifdef $ASSIGN
-FIRST=@substr:0,1:$NAME
-@ifeq "$FIRST" "~"
-CLOSE=1
-WHEN=@substr:1,10:$NAME
-DISALLOWED=
-@ifeq "$EXISTING" "$ENTRANCE_ROOM"
-DISALLOWED=1
-@elif "$EXISTING" = "$RESERVED_ROOM"
-DISALLOWED=1
-@elif "$EXISTING" = "$STARTING_ROOM"
-DISALLOWED=1
-@endif
-@ifdef $DISALLOWED
-ERROR=This room may not be closed.
-@endif
-@elif "$FIRST" = "@"
-POSTS=1
-NAME=@substr:1:$NAME
-@ifneq "$NAME" "ANY"
-@ifneq "$NAME" "OWN"
-@ifneq "$NAME" "NONE"
-@ifneq "$NAME" "REACT"
-ERROR=Unknown room posts value '$NAME'.
-@endif
-@endif
-@endif
-@endif
-@ifeq "$EXISTING" "$RESERVED_ROOM"
-ERROR=Posts assignment for this room is not permitted.
-@endif
-@else
-@ifeq "$EXISTING" "$RESERVED_ROOM"
-ERROR=Ownership assignment for this room is not permitted.
-@else
-.system_variable @irc_users_$EXISTING
-ALL_USERS=$OUTPUT@
-CHECK_USERS=@repstr:@$NAME@/:$ALL_USERS
-;
-@ifeq "$ALL_USERS" "$CHECK_USERS"
-ERROR=User '$NAME' is not a room member.
-@endif
-@endif
-@endif
-;
-@else
-;
-@ifdef $PRIVATE
-.system_variable @irc_users_$RESERVED_ROOM
-ALL_USERS=@strlit:$OUTPUT@
-CHECK_USERS=@repstr:@$NAME@/:$ALL_USERS
-@ifeq "$ALL_USERS" "$CHECK_USERS"
-ERROR=User '$NAME' is not known.
-@elif "$USER" = "$NAME"
-ERROR=Private rooms can only be created for separate users.
-@elif "$USER" = "admin"
-ERROR=Private rooms are not permitted for the administrator.
-@elif "$NAME" = "admin"
-ERROR=Private rooms are not permitted with the administrator.
-@else
-@if "$USER" < "$NAME"
-NAME=/$USER/$NAME
-@else
-NAME=/$NAME/$USER
-@endif
-NAMES=$NAME
-@endif
-@endif
-;
-.session_variable @filter "$NAME"
-.system_variable @irc_names_***
-;
-@ifdef $OUTPUT
-ERROR=Room '$NAME' already exists.
-@endif
-;
-@endif
-;
-@ifndef $ERROR
-;
-@ifdef $EXISTING
-;
-ADMIN_OR_OWNER=
-@ifeq "$USER" "admin"
-ADMIN_OR_OWNER=1
-@endif
-;
-@ifndef $ADMIN_OR_OWNER
-.system_variable @irc_owner_$EXISTING
-@ifeq "$OUTPUT" "$USER"
-ADMIN_OR_OWNER=1
-@endif
-@endif
-;
-@ifndef $ADMIN_OR_OWNER
-ERROR=A room can only be changed by its owner or the administrator.
-@else
-.system_variable @irc_names_$EXISTING
-FIRST=@substr:0,1:$OUTPUT
-@ifeq "$FIRST" "/"
-ERROR=A private messages room may not be changed.
-@endif
-@endif
-;
-@ifndef $ERROR
-;
-@ifdef $CLOSE
-.system_variable @irc_close_$EXISTING
-@ifdef $OUTPUT
-@if $WHEN #> $OUTPUT
-ERROR=Room opening may not be extended.
-@endif
-@else
-NOW=@unix:
-@if $WHEN #< $NOW
-ERROR=Room closing may not be in the past.
-@endif
-@endif
-@ifndef $ERROR
-.system_variable @irc_close_$EXISTING "$WHEN"
-@endif
-@else
-@ifdef $POSTS
-.system_variable @irc_posts_$EXISTING "$NAME"
-@else
-@ifdef $ASSIGN
-.system_variable @irc_owner_$EXISTING
-OLD_NAME=$OUTPUT
-.system_variable @irc_owner_$EXISTING "$NAME"
-@else
-.system_variable @irc_names_$EXISTING
-OLD_NAME=$OUTPUT
-;
-.system_variable @irc_names_$EXISTING "$NAME"
-@endif
-@endif
-@endif
-;
-CHANGED=1
-;
-@endif
-;
-@else
-.system_variable @irc_rooms
-NEW_ROOM=$OUTPUT
-;
-RETURN=$NEW_ROOM-$UUID
-;
-CHANGED=1
-.system_variable @irc_names_$NEW_ROOM "$NAME"
-.system_variable @irc_owner_$NEW_ROOM "$USER"
-.system_variable @irc_posts_$NEW_ROOM "ANY"
-.system_variable @irc_users_$NEW_ROOM "@$USER"
-.system_variable @irc_uuids_$NEW_ROOM "$UUID"
-;
-NEXT_ROOM=$NEW_ROOM
-LEN=@strlen:$NEXT_ROOM
-NEXT_ROOM=@$NEXT_ROOM+1
-;
-NEXT_ROOM=@padlen:$LEN,0:$NEXT_ROOM
-;
-.system_variable @irc_rooms $NEXT_ROOM
-@endif
-;
-@endif
-;
-.system_variable @irc_lock ""
-;
-@ifdef $CHANGED
-@ifdef $NEW_ROOM
-SEND_NAME=$USER
-SEND_ROOM=$NEW_ROOM
-MESSAGE=@strlit:_:create $NEW_ROOM-$UUID $NAME
-@else
-SEND_NAME=ALL
-SEND_ROOM=$EXISTING
-@ifdef $POSTS
-MESSAGE=@strlit:_:allows set to $NAME
-@else
-@ifdef $CLOSE
-MESSAGE=@strlit:_:closes set to $WHEN
-@else
-@ifdef $ASSIGN
-MESSAGE=@strlit:_:assign '$OLD_NAME' to '$NAME'
-@else
-MESSAGE=@strlit:_:rename '$OLD_NAME' to '$NAME'
-@endif
-@endif
-@endif
-@endif
-;
-ENCODED=@base64::$MESSAGE
-;
-.session_variable @irc_user
-OLD_IRC_USER=$OUTPUT
-.session_variable @irc_user $USER
-;
-.run_script !irc_send_message "@room=$SEND_ROOM,@names=$SEND_NAME,@message=$ENCODED"
-.session_variable @irc_user "$OLD_IRC_USER"
-@endif
-;
-@endif
-;
-@endif
-;
-@endif
-;
-@endif
-;
+
 @ifdef $TOKEN
 .system_variable @irc_names_$EXISTING
-@ifndef $OUTPUT
-ERROR=Invalid room number '$EXISTING'.
-@else
-ROOM_NAME=$OUTPUT
-@ifneq "$USER" "admin"
-.system_variable @irc_owner_$EXISTING
-@ifneq "$OUTPUT" "$USER"
-ERROR=Invitations can only be issued by the room owner or the administrator.
+   @ifndef $OUTPUT
+   ERROR=Invalid room number '$EXISTING'.
+   @else
+   ROOM_NAME=$OUTPUT
+      @ifneq "$USER" "admin"
+      .system_variable @irc_owner_$EXISTING
+         @ifneq "$OUTPUT" "$USER"
+         ERROR=Invitations can only be issued by the room owner or the administrator.
+         @endif
+      @endif
+
+   FIRST=@substr:0,1:$ROOM_NAME
+      @ifeq "$FIRST" "/"
+      CHECK_NAME=@repstr:\//@:$ROOM_NAME
+      CHECK_NAME=@repstr:@$USER/:$CHECK_NAME
+         @ifneq "$CHECK_NAME" "@$NAMES"
+         ERROR=Invalid attempt to invite '$NAMES' to a private room.
+         @endif
+      @endif
+
+   @endif
+
+   @ifndef $ERROR
+
+   SEARCH=
+   REPLACE=
+   ; NOTE: If a dummy UUID is provided then replace
+   ; it with the UUID assigned during room creation
+   ; via session "@search" and "@replace" variables
+   ; where "@replace" is a "|" separated token list
+   ; and each token being the leading 32 characters
+   ; of SHA256( NAME + UUID ) to ensure a different
+   ; token is provided to each user.
+      @ifeq "$TOKEN" "$DUMMY_JOIN_UUID"
+      .system_variable @irc_uuids_$EXISTING
+         @ifdef $OUTPUT
+         ASSIGN=$OUTPUT
+         SEARCH=$DUMMY_JOIN_SUFFIX
+
+            @ifeq "ALL" "$NAMES"
+            NAMES=OTHERS
+            @endif
+
+            @ifeq "OTHERS" "$NAMES"
+            .system_variable @irc_users_$RESERVED_ROOM
+            NAMES=@repstr:@$USER/:$OUTPUT
+               @ifdef $NAMES
+               NAMES=@substr:1:$NAMES
+               NAMES=@repstr:@/.:$NAMES
+               @endif
+            @endif
+
+         USER_LINES=@repstr:./\n:$NAMES
+
+         @label NEXT
+
+         @:LOOP
+         NEXT_USER=%USER_LINES:1%
+
+         BAD_INVITE=
+
+            @ifdef $NEXT_USER
+            .system_variable @irc_xinvr_%EXISTING%_$NEXT_USER
+               @ifdef $OUTPUT
+               BAD_INVITE=1
+               @else
+               .system_variable @irc_xinvs_%EXISTING%_$NEXT_USER
+                  @ifdef $OUTPUT
+                  BAD_INVITE=1
+                  @else
+                  .system_variable @session_@queue_irc_%EXISTING%_$NEXT_USER
+                     @ifdef $OUTPUT
+                     BAD_INVITE=1
+                     @else
+                     .system_variable @irc_users_$RESERVED_ROOM
+                     ALL_USERS=@strlit:$OUTPUT@
+                     CHECK_USERS=@repstr:@$NEXT_USER@/:$ALL_USERS
+                        @ifeq "$ALL_USERS" "$CHECK_USERS"
+                        BAD_INVITE=1
+                        @endif
+                     @endif
+                  @endif
+               @endif
+            @endif
+
+            @ifdef $BAD_INVITE
+            ERROR=Invalid attempt to invite '$NEXT_USER' to room '$EXISTING'.
+            NEXT_USER=
+            @endif
+
+            @ifndef $NEXT_USER
+            @label END_LOOP
+            @endif
+
+         @skip
+
+         @:NEXT
+         .=crypto_hash $NEXT_USER$ASSIGN
+         NEXT_JOIN_INFO=@substr:0,32:$OUTPUT
+         NEXT_JOIN_INFO=-$NEXT_JOIN_INFO
+         NEXT_JOIN_INFO=@base64::$NEXT_JOIN_INFO
+
+            @ifndef $REPLACE
+            REPLACE=@strlit:$NEXT_JOIN_INFO
+            @else
+            REPLACE=@strlit:$REPLACE|$NEXT_JOIN_INFO
+            @endif
+
+         USER_LINES=%USER_LINES:-1%
+
+         !!@:LOOP
+
+         @:END_LOOP
+
+         @else
+         ERROR=Unexpected UUID not found for room '$EXISTING'.
+         @endif
+      @endif
+   @endif
+
+   @ifndef $ERROR
+   MESSAGE=@strlit:_:invite room $EXISTING-$TOKEN $ROOM_NAME
+   ENCODED=@base64::$MESSAGE
+
+   .session_variable @irc_user
+   OLD_IRC_USER=$OUTPUT
+   .session_variable @irc_user $USER
+
+   ; NOTE: If NAMES is equal to USER
+   ; then will not send any invites.
+      @ifdef $NAMES
+         @ifneq "$USER" "$NAMES"
+
+            @ifdef $SEARCH
+            .session_variable @search $SEARCH
+            .session_variable @replace $REPLACE
+            @endif
+         .run_script !irc_send_message "@room=%EXISTING%_$RESERVED_ROOM,@names=invite_$NAMES,@message=$ENCODED"
+
+         .session_variable @irc_user "$OLD_IRC_USER"
+
+         SUFFIX=@repstr:./|:$NAMES
+         .system_variable @irc_xinvs_%EXISTING%_|$SUFFIX 1
+         @endif
+      @endif
+   @endif
 @endif
-@endif
-;
-FIRST=@substr:0,1:$ROOM_NAME
-@ifeq "$FIRST" "/"
-CHECK_NAME=@repstr:\//@:$ROOM_NAME
-CHECK_NAME=@repstr:@$USER/:$CHECK_NAME
-@ifneq "$CHECK_NAME" "@$NAMES"
-ERROR=Invalid attempt to invite '$NAMES' to a private room.
-@endif
-@endif
-;
-@endif
-;
-@ifndef $ERROR
-;
-SEARCH=
-REPLACE=
-; NOTE: If a dummy UUID is provided then replace
-; it with the UUID assigned during room creation
-; via session "@search" and "@replace" variables
-; where "@replace" is a "|" separated token list
-; and each token being the leading 32 characters
-; of SHA256( NAME + UUID ) to ensure a different
-; token is provided to each user.
-@ifeq "$TOKEN" "$DUMMY_JOIN_UUID"
-.system_variable @irc_uuids_$EXISTING
-@ifdef $OUTPUT
-ASSIGN=$OUTPUT
-SEARCH=$DUMMY_JOIN_SUFFIX
-;
-@ifeq "ALL" "$NAMES"
-NAMES=OTHERS
-@endif
-;
-@ifeq "OTHERS" "$NAMES"
-.system_variable @irc_users_$RESERVED_ROOM
-NAMES=@repstr:@$USER/:$OUTPUT
-@ifdef $NAMES
-NAMES=@substr:1:$NAMES
-NAMES=@repstr:@/.:$NAMES
-@endif
-@endif
-;
-USER_LINES=@repstr:./\n:$NAMES
-;
-@label NEXT
-;
-@:LOOP
-NEXT_USER=%USER_LINES:1%
-;
-BAD_INVITE=
-;
-@ifdef $NEXT_USER
-.system_variable @irc_xinvr_%EXISTING%_$NEXT_USER
-@ifdef $OUTPUT
-BAD_INVITE=1
-@else
-.system_variable @irc_xinvs_%EXISTING%_$NEXT_USER
-@ifdef $OUTPUT
-BAD_INVITE=1
-@else
-.system_variable @session_@queue_irc_%EXISTING%_$NEXT_USER
-@ifdef $OUTPUT
-BAD_INVITE=1
-@else
-.system_variable @irc_users_$RESERVED_ROOM
-ALL_USERS=@strlit:$OUTPUT@
-CHECK_USERS=@repstr:@$NEXT_USER@/:$ALL_USERS
-@ifeq "$ALL_USERS" "$CHECK_USERS"
-BAD_INVITE=1
-@endif
-@endif
-@endif
-@endif
-@endif
-;
-@ifdef $BAD_INVITE
-ERROR=Invalid attempt to invite '$NEXT_USER' to room '$EXISTING'.
-NEXT_USER=
-@endif
-;
-@ifndef $NEXT_USER
-@label END_LOOP
-@endif
-;
-@skip
-;
-@:NEXT
-.=crypto_hash $NEXT_USER$ASSIGN
-NEXT_JOIN_INFO=@substr:0,32:$OUTPUT
-NEXT_JOIN_INFO=-$NEXT_JOIN_INFO
-NEXT_JOIN_INFO=@base64::$NEXT_JOIN_INFO
-;
-@ifndef $REPLACE
-REPLACE=@strlit:$NEXT_JOIN_INFO
-@else
-REPLACE=@strlit:$REPLACE|$NEXT_JOIN_INFO
-@endif
-;
-USER_LINES=%USER_LINES:-1%
-;
-!!@:LOOP
-;
-@:END_LOOP
-;
-@else
-ERROR=Unexpected UUID not found for room '$EXISTING'.
-@endif
-@endif
-@endif
-;
-@ifndef $ERROR
-MESSAGE=@strlit:_:invite room $EXISTING-$TOKEN $ROOM_NAME
-ENCODED=@base64::$MESSAGE
-;
-.session_variable @irc_user
-OLD_IRC_USER=$OUTPUT
-.session_variable @irc_user $USER
-;
-; NOTE: If NAMES is equal to USER
-; then will not send any invites.
-@ifdef $NAMES
-@ifneq "$USER" "$NAMES"
-;
-@ifdef $SEARCH
-.session_variable @search $SEARCH
-.session_variable @replace $REPLACE
-@endif
-.run_script !irc_send_message "@room=%EXISTING%_$RESERVED_ROOM,@names=invite_$NAMES,@message=$ENCODED"
-;
-.session_variable @irc_user "$OLD_IRC_USER"
-;
-SUFFIX=@repstr:./|:$NAMES
-.system_variable @irc_xinvs_%EXISTING%_|$SUFFIX 1
-@endif
-@endif
-@endif
-@endif
-;
+
 PREFIX=
 ERROR_OR_RETURN=
-;
+
 @ifdef $CHANGED
 .system_variable @irc_alter 1
 @endif
-;
+
 @ifdef $ERROR
 PREFIX=Error:$SP
 ERROR_OR_RETURN=$ERROR
 @elif "$RETURN" != ""
 ERROR_OR_RETURN=:$RETURN
 @endif
-;
+
 @ifdef $ERROR_OR_RETURN
 .session_variable @args_file
-@ifndef $OUTPUT
-#$PREFIX$ERROR_OR_RETURN
-@else
-.system_variable $OUTPUT "$ERROR_OR_RETURN"
-@endif
+   @ifndef $OUTPUT
+   #$PREFIX$ERROR_OR_RETURN
+   @else
+   .system_variable $OUTPUT "$ERROR_OR_RETURN"
+   @endif
 @endif

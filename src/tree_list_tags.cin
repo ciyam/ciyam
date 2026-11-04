@@ -1,110 +1,110 @@
 ; Copyright (c) 2019-2026 CIYAM Developers
-;
+
 ; Distributed under the MIT/X11 software license, please refer to the file license.txt
 ; in the root project directory or http://www.opensource.org/licenses/mit-license.php.
-;
+
 @ifndef $1
 #NOTE: This script needs a tree tag and optionally a trunk name and branch expression.
 @else
 ERROR=
-;
+
 TREE=$1
 TRUNK=$2
 BRANCH=$3
-;
+
 .session_variable @deque commence
-;
-@ifndef $TRUNK
-PREFIX=X
-@else
-@ifndef $BRANCH
-PREFIX=X*:$TRUNK:*
-@else
-PREFIX=X*:$TRUNK:$BRANCH
-@endif
-@endif
-;
+
+   @ifndef $TRUNK
+   PREFIX=X
+   @else
+      @ifndef $BRANCH
+      PREFIX=X*:$TRUNK:*
+      @else
+      PREFIX=X*:$TRUNK:$BRANCH
+      @endif
+   @endif
+
 TTRUNK=Tags
 DEPTH=2
 PREFIX=@substr:1:$PREFIX
-;
-@ifndef $PREFIX
-PREFIX=$TTRUNK:*
-@else
-PREFIX=$TTRUNK:$PREFIX
-.session_variable @deque ""
-LINES=@repstr:\:/\n:$PREFIX
-.session_variable @deque "~$LINES"
-.session_variable @deque size
-DEPTH=$OUTPUT
-@endif
-;
+
+   @ifndef $PREFIX
+   PREFIX=$TTRUNK:*
+   @else
+   PREFIX=$TTRUNK:$PREFIX
+   .session_variable @deque ""
+   LINES=@repstr:\:/\n:$PREFIX
+   .session_variable @deque "~$LINES"
+   .session_variable @deque size
+   DEPTH=$OUTPUT
+   @endif
+
 @label START
 .file_info -recurse -d=-$DEPTH -p=$PREFIX !$TREE
-@ifdef $ERROR
-@label FINISH
-@endif
+   @ifdef $ERROR
+   @label FINISH
+   @endif
 @skip
-;
+
 @:START
 LINES=$OUTPUT
-;
-@ifdef $LINES
-.session_variable @deque ""
-.session_variable @deque "~$LINES"
-@:LOOP
-@label NEXT
-;
-@ifeq "$DEPTH" "2"
-.session_variable @deque pop_front
-@else
-.session_variable @deque "retain [list]"
-@endif
-.session_variable @deque front
-@ifndef $OUTPUT
-@label END_LOOP
-@endif
-;
-@skip
-;
-@:NEXT
-LINES=@repstr: /\n:$OUTPUT
-.session_variable @deque
-LOOP_DEQUE=$OUTPUT
-; NOTE: As a tag can contain spaces temporarily use the @deque
-; to first remove the first two columns (file type/line number
-; and hash) and then the last two columns (file size info).
-.session_variable @deque ""
-.session_variable @deque "~$LINES"
-.session_variable @deque pop_front
-.session_variable @deque pop_front
-.session_variable @deque pop_back
-.session_variable @deque pop_back
-.session_variable @deque
-TAG_NAME=@repstr:\n/ :$OUTPUT
-;
-@ifneq "$DEPTH" "2"
-.session_variable @deque ""
-TAG_PARTS=@repstr:\:/\n:$TAG_NAME
-.session_variable @deque "~$TAG_PARTS"
-.session_variable @deque
-TAG_NAME=%OUTPUT:2%
-@endif
-;
-#$TAG_NAME
-.session_variable @deque ""
-.session_variable @deque "~$LOOP_DEQUE"
-;
-@ifneq "$DEPTH" "2"
-.session_variable @deque pop_front
-@endif
-!!@:LOOP
-@:END_LOOP
-;
-@endif
-;
+
+   @ifdef $LINES
+   .session_variable @deque ""
+   .session_variable @deque "~$LINES"
+   @:LOOP
+   @label NEXT
+
+      @ifeq "$DEPTH" "2"
+      .session_variable @deque pop_front
+      @else
+      .session_variable @deque "retain [list]"
+      @endif
+   .session_variable @deque front
+      @ifndef $OUTPUT
+      @label END_LOOP
+      @endif
+
+   @skip
+
+   @:NEXT
+   LINES=@repstr: /\n:$OUTPUT
+   .session_variable @deque
+   LOOP_DEQUE=$OUTPUT
+   ; NOTE: As a tag can contain spaces temporarily use the @deque
+   ; to first remove the first two columns (file type/line number
+   ; and hash) and then the last two columns (file size info).
+   .session_variable @deque ""
+   .session_variable @deque "~$LINES"
+   .session_variable @deque pop_front
+   .session_variable @deque pop_front
+   .session_variable @deque pop_back
+   .session_variable @deque pop_back
+   .session_variable @deque
+   TAG_NAME=@repstr:\n/ :$OUTPUT
+
+      @ifneq "$DEPTH" "2"
+      .session_variable @deque ""
+      TAG_PARTS=@repstr:\:/\n:$TAG_NAME
+      .session_variable @deque "~$TAG_PARTS"
+      .session_variable @deque
+      TAG_NAME=%OUTPUT:2%
+      @endif
+
+   #$TAG_NAME
+   .session_variable @deque ""
+   .session_variable @deque "~$LOOP_DEQUE"
+
+      @ifneq "$DEPTH" "2"
+      .session_variable @deque pop_front
+      @endif
+   !!@:LOOP
+   @:END_LOOP
+
+   @endif
+
 @:FINISH
-;
+
 .session_variable @deque complete
-;
+
 @endif

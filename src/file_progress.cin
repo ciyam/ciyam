@@ -1,8 +1,8 @@
 ; Copyright (c) 2026 CIYAM Developers
-;
+
 ; Distributed under the MIT/X11 software license, please refer to the file license.txt
 ; in the root project directory or http://www.opensource.org/licenses/mit-license.php.
-;
+
 NUM_ARGS=0
 @ifdef $1
 NUM_ARGS=@$NUM_ARGS+1
@@ -10,64 +10,64 @@ NUM_ARGS=@$NUM_ARGS+1
 @ifdef $2
 NUM_ARGS=@$NUM_ARGS+1
 @endif
-;
+
 @ifneq "$NUM_ARGS" "2"
 #NOTE: This script requires a file name and search string.
 @else
-;
+
 FILE_NAME=$1
 SEARCH_STRING=$2
-;
+
 CIYAM_PAUSE_SECONDS=2
-;
+
 PROGRESS_PREFIX=[$FILE_NAME]
-;
+
 CONTENT_FILE=@files::$FILE_NAME
-;
-@ifdef $CONTENT_FILE
-;
-@label NEXT
-;
-@:LOOP
-;
-CHECK_STRING=@file:~grep "$SEARCH_STRING" "$FILE_NAME"
-;
-@ifdef $CIYAM_NO_PAUSE
-@ifndef $CIYAM_NO_PROGRESS
-##.
-@endif
-.wait 2000
-@else
-~clear
-#[$FILE_NAME]
-~cat $FILE_NAME
-; NOTE: Force a flush (in case the last line has no LF).
-~echo ""
-;
-@ifndef $CHECK_STRING
-^Press any key to quit...
-@ifdef $CIYAM_KEY_PRESSED
-CHECK_STRING=1
-@endif
-@endif
-@endif
-;
-@ifdef $CHECK_STRING
-@label END_LOOP
-@endif
-;
-@skip
-;
-@:NEXT
-;
-!!@:LOOP
-;
-@:END_LOOP
-;
-@ifdef $CIYAM_NO_PAUSE
-~cat $FILE_NAME
-@endif
-;
-@endif
-;
+
+   @ifdef $CONTENT_FILE
+
+   @label NEXT
+
+   @:LOOP
+
+   CHECK_STRING=@file:~grep "$SEARCH_STRING" "$FILE_NAME"
+
+      @ifdef $CIYAM_NO_PAUSE
+         @ifndef $CIYAM_NO_PROGRESS
+         ##.
+         @endif
+      .wait 2000
+      @else
+      ~clear
+      #[$FILE_NAME]
+      ~cat $FILE_NAME
+      ; NOTE: Force a flush (in case the last line has no LF).
+      ~echo ""
+
+         @ifndef $CHECK_STRING
+         ^Press any key to quit...
+            @ifdef $CIYAM_KEY_PRESSED
+            CHECK_STRING=1
+            @endif
+         @endif
+      @endif
+
+      @ifdef $CHECK_STRING
+      @label END_LOOP
+      @endif
+
+   @skip
+
+   @:NEXT
+
+   !!@:LOOP
+
+   @:END_LOOP
+
+      @ifdef $CIYAM_NO_PAUSE
+      ~cat $FILE_NAME
+      @endif
+
+   @endif
+
 @endif

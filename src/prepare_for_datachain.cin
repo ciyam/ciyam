@@ -1,8 +1,8 @@
 ; Copyright (c) 2024-2026 CIYAM Developers
-;
+
 ; Distributed under the MIT/X11 software license, please refer to the file license.txt
 ; in the root project directory or http://www.opensource.org/licenses/mit-license.php.
-;
+
 NUM_ARGS=0
 @ifdef $1
 NUM_ARGS=@$NUM_ARGS+1
@@ -10,97 +10,97 @@ NUM_ARGS=@$NUM_ARGS+1
 @ifdef $2
 NUM_ARGS=@$NUM_ARGS+1
 @endif
-;
+
 @ifneq "$NUM_ARGS" "2"
 #Usage: prepare_for_datachain.cin <storage> <identity>
 @else
 ERROR=
-;
+
 STORAGE=$1
 IDENTITY=$2
-;
+
 .system_variable @prepare_$IDENTITY 1 ""
-@ifeq $OUTPUT 1
-;
-DATA_LOG_FILE=@files::$IDENTITY.log
-@ifdef $DATA_LOG_FILE
-;
-~./bundle $IDENTITY $IDENTITY.log
-<import_files.cin . $IDENTITY.tree : $IDENTITY.bun.gz
-;
-.storage_init $STORAGE
-@ifndef $ERROR
-;
-.module_list
-MODULES=$OUTPUT
-MODULES=@repstr: /\n:$MODULES
-MODULE=%MODULES:2%
-;
-@retain *
-<$MODULE.channel_information.vars.lst
-;
-<generate_next_block.cin $IDENTITY dummy $IDENTITY.tree
-;
-@ifndef $ERROR
-<block_tree_relegate.cin $IDENTITY $IDENTITY.tree
-.file_core -header bc.$IDENTITY.zenith h
-.storage_datachain_details $IDENTITY -height=$OUTPUT
-~rm $IDENTITY.log
-;
-.pf $STORAGE $CLASS_NAME "$FLD_ACTIVE#1 1" $FLD_IDENTITY,$FLD_HOST_NAME,$FLD_PORT_NUMBER -min
-@ifndef $ERROR
-;
-ROWS=$OUTPUT
-;
-@:LOOP
-;
-@label NEXT
-@ifndef $ROWS
-@label END_LOOP
-@endif
-;
-@skip
-;
-@:NEXT
-NEXT_ROW=%ROWS:1%
-COLS=@repstr:,/\n:$NEXT_ROW
-;
-PEER_ID=%COLS:1%
-HOST_NAME=%COLS:2%
-HOST_PORT=%COLS:3%
-;
-.regex "^hub\\\.(.*)" $HOST_NAME
-@ifdef $OUTPUT
-.system_variable $$%PEER_ID%_identity
-HASH_ID=$OUTPUT
-;
-; NOTE: Use the channel's secret hash for a secure peer connection.
-.system_variable @secret_hash_$HASH_ID
-@ifdef $OUTPUT
-.session_variable @secret_hash @secret_hash_$HASH_ID
-@endif
-.peer_connect $IDENTITY $HOST_NAME-$HOST_PORT -data
-@ifdef $ERROR
-ERROR=
-@endif
-@endif
-;
-ROWS=%ROWS:-1%
-;
-!!@:LOOP
-;
-@:END_LOOP
-;
-@endif
-;
-@endif
-~rm $IDENTITY.bun.gz
-@endif
-.storage_term
-;
-@endif
-;
-.system_variable @prepare_$IDENTITY ""
-@endif
-;
+   @ifeq $OUTPUT 1
+
+   DATA_LOG_FILE=@files::$IDENTITY.log
+      @ifdef $DATA_LOG_FILE
+
+      ~./bundle $IDENTITY $IDENTITY.log
+      <import_files.cin . $IDENTITY.tree : $IDENTITY.bun.gz
+
+      .storage_init $STORAGE
+         @ifndef $ERROR
+
+         .module_list
+         MODULES=$OUTPUT
+         MODULES=@repstr: /\n:$MODULES
+         MODULE=%MODULES:2%
+
+         @retain *
+         <$MODULE.channel_information.vars.lst
+
+         <generate_next_block.cin $IDENTITY dummy $IDENTITY.tree
+
+            @ifndef $ERROR
+            <block_tree_relegate.cin $IDENTITY $IDENTITY.tree
+            .file_core -header bc.$IDENTITY.zenith h
+            .storage_datachain_details $IDENTITY -height=$OUTPUT
+            ~rm $IDENTITY.log
+
+            .pf $STORAGE $CLASS_NAME "$FLD_ACTIVE#1 1" $FLD_IDENTITY,$FLD_HOST_NAME,$FLD_PORT_NUMBER -min
+               @ifndef $ERROR
+
+               ROWS=$OUTPUT
+
+               @:LOOP
+
+               @label NEXT
+                  @ifndef $ROWS
+                  @label END_LOOP
+                  @endif
+
+               @skip
+
+               @:NEXT
+               NEXT_ROW=%ROWS:1%
+               COLS=@repstr:,/\n:$NEXT_ROW
+
+               PEER_ID=%COLS:1%
+               HOST_NAME=%COLS:2%
+               HOST_PORT=%COLS:3%
+
+               .regex "^hub\\\.(.*)" $HOST_NAME
+                  @ifdef $OUTPUT
+                  .system_variable $$%PEER_ID%_identity
+                  HASH_ID=$OUTPUT
+
+                  ; NOTE: Use the channel's secret hash for a secure peer connection.
+                  .system_variable @secret_hash_$HASH_ID
+                     @ifdef $OUTPUT
+                     .session_variable @secret_hash @secret_hash_$HASH_ID
+                     @endif
+                  .peer_connect $IDENTITY $HOST_NAME-$HOST_PORT -data
+                     @ifdef $ERROR
+                     ERROR=
+                     @endif
+                  @endif
+
+               ROWS=%ROWS:-1%
+
+               !!@:LOOP
+
+               @:END_LOOP
+
+               @endif
+
+            @endif
+         ~rm $IDENTITY.bun.gz
+         @endif
+      .storage_term
+
+      @endif
+
+   .system_variable @prepare_$IDENTITY ""
+   @endif
+
 @endif

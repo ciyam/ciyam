@@ -1,79 +1,79 @@
 ; Copyright (c) 2024-2026 CIYAM Developers
-;
+
 ; Distributed under the MIT/X11 software license, please refer to the file license.txt
 ; in the root project directory or http://www.opensource.org/licenses/mit-license.php.
-;
+
 @ifndef $CIYAM_MODEL
 #Error: Missing CIYAM_MODEL environment variable.
 @label END
 @endif
 @skip
-;
+
 @ifndef $CIYAM_GRP
 CIYAM_GRP=guests
 @endif
-;
+
 @ifndef $CIYAM_UID
 CIYAM_UID=guest
 @endif
-;
+
 @ifndef $CIYAM_VER
 CIYAM_VER=0.2
 @endif
-;
+
 #Installing Application $CIYAM_MODEL
-;
+
 .storage_init Meta
 @ifdef $ERROR
 @label END
 @endif
 @skip
-;
+
 .pc $CIYAM_UID @now 100 105100 " " "105101=$CIYAM_MODEL,105102=$CIYAM_VER,300500=$CIYAM_GRP,105103=2017,105112=0,105115=0,105118=0"
 @ifdef $ERROR
 @label ERROR
 @endif
 @skip
-;
+
 MODEL_KEY=$OUTPUT
-;
+
 ; NOTE: This system variable is being used in order
 ; to prevent clearing the "Meta_Model_<key>" system
 ; variable in the "Check Install" function (to keep
 ; the Model UI refreshing during the installation).
 .system_variable "@Meta_Model_$MODEL_KEY" 1
-;
+
 .pc $CIYAM_UID @now 100 136100 " " "136101=Standard,136107=Standard,302810=Standard,302800=$MODEL_KEY"
 @ifdef $ERROR
 @label ERROR
 @endif
 @skip
-;
+
 STANDARD_KEY=$OUTPUT
 .pe $CIYAM_UID @now 100 136100 "-v=@async=false,@message=Installing Standard Package..." $STANDARD_KEY -136410
 @ifdef $ERROR
 @label ERROR
 @endif
 @skip
-;
+
 ; NOTE: Update "Name" field for the "Initial Record Value" of the "System Information" singleton.
 .pf 100 106100 "300600,106101#2 $MODEL_KEY,System_Information" @key -min
 SYSTEM_INFORMATION_CLASS=$OUTPUT
 @ifdef $SYSTEM_INFORMATION_CLASS
 .pf 100 107100 "300700,107101#2 $SYSTEM_INFORMATION_CLASS,Name" @key -min
 SYSTEM_INFORMATION_NAME_FIELD=$OUTPUT
-@ifdef $SYSTEM_INFORMATION_NAME_FIELD
-.pf 100 129100 "302410,129101#2 $SYSTEM_INFORMATION_CLASS,system" #1 @key -min
-INITIAL_RECORD_SYSTEM=$OUTPUT
-@ifdef $INITIAL_RECORD_SYSTEM
-.pu $CIYAM_UID @now 100 130100 %INITIAL_RECORD_SYSTEM%_%SYSTEM_INFORMATION_NAME_FIELD% "130101=CIYAM $CIYAM_MODEL"
+   @ifdef $SYSTEM_INFORMATION_NAME_FIELD
+   .pf 100 129100 "302410,129101#2 $SYSTEM_INFORMATION_CLASS,system" #1 @key -min
+   INITIAL_RECORD_SYSTEM=$OUTPUT
+      @ifdef $INITIAL_RECORD_SYSTEM
+      .pu $CIYAM_UID @now 100 130100 %INITIAL_RECORD_SYSTEM%_%SYSTEM_INFORMATION_NAME_FIELD% "130101=CIYAM $CIYAM_MODEL"
+      @endif
+   @endif
 @endif
-@endif
-@endif
-;
+
 .pc $CIYAM_UID @now 100 136100 " " "136101=User,136107=Users,302810=User,302800=$MODEL_KEY"
 USER_PACKAGE_KEY=$OUTPUT
-;
+
 .pf 100 137100 "302820,137101#2 $USER_PACKAGE_KEY,opt_user_bool_use_access" #1 @key -min
 @ifndef $OUTPUT
 ERROR=Unable to locate User package option 'use_access'.
@@ -82,14 +82,14 @@ ERROR=Unable to locate User package option 'use_access'.
 @label ERROR
 @endif
 @skip
-;
+
 USER_OPTION_KEY=$OUTPUT
 .pu $CIYAM_UID @now 100 137100 $USER_OPTION_KEY "137102=1"
 @ifdef $ERROR
 @label ERROR
 @endif
 @skip
-;
+
 .pf 100 137100 "302820,137101#2 $USER_PACKAGE_KEY,opt_user_bool_use_authenticator" #1 @key -min
 @ifndef $OUTPUT
 ERROR=Unable to locate User package option 'use_authenticator'.
@@ -98,14 +98,14 @@ ERROR=Unable to locate User package option 'use_authenticator'.
 @label ERROR
 @endif
 @skip
-;
+
 USER_OPTION_KEY=$OUTPUT
 .pu $CIYAM_UID @now 100 137100 $USER_OPTION_KEY "137102=1"
 @ifdef $ERROR
 @label ERROR
 @endif
 @skip
-;
+
 .pf 100 137100 "302820,137101#2 $USER_PACKAGE_KEY,opt_user_bool_use_tags" #1 @key -min
 @ifndef $OUTPUT
 ERROR=Unable to locate User package option 'use_tags'.
@@ -114,14 +114,14 @@ ERROR=Unable to locate User package option 'use_tags'.
 @label ERROR
 @endif
 @skip
-;
+
 USER_OPTION_KEY=$OUTPUT
 .pu $CIYAM_UID @now 100 137100 $USER_OPTION_KEY "137102=1"
 @ifdef $ERROR
 @label ERROR
 @endif
 @skip
-;
+
 .pf 100 137100 "302820,137101#2 $USER_PACKAGE_KEY,opt_user_bool_use_templates" #1 @key -min
 @ifndef $OUTPUT
 ERROR=Unable to locate User package option 'use_templates'.
@@ -130,23 +130,23 @@ ERROR=Unable to locate User package option 'use_templates'.
 @label ERROR
 @endif
 @skip
-;
+
 USER_OPTION_KEY=$OUTPUT
 .pu $CIYAM_UID @now 100 137100 $USER_OPTION_KEY "137102=1"
 @ifdef $ERROR
 @label ERROR
 @endif
 @skip
-;
+
 .pe $CIYAM_UID @now 100 136100 "-v=@async=false,@message=Installing User Package..." $USER_PACKAGE_KEY -136410
 @ifdef $ERROR
 @label ERROR
 @endif
 @skip
-;
+
 .pc $CIYAM_UID @now 100 136100 " " "136101=Group,136107=Groups,302810=Group,302800=$MODEL_KEY"
 GROUP_PACKAGE_KEY=$OUTPUT
-;
+
 .pf 100 137100 "302820,137101#2 $GROUP_PACKAGE_KEY,opt_group_bool_use_group_memberships" #1 @key -min
 @ifndef $OUTPUT
 ERROR=Unable to locate Group package option 'use_group_memberships'.
@@ -155,14 +155,14 @@ ERROR=Unable to locate Group package option 'use_group_memberships'.
 @label ERROR
 @endif
 @skip
-;
+
 GROUP_OPTION_KEY=$OUTPUT
 .pu $CIYAM_UID @now 100 137100 $GROUP_OPTION_KEY "137102=1"
 @ifdef $ERROR
 @label ERROR
 @endif
 @skip
-;
+
 .pf 100 137100 "302820,137101#2 $GROUP_PACKAGE_KEY,opt_group_string_groups_for_anon" #1 @key -min
 @ifndef $OUTPUT
 ERROR=Unable to locate Group package option 'groups_for_anon'.
@@ -171,23 +171,23 @@ ERROR=Unable to locate Group package option 'groups_for_anon'.
 @label ERROR
 @endif
 @skip
-;
+
 GROUP_OPTION_KEY=$OUTPUT
 .pu $CIYAM_UID @now 100 137100 $GROUP_OPTION_KEY "137109=everyone"
 @ifdef $ERROR
 @label ERROR
 @endif
 @skip
-;
+
 .pe $CIYAM_UID @now 100 136100 "-v=@async=false,@message=Installing Group Package..." $GROUP_PACKAGE_KEY -136410
 @ifdef $ERROR
 @label ERROR
 @endif
 @skip
-;
+
 .pc $CIYAM_UID @now 100 136100 " " "136101=Message,136107=Messages,302810=Message,302800=$MODEL_KEY"
 MESSAGE_PACKAGE_KEY=$OUTPUT
-;
+
 .pf 100 137100 "302820,137101#2 $MESSAGE_PACKAGE_KEY,opt_message_int_max_attached_files" #1 @key -min
 @ifndef $OUTPUT
 ERROR=Unable to locate Message package option 'max_attached_files'.
@@ -196,14 +196,14 @@ ERROR=Unable to locate Message package option 'max_attached_files'.
 @label ERROR
 @endif
 @skip
-;
+
 MESSAGE_OPTION_KEY=$OUTPUT
 .pu $CIYAM_UID @now 100 137100 $MESSAGE_OPTION_KEY "137114=12"
 @ifdef $ERROR
 @label ERROR
 @endif
 @skip
-;
+
 .pf 100 137100 "302820,137101#2 $MESSAGE_PACKAGE_KEY,opt_message_bool_use_home_message" #1 @key -min
 @ifndef $OUTPUT
 ERROR=Unable to locate Message package option 'use_home_message'.
@@ -212,14 +212,14 @@ ERROR=Unable to locate Message package option 'use_home_message'.
 @label ERROR
 @endif
 @skip
-;
+
 MESSAGE_OPTION_KEY=$OUTPUT
 .pu $CIYAM_UID @now 100 137100 $MESSAGE_OPTION_KEY "137102=1"
 @ifdef $ERROR
 @label ERROR
 @endif
 @skip
-;
+
 .pf 100 137100 "302820,137101#2 $MESSAGE_PACKAGE_KEY,opt_message_bool_use_max_attached_files" #1 @key -min
 @ifndef $OUTPUT
 ERROR=Unable to locate Message package option 'use_max_attached_files'.
@@ -228,23 +228,23 @@ ERROR=Unable to locate Message package option 'use_max_attached_files'.
 @label ERROR
 @endif
 @skip
-;
+
 MESSAGE_OPTION_KEY=$OUTPUT
 .pu $CIYAM_UID @now 100 137100 $MESSAGE_OPTION_KEY "137102=1"
 @ifdef $ERROR
 @label ERROR
 @endif
 @skip
-;
+
 .pe $CIYAM_UID @now 100 136100 "-v=@async=false,@message=Installing Message Package..." $MESSAGE_PACKAGE_KEY -136410
 @ifdef $ERROR
 @label ERROR
 @endif
 @skip
-;
+
 .pc $CIYAM_UID @now 100 136100 " " "136101=Blog,136107=Blogs,302810=Blog,302800=$MODEL_KEY"
 BLOG_PACKAGE_KEY=$OUTPUT
-;
+
 .pf 100 137100 "302820,137101#2 $BLOG_PACKAGE_KEY,opt_blog_bool_use_home_list" #1 @key -min
 @ifndef $OUTPUT
 ERROR=Unable to locate Blog package option 'use_home_list'.
@@ -253,14 +253,14 @@ ERROR=Unable to locate Blog package option 'use_home_list'.
 @label ERROR
 @endif
 @skip
-;
+
 BLOG_OPTION_KEY=$OUTPUT
 .pu $CIYAM_UID @now 100 137100 $BLOG_OPTION_KEY "137102=1"
 @ifdef $ERROR
 @label ERROR
 @endif
 @skip
-;
+
 .pf 100 137100 "302820,137101#2 $BLOG_PACKAGE_KEY,opt_blog_bool_use_user_access" #1 @key -min
 @ifndef $OUTPUT
 ERROR=Unable to locate Blog package option 'use_user_access'.
@@ -269,14 +269,14 @@ ERROR=Unable to locate Blog package option 'use_user_access'.
 @label ERROR
 @endif
 @skip
-;
+
 BLOG_OPTION_KEY=$OUTPUT
 .pu $CIYAM_UID @now 100 137100 $BLOG_OPTION_KEY "137102=1"
 @ifdef $ERROR
 @label ERROR
 @endif
 @skip
-;
+
 .pf 100 137100 "302820,137101#2 $BLOG_PACKAGE_KEY,opt_blog_package_group_package" #1 @key -min
 @ifndef $OUTPUT
 ERROR=Unable to locate Blog package option 'group_package'.
@@ -285,14 +285,14 @@ ERROR=Unable to locate Blog package option 'group_package'.
 @label ERROR
 @endif
 @skip
-;
+
 BLOG_OPTION_KEY=$OUTPUT
 .pu $CIYAM_UID @now 100 137100 $BLOG_OPTION_KEY "302830=$GROUP_PACKAGE_KEY"
 @ifdef $ERROR
 @label ERROR
 @endif
 @skip
-;
+
 .pf 100 137100 "302820,137101#2 $BLOG_PACKAGE_KEY,opt_blog_package_message_package" #1 @key -min
 @ifndef $OUTPUT
 ERROR=Unable to locate Blog package option 'message_package'.
@@ -301,14 +301,14 @@ ERROR=Unable to locate Blog package option 'message_package'.
 @label ERROR
 @endif
 @skip
-;
+
 BLOG_OPTION_KEY=$OUTPUT
 .pu $CIYAM_UID @now 100 137100 $BLOG_OPTION_KEY "302830=$MESSAGE_PACKAGE_KEY"
 @ifdef $ERROR
 @label ERROR
 @endif
 @skip
-;
+
 .pf 100 137100 "302820,137101#2 $BLOG_PACKAGE_KEY,opt_blog_bool_use_permissions" #1 @key -min
 @ifndef $OUTPUT
 ERROR=Unable to locate Blog package option 'use_permissions'.
@@ -317,14 +317,14 @@ ERROR=Unable to locate Blog package option 'use_permissions'.
 @label ERROR
 @endif
 @skip
-;
+
 BLOG_OPTION_KEY=$OUTPUT
 .pu $CIYAM_UID @now 100 137100 $BLOG_OPTION_KEY "137102=1"
 @ifdef $ERROR
 @label ERROR
 @endif
 @skip
-;
+
 .pf 100 137100 "302820,137101#2 $BLOG_PACKAGE_KEY,opt_blog_bool_use_user_tags" #1 @key -min
 @ifndef $OUTPUT
 ERROR=Unable to locate Blog package option 'use_user_tags'.
@@ -333,14 +333,14 @@ ERROR=Unable to locate Blog package option 'use_user_tags'.
 @label ERROR
 @endif
 @skip
-;
+
 BLOG_OPTION_KEY=$OUTPUT
 .pu $CIYAM_UID @now 100 137100 $BLOG_OPTION_KEY "137102=1"
 @ifdef $ERROR
 @label ERROR
 @endif
 @skip
-;
+
 .pf 100 137100 "302820,137101#2 $BLOG_PACKAGE_KEY,opt_blog_bool_use_tags_limit" #1 @key -min
 @ifndef $OUTPUT
 ERROR=Unable to locate Blog package option 'use_tags_limit'.
@@ -349,23 +349,23 @@ ERROR=Unable to locate Blog package option 'use_tags_limit'.
 @label ERROR
 @endif
 @skip
-;
+
 BLOG_OPTION_KEY=$OUTPUT
 .pu $CIYAM_UID @now 100 137100 $BLOG_OPTION_KEY "137102=1"
 @ifdef $ERROR
 @label ERROR
 @endif
 @skip
-;
+
 .pe $CIYAM_UID @now 100 136100 "-v=@async=false,@message=Installing Blog Package..." $BLOG_PACKAGE_KEY -136410
 @ifdef $ERROR
 @label ERROR
 @endif
 @skip
-;
+
 .pc $CIYAM_UID @now 100 136100 " " "136101=Forum,136107=Forums,302810=Forum,302800=$MODEL_KEY"
 FORUM_PACKAGE_KEY=$OUTPUT
-;
+
 .pf 100 137100 "302820,137101#2 $FORUM_PACKAGE_KEY,opt_forum_bool_use_home_list" #1 @key -min
 @ifndef $OUTPUT
 ERROR=Unable to locate Forum package option 'use_home_list'.
@@ -374,14 +374,14 @@ ERROR=Unable to locate Forum package option 'use_home_list'.
 @label ERROR
 @endif
 @skip
-;
+
 FORUM_OPTION_KEY=$OUTPUT
 .pu $CIYAM_UID @now 100 137100 $FORUM_OPTION_KEY "137102=1"
 @ifdef $ERROR
 @label ERROR
 @endif
 @skip
-;
+
 .pf 100 137100 "302820,137101#2 $FORUM_PACKAGE_KEY,opt_forum_bool_use_user_access" #1 @key -min
 @ifndef $OUTPUT
 ERROR=Unable to locate Forum package option 'use_user_access'.
@@ -390,14 +390,14 @@ ERROR=Unable to locate Forum package option 'use_user_access'.
 @label ERROR
 @endif
 @skip
-;
+
 FORUM_OPTION_KEY=$OUTPUT
 .pu $CIYAM_UID @now 100 137100 $FORUM_OPTION_KEY "137102=1"
 @ifdef $ERROR
 @label ERROR
 @endif
 @skip
-;
+
 .pf 100 137100 "302820,137101#2 $FORUM_PACKAGE_KEY,opt_forum_package_group_package" #1 @key -min
 @ifndef $OUTPUT
 ERROR=Unable to locate Forum package option 'group_package'.
@@ -406,14 +406,14 @@ ERROR=Unable to locate Forum package option 'group_package'.
 @label ERROR
 @endif
 @skip
-;
+
 FORUM_OPTION_KEY=$OUTPUT
 .pu $CIYAM_UID @now 100 137100 $FORUM_OPTION_KEY "302830=$GROUP_PACKAGE_KEY"
 @ifdef $ERROR
 @label ERROR
 @endif
 @skip
-;
+
 .pf 100 137100 "302820,137101#2 $FORUM_PACKAGE_KEY,opt_forum_package_message_package" #1 @key -min
 @ifndef $OUTPUT
 ERROR=Unable to locate Forum package option 'message_package'.
@@ -422,20 +422,20 @@ ERROR=Unable to locate Forum package option 'message_package'.
 @label ERROR
 @endif
 @skip
-;
+
 FORUM_OPTION_KEY=$OUTPUT
 .pu $CIYAM_UID @now 100 137100 $FORUM_OPTION_KEY "302830=$MESSAGE_PACKAGE_KEY"
 @ifdef $ERROR
 @label ERROR
 @endif
 @skip
-;
+
 .pe $CIYAM_UID @now 100 136100 "-v=@async=false,@message=Installing Forum Package..." $FORUM_PACKAGE_KEY -136410
 @ifdef $ERROR
 @label ERROR
 @endif
 @skip
-;
+
 @ifdef $CIYAM_APP_KEY
 .pc $CIYAM_UID @now 100 126100 " " "302200=$MODEL_KEY,302210=$CIYAM_APP_KEY"
 .pu $CIYAM_UID @now 100 127100 $CIYAM_APP_KEY "127105=,127107=1,127138=0,127134=1,127140=1"
@@ -443,7 +443,7 @@ FORUM_OPTION_KEY=$OUTPUT
 #Creating Application $CIYAM_MODEL...
 .pc $CIYAM_UID @now 100 127100 " " "127101=$CIYAM_MODEL,127102=$CIYAM_VER,302220=$CIYAM_GRP,127137=0"
 @endif
-;
+
 .pf 100 106100 "300600,106101#2 $MODEL_KEY,User" #1 @key -min
 @ifndef $OUTPUT
 ERROR=Unable to locate Class for 'User'.
@@ -452,9 +452,9 @@ ERROR=Unable to locate Class for 'User'.
 @label ERROR
 @endif
 @skip
-;
+
 USER_CLASS_KEY=$OUTPUT
-;
+
 .pf 100 106100 "300600,106101#2 $MODEL_KEY,Group" #1 @key -min
 @ifndef $OUTPUT
 ERROR=Unable to locate Class for 'Group'.
@@ -463,9 +463,9 @@ ERROR=Unable to locate Class for 'Group'.
 @label ERROR
 @endif
 @skip
-;
+
 GROUP_CLASS_KEY=$OUTPUT
-;
+
 .pf 100 129100 "302410,129101#2 $USER_CLASS_KEY,Adopter" #1 @key -min
 @ifndef $OUTPUT
 ERROR=Unable to locate Initial_Record for 'Adopter'.
@@ -474,9 +474,9 @@ ERROR=Unable to locate Initial_Record for 'Adopter'.
 @label ERROR
 @endif
 @skip
-;
+
 INITIAL_RECORD_ADOPTER_KEY=$OUTPUT
-;
+
 .pf 100 129100 "302410,129101#2 $USER_CLASS_KEY,Creator" #1 @key -min
 @ifndef $OUTPUT
 ERROR=Unable to locate Initial_Record for 'Creator'.
@@ -485,9 +485,9 @@ ERROR=Unable to locate Initial_Record for 'Creator'.
 @label ERROR
 @endif
 @skip
-;
+
 INITIAL_RECORD_CREATOR_KEY=$OUTPUT
-;
+
 .pf 100 129100 "302410,129101#2 $GROUP_CLASS_KEY,adopters" #1 @key -min
 @ifndef $OUTPUT
 ERROR=Unable to locate Initial_Record for 'adopters'.
@@ -496,9 +496,9 @@ ERROR=Unable to locate Initial_Record for 'adopters'.
 @label ERROR
 @endif
 @skip
-;
+
 INITIAL_RECORD_ADOPTERS_KEY=$OUTPUT
-;
+
 .pf 100 103100 "300300,103101#2 $CIYAM_GRP,User_Access" #1 @key -min
 @ifndef $OUTPUT
 ERROR=Unable to locate Enum 'User_Access'.
@@ -507,9 +507,9 @@ ERROR=Unable to locate Enum 'User_Access'.
 @label ERROR
 @endif
 @skip
-;
+
 USER_ACCESS_ENUM_KEY=$OUTPUT
-;
+
 .pf 100 104100 "300400,104101#2 $USER_ACCESS_ENUM_KEY,Guided" #1 Value -min
 @ifndef $OUTPUT
 ERROR=Unable to locate Enum Item 'Guided' for Enum 'User_Access'.
@@ -518,9 +518,9 @@ ERROR=Unable to locate Enum Item 'Guided' for Enum 'User_Access'.
 @label ERROR
 @endif
 @skip
-;
+
 USER_ACCESS_GUIDED_VALUE=$OUTPUT
-;
+
 .pf 100 104100 "300400,104101#2 $USER_ACCESS_ENUM_KEY,Restricted" #1 Value -min
 @ifndef $OUTPUT
 ERROR=Unable to locate Enum Item 'Restricted' for Enum 'User_Access'.
@@ -529,9 +529,9 @@ ERROR=Unable to locate Enum Item 'Restricted' for Enum 'User_Access'.
 @label ERROR
 @endif
 @skip
-;
+
 USER_ACCESS_RESTRICTED_VALUE=$OUTPUT
-;
+
 .pf 100 107100 "300700,107101#2 $USER_CLASS_KEY,Access" #1 @key -min
 @ifndef $OUTPUT
 ERROR=Unable to locate Field 'Access' for Class 'User'.
@@ -540,21 +540,21 @@ ERROR=Unable to locate Field 'Access' for Class 'User'.
 @label ERROR
 @endif
 @skip
-;
+
 ACCESS_KEY=$OUTPUT
-;
+
 .pu $CIYAM_UID @now 100 130100 %INITIAL_RECORD_ADOPTER_KEY%_%ACCESS_KEY% 130101=$USER_ACCESS_RESTRICTED_VALUE
 @ifdef $ERROR
 @label ERROR
 @endif
 @skip
-;
+
 .pu $CIYAM_UID @now 100 130100 %INITIAL_RECORD_CREATOR_KEY%_%ACCESS_KEY% 130101=$USER_ACCESS_GUIDED_VALUE
 @ifdef $ERROR
 @label ERROR
 @endif
 @skip
-;
+
 .pf 100 107100 "300700,107101#2 $USER_CLASS_KEY,Can_Change_Default_Group" #1 @key -min
 @ifndef $OUTPUT
 ERROR=Unable to locate Field 'Can_Change_Default_Group' for Class 'User'.
@@ -563,15 +563,15 @@ ERROR=Unable to locate Field 'Can_Change_Default_Group' for Class 'User'.
 @label ERROR
 @endif
 @skip
-;
+
 CAN_CHANGE_DEFAULT_GROUP_KEY=$OUTPUT
-;
+
 .pu $CIYAM_UID @now 100 130100 %INITIAL_RECORD_ADOPTER_KEY%_%CAN_CHANGE_DEFAULT_GROUP_KEY% 130101=1
 @ifdef $ERROR
 @label ERROR
 @endif
 @skip
-;
+
 .pf 100 107100 "300700,107101#2 $GROUP_CLASS_KEY,Submits_For" #1 @key -min
 @ifndef $OUTPUT
 ERROR=Unable to locate Field 'Submits_For' for Class 'Group'.
@@ -580,11 +580,11 @@ ERROR=Unable to locate Field 'Submits_For' for Class 'Group'.
 @label ERROR
 @endif
 @skip
-;
+
 SUBMITS_FOR_KEY=$OUTPUT
-;
+
 .pu $CIYAM_UID @now 100 130100 %INITIAL_RECORD_ADOPTERS_KEY%_%SUBMITS_FOR_KEY% 130101=creators
-;
+
 .pf 100 107100 "300700,107101#2 $USER_CLASS_KEY,Can_Submit_Own_Blogs" #1 @key -min
 @ifndef $OUTPUT
 ERROR=Unable to locate Field 'Can_Submit_Own_Blogs' for Class 'User'.
@@ -593,15 +593,15 @@ ERROR=Unable to locate Field 'Can_Submit_Own_Blogs' for Class 'User'.
 @label ERROR
 @endif
 @skip
-;
+
 CAN_SUBMIT_OWN_BLOGS_KEY=$OUTPUT
-;
+
 .pu $CIYAM_UID @now 100 130100 %INITIAL_RECORD_ADOPTER_KEY%_%CAN_SUBMIT_OWN_BLOGS_KEY% 130101=1
 @ifdef $ERROR
 @label ERROR
 @endif
 @skip
-;
+
 .pf 100 107100 "300700,107101#2 $USER_CLASS_KEY,Can_Submit_Other_Blogs" #1 @key -min
 @ifndef $OUTPUT
 ERROR=Unable to locate Field 'Can_Submit_Other_Blogs' for Class 'User'.
@@ -610,15 +610,15 @@ ERROR=Unable to locate Field 'Can_Submit_Other_Blogs' for Class 'User'.
 @label ERROR
 @endif
 @skip
-;
+
 CAN_SUBMIT_OTHER_BLOGS_KEY=$OUTPUT
-;
+
 .pu $CIYAM_UID @now 100 130100 %INITIAL_RECORD_ADOPTER_KEY%_%CAN_SUBMIT_OTHER_BLOGS_KEY% 130101=1
 @ifdef $ERROR
 @label ERROR
 @endif
 @skip
-;
+
 .pf 100 107100 "300700,107101#2 $USER_CLASS_KEY,Can_Maintain_Blogs" #1 @key -min
 @ifndef $OUTPUT
 ERROR=Unable to locate Field 'Can_Maintain_Blogs' for Class 'User'.
@@ -627,21 +627,21 @@ ERROR=Unable to locate Field 'Can_Maintain_Blogs' for Class 'User'.
 @label ERROR
 @endif
 @skip
-;
+
 CAN_MAINTAIN_BLOGS_KEY=$OUTPUT
-;
+
 .pu $CIYAM_UID @now 100 130100 %INITIAL_RECORD_ADOPTER_KEY%_%CAN_MAINTAIN_BLOGS_KEY% 130101=1
 @ifdef $ERROR
 @label ERROR
 @endif
 @skip
-;
+
 .pu $CIYAM_UID @now 100 130100 %INITIAL_RECORD_CREATOR_KEY%_%CAN_MAINTAIN_BLOGS_KEY% 130101=1
 @ifdef $ERROR
 @label ERROR
 @endif
 @skip
-;
+
 .pf 100 107100 "300700,107101#2 $USER_CLASS_KEY,Can_Maintain_Tags" #1 @key -min
 @ifndef $OUTPUT
 ERROR=Unable to locate Field 'Can_Maintain_Tags' for Class 'User'.
@@ -650,21 +650,21 @@ ERROR=Unable to locate Field 'Can_Maintain_Tags' for Class 'User'.
 @label ERROR
 @endif
 @skip
-;
+
 CAN_MAINTAIN_TAGS_KEY=$OUTPUT
-;
+
 .pu $CIYAM_UID @now 100 130100 %INITIAL_RECORD_ADOPTER_KEY%_%CAN_MAINTAIN_TAGS_KEY% 130101=1
 @ifdef $ERROR
 @label ERROR
 @endif
 @skip
-;
+
 .pu $CIYAM_UID @now 100 130100 %INITIAL_RECORD_CREATOR_KEY%_%CAN_MAINTAIN_TAGS_KEY% 130101=1
 @ifdef $ERROR
 @label ERROR
 @endif
 @skip
-;
+
 .pf 100 107100 "300700,107101#2 $USER_CLASS_KEY,Can_Maintain_Tag_Access" #1 @key -min
 @ifndef $OUTPUT
 ERROR=Unable to locate Field 'Can_Maintain_Tag_Access' for Class 'User'.
@@ -673,15 +673,15 @@ ERROR=Unable to locate Field 'Can_Maintain_Tag_Access' for Class 'User'.
 @label ERROR
 @endif
 @skip
-;
+
 CAN_MAINTAIN_TAG_ACCESS_KEY=$OUTPUT
-;
+
 .pu $CIYAM_UID @now 100 130100 %INITIAL_RECORD_ADOPTER_KEY%_%CAN_MAINTAIN_TAG_ACCESS_KEY% 130101=1
 @ifdef $ERROR
 @label ERROR
 @endif
 @skip
-;
+
 .pf 100 107100 "300700,107101#2 $USER_CLASS_KEY,Can_Pin_Topics" #1 @key -min
 @ifndef $OUTPUT
 ERROR=Unable to locate Field 'Can_Pin_Topics' for Class 'User'.
@@ -690,15 +690,15 @@ ERROR=Unable to locate Field 'Can_Pin_Topics' for Class 'User'.
 @label ERROR
 @endif
 @skip
-;
+
 CAN_PIN_TOPICS_KEY=$OUTPUT
-;
+
 .pu $CIYAM_UID @now 100 130100 %INITIAL_RECORD_ADOPTER_KEY%_%CAN_PIN_TOPICS_KEY% 130101=1
 @ifdef $ERROR
 @label ERROR
 @endif
 @skip
-;
+
 .pf 100 107100 "300700,107101#2 $USER_CLASS_KEY,Can_Move_Topics" #1 @key -min
 @ifndef $OUTPUT
 ERROR=Unable to locate Field 'Can_Move_Topics' for Class 'User'.
@@ -707,15 +707,15 @@ ERROR=Unable to locate Field 'Can_Move_Topics' for Class 'User'.
 @label ERROR
 @endif
 @skip
-;
+
 CAN_MOVE_TOPICS_KEY=$OUTPUT
-;
+
 .pu $CIYAM_UID @now 100 130100 %INITIAL_RECORD_ADOPTER_KEY%_%CAN_MOVE_TOPICS_KEY% 130101=1
 @ifdef $ERROR
 @label ERROR
 @endif
 @skip
-;
+
 .pf 100 107100 "300700,107101#2 $USER_CLASS_KEY,Can_Lock_Own_Topics" #1 @key -min
 @ifndef $OUTPUT
 ERROR=Unable to locate Field 'Can_Lock_Own_Topics' for Class 'User'.
@@ -724,15 +724,15 @@ ERROR=Unable to locate Field 'Can_Lock_Own_Topics' for Class 'User'.
 @label ERROR
 @endif
 @skip
-;
+
 CAN_LOCK_OWN_TOPICS_KEY=$OUTPUT
-;
+
 .pu $CIYAM_UID @now 100 130100 %INITIAL_RECORD_ADOPTER_KEY%_%CAN_LOCK_OWN_TOPICS_KEY% 130101=1
 @ifdef $ERROR
 @label ERROR
 @endif
 @skip
-;
+
 .pf 100 107100 "300700,107101#2 $USER_CLASS_KEY,Can_Submit_Own_Posts" #1 @key -min
 @ifndef $OUTPUT
 ERROR=Unable to locate Field 'Can_Submit_Own_Posts' for Class 'User'.
@@ -741,15 +741,15 @@ ERROR=Unable to locate Field 'Can_Submit_Own_Posts' for Class 'User'.
 @label ERROR
 @endif
 @skip
-;
+
 CAN_SUBMIT_OWN_POSTS_KEY=$OUTPUT
-;
+
 .pu $CIYAM_UID @now 100 130100 %INITIAL_RECORD_ADOPTER_KEY%_%CAN_SUBMIT_OWN_POSTS_KEY% 130101=1
 @ifdef $ERROR
 @label ERROR
 @endif
 @skip
-;
+
 .pf 100 107100 "300700,107101#2 $USER_CLASS_KEY,Can_Submit_Other_Posts" #1 @key -min
 @ifndef $OUTPUT
 ERROR=Unable to locate Field 'Can_Submit_Other_Posts' for Class 'User'.
@@ -758,15 +758,15 @@ ERROR=Unable to locate Field 'Can_Submit_Other_Posts' for Class 'User'.
 @label ERROR
 @endif
 @skip
-;
+
 CAN_SUBMIT_OTHER_POSTS_KEY=$OUTPUT
-;
+
 .pu $CIYAM_UID @now 100 130100 %INITIAL_RECORD_ADOPTER_KEY%_%CAN_SUBMIT_OTHER_POSTS_KEY% 130101=1
 @ifdef $ERROR
 @label ERROR
 @endif
 @skip
-;
+
 .pf 100 107100 "300700,107101#2 $USER_CLASS_KEY,Can_Create_Top_Level_Boards" #1 @key -min
 @ifndef $OUTPUT
 ERROR=Unable to locate Field 'Can_Create_Top_Level_Boards' for Class 'User'.
@@ -775,15 +775,15 @@ ERROR=Unable to locate Field 'Can_Create_Top_Level_Boards' for Class 'User'.
 @label ERROR
 @endif
 @skip
-;
+
 CAN_CREATE_TOP_LEVEL_BOARDS_KEY=$OUTPUT
-;
+
 .pu $CIYAM_UID @now 100 130100 %INITIAL_RECORD_ADOPTER_KEY%_%CAN_CREATE_TOP_LEVEL_BOARDS_KEY% 130101=1
 @ifdef $ERROR
 @label ERROR
 @endif
 @skip
-;
+
 .pf 100 107100 "300700,107101#2 $USER_CLASS_KEY,Can_Maintain_Topics_And_Posts" #1 @key -min
 @ifndef $OUTPUT
 ERROR=Unable to locate Field 'Can_Maintain_Topics_And_Posts' for Class 'User'.
@@ -792,33 +792,33 @@ ERROR=Unable to locate Field 'Can_Maintain_Topics_And_Posts' for Class 'User'.
 @label ERROR
 @endif
 @skip
-;
+
 CAN_MAINTAIN_TOPICS_AND_POSTS_KEY=$OUTPUT
-;
+
 .pu $CIYAM_UID @now 100 130100 %INITIAL_RECORD_ADOPTER_KEY%_%CAN_MAINTAIN_TOPICS_AND_POSTS_KEY% 130101=1
 @ifdef $ERROR
 @label ERROR
 @endif
 @skip
-;
+
 .pu $CIYAM_UID @now 100 130100 %INITIAL_RECORD_CREATOR_KEY%_%CAN_MAINTAIN_TOPICS_AND_POSTS_KEY% 130101=1
 @ifdef $ERROR
 @label ERROR
 @endif
 @skip
-;
+
 @label END
 @skip
-;
+
 @:ERROR
 @ifndef $CIYAM_APP_KEY
-@ifdef $SCRIPT_ERROR
-#$SCRIPT_ERROR
-@endif
+   @ifdef $SCRIPT_ERROR
+   #$SCRIPT_ERROR
+   @endif
 @else
 .pu $CIYAM_UID @now 100 127100 $CIYAM_APP_KEY "127105=Error: $ERROR$SCRIPT_ERROR,127138=0"
 @endif
-;
+
 @:END
 @ifdef $MODEL_KEY
 .system_variable "Meta_Model_$MODEL_KEY" ""

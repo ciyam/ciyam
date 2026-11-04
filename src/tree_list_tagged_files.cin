@@ -1,8 +1,8 @@
 ; Copyright (c) 2019-2026 CIYAM Developers
-;
+
 ; Distributed under the MIT/X11 software license, please refer to the file license.txt
 ; in the root project directory or http://www.opensource.org/licenses/mit-license.php.
-;
+
 NUM_ARGS=0
 @ifdef $1
 NUM_ARGS=@$NUM_ARGS+1
@@ -16,61 +16,61 @@ NUM_ARGS=@$NUM_ARGS+1
 @ifdef $4
 NUM_ARGS=@$NUM_ARGS+1
 @endif
-;
+
 @ifneq "$NUM_ARGS" "4"
 #NOTE: This script needs a tree tag, trunk name, tag list and branch expression.
 @else
-;
+
 TREE=$1
 TRUNK=$2
 TAGS=$3
 BRANCH=X$4
-;
+
 ITEMS=
 TTRUNK=Tags
 PREFIX=
 WANT_INFO=
-;
+
 .session_variable @set commence
 .session_variable @deque commence
-;
+
 BRANCH=@substr:1:$BRANCH
-@ifdef $BRANCH
-FIRST=@substr:0,1:$BRANCH
-@ifeq "$FIRST" "?"
-BRANCH=@substr:1:$BRANCH
-PREFIX=?
-WANT_INFO=1
-@endif
-@endif
-;
+   @ifdef $BRANCH
+   FIRST=@substr:0,1:$BRANCH
+      @ifeq "$FIRST" "?"
+      BRANCH=@substr:1:$BRANCH
+      PREFIX=?
+      WANT_INFO=1
+      @endif
+   @endif
+
 DEPTH=4
 NUM_DIRS=0
-@ifdef $BRANCH
-LINES=@repstr:\:/\n:$BRANCH
-.session_variable @deque "~$LINES"
-.session_variable @deque size
-NUM_DIRS=$OUTPUT
-DEPTH=@$DEPTH+$OUTPUT
-@endif
-;
+   @ifdef $BRANCH
+   LINES=@repstr:\:/\n:$BRANCH
+   .session_variable @deque "~$LINES"
+   .session_variable @deque size
+   NUM_DIRS=$OUTPUT
+   DEPTH=@$DEPTH+$OUTPUT
+   @endif
+
 PREFIX=$PREFIX$TTRUNK
 SUFFIX=$TRUNK:$BRANCH
-;
+
 LINES=@repstr:,/\n:$TAGS
 .session_variable @deque ""
 .session_variable @deque "~$LINES"
 FIRST=1
-;
+
 @:LOOP
 ITEMS=
 @label NEXT
 .session_variable @deque front
-@ifndef $OUTPUT
-@label END_LOOP
-@endif
+   @ifndef $OUTPUT
+   @label END_LOOP
+   @endif
 @skip
-;
+
 @:NEXT
 NEXT_TAG=$OUTPUT
 .session_variable @deque
@@ -78,75 +78,75 @@ OUTER_DEQUE=$OUTPUT
 .session_variable @deque ""
 .file_info -recurse -d=-$DEPTH -p=$PREFIX:$NEXT_TAG:$SUFFIX* $TREE
 .session_variable @deque "~$OUTPUT"
-;
+
 @:INNER_LOOP
 @label INNER_NEXT
 .session_variable @deque front
-@ifndef $OUTPUT
-@label END_INNER
-@endif
+   @ifndef $OUTPUT
+   @label END_INNER
+   @endif
 @skip
-;
+
 @:INNER_NEXT
 LINES=@repstr: /\n:$OUTPUT
 INFO=%LINES:1%
-@ifneq "$INFO" "[list]"
-HASH=%LINES:2%
-NAME=%LINES:3%
-SIZE=%LINES:4%
-; NOTE: The size is expected to include a space so is split across two lines.
-EXTRA=%LINES:5%
-@ifdef $EXTRA
-SIZE=$SIZE $EXTRA
-@endif
-;
-@ifndef $WANT_INFO
-ITEM=$NAME
-@else
-ITEM=$NAME $HASH $SIZE
-@endif
-;
-@ifdef $FIRST
-.session_variable @set "$ITEM"
-@else
-.session_variable @set "$ITEM"
-@ifdef $OUTPUT
-@ifndef $ITEMS
-ITEMS=$ITEM
-@else
-ITEMS=$ITEMS,$ITEM
-@endif
-@endif
-@endif
-.session_variable @deque ""
-.session_variable @deque "~$INNER_DEQUE"
-@endif
-;
+   @ifneq "$INFO" "[list]"
+   HASH=%LINES:2%
+   NAME=%LINES:3%
+   SIZE=%LINES:4%
+   ; NOTE: The size is expected to include a space so is split across two lines.
+   EXTRA=%LINES:5%
+      @ifdef $EXTRA
+      SIZE=$SIZE $EXTRA
+      @endif
+
+      @ifndef $WANT_INFO
+      ITEM=$NAME
+      @else
+      ITEM=$NAME $HASH $SIZE
+      @endif
+
+      @ifdef $FIRST
+      .session_variable @set "$ITEM"
+      @else
+      .session_variable @set "$ITEM"
+         @ifdef $OUTPUT
+            @ifndef $ITEMS
+            ITEMS=$ITEM
+            @else
+            ITEMS=$ITEMS,$ITEM
+            @endif
+         @endif
+      @endif
+   .session_variable @deque ""
+   .session_variable @deque "~$INNER_DEQUE"
+   @endif
+
 .session_variable @deque pop_front
 !!@:INNER_LOOP
 @:END_INNER
-;
-@ifndef $FIRST
-.session_variable @set ""
-@ifndef $ITEMS
-.session_variable @set ""
-@else
-ITEMS=@repstr:,/\n:$ITEMS
-.session_variable @set "~$ITEMS"
-@endif
-@endif
-;
+
+   @ifndef $FIRST
+   .session_variable @set ""
+      @ifndef $ITEMS
+      .session_variable @set ""
+      @else
+      ITEMS=@repstr:,/\n:$ITEMS
+      .session_variable @set "~$ITEMS"
+      @endif
+   @endif
+
 FIRST=
 .session_variable @deque ""
 .session_variable @deque "~$OUTER_DEQUE"
 .session_variable @deque pop_front
 !!@:LOOP
 @:END_LOOP
-;
+
 .session_variable @set
 #$OUTPUT
-;
+
 .session_variable @set complete
 .session_variable @deque complete
-;
+
 @endif

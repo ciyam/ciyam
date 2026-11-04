@@ -1,8 +1,8 @@
 ; Copyright (c) 2026 CIYAM Developers
-;
+
 ; Distributed under the MIT/X11 software license, please refer to the file license.txt
 ; in the root project directory or http://www.opensource.org/licenses/mit-license.php.
-;
+
 NUM_ARGS=0
 @ifdef $1
 NUM_ARGS=@$NUM_ARGS+1
@@ -13,169 +13,169 @@ NUM_ARGS=@$NUM_ARGS+1
 @ifdef $3
 NUM_ARGS=@$NUM_ARGS+1
 @endif
-;
+
 ERROR=
-;
+
 @ifneq "$NUM_ARGS" "3"
 ERROR=Requires module, class and user key.
 #Error: $ERROR
 @else
-;
+
 MODULE=$1
 MCLASS=$2
 USER_KEY=$3
-;
+
 NUM_LIMIT=$4
 FIELD_LIST=$5
 INDEX_INFO=$6
 SEARCH_INFO=$7
 SPECIAL_INFO=$8
-;
+
 OPTS=
 QUERY=
 HAS_KEY_VALUE=
-;
-@ifeq "$USER_KEY" "_none"
-USER_KEY=
-@endif
-;
-@ifdef $NUM_LIMIT
-CHECK_LIMIT=@repstr:-/:$NUM_LIMIT
-@ifneq "$NUM_LIMIT" "$CHECK_LIMIT"
-OPTS=$OPTS -rev
-NUM_LIMIT=$CHECK_LIMIT
-@else
-CHECK_LIMIT=@repstr:+/:$NUM_LIMIT
-NUM_LIMIT=$CHECK_LIMIT
-@endif
-@endif
-;
-@ifndef $NUM_LIMIT
-NUM_LIMIT=0
-@endif
-;
-@ifdef $USER_KEY
-@ifndef $OPTS
-OPTS= -u=$USER_KEY
-@else
-OPTS= $OPTS -u=$USER_KEY
-@endif
-@endif
-;
-@ifdef $SEARCH_INFO
-QUERY= "-q=$SEARCH_INFO"
-@endif
-;
-@ifndef $FIELD_LIST
-FIELD_LIST=@none
-@else
-@ifeq "$FIELD_LIST" "_key"
-FIELD_LIST=@key
-@elif "$FIELD_LIST" = "_none"
-FIELD_LIST=@none
-@endif
-@endif
-;
-@ifdef $SPECIAL_INFO
-APPEND_SPECIAL= $SPECIAL_INFO
-@endif
-;
+
+   @ifeq "$USER_KEY" "_none"
+   USER_KEY=
+   @endif
+
+   @ifdef $NUM_LIMIT
+   CHECK_LIMIT=@repstr:-/:$NUM_LIMIT
+      @ifneq "$NUM_LIMIT" "$CHECK_LIMIT"
+      OPTS=$OPTS -rev
+      NUM_LIMIT=$CHECK_LIMIT
+      @else
+      CHECK_LIMIT=@repstr:+/:$NUM_LIMIT
+      NUM_LIMIT=$CHECK_LIMIT
+      @endif
+   @endif
+
+   @ifndef $NUM_LIMIT
+   NUM_LIMIT=0
+   @endif
+
+   @ifdef $USER_KEY
+      @ifndef $OPTS
+      OPTS= -u=$USER_KEY
+      @else
+      OPTS= $OPTS -u=$USER_KEY
+      @endif
+   @endif
+
+   @ifdef $SEARCH_INFO
+   QUERY= "-q=$SEARCH_INFO"
+   @endif
+
+   @ifndef $FIELD_LIST
+   FIELD_LIST=@none
+   @else
+      @ifeq "$FIELD_LIST" "_key"
+      FIELD_LIST=@key
+      @elif "$FIELD_LIST" = "_none"
+      FIELD_LIST=@none
+      @endif
+   @endif
+
+   @ifdef $SPECIAL_INFO
+   APPEND_SPECIAL= $SPECIAL_INFO
+   @endif
+
 ORDERING=
 RESTRICTED=
 RESTRICTIONS=
-;
-@ifdef $INDEX_INFO
-INDEX_INFO_LINES=@repstr:,/\n:$INDEX_INFO
-;
-INDEX_INFO_LINE_1=%INDEX_INFO_LINES:1%
-INDEX_INFO_LINE_2=%INDEX_INFO_LINES:2%
-INDEX_INFO_LINE_3=%INDEX_INFO_LINES:3%
-;
-@ifdef $INDEX_INFO_LINE_1
-FIELD_AND_VALUE_LINES=@repstr:=/\n:$INDEX_INFO_LINE_1
-;
-FIELD_NAME=%FIELD_AND_VALUE_LINES:1%
-FIELD_VALUE=%FIELD_AND_VALUE_LINES:2%
-;
-@ifeq "$FIELD_NAME" "_key"
-HAS_KEY_VALUE=1
-@else
-ORDERING=$FIELD_NAME
-@endif
-;
-@ifdef $FIELD_VALUE
-RESTRICTED=0
-RESTRICTIONS=$FIELD_VALUE
-@endif
-;
-@ifdef $INDEX_INFO_LINE_2
-FIELD_AND_VALUE_LINES=@repstr:=/\n:$INDEX_INFO_LINE_2
-;
-FIELD_NAME=%FIELD_AND_VALUE_LINES:1%
-FIELD_VALUE=%FIELD_AND_VALUE_LINES:2%
-;
-ORDERING=$ORDERING,$FIELD_NAME
-;
-@ifdef $FIELD_VALUE
-RESTRICTED=@$RESTRICTED+1
-RESTRICTIONS=$RESTRICTIONS,$FIELD_VALUE
-@endif
-;
-@ifdef $INDEX_INFO_LINE_3
-FIELD_AND_VALUE_LINES=@repstr:=/\n:$INDEX_INFO_LINE_3
-;
-FIELD_NAME=%FIELD_AND_VALUE_LINES:1%
-FIELD_VALUE=%FIELD_AND_VALUE_LINES:2%
-;
-ORDERING=$ORDERING,$FIELD_NAME
-;
-@ifdef $FIELD_VALUE
-RESTRICTED=@$RESTRICTED+1
-RESTRICTIONS=$RESTRICTIONS,$FIELD_VALUE
-@endif
-;
-@endif
-@endif
-@endif
-;
-@endif
-;
-@ifdef $RESTRICTED
-RESTRICTED=#$RESTRICTED
-@endif
-;
+
+   @ifdef $INDEX_INFO
+   INDEX_INFO_LINES=@repstr:,/\n:$INDEX_INFO
+
+   INDEX_INFO_LINE_1=%INDEX_INFO_LINES:1%
+   INDEX_INFO_LINE_2=%INDEX_INFO_LINES:2%
+   INDEX_INFO_LINE_3=%INDEX_INFO_LINES:3%
+
+      @ifdef $INDEX_INFO_LINE_1
+      FIELD_AND_VALUE_LINES=@repstr:=/\n:$INDEX_INFO_LINE_1
+
+      FIELD_NAME=%FIELD_AND_VALUE_LINES:1%
+      FIELD_VALUE=%FIELD_AND_VALUE_LINES:2%
+
+         @ifeq "$FIELD_NAME" "_key"
+         HAS_KEY_VALUE=1
+         @else
+         ORDERING=$FIELD_NAME
+         @endif
+
+         @ifdef $FIELD_VALUE
+         RESTRICTED=0
+         RESTRICTIONS=$FIELD_VALUE
+         @endif
+
+         @ifdef $INDEX_INFO_LINE_2
+         FIELD_AND_VALUE_LINES=@repstr:=/\n:$INDEX_INFO_LINE_2
+
+         FIELD_NAME=%FIELD_AND_VALUE_LINES:1%
+         FIELD_VALUE=%FIELD_AND_VALUE_LINES:2%
+
+         ORDERING=$ORDERING,$FIELD_NAME
+
+            @ifdef $FIELD_VALUE
+            RESTRICTED=@$RESTRICTED+1
+            RESTRICTIONS=$RESTRICTIONS,$FIELD_VALUE
+            @endif
+
+            @ifdef $INDEX_INFO_LINE_3
+            FIELD_AND_VALUE_LINES=@repstr:=/\n:$INDEX_INFO_LINE_3
+
+            FIELD_NAME=%FIELD_AND_VALUE_LINES:1%
+            FIELD_VALUE=%FIELD_AND_VALUE_LINES:2%
+
+            ORDERING=$ORDERING,$FIELD_NAME
+
+               @ifdef $FIELD_VALUE
+               RESTRICTED=@$RESTRICTED+1
+               RESTRICTIONS=$RESTRICTIONS,$FIELD_VALUE
+               @endif
+
+            @endif
+         @endif
+      @endif
+
+   @endif
+
+   @ifdef $RESTRICTED
+   RESTRICTED=#$RESTRICTED
+   @endif
+
 .session_variable @storage_var_name
 STORAGE_VAR_NAME=@strlit:$OUTPUT
-;
+
 ; NOTE: If no specific storage provided
 ; then instead uses the system default.
-@ifndef $STORAGE_VAR_NAME
-STORAGE_VAR_NAME=@strlit:@storage
-@endif
-;
+   @ifndef $STORAGE_VAR_NAME
+   STORAGE_VAR_NAME=@strlit:@storage
+   @endif
+
 .system_variable $STORAGE_VAR_NAME
 STORAGE=$OUTPUT
-;
+
 .storage_info -name
-@ifneq "$OUTPUT" "$STORAGE"
-@ifneq "$OUTPUT" "<none>"
-.storage_term
-@endif
-.storage_init $STORAGE
-@endif
-;
+   @ifneq "$OUTPUT" "$STORAGE"
+      @ifneq "$OUTPUT" "<none>"
+      .storage_term
+      @endif
+   .storage_init $STORAGE
+   @endif
+
 ORDERING_AND_RESTRICTIONS=""
-;
-@ifdef $HAS_KEY_VALUE
-ORDERING_AND_RESTRICTIONS=$RESTRICTIONS
-@else
-@ifdef $ORDERING
-ORDERING_AND_RESTRICTIONS="$ORDERING$RESTRICTED $RESTRICTIONS"
-@endif
-@endif
-;
-@ifndef $ERROR
-perform_fetch $MODULE $MCLASS$OPTS$QUERY $ORDERING_AND_RESTRICTIONS #$NUM_LIMIT "$FIELD_LIST"$APPEND_SPECIAL
-@endif
-;
+
+   @ifdef $HAS_KEY_VALUE
+   ORDERING_AND_RESTRICTIONS=$RESTRICTIONS
+   @else
+      @ifdef $ORDERING
+      ORDERING_AND_RESTRICTIONS="$ORDERING$RESTRICTED $RESTRICTIONS"
+      @endif
+   @endif
+
+   @ifndef $ERROR
+   perform_fetch $MODULE $MCLASS$OPTS$QUERY $ORDERING_AND_RESTRICTIONS #$NUM_LIMIT "$FIELD_LIST"$APPEND_SPECIAL
+   @endif
+
 @endif

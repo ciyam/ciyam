@@ -1,8 +1,8 @@
 ; Copyright (c) 2021-2026 CIYAM Developers
-;
+
 ; Distributed under the MIT/X11 software license, please refer to the file license.txt
 ; in the root project directory or http://www.opensource.org/licenses/mit-license.php.
-;
+
 ERROR=
 @ifeq "$1" ""
 ERROR=1
@@ -13,196 +13,196 @@ ERROR=1
 @ifeq "$3" ""
 ERROR=1
 @endif
-;
+
 @ifeq "$ERROR" "1"
 #Usage: bc_gen_keys.cin <seed> <ident> [-]<height> [<extra>]
 @else
-;
+
 SEED=$1
 IDENT=$2
 HEIGHT=$3
 EXTRA=$4
 TEST_CHAIN=
-;
+
 CIYAM_TMP_DIR=/tmp/ciyam
-;
+
 .file_hash bc.$IDENT.0.blk
-@ifndef $ERROR
-;
-HEIGHT_ONLY=
-FIRST=@substr:0,1:$HEIGHT
-;
-@ifeq "$FIRST" "-"
-HEIGHT_ONLY=1
-HEIGHT=@substr:1:$HEIGHT
-@endif
-;
-NEXT_HEIGHT=@$HEIGHT+1
-;
-DATA=
-.system_variable @blockchain_data_key_$IDENT
-@ifdef $OUTPUT
-DATA=1
-@endif
-;
-SHARED=
-@ifndef $EXTRA
-.system_variable @blockchain_shared_identity
-@else
-.system_variable @blockchain_shared_%EXTRA%_identity
-@endif
-@ifdef $OUTPUT
-@ifeq "$IDENT" "$OUTPUT"
-SHARED=1
-@endif
-@endif
-;
-PEER_HUB=
-@ifndef $EXTRA
-.system_variable @blockchain_peer_hub_identity
-@else
-.system_variable @blockchain_peer_hub_%EXTRA%_identity
-@endif
-@ifdef $OUTPUT
-@ifeq "$IDENT" "$OUTPUT"
-PEER_HUB=1
-@endif
-@endif
-;
-@label NEXT
-;
-CHANNEL=
-@ifndef $DATA
-@ifndef $SHARED
-@ifndef $PEER_HUB
-@ifndef $EXTRA
-.system_variable @blockchain_backup_identity
-@else
-.system_variable @blockchain_backup_%EXTRA%_identity
-@endif
-@ifndef $OUTPUT
-ERROR=No backup blockchain identity was found.
-#Error: $ERROR
-@label END
-@endif
-@ifneq "$IDENT" "$OUTPUT"
-CHANNEL=1
-@endif
-@endif
-@endif
-@endif
-;
-@skip
-;
-@:NEXT
-@ifeq "$IDENT" "e3733d121"
-TEST_CHAIN=1
-@endif
-@ifeq "$IDENT" "121d3373e"
-TEST_CHAIN=1
-@endif
-;
-@ifdef $TEST_CHAIN
-MULTIPLE=5
-@else
-MULTIPLE=50
-@endif
-;
-@ifdef $HEIGHT_ONLY
-MODULUS=0
-@else
-MODULUS=@$NEXT_HEIGHT#$MULTIPLE
-@endif
-;
-@ifeq "$MODULUS" "0"
-@ifdef $CHANNEL
-.=crypto_hash $SEED -s=$IDENT$HEIGHT
-@else
-@ifndef $PEER_HUB
-@ifndef $SHARED
-.=crypto_hash $SEED -s=-$HEIGHT
-@else
-.=crypto_hash $SEED -s=+$HEIGHT
-@endif
-@else
-.=crypto_hash $SEED -s=#$HEIGHT
-@endif
-@endif
-ENTROPY_HASH=$OUTPUT
-;
-.=crypto_lamport $CIYAM_TMP_DIR/new_lamport $ENTROPY_HASH$EXTRA
-;
-.file_put $CIYAM_TMP_DIR/new_lamport.key bc.$IDENT.$HEIGHT.key
-.file_put $CIYAM_TMP_DIR/new_lamport.pub bc.$IDENT.$HEIGHT.pub
-;
-~rm $CIYAM_TMP_DIR/new_lamport.key $CIYAM_TMP_DIR/new_lamport.pub
-;
-HEIGHT=@$HEIGHT+$MULTIPLE
-@endif
-;
-@ifndef $HEIGHT_ONLY
-;
-@ifdef $CHANNEL
-.=crypto_hash $SEED -s=$IDENT$HEIGHT
-@else
-@ifndef $PEER_HUB
-@ifndef $SHARED
-.=crypto_hash $SEED -s=-$HEIGHT
-@else
-.=crypto_hash $SEED -s=+$HEIGHT
-@endif
-@else
-.=crypto_hash $SEED -s=#$HEIGHT
-@endif
-@endif
-ENTROPY_HASH=$OUTPUT
-;
-.=crypto_lamport $CIYAM_TMP_DIR/new_lamport $ENTROPY_HASH$EXTRA
-;
-@ifneq "$MODULUS" "0"
-.file_put $CIYAM_TMP_DIR/new_lamport.key bc.$IDENT.$HEIGHT.key
-@endif
-;
-.file_put $CIYAM_TMP_DIR/new_lamport.pub bc.$IDENT.$HEIGHT.pub
-;
-~rm $CIYAM_TMP_DIR/new_lamport.key $CIYAM_TMP_DIR/new_lamport.pub
-;
-HEIGHT=@$NEXT_HEIGHT-1
-;
-SQUARED=@$MULTIPLE*$MULTIPLE
-;
-MODULUS=@$NEXT_HEIGHT#$SQUARED
-;
-@ifeq "$MODULUS" "0"
-HEIGHT=@$HEIGHT+$SQUARED
-;
-@ifdef $CHANNEL
-.=crypto_hash $SEED -s=$IDENT$HEIGHT
-@else
-@ifndef $PEER_HUB
-@ifndef $SHARED
-.=crypto_hash $SEED -s=-$HEIGHT
-@else
-.=crypto_hash $SEED -s=+$HEIGHT
-@endif
-@else
-.=crypto_hash $SEED -s=#$HEIGHT
-@endif
-@endif
-ENTROPY_HASH=$OUTPUT
-;
-.=crypto_lamport $CIYAM_TMP_DIR/new_lamport $ENTROPY_HASH$EXTRA
-;
-.file_kill -q bc.$IDENT.$HEIGHT.key
-;
-.file_put $CIYAM_TMP_DIR/new_lamport.pub bc.$IDENT.$HEIGHT.pub
-;
-~rm $CIYAM_TMP_DIR/new_lamport.key $CIYAM_TMP_DIR/new_lamport.pub
-@endif
-;
-@endif
-;
-@:END
-;
-@endif
+   @ifndef $ERROR
+
+   HEIGHT_ONLY=
+   FIRST=@substr:0,1:$HEIGHT
+
+      @ifeq "$FIRST" "-"
+      HEIGHT_ONLY=1
+      HEIGHT=@substr:1:$HEIGHT
+      @endif
+
+   NEXT_HEIGHT=@$HEIGHT+1
+
+   DATA=
+   .system_variable @blockchain_data_key_$IDENT
+      @ifdef $OUTPUT
+      DATA=1
+      @endif
+
+   SHARED=
+      @ifndef $EXTRA
+      .system_variable @blockchain_shared_identity
+      @else
+      .system_variable @blockchain_shared_%EXTRA%_identity
+      @endif
+      @ifdef $OUTPUT
+         @ifeq "$IDENT" "$OUTPUT"
+         SHARED=1
+         @endif
+      @endif
+
+   PEER_HUB=
+      @ifndef $EXTRA
+      .system_variable @blockchain_peer_hub_identity
+      @else
+      .system_variable @blockchain_peer_hub_%EXTRA%_identity
+      @endif
+      @ifdef $OUTPUT
+         @ifeq "$IDENT" "$OUTPUT"
+         PEER_HUB=1
+         @endif
+      @endif
+
+   @label NEXT
+
+   CHANNEL=
+      @ifndef $DATA
+         @ifndef $SHARED
+            @ifndef $PEER_HUB
+               @ifndef $EXTRA
+               .system_variable @blockchain_backup_identity
+               @else
+               .system_variable @blockchain_backup_%EXTRA%_identity
+               @endif
+               @ifndef $OUTPUT
+               ERROR=No backup blockchain identity was found.
+               #Error: $ERROR
+               @label END
+               @endif
+               @ifneq "$IDENT" "$OUTPUT"
+               CHANNEL=1
+               @endif
+            @endif
+         @endif
+      @endif
+
+   @skip
+
+   @:NEXT
+      @ifeq "$IDENT" "e3733d121"
+      TEST_CHAIN=1
+      @endif
+      @ifeq "$IDENT" "121d3373e"
+      TEST_CHAIN=1
+      @endif
+
+      @ifdef $TEST_CHAIN
+      MULTIPLE=5
+      @else
+      MULTIPLE=50
+      @endif
+
+      @ifdef $HEIGHT_ONLY
+      MODULUS=0
+      @else
+      MODULUS=@$NEXT_HEIGHT#$MULTIPLE
+      @endif
+
+      @ifeq "$MODULUS" "0"
+         @ifdef $CHANNEL
+         .=crypto_hash $SEED -s=$IDENT$HEIGHT
+         @else
+            @ifndef $PEER_HUB
+               @ifndef $SHARED
+               .=crypto_hash $SEED -s=-$HEIGHT
+               @else
+               .=crypto_hash $SEED -s=+$HEIGHT
+               @endif
+            @else
+            .=crypto_hash $SEED -s=#$HEIGHT
+            @endif
+         @endif
+      ENTROPY_HASH=$OUTPUT
+
+      .=crypto_lamport $CIYAM_TMP_DIR/new_lamport $ENTROPY_HASH$EXTRA
+
+      .file_put $CIYAM_TMP_DIR/new_lamport.key bc.$IDENT.$HEIGHT.key
+      .file_put $CIYAM_TMP_DIR/new_lamport.pub bc.$IDENT.$HEIGHT.pub
+
+      ~rm $CIYAM_TMP_DIR/new_lamport.key $CIYAM_TMP_DIR/new_lamport.pub
+
+      HEIGHT=@$HEIGHT+$MULTIPLE
+      @endif
+
+      @ifndef $HEIGHT_ONLY
+
+         @ifdef $CHANNEL
+         .=crypto_hash $SEED -s=$IDENT$HEIGHT
+         @else
+            @ifndef $PEER_HUB
+               @ifndef $SHARED
+               .=crypto_hash $SEED -s=-$HEIGHT
+               @else
+               .=crypto_hash $SEED -s=+$HEIGHT
+               @endif
+            @else
+            .=crypto_hash $SEED -s=#$HEIGHT
+            @endif
+         @endif
+      ENTROPY_HASH=$OUTPUT
+
+      .=crypto_lamport $CIYAM_TMP_DIR/new_lamport $ENTROPY_HASH$EXTRA
+
+         @ifneq "$MODULUS" "0"
+         .file_put $CIYAM_TMP_DIR/new_lamport.key bc.$IDENT.$HEIGHT.key
+         @endif
+
+      .file_put $CIYAM_TMP_DIR/new_lamport.pub bc.$IDENT.$HEIGHT.pub
+
+      ~rm $CIYAM_TMP_DIR/new_lamport.key $CIYAM_TMP_DIR/new_lamport.pub
+
+      HEIGHT=@$NEXT_HEIGHT-1
+
+      SQUARED=@$MULTIPLE*$MULTIPLE
+
+      MODULUS=@$NEXT_HEIGHT#$SQUARED
+
+         @ifeq "$MODULUS" "0"
+         HEIGHT=@$HEIGHT+$SQUARED
+
+            @ifdef $CHANNEL
+            .=crypto_hash $SEED -s=$IDENT$HEIGHT
+            @else
+               @ifndef $PEER_HUB
+                  @ifndef $SHARED
+                  .=crypto_hash $SEED -s=-$HEIGHT
+                  @else
+                  .=crypto_hash $SEED -s=+$HEIGHT
+                  @endif
+               @else
+               .=crypto_hash $SEED -s=#$HEIGHT
+               @endif
+            @endif
+         ENTROPY_HASH=$OUTPUT
+
+         .=crypto_lamport $CIYAM_TMP_DIR/new_lamport $ENTROPY_HASH$EXTRA
+
+         .file_kill -q bc.$IDENT.$HEIGHT.key
+
+         .file_put $CIYAM_TMP_DIR/new_lamport.pub bc.$IDENT.$HEIGHT.pub
+
+         ~rm $CIYAM_TMP_DIR/new_lamport.key $CIYAM_TMP_DIR/new_lamport.pub
+         @endif
+
+      @endif
+
+   @:END
+
+   @endif
 @endif

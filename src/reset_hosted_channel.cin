@@ -1,8 +1,8 @@
 ; Copyright (c) 2023-2026 CIYAM Developers
-;
+
 ; Distributed under the MIT/X11 software license, please refer to the file license.txt
 ; in the root project directory or http://www.opensource.org/licenses/mit-license.php.
-;
+
 ERROR=
 @ifeq "$1" ""
 ERROR=1
@@ -10,20 +10,20 @@ ERROR=1
 @ifeq "$2" ""
 ERROR=1
 @endif
-;
+
 @ifeq "$ERROR" "1"
 #Usage: reset_hosted_channel.cin <ident> <other>
 @else
-;
+
 IDENT=$1
 OTHER=$2
-;
+
 @retain COMBINED,REVERSED
 <channel_identity.cin $IDENT $OTHER
-;
+
 #Resetting channel archives and blockchain files for $COMBINED and $REVERSED.
-;
+
 <bc_reset.cin $COMBINED
 <bc_reset.cin $REVERSED
-;
+
 @endif

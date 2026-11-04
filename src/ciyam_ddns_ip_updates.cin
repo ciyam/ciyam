@@ -1,243 +1,243 @@
 ; Copyright (c) 2025-2026 CIYAM Developers
-;
+
 ; Distributed under the MIT/X11 software license, please refer to the file license.txt
 ; in the root project directory or http://www.opensource.org/licenses/mit-license.php.
-;
+
 ; NOTE: Each line of "ciyam_ddns_info" (if exists) will contain one domain name prefix
 ; with its matching record identity (or token where applicable) followed by a DDNS API
 ; domain and then (if required) the domain name suffix and credentials separating each
 ; value with a space. A final optional name source can be used to create an alias that
 ; is tied to the IP address of its source (such as 'tst1' being tied to 'test' below).
-;
+
 ; [ciyam_ddns_info]
 ; test 065d4d8f3b5adb4a08841eae3c80f42 freemyip.com
 ; test 87654321 api.name.com sample.net user_name:065d4d8f3b5adb4a08841eae3c80f42
 ; tst1 87654321 api.name.com sample.net user_name:065d4d8f3b5adb4a08841eae3c80f42 test
-;
+
 ; IMPORTANT: As "ciyam_ddns_info" file contains information that is sensitive (such as
 ; account names and tokens) it should be given the file permissions "600 (-rw-------)"
 ; to ensure that this file is not able to be viewed by other system users.
-;
+
 ; If a file with the name "ciyam.<name>.ip.log" is found then it is assumed to contain
 ; the current IP address (in its last line) otherwise the server's own IP address will
 ; be obtained via the "@ip_ext_addr" system variable.
-;
+
 ; NOTE: To ensure correct file access and permissions and prevent the accidental usage
 ; of the server's own IP address use "touch ciyam.<name>.ip.log" before adding any new
 ; name that will be using this.
-;
+
 DDNS_INFO_FILE=@files::ciyam_ddns_info
-;
+
 @ifneq "$DDNS_INFO_FILE" ""
-;
+
 ERROR=
 FIRST_ERROR=
-;
+
 LINES=@file:$DDNS_INFO_FILE
-;
+
 @label NEXT
-;
+
 @:LOOP
-;
+
 LINE=%LINES:1%
-;
-@ifeq "$LINE" ""
-@label END_LOOP
-@endif
-;
+
+   @ifeq "$LINE" ""
+   @label END_LOOP
+   @endif
+
 @skip
-;
+
 @:NEXT
-;
+
 NAME_AND_INFO=@repstr: /\n:$LINE
-;
+
 NAME=%NAME_AND_INFO:1%
 IDENTITY=%NAME_AND_INFO:2%
 API_DOMAIN=%NAME_AND_INFO:3%
 NAME_DOMAIN=%NAME_AND_INFO:4%
 CREDENTIALS=%NAME_AND_INFO:5%
 ALIAS_FOR_NAME=%NAME_AND_INFO:6%
-;
+
 OLD_IP=
-;
-@ifndef $NAME_DOMAIN
-IP_FILE_NAME=$NAME.$API_DOMAIN.ip
-@else
-IP_FILE_NAME=$NAME.$NAME_DOMAIN.ip
-@endif
-;
+
+   @ifndef $NAME_DOMAIN
+   IP_FILE_NAME=$NAME.$API_DOMAIN.ip
+   @else
+   IP_FILE_NAME=$NAME.$NAME_DOMAIN.ip
+   @endif
+
 FILE=@files::$IP_FILE_NAME
-;
-@ifneq "$FILE" ""
-OLD_IP=@file:$FILE
-@endif
-;
+
+   @ifneq "$FILE" ""
+   OLD_IP=@file:$FILE
+   @endif
+
 NEW_IP=
-;
-@ifndef $ALIAS_FOR_NAME
-FILE=@files::ciyam.$NAME.ip.log
-@else
-FILE=@files::$ALIAS_FOR_NAME.$NAME_DOMAIN.ip
-;
-@ifdef $FILE
-NEW_IP=@file:$FILE
-FILE=
-@endif
-;
-@endif
-;
+
+   @ifndef $ALIAS_FOR_NAME
+   FILE=@files::ciyam.$NAME.ip.log
+   @else
+   FILE=@files::$ALIAS_FOR_NAME.$NAME_DOMAIN.ip
+
+      @ifdef $FILE
+      NEW_IP=@file:$FILE
+      FILE=
+      @endif
+
+   @endif
+
 USING_LOG=
 TRUNCATE_LOG=
-;
-@ifeq "$FILE" ""
-;
-; NOTE: Either NEW_IP exists (due to being an alias)
-; or it will now obtain the server's own IP address.
-@ifndef $ALIAS_FOR_NAME
-.system_variable @ip_ext_addr
-NEW_IP=$OUTPUT
-;
-@endif
-;
-@else
-;
-USING_LOG=1
-;
-LOG_TAIL=@file:~tail -n 2 $FILE
-;
-@ifneq "$SYSTEM_RETVAL" "0"
-NEW_IP=
-@else
-NEW_IP=%LOG_TAIL:2%
-@endif
-;
-; NOTE: Only truncate a log if it has more than one line.
-@ifneq "$NEW_IP" ""
-TRUNCATE_LOG=1
-@else
-NEW_IP=%LOG_TAIL:1%
-@endif
-;
-@endif
-;
-@ifneq "$NEW_IP" ""
-@ifneq "$NEW_IP" "0"
-@ifneq "$OLD_IP" "$NEW_IP"
-;
-; FUTURE: If an API error occurs then the NEW_IP would very
-; likely not have actually been set but for now stores this
-; anyway to prevent multiple repeated API calls and filling
-; up the log. It might be preferrable to retry any failures
-; after a certain amount of time has passed (maybe by using
-; a system variable set to unix time + retry seconds).
-;
-~echo -n "$NEW_IP" > $IP_FILE_NAME
-;
-TYPE=A
-;
-NEW_IPV4=@repstr:\::$NEW_IP
-;
-; NOTE: If the IP address contains any colons then assume that it is IPv6.
-@ifneq "$NEW_IP" "$NEW_IPV4"
-TYPE=AAAA
-@endif
-;
-@ifeq "$NAME_DOMAIN" ""
-;
-; NOTE: Minimal APIs where the domain name is the same as the API (such as "freemyip.com").
-;
-@ifeq "$API_DOMAIN" "freemyip.com"
-RESPONSE=@file:~curl -sS "https://$API_DOMAIN/update?token=$~IDENTITY&domain=$NAME.$API_DOMAIN&myip=$NEW_IP&verbose=yes"
-;
-@ifneq "$SYSTEM_RETVAL" "0"
-ERROR=$RESPONSE
-@else
-;
-CHECK_OKAY=OK
-;
-; NOTE: The first line is expected to be just OK or ERROR with the second line containing further details.
-@ifneq "%RESPONSE:1%" "$CHECK_OKAY"
-ERROR=%RESPONSE:2%
-@endif
-;
-@endif
-;
-@else
-ERROR=Unsupported minimal API type '$API_DOMAIN'.
-@endif
-;
-@else
-;
-; NOTE: More complex APIs that need user credentials and support multiple domains (such as "api.name.com").
-;
-@ifeq "$API_DOMAIN" "api.name.com"
-RESPONSE=@file:~curl -sS -u $~CREDENTIALS https://$API_DOMAIN/core/v1/domains/$NAME_DOMAIN/records/$~IDENTITY\
+
+   @ifeq "$FILE" ""
+
+   ; NOTE: Either NEW_IP exists (due to being an alias)
+   ; or it will now obtain the server's own IP address.
+      @ifndef $ALIAS_FOR_NAME
+      .system_variable @ip_ext_addr
+      NEW_IP=$OUTPUT
+
+      @endif
+
+   @else
+
+   USING_LOG=1
+
+   LOG_TAIL=@file:~tail -n 2 $FILE
+
+      @ifneq "$SYSTEM_RETVAL" "0"
+      NEW_IP=
+      @else
+      NEW_IP=%LOG_TAIL:2%
+      @endif
+
+   ; NOTE: Only truncate a log if it has more than one line.
+      @ifneq "$NEW_IP" ""
+      TRUNCATE_LOG=1
+      @else
+      NEW_IP=%LOG_TAIL:1%
+      @endif
+
+   @endif
+
+   @ifneq "$NEW_IP" ""
+      @ifneq "$NEW_IP" "0"
+         @ifneq "$OLD_IP" "$NEW_IP"
+
+         ; FUTURE: If an API error occurs then the NEW_IP would very
+         ; likely not have actually been set but for now stores this
+         ; anyway to prevent multiple repeated API calls and filling
+         ; up the log. It might be preferrable to retry any failures
+         ; after a certain amount of time has passed (maybe by using
+         ; a system variable set to unix time + retry seconds).
+
+         ~echo -n "$NEW_IP" > $IP_FILE_NAME
+
+         TYPE=A
+
+         NEW_IPV4=@repstr:\::$NEW_IP
+
+         ; NOTE: If the IP address contains any colons then assume that it is IPv6.
+            @ifneq "$NEW_IP" "$NEW_IPV4"
+            TYPE=AAAA
+            @endif
+
+            @ifeq "$NAME_DOMAIN" ""
+
+            ; NOTE: Minimal APIs where the domain name is the same as the API (such as "freemyip.com").
+
+               @ifeq "$API_DOMAIN" "freemyip.com"
+               RESPONSE=@file:~curl -sS "https://$API_DOMAIN/update?token=$~IDENTITY&domain=$NAME.$API_DOMAIN&myip=$NEW_IP&verbose=yes"
+
+                  @ifneq "$SYSTEM_RETVAL" "0"
+                  ERROR=$RESPONSE
+                  @else
+
+                  CHECK_OKAY=OK
+
+                  ; NOTE: The first line is expected to be just OK or ERROR with the second line containing further details.
+                     @ifneq "%RESPONSE:1%" "$CHECK_OKAY"
+                     ERROR=%RESPONSE:2%
+                     @endif
+
+                  @endif
+
+               @else
+               ERROR=Unsupported minimal API type '$API_DOMAIN'.
+               @endif
+
+            @else
+
+            ; NOTE: More complex APIs that need user credentials and support multiple domains (such as "api.name.com").
+
+               @ifeq "$API_DOMAIN" "api.name.com"
+               RESPONSE=@file:~curl -sS -u $~CREDENTIALS https://$API_DOMAIN/core/v1/domains/$NAME_DOMAIN/records/$~IDENTITY\
  -X PUT -H 'Content-Type: application/json' --data '{"host":"$NAME","type":"$TYPE","answer":"$NEW_IP","ttl":300}'
-;
-@ifneq "$SYSTEM_RETVAL" "0"
-ERROR=$RESPONSE
-@else
-;
-; NOTE: The first line of the response will contain "message" if there has been an error.
-CHECK_OKAY=@repstr:\"message\":%RESPONSE:1%
-;
-UNQUOTED_CHECK=@repstr:":$CHECK_OKAY
-UNQUOTED_RESPONSE=@repstr:":%RESPONSE:1%
-;
-@ifneq "$UNQUOTED_CHECK" "$UNQUOTED_RESPONSE"
-ERROR=$RESPONSE
-@else
-;
-; NOTE: Output such as "null null null null" has
-; been observed to occur sometimes for failures.
-UNQUOTED_CHECK=@repstr: null:$UNQUOTED_RESPONSE
-;
-@ifeq "$UNQUOTED_CHECK" "null"
-ERROR=Unexpected 'null' response for $NAME.
-@endif
-;
-@endif
-;
-@endif
-;
-@else
-ERROR=Unsupported credentials API type '$API_DOMAIN'.
-@endif
-;
-@endif
-;
-@ifdef $ERROR
-#$ERROR
-@ifndef $FIRST_ERROR
-FIRST_ERROR=$ERROR
-@endif
-@endif
-;
-@endif
-;
-@ifdef $USING_LOG
-@ifdef $TRUNCATE_LOG
->ciyam.$NAME.ip.log
-#$NEW_IP
->
-@endif
-@endif
-@endif
-@endif
-;
+
+                  @ifneq "$SYSTEM_RETVAL" "0"
+                  ERROR=$RESPONSE
+                  @else
+
+                  ; NOTE: The first line of the response will contain "message" if there has been an error.
+                  CHECK_OKAY=@repstr:\"message\":%RESPONSE:1%
+
+                  UNQUOTED_CHECK=@repstr:":$CHECK_OKAY
+                  UNQUOTED_RESPONSE=@repstr:":%RESPONSE:1%
+
+                     @ifneq "$UNQUOTED_CHECK" "$UNQUOTED_RESPONSE"
+                     ERROR=$RESPONSE
+                     @else
+
+                     ; NOTE: Output such as "null null null null" has
+                     ; been observed to occur sometimes for failures.
+                     UNQUOTED_CHECK=@repstr: null:$UNQUOTED_RESPONSE
+
+                        @ifeq "$UNQUOTED_CHECK" "null"
+                        ERROR=Unexpected 'null' response for $NAME.
+                        @endif
+
+                     @endif
+
+                  @endif
+
+               @else
+               ERROR=Unsupported credentials API type '$API_DOMAIN'.
+               @endif
+
+            @endif
+
+            @ifdef $ERROR
+            #$ERROR
+               @ifndef $FIRST_ERROR
+               FIRST_ERROR=$ERROR
+               @endif
+            @endif
+
+         @endif
+
+         @ifdef $USING_LOG
+            @ifdef $TRUNCATE_LOG
+            >ciyam.$NAME.ip.log
+            #$NEW_IP
+            >
+            @endif
+         @endif
+      @endif
+   @endif
+
 ERROR=
-;
+
 LINES=%LINES:-1%
-;
+
 !!@:LOOP
-;
+
 @:END_LOOP
-;
+
 # NOTE: If any errors occurred
 # then sets ERROR to the first
 # one.
-@ifdef $FIRST_ERROR
-ERROR=$FIRST_ERROR
-@endif
-;
+   @ifdef $FIRST_ERROR
+   ERROR=$FIRST_ERROR
+   @endif
+
 @endif

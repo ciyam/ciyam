@@ -1,49 +1,49 @@
 ; Copyright (c) 2019-2026 CIYAM Developers
-;
+
 ; Distributed under the MIT/X11 software license, please refer to the file license.txt
 ; in the root project directory or http://www.opensource.org/licenses/mit-license.php.
-;
+
 @ifndef $1
 #NOTE: The script requires a tag which is also used as a tag list prefix for merging.
 @else
-;
+
 PREFIX=$1
 NEW_TAG=$2
-;
-@ifndef $NEW_TAG
-NEW_TAG=$PREFIX
-@endif
-;
+
+   @ifndef $NEW_TAG
+   NEW_TAG=$PREFIX
+   @endif
+
 REPLACED=@repstr:,/:$PREFIX
-;
+
 ; NOTE: Assume if it has commas then PREFIX must be a "tag list" rather than a prefix.
-@ifneq $PREFIX $REPLACED
-LINES=@repstr:,/\n:$PREFIX
-PREFIX=
-@else
-.file_tags $PREFIX*
-LINES=$OUTPUT
-@endif
-;
-@ifdef $LINES
-;
-TAGS=@repstr:\n/,:$LINES
-;
-IS_NEW=
-@ifneq "$PREFIX" "$TAGS"
-IS_NEW=1
-@else
-@ifneq "$PREFIX" "$NEW_TAG"
-IS_NEW=1
-@endif
-@endif
-;
-@ifdef $IS_NEW
-.file_raw list ,$TAGS $NEW_TAG
-.file_tag -remove $TAGS
-.file_info -content $NEW_TAG
-#$OUTPUT
-@endif
-;
-@endif
+   @ifneq $PREFIX $REPLACED
+   LINES=@repstr:,/\n:$PREFIX
+   PREFIX=
+   @else
+   .file_tags $PREFIX*
+   LINES=$OUTPUT
+   @endif
+
+   @ifdef $LINES
+
+   TAGS=@repstr:\n/,:$LINES
+
+   IS_NEW=
+      @ifneq "$PREFIX" "$TAGS"
+      IS_NEW=1
+      @else
+         @ifneq "$PREFIX" "$NEW_TAG"
+         IS_NEW=1
+         @endif
+      @endif
+
+      @ifdef $IS_NEW
+      .file_raw list ,$TAGS $NEW_TAG
+      .file_tag -remove $TAGS
+      .file_info -content $NEW_TAG
+      #$OUTPUT
+      @endif
+
+   @endif
 @endif

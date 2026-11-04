@@ -1,355 +1,355 @@
 ; Copyright (c) 2026 CIYAM Developers
-;
+
 ; Distributed under the MIT/X11 software license, please refer to the file license.txt
 ; in the root project directory or http://www.opensource.org/licenses/mit-license.php.
-;
+
 ; NOTE: Prevent all "irc_" prefixed scripts from
 ; being executed whilst performing store/restore
 ; operations.
 .system_variable @run_script_prefix_irc_lock 1 "" 100
-;
+
 @ifeq "$OUTPUT" "1"
-;
+
 ; NOTE: Although "irc_" prefixed scripts are not
 ; being started whilst holding this lock it must
 ; next be verified that any running scripts have
 ; completed before proceeding (repeats the check
 ; a few times with a "wait" between each check).
 .system_variable @run_script_prefix_irc_count
-@ifdef $OUTPUT
-.wait 250
-.system_variable @run_script_prefix_irc_count
-@ifdef $OUTPUT
-.wait 250
-.system_variable @run_script_prefix_irc_count
-@ifdef $OUTPUT
-.wait 250
-.system_variable @run_script_prefix_irc_count
-@endif
-@endif
-@endif
-;
-@ifndef $OUTPUT
-;
-.session_variable @deque commence
-;
-.system_variable @irc_vars_dir
-IRC_VARS_DIR=$OUTPUT
-;
-@ifndef $IRC_VARS_DIR
-@ifndef $CIYAM_TMP_DIR
-CIYAM_TMP_DIR=/tmp/ciyam
-@endif
-IRC_VARS_DIR=$CIYAM_TMP_DIR
-@endif
-;
-IRC_VARS_FILE_NAME=irc_variables.cin
-;
-IRC_VARS_FILE=@files:$IRC_VARS_DIR:$IRC_VARS_FILE_NAME
-;
-.system_variable @irc_alter ""
-;
-.system_variable @irc_rooms
-;
-; NOTE: If no IRC rooms exist then will check
-; if they can be restored from a prior store.
-@ifndef $OUTPUT
-;
-; NOTE: If the IRC variables file is not found
-; then also check the ".ciyam" directory below
-; the backup directory (and if found then will
-; copy the file to the $IRC_VARS_DIR).
-@ifndef $IRC_VARS_FILE
-.system_variable @backup_files
-BACKUP_FILES_PATH=$OUTPUT
-;
-IRC_VARS_FILE=@files:$BACKUP_FILES_PATH/.ciyam:$IRC_VARS_FILE_NAME
-;
-@ifdef $IRC_VARS_FILE
-~cp "$BACKUP_FILES_PATH/.ciyam/irc_variables.cin" "$IRC_VARS_DIR"
-;
-IRC_VARS_FILE=@files:$IRC_VARS_DIR:$IRC_VARS_FILE_NAME
-@endif
-@endif
-;
-@ifdef $IRC_VARS_FILE
-<$IRC_VARS_DIR/$IRC_VARS_FILE
-@endif
-;
-.system_variable @no_irc ""
-.system_variable @irc_allow 1
-;
-@else
-;
-IRC_TEMP_FILE=/tmp/ciyam/.irc_store_or_restore.tmp
-;
-; NOTE: Before creating the "irc_variables.cin" file
-; will check a number of the oldest "edit items" for
-; each room in order purge items that are older than
-; the oldest queued message (except where "pinned").
-;
-.system_variable @irc_names_**
-ALL_ROOMS=@strlit:$OUTPUT
-;
-@:PURGE_LOOP
-;
-@label NEXT_PURGE
-;
-NEXT_ROOM=%ALL_ROOMS:1%
-;
-@ifndef $NEXT_ROOM
-@label END_PURGE_LOOP
-@endif
-;
-@skip
-;
-@:NEXT_PURGE
-;
-NEXT_ROOM=@repstr:@irc_names_/@keyed_irc_:$NEXT_ROOM
-;
-NEXT_EDITS_ROOM=@strlit:%NEXT_ROOM%_ME
-NEXT_PINNED_ROOM=@strlit:%NEXT_ROOM%_MP
-NEXT_REACTS_ROOM=@strlit:%NEXT_ROOM%_MR
-;
-.session_variable @index_keyed_items 1
-.session_variable @limit_keyed_items 100
-;
-.system_variable $NEXT_ROOM
-MESSAGE_ITEMS=$OUTPUT
-;
-@ifdef $MESSAGE_ITEMS
-;
-NEXT_QUEUE_PREFIX=@repstr:@keyed_/@queue_:$NEXT_ROOM
-;
-OLDEST_QUEUED_MESSAGE=
-;
-; NOTE: Finds the oldest queued unix unique key value for any user.
-.system_variable %NEXT_QUEUE_PREFIX%_***
-@ifdef $OUTPUT
-~printf '%b\n' "$OUTPUT" | cut -c 1-13 | sort | head -c 13 >$IRC_TEMP_FILE
-OLDEST_QUEUED_MESSAGE=@file:$IRC_TEMP_FILE
-@endif
-;
-@:CHECK_ITEM_LOOP
-;
-@label NEXT_CHECK_ITEM
-;
-NEXT_ITEM=%MESSAGE_ITEMS:1%
-;
-@ifndef $NEXT_ITEM
-@label END_CHECK_ITEM_LOOP
-@endif
-;
-@skip
-;
-@:NEXT_CHECK_ITEM
-;
-IS_PINNED=
-.system_variable $NEXT_PINNED_ROOM:$NEXT_ITEM
-@ifdef $OUTPUT
-IS_PINNED=1
-@endif
-;
-@ifndef $PINNED
-;
-PURGE_THIS_MESSAGE=
-@ifndef $OLDEST_QUEUED_MESSAGE
-PURGE_THIS_MESSAGE=1
-@else
-@if $NEXT_ITEM < $OLDEST_QUEUED_MESSAGE
-PURGE_THIS_MESSAGE=1
-@endif
-@endif
-;
-@ifdef $PURGE_THIS_MESSAGE
-.system_variable $NEXT_ROOM:$NEXT_ITEM ""
-.system_variable $NEXT_EDITS_ROOM:$NEXT_ITEM ""
-.system_variable $NEXT_REACTS_ROOM:$NEXT_ITEM ""
-@endif
-;
-@endif
-;
-MESSAGE_ITEMS=%MESSAGE_ITEMS:-1%
-;
-!!@:CHECK_ITEM_LOOP
-;
-@:END_CHECK_ITEM_LOOP
-;
-@endif
-;
-ALL_ROOMS=%ALL_ROOMS:-1%
-;
-!!@:PURGE_LOOP
-;
-@:END_PURGE_LOOP
-;
-~rm -f $IRC_TEMP_FILE
-;
-; NOTE: Creates "irc_variables.cin" which can
-; then later be used for restoring all of the
-; IRC system variables. Uses "$C" rather than
-; "system_variable" in order to reduce space.
-;
-PREFIX=$$C$SP
-;
-.utils_entropy -x=15 30
-RANDOM_CHARACTERS=$OUTPUT
-;
->$IRC_VARS_DIR/$IRC_VARS_FILE_NAME
-#;$RANDOM_CHARACTERS
-#C=system_variable
-;
-system_variable "-p=$PREFIX" @irc_rooms*
-;
-system_variable "-p=$PREFIX" @irc_close_*
-system_variable "-p=$PREFIX" -quoted @irc_names_*
-system_variable "-p=$PREFIX" @irc_owner_*
-system_variable "-p=$PREFIX" @irc_posts_*
-system_variable "-p=$PREFIX" @irc_times_*
-system_variable "-p=$PREFIX" @irc_users_*
-system_variable "-p=$PREFIX" @irc_uuids_*
-system_variable "-p=$PREFIX" @irc_xinvr_*
-system_variable "-p=$PREFIX" @irc_xinvs_*
-;
-system_variable "-p=$PREFIX" @qs_??_irc
-;
-system_variable "-p=$PREFIX" @session_@queue_irc_*
-;
-system_variable "-p=$PREFIX" @web.*.*.0*
-;
-.system_variable @irc_names_**
-ALL_ROOMS=$OUTPUT
-;
-@ifdef $ALL_ROOMS
-.system_variable -s=_ME @irc_names_**
-ALL_ROOMS=@strlit:$ALL_ROOMS\n$OUTPUT
-.system_variable -s=_MP @irc_names_**
-ALL_ROOMS=@strlit:$ALL_ROOMS\n$OUTPUT
-.system_variable -s=_MR @irc_names_**
-ALL_ROOMS=@strlit:$ALL_ROOMS\n$OUTPUT
-@endif
-;
-ITEM_AFTER=
-;
-@:LOOP
-NEXT_ROOM=%ALL_ROOMS:1%
-;
-@label NEXT
-;
-@ifndef $NEXT_ROOM
-@label END_LOOP
-@endif
-;
-@skip
-;
-@:NEXT
-;
-NEXT_ROOM=@repstr:@irc_names_/:$NEXT_ROOM
-;
-.system_variable @keyed_irc_$NEXT_ROOM*
-@ifdef $OUTPUT
-;
-@label NEXT_KEY
-;
-@:KEY_LOOP
-;
-@ifdef $ITEM_AFTER
-.session_variable @limit_keyed_after $ITEM_AFTER
-@endif
-;
-.session_variable @limit_keyed_items 25
-;
-system_variable "-p=$PREFIX@keyed_irc_$NEXT_ROOM:" -quoted @keyed_irc_$NEXT_ROOM
-;
-@ifndef %OUTPUT:25%
-@label END_KEY_LOOP
-@else
-LAST_LINE=%OUTPUT:25%
-POS=@strpos:\::$LAST_LINE
-POS=@$POS+1
-LAST_LINE=@substr:$POS:$LAST_LINE
-POS=@strpos: :$LAST_LINE
-ITEM_AFTER=@substr:0,$POS:$LAST_LINE
-@endif
-;
-@skip
-;
-@:NEXT_KEY
-;
-!!@:KEY_LOOP
-;
-@:END_KEY_LOOP
-;
-@endif
-;
-ALL_ROOMS=%ALL_ROOMS:-1%
-;
-!!@:LOOP
-;
-@:END_LOOP
-;
-.system_variable @queue_irc_*
-ALL_MESSAGE_QUEUE_INFO=@strlit:$OUTPUT
-;
-@:OUTER_LOOP
-NEXT_MESSAGE_QUEUE_INFO=@strlit:%ALL_MESSAGE_QUEUE_INFO:1%
-;
-@label OUTER_NEXT
-;
-@ifndef $NEXT_MESSAGE_QUEUE_INFO
-@label OUTER_END_LOOP
-@endif
-;
-@skip
-;
-@:OUTER_NEXT
-NEXT_MESSAGE_QUEUE_INFO_LINES=@repstr: /\n:$NEXT_MESSAGE_QUEUE_INFO
-;
-NEXT_MESSAGE_QUEUE_NAME=@strlit:%NEXT_MESSAGE_QUEUE_INFO_LINES:1%
-;
-PREFIX=$$C $NEXT_MESSAGE_QUEUE_NAME$SP
-;
-.session_variable $NEXT_MESSAGE_QUEUE_NAME @system
-;
-@label INNER_NEXT
-;
-; NOTE: In order to prevent overflow in "ciyam_client" for OUTPUT will
-; only output a limited number of queue items at a time using "@deque"
-; (in order to be able to determine when finished).
-;
-@:INNER_LOOP
-.session_variable @limit_queue_items 1500
-.session_variable "-p=$PREFIX" -quoted $NEXT_MESSAGE_QUEUE_NAME @deque
-;
-.session_variable @deque size
-@ifeq "$OUTPUT" "0"
-@label INNER_END_LOOP
-@endif
-;
-@skip
-;
-@:INNER_NEXT
-;
-session_variable @deque
-.session_variable @deque ""
-;
-!!@:INNER_LOOP
-;
-@:INNER_END_LOOP
-;
-ALL_MESSAGE_QUEUE_INFO=@strlit:%ALL_MESSAGE_QUEUE_INFO:-1%
-;
-!!@:OUTER_LOOP
-;
-@:OUTER_END_LOOP
->
-;
-@endif
-;
-@endif
-;
+   @ifdef $OUTPUT
+   .wait 250
+   .system_variable @run_script_prefix_irc_count
+      @ifdef $OUTPUT
+      .wait 250
+      .system_variable @run_script_prefix_irc_count
+         @ifdef $OUTPUT
+         .wait 250
+         .system_variable @run_script_prefix_irc_count
+         @endif
+      @endif
+   @endif
+
+   @ifndef $OUTPUT
+
+   .session_variable @deque commence
+
+   .system_variable @irc_vars_dir
+   IRC_VARS_DIR=$OUTPUT
+
+      @ifndef $IRC_VARS_DIR
+         @ifndef $CIYAM_TMP_DIR
+         CIYAM_TMP_DIR=/tmp/ciyam
+         @endif
+      IRC_VARS_DIR=$CIYAM_TMP_DIR
+      @endif
+
+   IRC_VARS_FILE_NAME=irc_variables.cin
+
+   IRC_VARS_FILE=@files:$IRC_VARS_DIR:$IRC_VARS_FILE_NAME
+
+   .system_variable @irc_alter ""
+
+   .system_variable @irc_rooms
+
+   ; NOTE: If no IRC rooms exist then will check
+   ; if they can be restored from a prior store.
+      @ifndef $OUTPUT
+
+      ; NOTE: If the IRC variables file is not found
+      ; then also check the ".ciyam" directory below
+      ; the backup directory (and if found then will
+      ; copy the file to the $IRC_VARS_DIR).
+         @ifndef $IRC_VARS_FILE
+         .system_variable @backup_files
+         BACKUP_FILES_PATH=$OUTPUT
+
+         IRC_VARS_FILE=@files:$BACKUP_FILES_PATH/.ciyam:$IRC_VARS_FILE_NAME
+
+            @ifdef $IRC_VARS_FILE
+            ~cp "$BACKUP_FILES_PATH/.ciyam/irc_variables.cin" "$IRC_VARS_DIR"
+
+            IRC_VARS_FILE=@files:$IRC_VARS_DIR:$IRC_VARS_FILE_NAME
+            @endif
+         @endif
+
+         @ifdef $IRC_VARS_FILE
+         <$IRC_VARS_DIR/$IRC_VARS_FILE
+         @endif
+
+      .system_variable @no_irc ""
+      .system_variable @irc_allow 1
+
+      @else
+
+      IRC_TEMP_FILE=/tmp/ciyam/.irc_store_or_restore.tmp
+
+      ; NOTE: Before creating the "irc_variables.cin" file
+      ; will check a number of the oldest "edit items" for
+      ; each room in order purge items that are older than
+      ; the oldest queued message (except where "pinned").
+
+      .system_variable @irc_names_**
+      ALL_ROOMS=@strlit:$OUTPUT
+
+      @:PURGE_LOOP
+
+      @label NEXT_PURGE
+
+      NEXT_ROOM=%ALL_ROOMS:1%
+
+         @ifndef $NEXT_ROOM
+         @label END_PURGE_LOOP
+         @endif
+
+      @skip
+
+      @:NEXT_PURGE
+
+      NEXT_ROOM=@repstr:@irc_names_/@keyed_irc_:$NEXT_ROOM
+
+      NEXT_EDITS_ROOM=@strlit:%NEXT_ROOM%_ME
+      NEXT_PINNED_ROOM=@strlit:%NEXT_ROOM%_MP
+      NEXT_REACTS_ROOM=@strlit:%NEXT_ROOM%_MR
+
+      .session_variable @index_keyed_items 1
+      .session_variable @limit_keyed_items 100
+
+      .system_variable $NEXT_ROOM
+      MESSAGE_ITEMS=$OUTPUT
+
+         @ifdef $MESSAGE_ITEMS
+
+         NEXT_QUEUE_PREFIX=@repstr:@keyed_/@queue_:$NEXT_ROOM
+
+         OLDEST_QUEUED_MESSAGE=
+
+         ; NOTE: Finds the oldest queued unix unique key value for any user.
+         .system_variable %NEXT_QUEUE_PREFIX%_***
+            @ifdef $OUTPUT
+            ~printf '%b\n' "$OUTPUT" | cut -c 1-13 | sort | head -c 13 >$IRC_TEMP_FILE
+            OLDEST_QUEUED_MESSAGE=@file:$IRC_TEMP_FILE
+            @endif
+
+         @:CHECK_ITEM_LOOP
+
+         @label NEXT_CHECK_ITEM
+
+         NEXT_ITEM=%MESSAGE_ITEMS:1%
+
+            @ifndef $NEXT_ITEM
+            @label END_CHECK_ITEM_LOOP
+            @endif
+
+         @skip
+
+         @:NEXT_CHECK_ITEM
+
+         IS_PINNED=
+         .system_variable $NEXT_PINNED_ROOM:$NEXT_ITEM
+            @ifdef $OUTPUT
+            IS_PINNED=1
+            @endif
+
+            @ifndef $PINNED
+
+            PURGE_THIS_MESSAGE=
+               @ifndef $OLDEST_QUEUED_MESSAGE
+               PURGE_THIS_MESSAGE=1
+               @else
+                  @if $NEXT_ITEM < $OLDEST_QUEUED_MESSAGE
+                  PURGE_THIS_MESSAGE=1
+                  @endif
+               @endif
+
+               @ifdef $PURGE_THIS_MESSAGE
+               .system_variable $NEXT_ROOM:$NEXT_ITEM ""
+               .system_variable $NEXT_EDITS_ROOM:$NEXT_ITEM ""
+               .system_variable $NEXT_REACTS_ROOM:$NEXT_ITEM ""
+               @endif
+
+            @endif
+
+         MESSAGE_ITEMS=%MESSAGE_ITEMS:-1%
+
+         !!@:CHECK_ITEM_LOOP
+
+         @:END_CHECK_ITEM_LOOP
+
+         @endif
+
+      ALL_ROOMS=%ALL_ROOMS:-1%
+
+      !!@:PURGE_LOOP
+
+      @:END_PURGE_LOOP
+
+      ~rm -f $IRC_TEMP_FILE
+
+      ; NOTE: Creates "irc_variables.cin" which can
+      ; then later be used for restoring all of the
+      ; IRC system variables. Uses "$C" rather than
+      ; "system_variable" in order to reduce space.
+
+      PREFIX=$$C$SP
+
+      .utils_entropy -x=15 30
+      RANDOM_CHARACTERS=$OUTPUT
+
+      >$IRC_VARS_DIR/$IRC_VARS_FILE_NAME
+      #;$RANDOM_CHARACTERS
+      #C=system_variable
+
+      system_variable "-p=$PREFIX" @irc_rooms*
+
+      system_variable "-p=$PREFIX" @irc_close_*
+      system_variable "-p=$PREFIX" -quoted @irc_names_*
+      system_variable "-p=$PREFIX" @irc_owner_*
+      system_variable "-p=$PREFIX" @irc_posts_*
+      system_variable "-p=$PREFIX" @irc_times_*
+      system_variable "-p=$PREFIX" @irc_users_*
+      system_variable "-p=$PREFIX" @irc_uuids_*
+      system_variable "-p=$PREFIX" @irc_xinvr_*
+      system_variable "-p=$PREFIX" @irc_xinvs_*
+
+      system_variable "-p=$PREFIX" @qs_??_irc
+
+      system_variable "-p=$PREFIX" @session_@queue_irc_*
+
+      system_variable "-p=$PREFIX" @web.*.*.0*
+
+      .system_variable @irc_names_**
+      ALL_ROOMS=$OUTPUT
+
+         @ifdef $ALL_ROOMS
+         .system_variable -s=_ME @irc_names_**
+         ALL_ROOMS=@strlit:$ALL_ROOMS\n$OUTPUT
+         .system_variable -s=_MP @irc_names_**
+         ALL_ROOMS=@strlit:$ALL_ROOMS\n$OUTPUT
+         .system_variable -s=_MR @irc_names_**
+         ALL_ROOMS=@strlit:$ALL_ROOMS\n$OUTPUT
+         @endif
+
+      ITEM_AFTER=
+
+      @:LOOP
+      NEXT_ROOM=%ALL_ROOMS:1%
+
+      @label NEXT
+
+         @ifndef $NEXT_ROOM
+         @label END_LOOP
+         @endif
+
+      @skip
+
+      @:NEXT
+
+      NEXT_ROOM=@repstr:@irc_names_/:$NEXT_ROOM
+
+      .system_variable @keyed_irc_$NEXT_ROOM*
+         @ifdef $OUTPUT
+
+         @label NEXT_KEY
+
+         @:KEY_LOOP
+
+            @ifdef $ITEM_AFTER
+            .session_variable @limit_keyed_after $ITEM_AFTER
+            @endif
+
+         .session_variable @limit_keyed_items 25
+
+         system_variable "-p=$PREFIX@keyed_irc_$NEXT_ROOM:" -quoted @keyed_irc_$NEXT_ROOM
+
+            @ifndef %OUTPUT:25%
+            @label END_KEY_LOOP
+            @else
+            LAST_LINE=%OUTPUT:25%
+            POS=@strpos:\::$LAST_LINE
+            POS=@$POS+1
+            LAST_LINE=@substr:$POS:$LAST_LINE
+            POS=@strpos: :$LAST_LINE
+            ITEM_AFTER=@substr:0,$POS:$LAST_LINE
+            @endif
+
+         @skip
+
+         @:NEXT_KEY
+
+         !!@:KEY_LOOP
+
+         @:END_KEY_LOOP
+
+         @endif
+
+      ALL_ROOMS=%ALL_ROOMS:-1%
+
+      !!@:LOOP
+
+      @:END_LOOP
+
+      .system_variable @queue_irc_*
+      ALL_MESSAGE_QUEUE_INFO=@strlit:$OUTPUT
+
+      @:OUTER_LOOP
+      NEXT_MESSAGE_QUEUE_INFO=@strlit:%ALL_MESSAGE_QUEUE_INFO:1%
+
+      @label OUTER_NEXT
+
+         @ifndef $NEXT_MESSAGE_QUEUE_INFO
+         @label OUTER_END_LOOP
+         @endif
+
+      @skip
+
+      @:OUTER_NEXT
+      NEXT_MESSAGE_QUEUE_INFO_LINES=@repstr: /\n:$NEXT_MESSAGE_QUEUE_INFO
+
+      NEXT_MESSAGE_QUEUE_NAME=@strlit:%NEXT_MESSAGE_QUEUE_INFO_LINES:1%
+
+      PREFIX=$$C $NEXT_MESSAGE_QUEUE_NAME$SP
+
+      .session_variable $NEXT_MESSAGE_QUEUE_NAME @system
+
+      @label INNER_NEXT
+
+      ; NOTE: In order to prevent overflow in "ciyam_client" for OUTPUT will
+      ; only output a limited number of queue items at a time using "@deque"
+      ; (in order to be able to determine when finished).
+
+      @:INNER_LOOP
+      .session_variable @limit_queue_items 1500
+      .session_variable "-p=$PREFIX" -quoted $NEXT_MESSAGE_QUEUE_NAME @deque
+
+      .session_variable @deque size
+         @ifeq "$OUTPUT" "0"
+         @label INNER_END_LOOP
+         @endif
+
+      @skip
+
+      @:INNER_NEXT
+
+      session_variable @deque
+      .session_variable @deque ""
+
+      !!@:INNER_LOOP
+
+      @:INNER_END_LOOP
+
+      ALL_MESSAGE_QUEUE_INFO=@strlit:%ALL_MESSAGE_QUEUE_INFO:-1%
+
+      !!@:OUTER_LOOP
+
+      @:OUTER_END_LOOP
+      >
+
+      @endif
+
+   @endif
+
 .session_variable @deque complete
-;
+
 system_variable @run_script_prefix_irc_lock ""
-;
+
 @endif

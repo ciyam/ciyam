@@ -1,175 +1,175 @@
 ; Copyright (c) 2026 CIYAM Developers
-;
+
 ; Distributed under the MIT/X11 software license, please refer to the file license.txt
 ; in the root project directory or http://www.opensource.org/licenses/mit-license.php.
-;
+
 NAMES=$1
 SINGLE=$2
-;
+
 @ifndef $NAMES
 #Usage: names.cin [name-1[,name-2[,..]]
 @else
 ENTER=_==
 CHOICES=&Name: [NAME:$ENTER
-;
+
 CIYAM_CHOICE_LOT_NUM=0
 CIYAM_CHOICE_LOT_LIMIT=10
 CIYAM_CHOICE_OUTPUT_REPLACE=1
-;
+
 ; NOTE: Names provided must be formatted as
 ; nameX[,nameY[,..]] or @nameX[@nameY[@..]]
 ; (but are not required to be ordered). The
 ; next steps are necessary to transform the
 ; latter into the former. And can be viewed
 ; as follows:
-;
+
 ; @def@ghi@abc@def
-;
+
 ; 1. ~@def@ghi@abc@def
 ; 2. def@ghi@abc@def
 ; 3. def,ghi,abc,def
-;
+
 ; Next the names are sorted with duplicates
 ; (if any were found) having being removed:
-;
+
 ; abc,def,ghi
-;
+
 NAME_INFO=~$NAMES
-;
+
 NAME_INFO=@repstr:~@/:$NAME_INFO
 NAME_INFO=@repstr:~/:$NAME_INFO
-;
+
 NAME_INFO=@repstr:@/,:$NAME_INFO
-;
+
 ; NOTE: After sorting (and removing duplicates)
 ; The "head" command removes the trailing comma
 ; that appears due to an LF being appended.
 NAME_INFO=@file:~echo "$NAME_INFO" | tr "," "\n" | sort | uniq | tr "\n" "," | head -c-1
-;
+
 NAME_LINES=@repstr:,/\n:$NAME_INFO
-;
+
 NUM=0
-;
+
 @label INIT_NEXT
-;
+
 @:INIT_LOOP
-;
+
 NEXT_NAME=%NAME_LINES:1%
-;
-@ifndef $NEXT_NAME
-@label END_INIT_LOOP
-@endif
-;
+
+   @ifndef $NEXT_NAME
+   @label END_INIT_LOOP
+   @endif
+
 @skip
-;
+
 @:INIT_NEXT
-;
+
 NUM=@$NUM+1
-;
+
 ; NOTE: The ENTER default is not being
 ; included in the choice count (due to
 ; using the underbar prefix). So needs
 ; to check 11 (rather than 10) here.
-@ifeq "$NUM" "11"
-NUM=0
-CHOICES=$CHOICES|$ENTER
-@endif
-;
+   @ifeq "$NUM" "11"
+   NUM=0
+   CHOICES=$CHOICES|$ENTER
+   @endif
+
 CHOICES=$CHOICES|$NEXT_NAME=$NEXT_NAME
-;
+
 NAME_LINES=%NAME_LINES:-1%
-;
+
 !!@:INIT_LOOP
-;
+
 @:END_INIT_LOOP
-;
+
 CHOICES=$CHOICES]
-;
+
 DUMMY= <none>
-;
-@ifdef $SINGLE
-PREFIX=Selected Name
-@else
-PREFIX=Selected Name(s)
-@endif
-;
+
+   @ifdef $SINGLE
+   PREFIX=Selected Name
+   @else
+   PREFIX=Selected Name(s)
+   @endif
+
 NAMES=
 SELECTED_NAMES=
-;
+
 @label NEXT_NAME
-;
+
 #$PREFIX:$DUMMY
-;
+
 @:NAME_LOOP
-;
+
 $CHOICES
-;
-@ifeq "$NAME" ""
-@label END_NAME_LOOP
-@endif
-;
+
+   @ifeq "$NAME" ""
+   @label END_NAME_LOOP
+   @endif
+
 @skip
-;
+
 @:NEXT_NAME
-;
+
 ERASER=
-;
-@ifndef $SELECTED_NAMES
-@ifdef $DUMMY
-ERASER=@eraser:$DUMMY
-ERASER=$DUMMY,$ERASER
-DUMMY=
-@endif
-SELECTED_NAMES=[$NAME]
-@else
-CHECK_SELECTED=@repstr:[$NAME]/:$SELECTED_NAMES
-;
-@ifneq "$CHECK_SELECTED" "$SELECTED_NAMES"
-ERASER=@eraser:$NAME,
-ERASER=$NAME,$ERASER
-SELECTED_NAMES=$CHECK_SELECTED
-@else
-@ifdef $SINGLE
-;
-OLD_LEN=@strlen:$NAMES
-@ifdef $OLD_LEN
-NEW_LEN=@strlen:$NAME
-@ifdef $NEW_LEN
-@if $NEW_LEN #< $OLD_LEN
-EXTRA=@$OLD_LEN-$NEW_LEN
-DUMMY=@padlen:$EXTRA, :
-ERASER=@eraser:$DUMMY
-ERASER=$DUMMY$ERASER
-@endif
-@endif
-@endif
-SELECTED_NAMES=[$NAME]
-;
-@else
-SELECTED_NAMES=$SELECTED_NAMES[$NAME]
-@endif
-@endif
-;
-@endif
-;
-@ifndef $SELECTED_NAMES
-NAMES=
-@else
-NAMES=@repstr:][/,:$SELECTED_NAMES
-NAMES=@repstr:[/:$NAMES
-NAMES=@repstr:]/:$NAMES
-;
-NAMES=@file:~echo -n "$NAMES" | tr "," "\n" | sort | tr "\n" "," | head -c-1
-@endif
-;
+
+   @ifndef $SELECTED_NAMES
+      @ifdef $DUMMY
+      ERASER=@eraser:$DUMMY
+      ERASER=$DUMMY,$ERASER
+      DUMMY=
+      @endif
+   SELECTED_NAMES=[$NAME]
+   @else
+   CHECK_SELECTED=@repstr:[$NAME]/:$SELECTED_NAMES
+
+      @ifneq "$CHECK_SELECTED" "$SELECTED_NAMES"
+      ERASER=@eraser:$NAME,
+      ERASER=$NAME,$ERASER
+      SELECTED_NAMES=$CHECK_SELECTED
+      @else
+         @ifdef $SINGLE
+
+         OLD_LEN=@strlen:$NAMES
+            @ifdef $OLD_LEN
+            NEW_LEN=@strlen:$NAME
+               @ifdef $NEW_LEN
+                  @if $NEW_LEN #< $OLD_LEN
+                  EXTRA=@$OLD_LEN-$NEW_LEN
+                  DUMMY=@padlen:$EXTRA, :
+                  ERASER=@eraser:$DUMMY
+                  ERASER=$DUMMY$ERASER
+                  @endif
+               @endif
+            @endif
+         SELECTED_NAMES=[$NAME]
+
+         @else
+         SELECTED_NAMES=$SELECTED_NAMES[$NAME]
+         @endif
+      @endif
+
+   @endif
+
+   @ifndef $SELECTED_NAMES
+   NAMES=
+   @else
+   NAMES=@repstr:][/,:$SELECTED_NAMES
+   NAMES=@repstr:[/:$NAMES
+   NAMES=@repstr:]/:$NAMES
+
+   NAMES=@file:~echo -n "$NAMES" | tr "," "\n" | sort | tr "\n" "," | head -c-1
+   @endif
+
 #^^$PREFIX: $NAMES$ERASER
-;
+
 !!@:NAME_LOOP
-;
+
 @:END_NAME_LOOP
-;
-@ifndef $NAMES
-#^^(no name has been selected)
-@endif
-;
+
+   @ifndef $NAMES
+   #^^(no name has been selected)
+   @endif
+
 @endif

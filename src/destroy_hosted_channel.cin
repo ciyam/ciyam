@@ -1,8 +1,8 @@
 ; Copyright (c) 2023-2026 CIYAM Developers
-;
+
 ; Distributed under the MIT/X11 software license, please refer to the file license.txt
 ; in the root project directory or http://www.opensource.org/licenses/mit-license.php.
-;
+
 ERROR=
 @ifeq "$1" ""
 ERROR=1
@@ -10,45 +10,45 @@ ERROR=1
 @ifeq "$2" ""
 ERROR=1
 @endif
-;
+
 @ifeq "$ERROR" "1"
 #Usage: destroy_hosted_channel.cin <ident> <other>
 @else
-;
+
 IDENT=$1
 OTHER=$2
-;
+
 @retain COMBINED,REVERSED
 <channel_identity.cin $IDENT $OTHER
-;
+
 .system_variable @files_area_path
 FILES_AREA_DIR=$OUTPUT
-;
+
 .file_kill -p=bc.$COMBINED.*
-;
+
 .file_archives -path_only $COMBINED
-@ifdef $OUTPUT
-.file_archive -destroy $COMBINED
-~rmdir $FILES_AREA_DIR/$COMBINED
-@endif
-;
+   @ifdef $OUTPUT
+   .file_archive -destroy $COMBINED
+   ~rmdir $FILES_AREA_DIR/$COMBINED
+   @endif
+
 .file_kill -p=bc.$REVERSED.*
-;
+
 .file_archives -path_only $REVERSED
-@ifdef $OUTPUT
-.file_archive -destroy $REVERSED
-~rmdir $FILES_AREA_DIR/$REVERSED
-@endif
-;
+   @ifdef $OUTPUT
+   .file_archive -destroy $REVERSED
+   ~rmdir $FILES_AREA_DIR/$REVERSED
+   @endif
+
 .identity -raw
 .=crypto_hash $COMBINED$REVERSED$OUTPUT
 OBFUSCATED_IDENTITY=@substr:0,9:$OUTPUT
-;
+
 .system_variable @secret_hash_$OBFUSCATED_IDENTITY
-@ifdef $OUTPUT
-.system_variable >@secret_hash_$OBFUSCATED_IDENTITY ""
-@endif
-;
+   @ifdef $OUTPUT
+   .system_variable >@secret_hash_$OBFUSCATED_IDENTITY ""
+   @endif
+
 #Removed files and file archives for channel identities '$COMBINED' and '$REVERSED'.
-;
+
 @endif

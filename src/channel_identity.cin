@@ -1,10 +1,10 @@
 ; Copyright (c) 2023-2026 CIYAM Developers
-;
+
 ; Distributed under the MIT/X11 software license, please refer to the file license.txt
 ; in the root project directory or http://www.opensource.org/licenses/mit-license.php.
-;
+
 <ciyam.fissile
-;
+
 ERROR=
 @ifeq "$1" ""
 ERROR=1
@@ -12,58 +12,58 @@ ERROR=1
 @ifeq "$2" ""
 ERROR=1
 @endif
-;
+
 @ifeq "$ERROR" "1"
 #Usage: channel_identity.cin <ident> <other>
 @else
-;
+
 IDENT=$1
 OTHER=$2
-;
+
 .session_variable @set commence
-;
+
 BIN1=*!hex2bin?$IDENT
 BIN1=00000000000000000000000000000000000$BIN1
 BIN1=@substr:-36:$BIN1
-;
+
 BIN2=*!hex2bin?$OTHER
 BIN2=00000000000000000000000000000000000$BIN2
 BIN2=@substr:-36:$BIN2
-;
+
 COMBINED=*!xorbin?$BIN1,$BIN2
 COMBINED=*!bin2hex?$COMBINED
 COMBINED=000000000$COMBINED
 COMBINED=@substr:-9:$COMBINED
-;
+
 REVERSED=@reverse:$COMBINED
-;
-@ifeq "$COMBINED" "$REVERSED"
-LAST=@substr:8,1:$COMBINED
-DEC=@hexdec:$LAST
-DEC=@$DEC+1
-@ifeq "$DEC" "16"
-DEC=0
-@endif
-HEX=@dechex:$DEC
-PREFIX=@substr:0,8:$COMBINED
-COMBINED=$PREFIX$HEX
-REVERSED=@reverse:$COMBINED
-@endif
-;
+
+   @ifeq "$COMBINED" "$REVERSED"
+   LAST=@substr:8,1:$COMBINED
+   DEC=@hexdec:$LAST
+   DEC=@$DEC+1
+      @ifeq "$DEC" "16"
+      DEC=0
+      @endif
+   HEX=@dechex:$DEC
+   PREFIX=@substr:0,8:$COMBINED
+   COMBINED=$PREFIX$HEX
+   REVERSED=@reverse:$COMBINED
+   @endif
+
 .session_variable @set "$IDENT"
 .session_variable @set "$OTHER"
-;
+
 .session_variable @set
 LINES=$OUTPUT
-;
+
 LINE1=%LINES:1%
-;
-@ifneq "$IDENT" "$LINE1"
-TEMP_VAL=$COMBINED
-COMBINED=$REVERSED
-REVERSED=$TEMP_VAL
-@endif
-;
+
+   @ifneq "$IDENT" "$LINE1"
+   TEMP_VAL=$COMBINED
+   COMBINED=$REVERSED
+   REVERSED=$TEMP_VAL
+   @endif
+
 .session_variable @set complete
-;
+
 @endif

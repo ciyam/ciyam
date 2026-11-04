@@ -1,8 +1,8 @@
 ; Copyright (c) 2026 CIYAM Developers
-;
+
 ; Distributed under the MIT/X11 software license, please refer to the file license.txt
 ; in the root project directory or http://www.opensource.org/licenses/mit-license.php.
-;
+
 NUM_ARGS=0
 @ifdef $1
 NUM_ARGS=@$NUM_ARGS+1
@@ -13,60 +13,60 @@ NUM_ARGS=@$NUM_ARGS+1
 @ifdef $3
 NUM_ARGS=@$NUM_ARGS+1
 @endif
-;
+
 @ifneq "$NUM_ARGS" "3"
 #NOTE: This script requires a name, login and handle.
 @else
 ERROR=
-;
+
 USER_NAME=$1
 USER_LOGIN=$2
 USER_HANDLE=$3
 USER_TEMPLATE=$4
 PASSWORD=$5
-;
+
 ; NOTE: If not wanting to use
 ; a template but is requiring
 ; a password argument then is
 ; supporting a "@null" value.
-@ifeq "$USER_TEMPLATE" "@null"
-USER_TEMPLATE=
-@endif
-;
+   @ifeq "$USER_TEMPLATE" "@null"
+   USER_TEMPLATE=
+   @endif
+
 <check_system_identity.cin
-;
-@ifdef $ERROR
-#Error: $ERROR
-@else
-;
-.system_variable @storage
-STORAGE=$OUTPUT
-;
-@ifeq "$STORAGE" ""
-#Error: No default storage found.
-@else
-.storage_init $STORAGE
-@ifndef $ERROR
-;
-@retain *
-<$STORAGE.user_information.vars.lst
-;
-.identity -raw
-SERVER_ID=$OUTPUT
-;
-@ifndef $PASSWORD
-PASSWORD=@password:Enter password:
-@endif
-;
-.crypto_hash -x=! $SERVER_ID$PASSWORD$USER_LOGIN -u=$SERVER_ID$PASSWORD$USER_LOGIN
-.encrypt $OUTPUT
-PASSWORD=$OUTPUT
-;
-.pc admin @now $STORAGE $CLASS_NAME " $USER_TEMPLATE" "$FLD_NAME=$USER_NAME,$FLD_HANDLE=$USER_HANDLE,$FLD_USERNAME=$USER_LOGIN,$FLD_PASSWORD=$PASSWORD"
-;
-.storage_term
-@endif
-@endif
-@endif
-;
+
+   @ifdef $ERROR
+   #Error: $ERROR
+   @else
+
+   .system_variable @storage
+   STORAGE=$OUTPUT
+
+      @ifeq "$STORAGE" ""
+      #Error: No default storage found.
+      @else
+      .storage_init $STORAGE
+         @ifndef $ERROR
+
+         @retain *
+         <$STORAGE.user_information.vars.lst
+
+         .identity -raw
+         SERVER_ID=$OUTPUT
+
+            @ifndef $PASSWORD
+            PASSWORD=@password:Enter password:
+            @endif
+
+         .crypto_hash -x=! $SERVER_ID$PASSWORD$USER_LOGIN -u=$SERVER_ID$PASSWORD$USER_LOGIN
+         .encrypt $OUTPUT
+         PASSWORD=$OUTPUT
+
+         .pc admin @now $STORAGE $CLASS_NAME " $USER_TEMPLATE" "$FLD_NAME=$USER_NAME,$FLD_HANDLE=$USER_HANDLE,$FLD_USERNAME=$USER_LOGIN,$FLD_PASSWORD=$PASSWORD"
+
+         .storage_term
+         @endif
+      @endif
+   @endif
+
 @endif

@@ -1,33 +1,33 @@
 ; Copyright (c) 2023-2026 CIYAM Developers
-;
+
 ; Distributed under the MIT/X11 software license, please refer to the file license.txt
 ; in the root project directory or http://www.opensource.org/licenses/mit-license.php.
-;
+
 @ifndef $1
 #NOTE: This script requires the name of an encrypted storage for exporting its ODS DB.
 @else
 ENCRYPTED=@file:ciyam_server.sid
-;
-@ifdef $2
-PASSWORD=$2
-@else
-PASSWORD=@password:Enter Password to unlock identity:
-@endif
-;
+
+   @ifdef $2
+   PASSWORD=$2
+   @else
+   PASSWORD=@password:Enter Password to unlock identity:
+   @endif
+
 .system_variable @storage
 STORAGE=$OUTPUT
-;
+
 .=decrypt -harden_key -pwd_and_data "$PASSWORD $ENCRYPTED"
-@ifndef $ERROR
-.=crypto_seed "$OUTPUT"
-.=crypto_hash "$OUTPUT"
-.=crypto_hash "$OUTPUT$STORAGE"
-PASSWORD=$OUTPUT
-;
-~echo $~PASSWORD | xclip
-#(password is on the clipboard)
-;
-~./ods_fsed -quiet -p "-exec=export $1" $1
-~echo "" | xclip
-@endif
+   @ifndef $ERROR
+   .=crypto_seed "$OUTPUT"
+   .=crypto_hash "$OUTPUT"
+   .=crypto_hash "$OUTPUT$STORAGE"
+   PASSWORD=$OUTPUT
+
+   ~echo $~PASSWORD | xclip
+   #(password is on the clipboard)
+
+   ~./ods_fsed -quiet -p "-exec=export $1" $1
+   ~echo "" | xclip
+   @endif
 @endif
