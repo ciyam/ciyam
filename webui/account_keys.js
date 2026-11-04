@@ -327,6 +327,8 @@ function keys_clear( )
    document.getElementById( "keys_room_list" ).replaceChildren( );
 
    g_keys_room_names = null;
+   g_keys_room_names_reading = false;
+   g_keys_room_names_reads++;
 
    keys_busy( "" );
    keys_contacts_busy( "" );
@@ -957,8 +959,11 @@ async function keys_scan_picture( input )
    await keys_add_contact( );
 }
 
-// NOTE: The rooms' names by number, from the listing the chat reads ("keys_room_names( )") - null until read.
+// NOTE: The rooms' names by number, from the listing the chat reads ("keys_room_names( )") - null until read, false if it could not
+// be read. A read answered after the page was cleared (signed out, say) is not kept - its names may be the last account's (found by
+// review, 2026-11-04).
 var g_keys_room_names = null;
+var g_keys_room_names_reads = 0;
 
 // NOTE: Which rooms have a key kept with these - each by its name, its number under it ("room_key_rows( )"), drawn with the numbers
 // alone at once and again once the names are read. Made and removed in the chat ("room_keys_text( )").
@@ -977,7 +982,12 @@ function keys_draw_rooms( )
       name.className = "account-room-name";
       number.className = "account-room-number";
 
-      name.textContent = ( row.name !== "" ) ? row.name : ( ( g_keys_room_names === null ) ? "…" : "Not one of your rooms now" );
+      if( row.name !== "" )
+         name.textContent = row.name;
+      else if( g_keys_room_names === null )
+         name.textContent = "…";
+      else
+         name.textContent = ( g_keys_room_names === false ) ? "Its name could not be read" : "Not one of your rooms now";
       number.textContent = "#" + row.room;
 
       item.appendChild( name );
@@ -1001,20 +1011,26 @@ async function keys_room_names( )
 
    g_keys_room_names_reading = true;
 
+   var reads = g_keys_room_names_reads;
    var response = await request( function( done ) { return ciyam.fetch_messages( "0000000", "", done ); } );
+
+   if( reads !== g_keys_room_names_reads )
+      return;
 
    g_keys_room_names_reading = false;
 
    var result = parse_fetch_response( response );
 
    if( ( result.error !== "" ) || is_error_response( response ) )
-      return;
+      g_keys_room_names = false;
+   else
+   {
+      var names = { };
 
-   var names = { };
+      result.rooms.forEach( function( entry ) { names[ entry.room ] = entry.name || ""; } );
 
-   result.rooms.forEach( function( entry ) { names[ entry.room ] = entry.name || ""; } );
-
-   g_keys_room_names = names;
+      g_keys_room_names = names;
+   }
 
    if( g_keys !== null )
       keys_draw_rooms( );
@@ -1120,7 +1136,7 @@ async function keys_add_contact( )
    {
       document.getElementById( "keys_add_key" ).value = "";
 
-      keys_scan_status( contact.name + " added - their messages to you and yours to them are encrypted now." );
+      keys_scan_status( contact.name + " added - once they have added you too, your direct messages are encrypted." );
    }
 }
 
