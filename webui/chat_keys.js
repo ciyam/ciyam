@@ -1416,7 +1416,8 @@ var g_owner_key_looked = { };
 var g_owner_key_unopened = { };
 
 // NOTE: The sealed messages "sender" posted in direct message "dm_room", read quietly from the start and opened with "secret" - as
-// { opened: [ { sender, text } ], failed: <how many would not open> }, or null if it could not be read (looked for again later).
+// { opened: [ { sender, text } ], failed: <how many would not open>, newest_failed: <the newest would not> }, or null if it could
+// not be read (looked for again later).
 async function chat_dm_opened( dm_room, sender, secret )
 {
    var response = null;
@@ -1440,6 +1441,7 @@ async function chat_dm_opened( dm_room, sender, secret )
 
    var opened = [ ];
    var failed = 0;
+   var newest_failed = false;
    var sealer = ciyam_module_named( "secure_message" );
 
    for( var i = 0; i < result.messages.length; i++ )
@@ -1468,9 +1470,11 @@ async function chat_dm_opened( dm_room, sender, secret )
          opened.push( { sender: message.sender, text: plain } );
       else
          failed++;
+
+      newest_failed = ( plain === null );
    }
 
-   return { opened: opened, failed: failed };
+   return { opened: opened, failed: failed, newest_failed: newest_failed };
 }
 
 // NOTE: The open room, if it has no key here and is someone else's - their direct message read quietly, their sealed messages
@@ -1526,8 +1530,9 @@ async function chat_look_for_owner_key( member_only )
       return;
 
    // NOTE: Their messages there would not open (Damon, 2026-11-03: a key sent, and never added) - the public key each keeps for the
-   // other is not the other's now, one of them having made new keys since. Said once a sign in for the room.
-   if( ( key === "" ) && ( found.failed > 0 ) && ( g_room === room ) && !g_owner_key_unopened[ room ] )
+   // other is not the other's now, one of them having made new keys since. Said once a sign in for the room, and only if the newest
+   // would not - older ones sealed before new keys were exchanged never will (found by review, 2026-11-04).
+   if( ( key === "" ) && found.newest_failed && ( g_room === room ) && !g_owner_key_unopened[ room ] )
    {
       g_owner_key_unopened[ room ] = true;
 
@@ -1626,6 +1631,10 @@ async function chat_owner_send_keys( )
 
          if( read !== g_chat_keys_read )
             return;
+
+         // NOTE: Not sent - tried again the next time this is called, as if never looked at (found by review, 2026-11-04).
+         if( how === "failed" )
+            delete g_owner_keys_checked[ room + "|" + person ];
 
          outcomes.push( { name: person, how: how } );
       }
