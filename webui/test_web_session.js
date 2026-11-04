@@ -92,7 +92,9 @@ const unlock_keys_create_cmd = "unlock-keys|create";
 const unlock_keys_employ_cmd = "unlock-keys|employ";
 
 const storage_modules_review_cmd = "storage-modules|review";
+
 const storage_instances_review_cmd = "storage-instances|review";
+const storage_instances_update_cmd = "storage-instances|update";
 
 const error_prefix = "Error: ";
 
@@ -1073,8 +1075,9 @@ async function do_fetch( )
          var request_type = "GET";
 
          if( ( cmd == users_update_cmd )
-          || ( cmd == messages_update_cmd ) || ( cmd == javascripts_retain_cmd )
-          || ( cmd == stylesheets_retain_cmd ) || ( cmd == webcmdlists_retain_cmd ) || ( cmd == user_keys_retain_cmd ) )
+          || ( cmd == messages_update_cmd ) || ( cmd == user_keys_retain_cmd )
+          || ( cmd == javascripts_retain_cmd ) || ( cmd == stylesheets_retain_cmd )
+          || ( cmd == webcmdlists_retain_cmd ) || ( cmd == storage_instances_update_cmd ) )
             request_type = "PUT";
          else if( ( cmd == "" ) || ( cmd == users_create_cmd )
           || ( cmd == messages_create_cmd ) || ( cmd == storages_attach_cmd )
@@ -1118,7 +1121,8 @@ async function do_fetch( )
           || ( cmd == storages_attach_cmd ) || ( cmd == storages_review_cmd )
           || ( cmd == unlock_keys_create_cmd ) || ( cmd == unlock_keys_employ_cmd )
           || ( cmd == javascripts_review_cmd ) || ( cmd == stylesheets_review_cmd )
-          || ( cmd == webcmdlists_review_cmd ) || ( cmd == storage_modules_review_cmd ) || ( cmd == storage_instances_review_cmd ) )
+          || ( cmd == webcmdlists_review_cmd ) || ( cmd == storage_modules_review_cmd )
+          || ( cmd == storage_instances_review_cmd ) || ( cmd == storage_instances_update_cmd ) )
          {
             if( ( cmd == users_create_cmd ) || ( cmd == unlock_keys_create_cmd ) )
                has_cmd_options = true;
@@ -1126,8 +1130,9 @@ async function do_fetch( )
             {
                has_name_suffix = true;
 
-               if( ( cmd == logs_review_cmd ) || ( cmd == users_update_cmd ) || ( cmd == messages_create_cmd )
-                || ( cmd == messages_review_cmd ) || ( cmd == messages_update_cmd ) || ( cmd == storage_instances_review_cmd ) )
+               if( ( cmd == logs_review_cmd ) || ( cmd == users_update_cmd )
+                || ( cmd == messages_create_cmd ) || ( cmd == messages_review_cmd ) || ( cmd == messages_update_cmd )
+                || ( cmd == storage_instances_review_cmd ) || ( cmd == storage_instances_update_cmd ) )
                   has_cmd_options = true;
             }
 
