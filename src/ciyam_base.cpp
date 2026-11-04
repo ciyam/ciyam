@@ -6118,7 +6118,7 @@ void set_identity( const string& info, const char* p_encrypted_sid )
                {
                   file_remove( key_file_name );
 
-                  TRACE_LOG( TRACE_MINIMAL, "*** system identity unlock occurred ***" );
+                  TRACE_LOG( TRACE_MINIMAL, "*** system identity unlock has occurred ***" );
 
                   if( !g_default_storage.empty( ) )
                   {
@@ -6227,7 +6227,7 @@ void set_identity( const string& info, const char* p_encrypted_sid )
          else if( !is_external_sid )
          {
             if( file_exists( c_ciyam_server_sid_file ) )
-               TRACE_LOG( TRACE_MINIMAL, "*** system identity change occurred ***" );
+               TRACE_LOG( TRACE_MINIMAL, "*** system identity change has occurred ***" );
 
             write_file( c_ciyam_server_sid_file, ( unsigned char* )p_encrypted_sid, strlen( p_encrypted_sid ) );
 
