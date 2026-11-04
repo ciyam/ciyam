@@ -1,66 +1,66 @@
 ; Copyright (c) 2017-2026 CIYAM Developers
-;
+
 ; Distributed under the MIT/X11 software license, please refer to the file license.txt
 ; in the root project directory or http://www.opensource.org/licenses/mit-license.php.
-;
+
 @ifdef $CIYAM_CREATE_DB_NAMES
 .session_variable @force_db_create $CIYAM_CREATE_DB_NAMES
 @endif
-;
+
 REBUILD=-rebuild
-;
+
 @ifdef $CIYAM_STOP_REGEX
 REBUILD=-stop_regex="$CIYAM_STOP_REGEX" $REBUILD
 @endif
-;
+
 @ifdef $CIYAM_TRACE_INFO
 REBUILD=-trace=$CIYAM_TRACE_INFO $REBUILD
 @endif
-;
+
 @ifneq "$CIYAM_STORAGE" "Meta"
 STORAGE_LOG_FILE=@files::$CIYAM_STORAGE.log
-;
-@ifdef $STORAGE_LOG_FILE
-.storage_init -admin $CIYAM_STORAGE
-;
+
+   @ifdef $STORAGE_LOG_FILE
+   .storage_init -admin $CIYAM_STORAGE
+
+      @ifndef $ERROR
+
+         @ifndef $CIYAM_SKIP_EXPORT_DATA
+
+            @ifdef $CIYAM_OUTPUT_COMMANDS
+            storage_export_data
+            @else
+            .storage_export_data
+            @endif
+
+         @endif
+
+      .storage_term
+      @endif
+   @endif
+
+@endif
+
 @ifndef $ERROR
-;
-@ifndef $CIYAM_SKIP_EXPORT_DATA
-;
-@ifdef $CIYAM_OUTPUT_COMMANDS
-storage_export_data
-@else
-.storage_export_data
-@endif
-;
-@endif
-;
-.storage_term
-@endif
-@endif
-;
-@endif
-;
-@ifndef $ERROR
-;
-@ifdef $CIYAM_LOG_RESTORE
-.system_variable @log_restore 1
-@endif
-;
-@ifndef $1
-@ifdef $CIYAM_OUTPUT_COMMANDS
-#storage_restore $REBUILD $CIYAM_STORAGE
-@endif
-.storage_restore $REBUILD $CIYAM_STORAGE
-@else
-@ifdef $CIYAM_OUTPUT_COMMANDS
-#storage_restore $REBUILD $1 $CIYAM_STORAGE
-@endif
-.storage_restore $REBUILD $1 $CIYAM_STORAGE
-@endif
-;
-@ifdef $CIYAM_LOG_RESTORE
-.system_variable @log_restore ""
-@endif
-;
+
+   @ifdef $CIYAM_LOG_RESTORE
+   .system_variable @log_restore 1
+   @endif
+
+   @ifndef $1
+      @ifdef $CIYAM_OUTPUT_COMMANDS
+      #storage_restore $REBUILD $CIYAM_STORAGE
+      @endif
+   .storage_restore $REBUILD $CIYAM_STORAGE
+   @else
+      @ifdef $CIYAM_OUTPUT_COMMANDS
+      #storage_restore $REBUILD $1 $CIYAM_STORAGE
+      @endif
+   .storage_restore $REBUILD $1 $CIYAM_STORAGE
+   @endif
+
+   @ifdef $CIYAM_LOG_RESTORE
+   .system_variable @log_restore ""
+   @endif
+
 @endif

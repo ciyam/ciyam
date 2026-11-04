@@ -1,17 +1,17 @@
 ; Copyright (c) 2017-2026 CIYAM Developers
-;
+
 ; Distributed under the MIT/X11 software license, please refer to the file license.txt
 ; in the root project directory or http://www.opensource.org/licenses/mit-license.php.
-;
+
 ERROR=
-;
+
 .storage_init -admin Meta
 @ifndef $ERROR
 .storage_term
 .storage_init Meta
-@ifneq "$PROGRESS_PIPE" ""
-.session_variable @progress_pipe $PROGRESS_PIPE
-@endif
+   @ifneq "$PROGRESS_PIPE" ""
+   .session_variable @progress_pipe $PROGRESS_PIPE
+   @endif
 .pe admin 20111102 Meta Workgroup guests -101410
 .storage_term
 .system_variable @backup_needed ""
@@ -19,11 +19,11 @@ ERROR=
 .system_variable @prepare_backup_needed ""
 .system_variable @complete_restore_needed ""
 @endif
-;
+
 @ifdef $ERROR
-@ifneq "$ERROR_FILE" ""
->$ERROR_FILE
-#Error: $ERROR
->
-@endif
+   @ifneq "$ERROR_FILE" ""
+   >$ERROR_FILE
+   #Error: $ERROR
+   >
+   @endif
 @endif

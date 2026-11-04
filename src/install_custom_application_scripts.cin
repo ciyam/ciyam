@@ -1,36 +1,36 @@
 ; Copyright (c) 2024-2026 CIYAM Developers
-;
+
 ; Distributed under the MIT/X11 software license, please refer to the file license.txt
 ; in the root project directory or http://www.opensource.org/licenses/mit-license.php.
-;
+
 .storage_init Meta
 @ifndef $ERROR
-;
+
 .session_variable @set commence
-;
+
 .session_variable @single_string_response 1
-;
+
 .pf Meta Package_Type "" Name -min
 .session_variable @set "~$OUTPUT"
-;
+
 .session_variable @set ?Group,Blog,Forum,Message
-@ifeq "$OUTPUT" "1"
-SCRIPT_NAME=create_ciyam_blockchain_application
-;
-VERSION=@file:~grep "CIYAM_VER=" $SCRIPT_NAME.cin 2> /dev/null
-;
-@ifdef $VERSION
-VERSION=%VERSION:1%
-VERSION=@repstr:CIYAM_VER=/:$VERSION
-@endif
-;
-@ifndef $VERSION
-VERSION=0.1
-@endif
-;
-.pc admin @now 100 138100 " " "138101=CIYAM Blockchain Application,138102=$VERSION,138103=$SCRIPT_NAME,138105=Blog\\,Forum\\,Message,302840=Group"
-@endif
-;
+   @ifeq "$OUTPUT" "1"
+   SCRIPT_NAME=create_ciyam_blockchain_application
+
+   VERSION=@file:~grep "CIYAM_VER=" $SCRIPT_NAME.cin 2> /dev/null
+
+      @ifdef $VERSION
+      VERSION=%VERSION:1%
+      VERSION=@repstr:CIYAM_VER=/:$VERSION
+      @endif
+
+      @ifndef $VERSION
+      VERSION=0.1
+      @endif
+
+   .pc admin @now 100 138100 " " "138101=CIYAM Blockchain Application,138102=$VERSION,138103=$SCRIPT_NAME,138105=Blog\\,Forum\\,Message,302840=Group"
+   @endif
+
 .session_variable @set complete
-;
+
 @endif
