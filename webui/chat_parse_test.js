@@ -1133,7 +1133,8 @@ check( "- not encrypted, and what would encrypt it", [
  cp.encryption_badge( "not encrypted - add verify-a's contact code to Contacts on My account", [ "verify-a" ], "dm" ).detail,
  cp.encryption_badge( "not encrypted - set up your keys on My account", [ ], "room", false ).detail,
  cp.encryption_badge( "not encrypted - your keys could not be read just now; reload to try again", [ ], "room", false ).detail ],
- [ "Add verify-a's contact code to Contacts on My account.", "Set up your keys on My account.", "Your keys could not be read just now; reload to try again." ] );
+ [ "Add verify-a's contact code to Contacts on My account.", "Set up your keys on My account.",
+ "Your keys could not be read just now; reload to try again." ] );
 check( "- a room with no key: for its owner, for anyone else, and a group's direct message", [
  cp.encryption_badge( "not encrypted - encrypt it in Chat Details", [ ], "room", true ),
  cp.encryption_badge( "not encrypted - encrypt it in Chat Details", [ ], "room", false ).detail,
@@ -1162,7 +1163,8 @@ check( "- and what came of it", [ cp.room_key_sent_text( [ { name: "tester-1", h
  cp.room_key_sent_text( [ { name: "a", how: "no_key" }, { name: "b", how: "no_key" }, { name: "c", how: "request" }, { name: "d", how: "failed" } ] ),
  cp.room_key_sent_text( [ ] ) ],
  [ "Sent to tester-1. Sent to tester-2 once they accept your direct message.",
- "Not sent to a and b - add their contact codes to Contacts on My account first. Not sent to c - accept their direct message first. Could not send it to d - try again.",
+ "Not sent to a and b - add their contact codes to Contacts on My account first. Not sent to c - accept their direct message first."
+ + " Could not send it to d - try again.",
  "No one else has joined yet - each is sent it as they join, or when you next open this room." ] );
 check( "- a message too long to encrypt: over 1,000 bytes", [ cp.sealed_too_long( "a".repeat( 1000 ) ), cp.sealed_too_long( "a".repeat( 1001 ) ),
  cp.sealed_too_long( "ä".repeat( 500 ) ), cp.sealed_too_long( "ä".repeat( 501 ) ) ], [ false, true, false, true ] );

@@ -5951,15 +5951,20 @@ function do_close_poll_dialog( )
    document.getElementById( "poll_dialog" ).hidden = true;
 }
 
+// NOTE: The first of the poll's options left empty, or the first of them.
+function poll_option_needed( )
+{
+   var inputs = Array.from( document.querySelectorAll( "#poll_options .chat-poll-option-input" ) );
+   var empty = inputs.filter( function( input ) { return input.value.trim( ) === ""; } );
+
+   return empty[ 0 ] || inputs[ 0 ] || null;
+}
+
 // NOTE: The poll dialog's parts and where each says what it lacks ("poll_field_problems( )"), in the order shown - with the field
 // that is marked, and focused when it is the first.
 const c_poll_parts = [
    { key: "question", error: "poll_question_error", field: function( ) { return document.getElementById( "poll_question" ); } },
-   { key: "options", error: "poll_options_error", field: function( )
-     {
-        return Array.from( document.querySelectorAll( "#poll_options .chat-poll-option-input" ) ).filter( function( input )
-         { return input.value.trim( ) === ""; } )[ 0 ] || document.querySelector( "#poll_options .chat-poll-option-input" );
-     } },
+   { key: "options", error: "poll_options_error", field: poll_option_needed },
    { key: "voters", error: "poll_voters_error", field: function( ) { return document.getElementById( "poll_picker_add" ); } },
    { key: "name", error: "poll_name_error", field: function( ) { return document.getElementById( "poll_room_name" ); } },
    { key: "closes", error: "poll_closes_error", unmarked: true,
