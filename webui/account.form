@@ -372,9 +372,11 @@ http://www.opensource.org/licenses/mit-license.php.
 
                <div class="account-column-side">
                   <!-- NOTE: Room keys (2026-10-26) - kept with the keys, by room number; each is made, shared and removed in the chat,
-                       under Room Details. Shown once the keys are here. -->
+                       under Room Details. Shown once the keys are here. Listed by the rooms' names, each number under its name (Damon,
+                       2026-11-04: only the numbers were said) - "keys_draw_rooms( )". -->
                   <div class="account-card account-form account-keys-rooms" id="keys_rooms_part" hidden>
                      <h2>Room keys</h2>
+                     <ul class="account-keys-list account-room-keys" id="keys_room_list"></ul>
                      <p class="account-lede" id="keys_rooms"></p>
                   </div>
                </div>

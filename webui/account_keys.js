@@ -324,6 +324,9 @@ function keys_clear( )
    document.getElementById( "keys_device_part" ).hidden = true;
    document.getElementById( "keys_device_row" ).hidden = false;
    document.getElementById( "keys_rooms" ).textContent = "";
+   document.getElementById( "keys_room_list" ).replaceChildren( );
+
+   g_keys_room_names = null;
 
    keys_busy( "" );
    keys_contacts_busy( "" );
@@ -954,10 +957,67 @@ async function keys_scan_picture( input )
    await keys_add_contact( );
 }
 
-// NOTE: Which rooms have a key kept with these ("room_keys_text( )") - made and removed in the chat.
+// NOTE: The rooms' names by number, from the listing the chat reads ("keys_room_names( )") - null until read.
+var g_keys_room_names = null;
+
+// NOTE: Which rooms have a key kept with these - each by its name, its number under it ("room_key_rows( )"), drawn with the numbers
+// alone at once and again once the names are read. Made and removed in the chat ("room_keys_text( )").
 function keys_draw_rooms( )
 {
+   var list = document.getElementById( "keys_room_list" );
+
+   list.replaceChildren( );
+
+   room_key_rows( g_keys.rooms, g_keys_room_names || { } ).forEach( function( row )
+   {
+      var item = document.createElement( "li" );
+      var name = document.createElement( "span" );
+      var number = document.createElement( "span" );
+
+      name.className = "account-room-name";
+      number.className = "account-room-number";
+
+      name.textContent = ( row.name !== "" ) ? row.name : ( ( g_keys_room_names === null ) ? "…" : "Not one of your rooms now" );
+      number.textContent = "#" + row.room;
+
+      item.appendChild( name );
+      item.appendChild( number );
+      list.appendChild( item );
+   } );
+
    document.getElementById( "keys_rooms" ).textContent = room_keys_text( g_keys.rooms );
+
+   if( ( g_keys_room_names === null ) && ( list.children.length > 0 ) )
+      keys_room_names( );
+}
+
+// NOTE: The rooms' names read from the lobby's listing, as the chat reads it - once a showing of the page; drawn again once known.
+var g_keys_room_names_reading = false;
+
+async function keys_room_names( )
+{
+   if( g_keys_room_names_reading )
+      return;
+
+   g_keys_room_names_reading = true;
+
+   var response = await request( function( done ) { return ciyam.fetch_messages( "0000000", "", done ); } );
+
+   g_keys_room_names_reading = false;
+
+   var result = parse_fetch_response( response );
+
+   if( ( result.error !== "" ) || is_error_response( response ) )
+      return;
+
+   var names = { };
+
+   result.rooms.forEach( function( entry ) { names[ entry.room ] = entry.name || ""; } );
+
+   g_keys_room_names = names;
+
+   if( g_keys !== null )
+      keys_draw_rooms( );
 }
 
 // NOTE: The keys as the node has them now, or null - another browser, or the chat with a room key, may have changed them since

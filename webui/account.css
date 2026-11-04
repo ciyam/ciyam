@@ -1230,6 +1230,27 @@ button.account-back,
    border-radius: var(--radius-sm);
 }
 
+/* NOTE: Room keys - each room's name, its number under it. */
+.account-room-keys li
+{
+   flex-direction: column;
+   align-items: flex-start;
+   gap: 2px;
+}
+
+.account-room-name
+{
+   font-weight: 600;
+   overflow-wrap: anywhere;
+}
+
+.account-room-number
+{
+   font-family: var(--font-family-chat-mono);
+   font-size: var(--font-size-chat-meta);
+   color: var(--color-chat-text-secondary);
+}
+
 .account-keys-list b
 {
    flex: none;

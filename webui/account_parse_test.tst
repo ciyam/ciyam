@@ -90,6 +90,7 @@ ok   - not a code, your own key or name, one already kept, or theirs under anoth
 ok   the keys kept, by name, shortened
 ok   My account's sections, in order
 ok   - the one an address asks for, else the first
-ok   the room keys kept - none, one, or several in order
+ok   the room keys kept - said under them, or none yet
+ok   - listed by name, then number; one not in the listing last, by number (Damon, 2026-11-04)
 
 All checks passed.

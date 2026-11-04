@@ -244,11 +244,13 @@ check( "My account's sections, in order", ap.account_sections( ).map( function( 
  [ "profile", "keys", "contacts", "devices", "notify", "password" ] );
 check( "- the one an address asks for, else the first", [ ap.account_section( "#devices" ), ap.account_section( "keys" ),
  ap.account_section( "#mine" ), ap.account_section( "" ), ap.account_section( "#keys=00ff" ) ], [ "devices", "keys", "profile", "profile", "profile" ] );
-check( "the room keys kept - none, one, or several in order", [ ap.room_keys_text( { } ), ap.room_keys_text( { "0000069": "ab" } ),
- ap.room_keys_text( { "0000072": "cd", "0000069": "ab", "0000070": "ef" } ) ], [
+check( "the room keys kept - said under them, or none yet", [ ap.room_keys_text( { } ), ap.room_keys_text( { "0000069": "ab" } ) ], [
  "None yet. A room gets one in the chat as it is made, and its owner sends it to each member.",
- "Kept for room #0000069. Made, shared and removed in the chat, with Room key in Room Details.",
- "Kept for rooms #0000069, #0000070 and #0000072. Made, shared and removed in the chat, with Room key in Room Details." ] );
+ "Made, shared and removed in the chat, with Room key in Room Details." ] );
+check( "- listed by name, then number; one not in the listing last, by number (Damon, 2026-11-04)", ap.room_key_rows(
+ { "0000072": "cd", "0000069": "ab", "0000070": "ef", "0000071": "gh", "0000068": "ij", "bad": "x" },
+ { "0000072": "lunch", "0000069": "Budget", "0000070": "Lunch" } ), [ { room: "0000069", name: "Budget" }, { room: "0000070", name: "Lunch" },
+ { room: "0000072", name: "lunch" }, { room: "0000068", name: "" }, { room: "0000071", name: "" } ] );
 
 console.log( "" );
 console.log( failures === 0 ? "All checks passed." : ( failures + " check(s) FAILED." ) );

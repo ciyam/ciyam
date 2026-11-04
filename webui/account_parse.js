@@ -444,20 +444,36 @@ function account_section( hash )
    return c_account_sections.some( function( section ) { return section.key === wanted; } ) ? wanted : c_account_sections[ 0 ].key;
 }
 
-// NOTE: The room keys kept with the keys ("rooms", by room number) - which rooms, for Your keys; each is made, shared and
-// removed in the chat.
+// NOTE: The room keys kept with the keys ("rooms", by room number) - said under the list of them ("room_key_rows( )"); each is
+// made, shared and removed in the chat.
 function room_keys_text( rooms )
 {
-   var numbers = Object.keys( rooms || { } ).filter( function( room ) { return /^[0-9]{7}$/.test( room ); } ).sort( );
+   var numbers = Object.keys( rooms || { } ).filter( function( room ) { return /^[0-9]{7}$/.test( room ); } );
 
    if( numbers.length === 0 )
       return "None yet. A room gets one in the chat as it is made, and its owner sends it to each member.";
 
-   var named = numbers.map( function( room ) { return "#" + room; } );
-   var listed = ( named.length === 1 ) ? named[ 0 ] : named.slice( 0, -1 ).join( ", " ) + " and " + named[ named.length - 1 ];
+   return "Made, shared and removed in the chat, with Room key in Room Details.";
+}
 
-   return "Kept for " + ( ( named.length === 1 ) ? "room " : "rooms " ) + listed + ". Made, shared and removed in the chat,"
-    + " with Room key in Room Details.";
+// NOTE: The rooms with a key kept, as Your keys lists them (Damon, 2026-11-04: only their numbers were said) - each { room, name },
+// by name and then number; "names" the rooms' names by number from the listing, "" for one not in it (left since, say), last.
+function room_key_rows( rooms, names )
+{
+   var known = names || { };
+
+   return Object.keys( rooms || { } ).filter( function( room ) { return /^[0-9]{7}$/.test( room ); } ).map( function( room )
+   {
+      return { room: room, name: known.hasOwnProperty( room ) ? String( known[ room ] ) : "" };
+   } ).sort( function( a, b )
+   {
+      if( ( a.name === "" ) !== ( b.name === "" ) )
+         return ( a.name === "" ) ? 1 : -1;
+
+      var by_name = a.name.toLowerCase( ).localeCompare( b.name.toLowerCase( ) );
+
+      return ( by_name !== 0 ) ? by_name : ( ( a.room < b.room ) ? -1 : 1 );
+   } );
 }
 
 // NOTE: Keys as the last step of joining (Damon, 2026-10-28) - after "Write these down", in the same card: what they are for, then
@@ -479,6 +495,7 @@ if( typeof module !== "undefined" )
       keys_step_text: keys_step_text,
       account_section: account_section,
       room_keys_text: room_keys_text,
+      room_key_rows: room_key_rows,
       parse_devices: parse_devices,
       device_choice: device_choice,
       short_device: short_device,
