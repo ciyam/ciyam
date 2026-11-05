@@ -585,6 +585,10 @@ ok   the owner's key received - its receipt there, the message carrying that key
 ok   - a receipt for another key: this one sent, waiting to be added
 ok   - a new key since: to send
 ok   - a receipt only from the member, not from the owner
+ok   a member's state with the room key, for the owner
+ok   the owner's plain note to a member without their contact code
+ok   over a member's message box without the key - accept it, or exchange codes first
+ok   under the owner's room in the rail - members without the key, as last found
 ok   a key note in words - never the key - to its sender and to its member
 ok   - its receipt, both ways; any other message not one
 ok   - received, its key message already deleted: nothing left to delete

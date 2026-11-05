@@ -730,6 +730,56 @@ button.chat-avatar:hover
 }
 
 /* NOTE: What came of sending the key - no gap while there is nothing to say. */
+/* NOTE: Each member and the room key, for the owner ("chat_render_member_key_states( )") - a dot coloured by where they stand. */
+.chat-room-key-members
+{
+   display: flex;
+   flex-direction: column;
+   gap: 4px;
+   margin: 0;
+   padding: 0;
+   list-style: none;
+   font-size: var(--font-size-chat-small);
+}
+
+.chat-room-key-members[hidden]
+{
+   display: none;
+}
+
+.chat-room-key-member
+{
+   display: flex;
+   flex-wrap: wrap;
+   align-items: baseline;
+   gap: 4px 8px;
+}
+
+.chat-room-key-member::before
+{
+   content: "";
+   flex: none;
+   width: 7px;
+   height: 7px;
+   border-radius: 50%;
+   background: var(--color-chat-warning);
+}
+
+.chat-room-key-member.is-has::before
+{
+   background: var(--color-chat-online-text);
+}
+
+.chat-room-key-member-name
+{
+   font-weight: 600;
+}
+
+.chat-room-key-member-state
+{
+   color: var(--color-chat-text-secondary);
+}
+
 .chat-room-key-sent:empty
 {
    display: none;

@@ -1901,7 +1901,11 @@ function update_rail_item( node, item )
 
    var closing = ( ( close_state === "closing" ) || ( close_state === "closed" ) ) ? room_close_label( entry.closes ) : "";
 
-   set_text( room_sub, ( declined.length > 0 ) ? ( name_list( declined ) + " declined" ) : ( waiting ? "waiting for them to accept" : closing ) );
+   // NOTE: The owner's room with members still without its key, as last found - opening it passes the key on (Damon, 2026-11-05).
+   var keyless = owner_keyless_text( g_owner_key_states[ entry.room ] );
+
+   set_text( room_sub, ( declined.length > 0 ) ? ( name_list( declined ) + " declined" ) : ( waiting ? "waiting for them to accept"
+    : ( ( keyless !== "" ) ? keyless : closing ) ) );
 
    room_sub.hidden = ( room_sub.textContent === "" );
 
@@ -1938,6 +1942,10 @@ function select_room( room, token )
       do_abandon_edit( );
 
    close_react_menu( false );
+
+   // NOTE: A room made without keys is asked about again each time it is opened ("chat_offer_encrypt_room( )").
+   if( room !== g_room )
+      g_encrypt_offered = "";
 
    // NOTE: A message being scanned in is posted in the room it was scanned in, so it goes with it.
    if( !document.getElementById( "scan_dialog" ).hidden )
@@ -2104,9 +2112,29 @@ function show_encryption_action( )
    var action = ( g_room === "" ) ? null : encryption_action( chat_encryption_note( ) );
    var row = document.getElementById( "encryption_row_action" );
    var bar = document.getElementById( "composer_keys" );
+   var keyless = ( action === null ) && chat_member_keyless( );
 
    row.hidden = ( action === null );
-   bar.hidden = ( action === null ) || ( parse_dm_name( g_room_name ) === null ) || !!g_keys_offer_later[ g_room ];
+   bar.hidden = keyless ? false : ( ( action === null ) || ( parse_dm_name( g_room_name ) === null ) || !!g_keys_offer_later[ g_room ] );
+
+   // NOTE: In a room that is encrypted, a member without its key can't post (Damon, 2026-11-05) - said over the message box, with
+   // the way to the key: accepting it, or the contact codes it needs ("member_keyless_text( )").
+   document.getElementById( "composer_keys_later" ).hidden = keyless;
+
+   if( keyless )
+   {
+      var known = chat_has_owner_key( );
+
+      document.getElementById( "composer_keys_text" ).textContent = member_keyless_text( g_room_owner, known );
+      document.getElementById( "composer_keys_go" ).textContent = known ? "Accept the room key" : "Exchange contact codes";
+      document.getElementById( "composer_keys_go" ).dataset.keyless = known ? "accept" : "codes";
+
+      row.textContent = "";
+
+      return;
+   }
+
+   document.getElementById( "composer_keys_go" ).dataset.keyless = "";
 
    // NOTE: Emptied when hidden - its words would otherwise still be read as part of the row's.
    row.textContent = ( action !== null ) ? action.label : "";
@@ -2121,6 +2149,26 @@ function show_encryption_action( )
 // NOTE: As "Account settings" opens My account - in this tab, or its own with ctrl or cmd and click ("apps_go( )").
 function do_encryption_action( event )
 {
+   var keyless = document.getElementById( "composer_keys_go" ).dataset.keyless || "";
+
+   // NOTE: The room key asked about again now - "Not now" put away for this room ("chat_look_for_owner_key( )").
+   if( keyless === "accept" )
+   {
+      delete g_room_key_later[ g_room ];
+      delete g_owner_key_looked[ g_room ];
+
+      chat_look_for_owner_key( false );
+
+      return;
+   }
+
+   if( keyless === "codes" )
+   {
+      apps_go( "account", "#contacts", event );
+
+      return;
+   }
+
    var action = encryption_action( chat_encryption_note( ) );
 
    if( action !== null )
@@ -3738,8 +3786,11 @@ function on_messages_response( response, asked_for, replace, again )
 
       note_dm_joins( asked_for, result.messages, result.members );
 
-      // NOTE: Its key looked for in the direct message with its owner, if it has none here ("chat_look_for_owner_key( )") - or, in
-      // the owner's own room, sent to each member not given it yet, and again as someone joins ("chat_owner_send_keys( )").
+      // NOTE: Whether a member without the key can post here depends on what is in it ("chat_member_keyless( )").
+      show_encryption_action( );
+
+      // NOTE: Its key looked for in the room, if it has none here ("chat_look_for_owner_key( )") - or, in the owner's own room,
+      // passed to each member not given it yet, and again as someone joins ("chat_owner_send_keys( )").
       if( replace )
          chat_look_for_owner_key( );
       else if( result.messages.some( function( message ) { return ( message.kind === c_kind_system ) && message.event
@@ -7032,6 +7083,15 @@ async function do_send( )
    if( ( g_edit_unique !== "" ) && edit_unchanged( g_edit_original, text ) )
    {
       do_abandon_edit( );
+
+      return;
+   }
+
+   // NOTE: A member without the key of a room that is encrypted - nothing sent in the clear there (Damon, 2026-11-05). The text is
+   // left in the box, and the bar over it says what is wanted ("chat_member_keyless( )").
+   if( chat_member_keyless( ) )
+   {
+      show_alert( "This room is encrypted - you can post here once you have its room key.", "is-error" );
 
       return;
    }

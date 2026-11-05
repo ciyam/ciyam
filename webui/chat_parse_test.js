@@ -1194,6 +1194,17 @@ check( "- a new key since: to send", cp.owner_key_delivery( delivered, "damon", 
  { state: "send", remove: [ ] } );
 check( "- a receipt only from the member, not from the owner", cp.owner_key_delivery( [ { sender: "damon", text: "Room key for #0000124"
  + " added (0d0d0d0d).", unique: "u1" } ], "damon", "tester-1", "0000124", "d".repeat( 32 ), "0d0d0d0d" ), { state: "send", remove: [ ] } );
+check( "a member's state with the room key, for the owner", [ "has", "passed", "needs_codes", "failed", "other" ].map( cp.member_key_state_text ),
+ [ "has the key", "passed the key - not yet accepted", "needs your contact codes - exchange them on My account",
+ "the key could not be passed - opening the room tries again", "" ] );
+check( "the owner's plain note to a member without their contact code", cp.keyless_note_text( "damon" ),
+ "This room is encrypted with a room key - exchange contact codes with damon to be given it." );
+check( "over a member's message box without the key - accept it, or exchange codes first", [ cp.member_keyless_text( "damon", true ),
+ cp.member_keyless_text( "damon", false ) ], [ "This room is encrypted. Accept the room key from damon to read it and post here.",
+ "This room is encrypted. To get its key, you and damon need each other's contact codes." ] );
+check( "under the owner's room in the rail - members without the key, as last found", [ cp.owner_keyless_text( { a: "has", b: "passed" } ),
+ cp.owner_keyless_text( { a: "needs_codes", b: "passed" } ), cp.owner_keyless_text( { a: "has" } ), cp.owner_keyless_text( undefined ) ],
+ [ "1 member without the room key", "2 members without the room key", "", "" ] );
 check( "a key note in words - never the key - to its sender and to its member", [ cp.key_note_text( "0000124#" + "d".repeat( 32 ), "damon",
  "damon", "tester-1" ), cp.key_note_text( "0000124#" + "d".repeat( 32 ), "damon", "tester-1", "" ) ],
  [ "The room key, passed to tester-1", "The room key for this room, from damon" ] );

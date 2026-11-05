@@ -2394,6 +2394,47 @@ function encryption_action( note )
    return null;
 }
 
+// NOTE: A member's state with the room key, for the owner (Damon, 2026-11-05) - as "chat_owner_send_keys( )" found it.
+function member_key_state_text( state )
+{
+   return {
+      has: "has the key",
+      passed: "passed the key - not yet accepted",
+      needs_codes: "needs your contact codes - exchange them on My account",
+      failed: "the key could not be passed - opening the room tries again" }[ state ] || "";
+}
+
+// NOTE: The owner's plain note to a member without their contact code (Damon, 2026-11-05) - the room is encrypted, and what its key
+// needs; the member's chat knows the room is encrypted by it ("chat_member_keyless( )").
+function keyless_note_text( owner )
+{
+   return "This room is encrypted with a room key - exchange contact codes with " + owner + " to be given it.";
+}
+
+// NOTE: Over a member's message box in an encrypted room without its key (Damon, 2026-11-05) - "known" whether the owner's contact
+// code is here, so the key can be passed to them.
+function member_keyless_text( room_owner, known )
+{
+   var name = String( room_owner || "" ) || "the owner";
+
+   if( known )
+      return "This room is encrypted. Accept the room key from " + name + " to read it and post here.";
+
+   return "This room is encrypted. To get its key, you and " + name + " need each other's contact codes.";
+}
+
+// NOTE: Under an owner's room in the rail - how many of its members are still without its key, as last found ("states", each
+// "member_key_state_text( )"'s), or "" for none.
+function owner_keyless_text( states )
+{
+   var waiting = Object.keys( states || { } ).filter( function( name ) { return states[ name ] !== "has"; } ).length;
+
+   if( waiting === 0 )
+      return "";
+
+   return ( waiting === 1 ) ? "1 member without the room key" : waiting + " members without the room key";
+}
+
 // NOTE: Who a room's key is sent to - each other person once, in order; not "me".
 function room_key_recipients( names, me )
 {
@@ -5017,6 +5058,10 @@ if( typeof module !== "undefined" )
       room_key_receipt_text: room_key_receipt_text,
       room_key_receipt: room_key_receipt,
       key_note_text: key_note_text,
+      member_key_state_text: member_key_state_text,
+      owner_keyless_text: owner_keyless_text,
+      member_keyless_text: member_keyless_text,
+      keyless_note_text: keyless_note_text,
       owner_key_delivery: owner_key_delivery,
       member_key_hint: member_key_hint,
       room_key_recipients: room_key_recipients,

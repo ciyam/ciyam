@@ -231,7 +231,7 @@ http://www.opensource.org/licenses/mit-license.php.
                <span id="composer_keys_text"></span>
                <button type="button" class="chat-btn chat-btn--small chat-btn--primary" id="composer_keys_go"
                 onclick="do_encryption_action( event )"></button>
-               <button type="button" class="chat-btn chat-btn--small" onclick="do_keys_offer_later( )">Not now</button>
+               <button type="button" class="chat-btn chat-btn--small" id="composer_keys_later" onclick="do_keys_offer_later( )">Not now</button>
             </div>
             <!-- NOTE: A poll's room - this line in place of the message box, which takes nothing there (the poll review, 2026-11-03:
                  a disabled box saying the room takes reactions only). "update_poll_bar( )". -->
@@ -635,9 +635,11 @@ http://www.opensource.org/licenses/mit-license.php.
       </div>
       <!-- NOTE: What came of sending the key to the members ("chat_send_room_key( )", 2026-10-27). -->
       <div class="chat-room-key-note chat-room-key-sent" id="room_key_sent" role="status"></div>
+      <!-- NOTE: Each member as the owner's chat last found them (Damon, 2026-11-05) - "chat_render_member_key_states( )". -->
+      <ul class="chat-room-key-members" id="room_key_members" aria-label="Members and the room key" hidden></ul>
       <div class="chat-room-key-share" id="room_key_share_part" hidden>
-         <p class="chat-room-key-note">Send to members sends it to each in an encrypted direct message. Or send it
-            yourself - they add it with Room key… in Room Details, or with the button under it. Anyone who has it can read this room.</p>
+         <p class="chat-room-key-note">Send to members passes it to each in a note in this room that only they can open. Or send it
+            yourself - they add it with the button under it. Anyone who has it can read this room.</p>
          <code class="chat-room-key-text chat-mono" id="room_key_share_text" aria-label="The room key"></code>
          <div class="chat-room-key-actions">
             <button type="button" class="chat-btn" id="room_key_copy" onclick="do_copy_room_key( )">Copy</button>

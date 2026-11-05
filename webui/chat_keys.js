@@ -550,6 +550,7 @@ async function chat_keys_read( )
    g_room_key_later = { };
    g_owner_key_unopened = { };
    g_owner_keys_checked = { };
+   g_owner_key_states = { };
 
    show_thread_title( );
    chat_render_room_key( );
@@ -578,6 +579,7 @@ function chat_keys_forget( )
    g_room_key_later = { };
    g_owner_key_unopened = { };
    g_owner_keys_checked = { };
+   g_owner_key_states = { };
 }
 
 // NOTE: The open room's other person, if it is a direct message the console would encrypt too - by its name, whoever else is in
@@ -706,6 +708,25 @@ function chat_offer_sealed_actions( element, opened )
 
    if( ( qr !== null ) && qr.dataset.text )
       qr.hidden = opened;
+}
+
+// NOTE: A member of a room that is encrypted, without its key here (Damon, 2026-11-05: nothing to be posted there in the clear) -
+// known by the encrypted messages in it, a room key's note to them among them.
+function chat_member_keyless( )
+{
+   var entry = ( g_room !== "" ) ? find_room( g_room ) : null;
+
+   if( !entry || chat_is_room_owner( ) || ( chat_dm_other( ) !== "" ) || !can_have_room_key( g_room, g_room_name )
+    || ( chat_room_key( g_room ) !== "" ) )
+      return false;
+
+   var notice = keyless_note_text( g_room_owner );
+
+   return Array.prototype.some.call( document.querySelectorAll( "#message_list .chat-message-body" ), function( body )
+   {
+      return ( message_prefix( body.dataset.text || "" ) === "X" )
+       || ( ( body.dataset.private === "1" ) && ( body.dataset.sender === g_room_owner ) && ( body.dataset.text === notice ) );
+   } );
 }
 
 // NOTE: For a private message between two - a room key's note, or its receipt (Damon, 2026-11-05) - the secret those two share, or
@@ -1010,9 +1031,45 @@ function chat_render_room_key( )
    if( ( key === "" ) || !owner )
       chat_hide_room_key_share( );
 
+   chat_render_member_key_states( ( key !== "" ) && owner );
+
    [ "room_key_make", "room_key_add_open", "room_key_add_go", "room_key_send", "room_key_share", "room_key_remove" ].forEach( function( id )
    {
       document.getElementById( id ).disabled = g_room_key_busy;
+   } );
+}
+
+// NOTE: For the owner of a room with a key - each member as their chat was last found: has the key, passed and not yet accepted, or
+// waiting for contact codes (Damon, 2026-11-05: setting up an encrypted room said nothing of where it stood).
+function chat_render_member_key_states( shown )
+{
+   var list = document.getElementById( "room_key_members" );
+
+   if( list === null )
+      return;
+
+   var states = shown ? ( g_owner_key_states[ g_room ] || { } ) : { };
+   var names = Object.keys( states ).sort( );
+
+   list.replaceChildren( );
+   list.hidden = ( names.length === 0 );
+
+   names.forEach( function( name )
+   {
+      var item = document.createElement( "li" );
+      var who = document.createElement( "span" );
+      var what = document.createElement( "span" );
+
+      item.className = "chat-room-key-member is-" + states[ name ];
+      who.className = "chat-room-key-member-name";
+      what.className = "chat-room-key-member-state";
+
+      who.textContent = name;
+      what.textContent = member_key_state_text( states[ name ] );
+
+      item.appendChild( who );
+      item.appendChild( what );
+      list.appendChild( item );
    } );
 }
 
@@ -1152,6 +1209,8 @@ async function chat_encrypt_group( room, people )
 
    if( text !== "" )
       chat_room_key_sent( room, text );
+   else if( room_key_recipients( people, ciyam.username ).length > 0 )
+      chat_room_key_sent( room, "Each member is passed it here as they join - and asked to accept it." );
 }
 
 // NOTE: Said in the Room key dialog, and in the alert after "lead" (what was done, an invitation say) - "Room key:" there, as the
@@ -1171,6 +1230,18 @@ async function chat_key_new_room( room, invitees )
 {
    var entry = find_room( room );
 
+   // NOTE: Made without keys of one's own (Damon, 2026-11-05) - said, and kept here, so opening it once they are set up asks to
+   // encrypt it ("chat_offer_encrypt_room( )").
+   if( ( g_chat_keys === false ) && !g_chat_keys_unread && entry && can_have_room_key( room, entry.name ) )
+   {
+      chat_unkeyed_rooms_change( room, true );
+
+      show_alert( entry.name + " is made, but not encrypted - your keys aren't set up yet. Set them up on My account, and you're asked"
+       + " to encrypt it the next time you open it.", "is-info" );
+
+      return;
+   }
+
    if( !g_chat_keys || g_chat_keys_unread || !entry || !can_have_room_key( room, entry.name ) || ( chat_room_key( room ) !== "" ) )
       return;
 
@@ -1178,6 +1249,60 @@ async function chat_key_new_room( room, invitees )
       await chat_encrypt_group( room, invitees );
    else
       await chat_room_key_change( room, chat_random_room_key( ) );
+}
+
+// NOTE: The rooms this account made before it had keys (Damon, 2026-11-05) - kept on this browser by number, as nothing on the node
+// says how a room was made. "cws.unkeyed_rooms_<name>".
+function chat_unkeyed_rooms( )
+{
+   try
+   {
+      return JSON.parse( localStorage.getItem( "cws.unkeyed_rooms_" + ciyam.username ) || "[]" );
+   }
+   catch( e )
+   {
+      return [ ];
+   }
+}
+
+function chat_unkeyed_rooms_change( room, add )
+{
+   var rooms = chat_unkeyed_rooms( ).filter( function( number ) { return number !== room; } );
+
+   if( add )
+      rooms.push( room );
+
+   try
+   {
+      localStorage.setItem( "cws.unkeyed_rooms_" + ciyam.username, JSON.stringify( rooms ) );
+   }
+   catch( e )
+   {
+   }
+}
+
+// NOTE: A room made before the owner had keys, opened now they have them - asked to encrypt it, once each time it is opened; "Not
+// now" asks again the next time (Damon, 2026-11-05). Encrypted, each member is passed the key as any new room's are.
+var g_encrypt_offered = "";
+
+async function chat_offer_encrypt_room( room, entry )
+{
+   if( !g_chat_keys || g_chat_keys_unread || g_room_key_busy || ( g_encrypt_offered === room ) || !can_have_room_key( room, entry.name )
+    || ( chat_unkeyed_rooms( ).indexOf( room ) < 0 ) )
+      return;
+
+   g_encrypt_offered = room;
+
+   var yes = await ask_dialog( { title: "Encrypt " + entry.name + " now?", text: "Your keys are set up now, but this room isn't encrypted."
+    + " Encrypt it, and each member is passed its key here and asked to accept it. What is already posted stays as it is.",
+    yes: "Encrypt it", no: "Not now" } );
+
+   if( !yes || ( g_room !== room ) || ( chat_room_key( room ) !== "" ) )
+      return;
+
+   chat_unkeyed_rooms_change( room, false );
+
+   await chat_encrypt_group( room, g_members.map( function( member ) { return member.name; } ) );
 }
 
 // NOTE: Anyone invited later is sent the key too (Ian, 2026-10-28) - by the owner, as only the owner's is added by itself. What came
@@ -1226,43 +1351,17 @@ async function do_send_room_key( )
 
 // NOTE: "room"'s key sent to each of "people" in an encrypted direct message - the one with them, or one started for it and sent
 // once they accept. Never in the clear: anyone without a public key here is left out. What came of it ("room_key_sent_text( )").
+// NOTE: Passed to each member as a note in the room since 2026-11-05 (Damon), not in a direct message - and only to those who have joined
+// it, so anyone invited is given it as they join, while the owner has the room open or the next time they open it
+// ("chat_owner_send_keys( )"). "people" looked at afresh. What came of it, or "" for nothing to say.
 async function chat_send_room_key( room, people )
 {
-   var key = chat_room_key( room );
-
-   if( key === "" )
+   if( ( chat_room_key( room ) === "" ) || ( room !== g_room ) )
       return "";
 
-   var text = room_key_text( room, key );
-   var outcomes = [ ];
-   var started = false;
+   ( people || [ ] ).forEach( function( person ) { delete g_owner_keys_checked[ room + "|" + person ]; } );
 
-   // NOTE: Signed out (or in again) meanwhile - nothing more sent, and nothing of it said over the next sign in (found by review).
-   var read = g_chat_keys_read;
-
-   var recipients = room_key_recipients( people, ciyam.username ).filter( function( person ) { return dm_allowed( dm_me( ), person ); } );
-
-   for( var i = 0; i < recipients.length; i++ )
-   {
-      var how = await chat_send_room_key_to( recipients[ i ], text );
-
-      if( read !== g_chat_keys_read )
-         return "";
-
-      if( how === "started" )
-      {
-         started = true;
-         how = "held";
-      }
-
-      outcomes.push( { name: recipients[ i ], how: how } );
-   }
-
-   // NOTE: The rail knows the conversations started for it - a held one is watched only once it is listed ("watch_held_rooms( )").
-   if( started )
-      await load_rooms( );
-
-   return room_key_sent_text( outcomes );
+   return await chat_owner_send_keys( true );
 }
 
 async function chat_send_room_key_to( person, text )
@@ -1536,7 +1635,10 @@ async function chat_look_for_owner_key( member_only )
       if( member_only )
          return;
 
-      chat_owner_send_keys( );
+      if( chat_room_key( room ) === "" )
+         chat_offer_encrypt_room( room, entry );
+      else
+         chat_owner_send_keys( );
 
       return;
    }
@@ -1544,9 +1646,12 @@ async function chat_look_for_owner_key( member_only )
    if( !entry || !g_chat_keys || g_chat_keys_unread || !can_have_room_key( room, entry.name ) || ( chat_room_key( room ) !== "" ) )
       return;
 
-   // NOTE: Asked again each time the room is opened, not at every poll of it (Damon, 2026-11-05).
+   // NOTE: Asked again each time the room is opened, not at every poll of it (Damon, 2026-11-05) - the room read again for it.
    if( !member_only )
+   {
       delete g_room_key_later[ room ];
+      delete g_owner_key_looked[ room ];
+   }
 
    if( g_room_key_later[ room ] )
       return;
@@ -1657,6 +1762,28 @@ async function chat_send_room_key_receipt( owner, room, key )
    }
 }
 
+// NOTE: Whether the open room shows this person's plain note to "person" saying the room is encrypted ("keyless_note_text( )").
+function chat_keyless_note_shown( person )
+{
+   var text = keyless_note_text( ciyam.username );
+
+   return Array.prototype.some.call( document.querySelectorAll( "#message_list .chat-message-body" ), function( body )
+   {
+      return ( body.dataset.sender === ciyam.username ) && ( body.dataset.private === "1" ) && ( body.dataset.text === text )
+       && ( ( body.dataset.recipients || "" ).split( "," ).indexOf( person ) >= 0 );
+   } );
+}
+
+// NOTE: A private message in "room" to "person" alone, as it is - nothing to seal it with.
+async function chat_send_plain_note( room, person, text )
+{
+   await serialised( function( )
+   {
+      return ciyam.create_message( room, "for=" + with_sender( [ person ], ciyam.username ).join( "," ) + ";text=" + escape_message_text( text ),
+       function( ) { } );
+   } );
+}
+
 // NOTE: A private message in "room" to "person" alone (and the sender), sealed with the secret the two share - how a room key is
 // passed to a member, and its receipt sent back (Damon, 2026-11-05: in the room, as a folded note, rather than in a direct message
 // that has to be accepted first). "sent", "no_key" (nothing to seal it with) or "failed".
@@ -1684,25 +1811,34 @@ async function chat_send_key_note( room, person, text )
 // NOTE: For each room and member, their direct message as it was last looked through - "<room>#<key>|<dm>/<total>" - so it is
 // read again only once something new is there, or the key has changed.
 var g_owner_keys_checked = { };
+
+// NOTE: Each owned room's members as the owner's chat last found them (Damon, 2026-11-05) - "has" the key, the key "passed" and not
+// yet accepted, "needs_codes" (no contact code to seal it with), "failed" - said in Room Details ("member_key_state_text( )").
+var g_owner_key_states = { };
 var g_owner_keys_sending = false;
 
 // NOTE: The owner's open room, if it has a key here - each member with an open direct message sent the key, unless the owner's own
 // sealed messages there already have it. Nothing kept anywhere, so whichever of the owner's browsers opens the room does it. As the
 // room is first read, once the keys are read, and as someone joins it. Said only when something was sent.
-async function chat_owner_send_keys( )
+async function chat_owner_send_keys( quiet )
 {
    var room = g_room;
    var entry = ( room !== "" ) ? find_room( room ) : null;
    var key = chat_room_key( room );
 
-   if( !entry || ( entry.owner !== ciyam.username ) || !g_chat_keys || g_chat_keys_unread || ( key === "" ) || g_room_key_busy
-    || g_owner_keys_sending )
-      return;
+   if( !entry || ( entry.owner !== ciyam.username ) || !g_chat_keys || g_chat_keys_unread || ( key === "" )
+    || ( g_room_key_busy && !quiet ) || g_owner_keys_sending )
+      return "";
 
    var read = g_chat_keys_read;
    var whole = room_key_text( room, key );
    var people = room_key_recipients( g_members.map( function( member ) { return member.name; } ), ciyam.username );
    var outcomes = [ ];
+
+   if( !g_owner_key_states.hasOwnProperty( room ) )
+      g_owner_key_states[ room ] = { };
+
+   var states = g_owner_key_states[ room ];
 
    g_owner_keys_sending = true;
 
@@ -1717,9 +1853,17 @@ async function chat_owner_send_keys( )
          if( secret === "" )
          {
             if( g_owner_keys_checked[ room + "|" + person ] !== "no_key" )
+            {
                outcomes.push( { name: person, how: "no_key" } );
 
+               // NOTE: Told, in a plain note to them alone, that the room is encrypted and what the key needs (Damon, 2026-11-05: a
+               // member who joins after the last encrypted message sees none, so nothing else would say so) - once, if not there.
+               if( !chat_keyless_note_shown( person ) )
+                  await chat_send_plain_note( room, person, keyless_note_text( ciyam.username ) );
+            }
+
             g_owner_keys_checked[ room + "|" + person ] = "no_key";
+            states[ person ] = "needs_codes";
 
             continue;
          }
@@ -1733,7 +1877,7 @@ async function chat_owner_send_keys( )
          var found = await chat_dm_opened( room, [ ciyam.username, person ], secret );
 
          if( ( read !== g_chat_keys_read ) || ( g_room !== room ) || ( chat_room_key( room ) !== key ) )
-            return;
+            return "";
 
          if( found === null )
             continue;
@@ -1746,18 +1890,26 @@ async function chat_owner_send_keys( )
          // it is not left in the conversation; not sent again, as the receipt stays. Looked at again once the conversation changes.
          if( delivery.state === "received" )
          {
+            states[ person ] = "has";
+
             await chat_delete_key_messages( room, delivery.remove );
 
             continue;
          }
 
          if( delivery.state === "sent" )
+         {
+            states[ person ] = "passed";
+
             continue;
+         }
 
          var how = await chat_send_key_note( room, person, whole );
 
          if( read !== g_chat_keys_read )
-            return;
+            return "";
+
+         states[ person ] = ( how === "sent" ) ? "passed" : ( ( how === "no_key" ) ? "needs_codes" : "failed" );
 
          // NOTE: Not sent - tried again the next time this is called, as if never looked at (found by review, 2026-11-04).
          if( how === "failed" )
@@ -1771,8 +1923,21 @@ async function chat_owner_send_keys( )
       g_owner_keys_sending = false;
    }
 
-   if( outcomes.length > 0 )
-      chat_room_key_sent( room, room_key_sent_text( outcomes ) );
+   // NOTE: Who has gone - out of the room's states, as no longer members.
+   Object.keys( states ).forEach( function( person ) { if( people.indexOf( person ) < 0 ) delete states[ person ]; } );
+
+   if( g_room === room )
+      chat_render_room_key( );
+
+   // NOTE: Forced - the rail's own signature does not hold the members' states.
+   render_rooms( true );
+
+   var text = ( outcomes.length > 0 ) ? room_key_sent_text( outcomes ) : "";
+
+   if( !quiet && ( text !== "" ) )
+      chat_room_key_sent( room, text );
+
+   return text;
 }
 
 // NOTE: The owner's own messages that carried a room key, deleted from a member's direct message once they have the key - one at a
@@ -1785,7 +1950,8 @@ async function chat_delete_key_messages( dm_room, uniques )
 
       await serialised( function( )
       {
-         return ciyam.create_message( dm_room, delete_options( unique, false ), function( ) { } );
+         // NOTE: Private - the notes are to the one member alone (Damon, 2026-11-05), so deleted as a private message is edited.
+         return ciyam.create_message( dm_room, delete_options( unique, true ), function( ) { } );
       } );
    }
 }
