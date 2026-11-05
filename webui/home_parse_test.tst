@@ -109,6 +109,8 @@ ok   in words - one, no start read
 ok   an unlock with a key since the restart - when, by the node's clock
 ok   - one before the last restart
 ok   - none read
+ok   - as the node writes it since 2026-11-05
+ok   - the change of identity is not an unlock
 ok   - in words
 ok   rooms filling - at 80% or more, fullest first
 ok   rooms filling - none

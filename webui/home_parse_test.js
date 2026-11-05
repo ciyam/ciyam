@@ -214,6 +214,10 @@ check( "an unlock with a key since the restart - when, by the node's clock", hp.
  { time: "2026-10-15 10:14:35", this_run: true } );
 check( "- one before the last restart", hp.last_key_unlock( unlocked_log.concat( [ server_log[ 2 ] ] ) ), { time: "2026-10-15 10:14:35", this_run: false } );
 check( "- none read", hp.last_key_unlock( server_log ), null );
+check( "- as the node writes it since 2026-11-05", hp.last_key_unlock( server_log.concat(
+ [ "[2026-11-05 10:14:35] [000001] [general] *** system identity unlock has occurred ***" ] ) ), { time: "2026-11-05 10:14:35", this_run: true } );
+check( "- the change of identity is not an unlock", hp.last_key_unlock( server_log.concat(
+ [ "[2026-11-05 10:14:35] [000001] [general] *** system identity change has occurred ***" ] ) ), null );
 check( "- in words", [ hp.key_unlock_text( hp.last_key_unlock( unlocked_log ) ),
  hp.key_unlock_text( { time: "2026-10-15 10:14:35", this_run: false } ), hp.key_unlock_text( null ) ],
  [ "Unlocked with a key since the last restart at 2026-10-15 10:14 (the node's clock). The log does not say which key - if you did not"

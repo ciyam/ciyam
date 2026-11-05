@@ -313,9 +313,10 @@ function parse_secure( reply )
    return ( ( value === "" ) || ( value === "[okay]" ) ) ? false : null;
 }
 
-// NOTE: The node's last unlock with a key, from the server log - Ian's "*** system identity unlock occurred ***" ("ef17cb98",
-// 2026-10-15), which key never said. The newest one among the lines read: its time as the log has it (the node's own clock,
-// not UTC), and whether it came after the last "server starting" - this run unlocked with a key. null when none was read.
+// NOTE: The node's last unlock with a key, from the server log - Ian's "*** system identity unlock has occurred ***" ("588a95d2",
+// 2026-11-05; "unlock occurred" from "ef17cb98", 2026-10-15, so a log written before then is still read), which key never said.
+// The newest one among the lines read: its time as the log has it (the node's own clock, not UTC), and whether it came after
+// the last "server starting" - this run unlocked with a key. null when none was read.
 function last_key_unlock( lines )
 {
    var found = null;
@@ -327,7 +328,7 @@ function last_key_unlock( lines )
          if( found )
             found.this_run = false;
       }
-      else if( /\*\*\* system identity unlock occurred \*\*\*/.test( line ) )
+      else if( /\*\*\* system identity unlock (has )?occurred \*\*\*/.test( line ) )
          found = { time: log_line_parts( line ).time, this_run: true };
    } );
 
