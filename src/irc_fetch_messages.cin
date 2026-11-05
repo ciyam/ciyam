@@ -25,6 +25,9 @@ ROOM=$1
 USER=$2
 SESSION=$3
 
+@retain *
+<prefixes.cin
+
 ENTRANCE_ROOM=0000000
 RESERVED_ROOM=0000001
 
@@ -336,29 +339,23 @@ LAST_UNIQUE=
       MSG_AUTHOR=%MESSAGE_PARTS:2%
       MSG_BASE64=%MESSAGE_PARTS:3%
 
-      IS_POLL=
          @if $NUM_PINNED #> 0
          MSG_AUTHOR=!$MSG_AUTHOR
          NEXT_MESSAGE=$MSG_UNIQUE $MSG_AUTHOR $MSG_BASE64
-
-         POS=@strpos:XyDwn5OK:$MSG_BASE64
-            @ifdef $POS
-            IS_POLL=1
-            @endif
          @else
          LAST_UNIQUE=@strlit:$MSG_UNIQUE
          @endif
 
-      MSG_PREFIX=@substr:0,3:$MSG_BASE64
+      MSG_PREFIX=@substr:0,$PREFIX_LENGTH_ENCODED:$MSG_BASE64
 
       IS_INVITE=
-      POS=@strpos:XzppbnZpdGUgcm9vbSAw:$MSG_BASE64
+      POS=@strpos:%SYSTEM_PREFIX_ENCODED%aW52aXRl:$MSG_BASE64
          @ifeq "$POS" "0"
          IS_INVITE=1
          @endif
 
       NON_SYSTEM=
-         @ifneq "$MSG_PREFIX" "Xzp"
+         @ifneq "$MSG_PREFIX" "$SYSTEM_PREFIX_ENCODED"
          NON_SYSTEM=1
          @endif
 
@@ -412,7 +409,7 @@ LAST_UNIQUE=
                      @endif
 
                      @ifdef $IGNORE
-                     NEW_MSG=_:ignore (invite for $DECODED was processed)
+                     NEW_MSG=%SYSTEM_PREFIX_DECODED%ignore (invite for $DECODED was processed)
                      NEW_MSG_BASE64=@base64::$NEW_MSG
                      NEXT_MESSAGE=$MSG_UNIQUE $MSG_AUTHOR* $NEW_MSG_BASE64
                      @endif
