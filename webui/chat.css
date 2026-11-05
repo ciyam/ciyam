@@ -4859,8 +4859,10 @@ button.chat-reaction:hover
    font-weight: 600;
 }
 
-/* NOTE: On the narrowest phones the badge is its padlock alone - the word is in its title, and in the details it opens. */
-@media (max-width: 380px)
+/* NOTE: On a phone the badge is its padlock alone - the word is in its title, the line along the bar's foot, and the details it
+   opens - and the room's name has a line to itself, what is said of it (a poll's close, say) under it (the poll review's finding
+   9, 2026-11-05: both were cut short beside the word). Its padlock alone on the narrowest phones since 2026-11-02. */
+@media (max-width: 600px)
 {
    .chat-encryption-badge
    {
@@ -4870,6 +4872,19 @@ button.chat-reaction:hover
    .chat-encryption-badge .chat-encryption-word
    {
       display: none;
+   }
+
+   .chat-thread-title
+   {
+      flex-direction: column;
+      align-items: stretch;
+      gap: 0;
+   }
+
+   .chat-thread-title h1
+   {
+      font-size: var(--font-size-chat-body);
+      line-height: 1.3;
    }
 }
 
