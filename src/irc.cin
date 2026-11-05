@@ -3,9 +3,6 @@
 ; Distributed under the MIT/X11 software license, please refer to the file license.txt
 ; in the root project directory or http://www.opensource.org/licenses/mit-license.php.
 
-@retain *
-<ansi.cin
-
 @ifndef $USER
 USER=anon
 @endif
@@ -36,6 +33,12 @@ PKEY=
 SKEY=
 
 ERROR=
+
+@retain *
+<ansi.cin
+
+@retain *
+<prefixes.cin
 
 EYE_EMOJI=👁️
 LOCK_EMOJI=🔒
@@ -107,8 +110,6 @@ RESERVED_ROOM=0000001
 STARTING_ROOM=0000002
 
 DUMMY_JOIN_UUID=00000000000000000000000000000000
-
-ENCRYPTED_PREFIX=X\r
 
 INVITATION_INFORMATION=
 
@@ -224,7 +225,7 @@ IS_DIRECT=
                   EDIT_MSG_CONTENT=@base64:%EDIT_MSG_PARTS:3%
                   EDIT_MSG_REACTIONS=%EDIT_MSG_PARTS:4%
 
-                  EDIT_MSG_PREFIX=@substr:0,2:$EDIT_MSG_CONTENT
+                  EDIT_MSG_PREFIX=@substr:0,$PREFIX_LENGTH_DECODED:$EDIT_MSG_CONTENT
 
                   ; NOTE: If was pinned then remove the prefix.
                   FIRST=@substr:0,1:$EDIT_MSG_OWNER
@@ -241,18 +242,27 @@ IS_DIRECT=
                      @endif
 
                   IS_REACTION=
+
                      @ifneq "$USER" "$EDIT_MSG_OWNER"
                      IS_REACTION=1
                      @endif
 
-                     @ifeq "$EDIT_MSG_PREFIX" "_:"
+                     @ifeq "$EDIT_MSG_PREFIX" "$SYSTEM_PREFIX_DECODED"
                      EDIT_UNIX_UNIQUE=
                      #(system messages are not editable)
                      @else
-                     MESSAGE_CONTENT=@substr:1:$EDIT_MSG_CONTENT
-                     CHECK_ENCRYPTED=@substr:1,2:$MESSAGE_CONTENT
 
-                        @ifeq "$CHECK_ENCRYPTED" "$ENCRYPTED_PREFIX"
+                     IS_ENCRYPTED_PREFIX=
+
+                        @ifeq "$EDIT_MSG_PREFIX" "$NORMAL_CRYPT_PREFIX_DECODED"
+                        IS_ENCRYPTED_PREFIX=1
+                        @elif "$EDIT_MSG_PREFIX" = "$PROMPT_CRYPT_PREFIX_DECODED"
+                        IS_ENCRYPTED_PREFIX=1
+                        @elif "$EDIT_MSG_PREFIX" = "$PRIVATE_CRYPT_PREFIX_DECODED"
+                        IS_ENCRYPTED_PREFIX=1
+                        @endif
+
+                        @ifdef $IS_ENCRYPTED_PREFIX
                            @ifdef $KEY_FILE_DATA
                            PREFIX=_
                               @ifdef $DIRECT_PUB_SUFFIX
@@ -260,7 +270,7 @@ IS_DIRECT=
                               @endif
 
                            @retain MESSAGE
-                           <irc_extra.cin %PREFIX%decrypt "$MESSAGE_CONTENT" "$KEY_FILE_DATA" $PKEY $SKEY
+                           <irc_extra.cin %PREFIX%decrypt "$EDIT_MSG_CONTENT" "$KEY_FILE_DATA" $PKEY $SKEY
 
                            EDIT_MSG_CONTENT=$MESSAGE
                            MESSAGE=
@@ -274,15 +284,18 @@ IS_DIRECT=
 
                         @endif
 
-                     EDIT_MSG_CONTENT=@substr:2:$EDIT_MSG_CONTENT
+                     EDIT_MSG_CONTENT=@substr:$PREFIX_LENGTH_DECODED:$EDIT_MSG_CONTENT
 
                      IS_POLL=
                      NUM_OPTS=1
 
-                     POS=@strpos:$POLL_EMOJI:$EDIT_MSG_CONTENT
-
-                        @ifeq "$POS" "0"
+                        @ifeq "$EDIT_MSG_PREFIX" "$PROMPT_PREFIX_DECODED"
                         IS_POLL=1
+                        @elif "$EDIT_MSG_PREFIX" = "$PROMPT_CRYPT_PREFIX_DECODED"
+                        IS_POLL=1
+                        @endif
+
+                        @ifdef $IS_POLL
                         POS=@strpos:\nB):$EDIT_MSG_CONTENT
                            @ifdef $POS
                            NUM_OPTS=@$NUM_OPTS+1
@@ -347,50 +360,50 @@ IS_DIRECT=
                      &:EDITED_MESSAGE=_
                      @else
                         @ifndef $IS_POLL
-                        OPTS_PREFIX=[EDITED_MESSAGE:_==_|a 👌=_ 00
+                        OPTS_PREFIX=[EDITED_MESSAGE:_==_|a 👌=_00
 
-                        OPTS_OTHERS=|b 👍=_ 01
+                        OPTS_OTHERS=|b 👍=_01
 
-                        OPTS_OTHERS=$OPTS_OTHERS|c 👎=_ 02
-                        OPTS_OTHERS=$OPTS_OTHERS|d 🙂=_ 03
-                        OPTS_OTHERS=$OPTS_OTHERS|e 🙁=_ 04
-                        OPTS_OTHERS=$OPTS_OTHERS|f 😀=_ 05
-                        OPTS_OTHERS=$OPTS_OTHERS|g 😲=_ 06
-                        OPTS_OTHERS=$OPTS_OTHERS|h 🤓=_ 07
-                        OPTS_OTHERS=$OPTS_OTHERS|i 🤦‍♂️=_ 08
-                        OPTS_OTHERS=$OPTS_OTHERS|j ❤️=_ 09
+                        OPTS_OTHERS=$OPTS_OTHERS|c 👎=_02
+                        OPTS_OTHERS=$OPTS_OTHERS|d 🙂=_03
+                        OPTS_OTHERS=$OPTS_OTHERS|e 🙁=_04
+                        OPTS_OTHERS=$OPTS_OTHERS|f 😀=_05
+                        OPTS_OTHERS=$OPTS_OTHERS|g 😲=_06
+                        OPTS_OTHERS=$OPTS_OTHERS|h 🤓=_07
+                        OPTS_OTHERS=$OPTS_OTHERS|i 🤦‍♂️=_08
+                        OPTS_OTHERS=$OPTS_OTHERS|j ❤️=_09
 
                         @else
-                        OPTS_PREFIX=[EDITED_MESSAGE:_==_|a 🇦=_ 00
+                        OPTS_PREFIX=[EDITED_MESSAGE:_==_|a 🇦=_00
 
                         OPTS_OTHERS=
 
                            @if $NUM_OPTS #> 1
-                           OPTS_OTHERS=|b 🇧=_ 01
+                           OPTS_OTHERS=|b 🇧=_01
                            @endif
                            @if $NUM_OPTS #> 2
-                           OPTS_OTHERS=$OPTS_OTHERS|c 🇨=_ 02
+                           OPTS_OTHERS=$OPTS_OTHERS|c 🇨=_02
                            @endif
                            @if $NUM_OPTS #> 3
-                           OPTS_OTHERS=$OPTS_OTHERS|d 🇩=_ 03
+                           OPTS_OTHERS=$OPTS_OTHERS|d 🇩=_03
                            @endif
                            @if $NUM_OPTS #> 4
-                           OPTS_OTHERS=$OPTS_OTHERS|e 🇪=_ 04
+                           OPTS_OTHERS=$OPTS_OTHERS|e 🇪=_04
                            @endif
                            @if $NUM_OPTS #> 5
-                           OPTS_OTHERS=$OPTS_OTHERS|f 🇫=_ 05
+                           OPTS_OTHERS=$OPTS_OTHERS|f 🇫=_05
                            @endif
                            @if $NUM_OPTS #> 6
-                           OPTS_OTHERS=$OPTS_OTHERS|g 🇬=_ 06
+                           OPTS_OTHERS=$OPTS_OTHERS|g 🇬=_06
                            @endif
                            @if $NUM_OPTS #> 7
-                           OPTS_OTHERS=$OPTS_OTHERS|h ​🇭=_ 07
+                           OPTS_OTHERS=$OPTS_OTHERS|h ​🇭=_07
                            @endif
                            @if $NUM_OPTS #> 8
-                           OPTS_OTHERS=$OPTS_OTHERS|i 🇮=_ 08
+                           OPTS_OTHERS=$OPTS_OTHERS|i 🇮=_08
                            @endif
                            @if $NUM_OPTS #> 9
-                           OPTS_OTHERS=$OPTS_OTHERS|j 🇯=_ 09
+                           OPTS_OTHERS=$OPTS_OTHERS|j 🇯=_09
                            @endif
 
                         @endif
@@ -420,9 +433,12 @@ IS_DIRECT=
 
                            @ifeq "$EDITED_MESSAGE" "_$SP"
                            CAN_ENCRYPT=
+                           EDITED_MESSAGE=
                            @elif "$EDITED_MESSAGE" = "_$SP$SP"
                            CAN_ENCRYPT=
                            @endif
+                        @else
+                           EDIT_MSG_PREFIX=$REACTION_PREFIX_DECODED
                         @endif
 
                      ; NOTE: If is able to encrypt the message then will now do so.
@@ -438,18 +454,21 @@ IS_DIRECT=
                         ; parsing issues.
                         EDITED_MESSAGE=@substr:1:$EDITED_MESSAGE
                         EDITED_MESSAGE=@aschex:$EDITED_MESSAGE
-                        EDITED_MESSAGE=$SP$EDITED_MESSAGE
 
                         @retain MESSAGE
-                        <irc_extra.cin %PREFIX%encrypt "_$EDITED_MESSAGE" "$KEY_FILE_DATA" $PKEY $SKEY
+                        <irc_extra.cin %PREFIX%encrypt "$EDIT_MSG_PREFIX$EDITED_MESSAGE" "$KEY_FILE_DATA" $PKEY $SKEY
 
-                        EDITED_MESSAGE=@substr:1:$MESSAGE
+                        EDITED_MESSAGE=@substr:$PREFIX_LENGTH_DECODED:$MESSAGE
                         MESSAGE=
 
                         @endif
 
-                     EDITED_MESSAGE=@substr:1:$EDITED_MESSAGE
+                        @ifndef $CAN_ENCRYPT
+                        EDITED_MESSAGE=@substr:1:$EDITED_MESSAGE
+                        @endif
+
                      EDITED_MESSAGE=$EDIT_MSG_PREFIX$EDITED_MESSAGE
+
                      ENCODED=@base64::$EDITED_MESSAGE
 
                      .run_script !irc_send_message "@room=$ROOM,@names=$EDIT_UNIX_UNIQUE,@message=$ENCODED"
@@ -780,6 +799,7 @@ IS_DIRECT=
                ; NOTE: If using "readline"
                ; this saves the message as
                ; the only history line.
+
                :$MESSAGE
                MESSAGE=
                SHOW_CHANGED=
@@ -803,9 +823,9 @@ IS_DIRECT=
                   @endif
 
                   @ifndef $NAMES
-                  MESSAGE=_ $MESSAGE
+                  MESSAGE=$NORMAL_PREFIX_DECODED$MESSAGE
                   @else
-                  MESSAGE=_!$MESSAGE
+                  MESSAGE=$PRIVATE_PREFIX_DECODED$MESSAGE
                   @endif
 
                ; NOTE: If is able to encrypt the message then will now do so.
@@ -824,7 +844,6 @@ IS_DIRECT=
                @endif
             @endif
          @endif
-
       @endif
    @endif
 
@@ -919,7 +938,7 @@ IS_DIRECT=
       RESTRICT=
       @endif
 
-   ENCODED=@base64::$MESSAGE
+      ENCODED=@base64::$MESSAGE
 
    .run_script !irc_send_message "@room=$ROOM,@names=$NAMES,@message=$ENCODED"
       @ifdef $ERROR
@@ -1035,6 +1054,9 @@ IS_DIRECT=
    ENCODED_MESSAGE=@strlit:%NEXT_MSG_PARTS:3%
 
    DECODED_MESSAGE=@base64:$ENCODED_MESSAGE
+
+   CHECK_ENCRYPTED=@substr:0,$PREFIX_LENGTH_DECODED:$DECODED_MESSAGE
+
    DECODED_MESSAGE=@substr:1,0:$DECODED_MESSAGE
 
    LAST_MSG_UNIX=%NEXT_MSG_PARTS:1%
@@ -1043,9 +1065,17 @@ IS_DIRECT=
 
    USER_NAME=@strlit:%NEXT_MSG_PARTS:2%
 
-   CHECK_ENCRYPTED=@substr:1,2:$DECODED_MESSAGE
+   IS_ENCRYPTED_PREFIX=
 
-      @ifeq "$CHECK_ENCRYPTED" "$ENCRYPTED_PREFIX"
+      @ifeq "$CHECK_ENCRYPTED" "$NORMAL_CRYPT_PREFIX_DECODED"
+      IS_ENCRYPTED_PREFIX=1
+      @elif "$CHECK_ENCRYPTED" = "$PROMPT_CRYPT_PREFIX_DECODED"
+      IS_ENCRYPTED_PREFIX=1
+      @elif "$CHECK_ENCRYPTED" = "$PRIVATE_CRYPT_PREFIX_DECODED"
+      IS_ENCRYPTED_PREFIX=1
+      @endif
+
+      @ifdef $IS_ENCRYPTED_PREFIX
 
          @ifdef $KEY_FILE_DATA
 
@@ -1055,13 +1085,13 @@ IS_DIRECT=
             @endif
 
          @retain MESSAGE
-         <irc_extra.cin %PREFIX%decrypt "$DECODED_MESSAGE" "$KEY_FILE_DATA" $PKEY $SKEY
+         <irc_extra.cin %PREFIX%decrypt "_$DECODED_MESSAGE" "$KEY_FILE_DATA" $PKEY $SKEY
 
          DECODED_MESSAGE=$MESSAGE
          MESSAGE=
 
-         PREFIX=@substr:0,2:$DECODED_MESSAGE
-         DECODED_MESSAGE=@substr:2:$DECODED_MESSAGE
+         PREFIX=@substr:0,3:$DECODED_MESSAGE
+         DECODED_MESSAGE=@substr:3:$DECODED_MESSAGE
 
             @ifeq "$PREFIX" "!X"
             DECODED_MESSAGE=$EYE_EMOJI$DECODED_MESSAGE
@@ -1100,8 +1130,9 @@ IS_DIRECT=
       @ifdef $EXTRA_MESSAGE
       IS_POLL=
 
-      POS=@strpos:$POLL_EMOJI:$DECODED_MESSAGE
-         @ifdef $POS
+         @ifeq "$CHECK_ENCRYPTED" "$PROMPT_PREFIX_DECODED"
+         IS_POLL=1
+         @elif "$CHECK_ENCRYPTED" = "$PROMPT_CRYPT_PREFIX_DECODED"
          IS_POLL=1
          @endif
 
