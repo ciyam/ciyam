@@ -4539,6 +4539,11 @@ void console_command_handler::preprocess_command_and_args( string& str, const st
                      history_line_numbers.erase( history_line_numbers.begin( ) + offset, history_line_numbers.end( ) );
                   }
 
+                  // NOTE: A script that ends in a continuation is an error (rather than its unfinished command being ignored).
+                  if( !next_command.empty( ) )
+                     throw runtime_error( "missing end of command continued from line #"
+                      + to_string( line_number + 1 ) + " in '" + new_args[ 0 ] + "'" + error_context );
+
                   if( !conditions.empty( ) )
                      throw runtime_error( "missing 'endif' for conditional started at line #"
                       + to_string( lines_for_conditions.back( ) ) + " in '" + new_args[ 0 ] + "'" + error_context );
@@ -5680,6 +5685,15 @@ void console_command_processor::get_cmd_and_args( string& cmd_and_args )
          if( cmd_and_args == "\\" )
             ++lines_joined;
       }
+   }
+
+   // NOTE: Input that is not typed which ends in a continuation is an error (as it is for a script run with "<") rather than
+   // its unfinished command being run - a continuation is given back so that the command is left unfinished as input ends.
+   if( !isatty( STDIN_FILENO ) && !cin && get_is_continuation( ) )
+   {
+      cout << "Error: missing end of command continued from line #" << ( handler.line_number + 1 ) << endl;
+
+      cmd_and_args = "\\";
    }
 #endif
 }
