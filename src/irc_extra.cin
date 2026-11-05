@@ -33,6 +33,8 @@ SECONDARY_KEY_VAR=$5
 @retain *
 <prefixes.cin
 
+LOCK_EMOJI=🔒
+
 MESSAGE_PREFIX=
 
 IS_DIRECT_MESSAGE=
@@ -149,7 +151,7 @@ FIRST=@substr:0,1:$OP
          @ifeq "$HMAC" "$HCHK"
          MSG_VERIFIED=1
          @else
-         MESSAGE=$LOCK_EMOJI (*** ENCRYPTED MESSAGE NOT READABLE ***)
+         MESSAGE=$NORMAL_PREFIX_DECODED$LOCK_EMOJI (*** ENCRYPTED MESSAGE NOT READABLE ***)
          @endif
 
          @ifdef $MSG_VERIFIED
