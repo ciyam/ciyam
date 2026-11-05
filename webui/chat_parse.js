@@ -2308,8 +2308,9 @@ function group_encryption_note( keys, keyed )
 }
 
 // NOTE: Where a member's room key comes from, for a room without one here (Damon, 2026-11-02: "If the owner has a room key, they
-// can send it to you" did not say that it comes in the direct message with them, nor that each needs the other's public key).
-// "room_owner" its owner's name ("the owner" if not known); "known" whether their public key is here.
+// can send it to you" did not say where it comes, nor that each needs the other's public key). Since 2026-11-05 it is passed to
+// them here, in the room, once the owner is next in the chat. "room_owner" its owner's name ("the owner" if not known); "known"
+// whether their public key is here.
 function member_key_hint( room_owner, known )
 {
    var name = String( room_owner || "" ) || "the owner";
@@ -2317,7 +2318,7 @@ function member_key_hint( room_owner, known )
    if( !known )
       return "For a room key from " + name + ", each of you needs the other in Contacts on My account";
 
-   return "A room key from " + name + " comes in your direct message with them, and is added the next time you open this room or that conversation";
+   return "A room key from " + name + " is passed to you here once they are next in the chat, and you are asked to accept it";
 }
 
 // NOTE: The badge at the right of a room's bar and the row at the top of its details (Damon, 2026-11-02: in the line under the
