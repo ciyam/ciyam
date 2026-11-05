@@ -239,6 +239,8 @@ constexpr const char* c_web_session_meta_message_prefix = "_/ ";
 constexpr const char* c_web_session_default_message_prefix = "_  ";
 constexpr const char* c_web_session_private_message_prefix = "_! ";
 
+constexpr const char c_web_session_encrypted_marker = 'X';
+
 constexpr const char* c_web_session_dummy_uuid = "00000000000000000000000000000000";
 
 constexpr const char* c_storage_attribute_id = "id";
@@ -3853,8 +3855,20 @@ bool process_cws_request( http_request_type request_type, const string& uri_suff
                                              prefix = c_web_session_private_message_prefix;
                                        }
 
+                                       string text( option_parameters[ c_cws_request_messages_create_options_text ] );
+
+                                       // NOTE: Text that has been encrypted by the client starts with "X\r" so is sent with
+                                       // the encrypted form of its prefix ("_ X" or "_!X") which replaces the "X\r" itself.
+                                       if( !is_special_request && ( text.size( ) > 1 )
+                                        && ( text[ 0 ] == c_web_session_encrypted_marker ) && ( text[ 1 ] == '\r' ) )
+                                       {
+                                          prefix[ prefix.size( ) - 1 ] = c_web_session_encrypted_marker;
+
+                                          text.erase( 0, 2 );
+                                       }
+
                                        request_and_args = "run_script !irc_send_message \"@room=" + room + ",@names=" + names + ",@message="
-                                        + base64::encode( prefix + option_parameters[ c_cws_request_messages_create_options_text ], true ) + "\"\n";
+                                        + base64::encode( prefix + text, true ) + "\"\n";
                                     }
                                  }
 
