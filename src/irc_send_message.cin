@@ -33,6 +33,9 @@ MESSAGE=$3
 USER_NAME=$4
 SESSION_ID=$5
 
+@retain *
+<prefixes.cin
+
 CHANGED=
 HAS_LOCK=
 
@@ -59,13 +62,13 @@ POS=@strpos:_:$ROOM
    @ifneq "$MESSAGE" "$OUTPUT"
    ERROR=Invalid message format (needs to be base64).
    @else
-   PREFIX=@substr:0,3:$MESSAGE
+   PREFIX=@substr:0,$PREFIX_LENGTH_ENCODED:$MESSAGE
 
    ; NOTE: Special messages begin with "_:[a-z]"
    ; and (unless is "admin") are the only type
    ; of messages allowed in the "starting room".
    SPECIAL=
-      @ifeq "$PREFIX" "Xzp"
+      @ifeq "$PREFIX" "$SYSTEM_PREFIX_ENCODED"
       SPECIAL=1
       @endif
 
@@ -149,22 +152,16 @@ POS=@strpos:_:$ROOM
       @ifndef $ERROR
 
       TARGET=
-         @ifeq "$PREFIX" "XyA"
+         @ifeq "$PREFIX" "$NORMAL_PREFIX_ENCODED"
          PREFIX=
          TARGET=public
-         @elif "$PREFIX" = "XyB"
-         PREFIX=
-         TARGET=public
-         @elif "$PREFIX" = "XyD"
-         PREFIX=
-         TARGET=public
-         @elif "$PREFIX" = "XyE"
+         @elif "$PREFIX" = "$PRIVATE_PREFIX_ENCODED"
          PREFIX=
          TARGET=private
-         @elif "$PREFIX" = "XyF"
+         @elif "$PREFIX" = "$NORMAL_CRYPT_PREFIX_ENCODED"
          PREFIX=
-         TARGET=private
-         @elif "$PREFIX" = "XyH"
+         TARGET=public
+         @elif "$PREFIX" = "$PRIVATE_CRYPT_PREFIX_ENCODED"
          PREFIX=
          TARGET=private
          @endif
@@ -213,9 +210,9 @@ NAMES_LEN=@strlen:$NAMES
    MLEN=@strlen:$MESSAGE
 
       @ifeq "$TARGET" "public"
-      CHECK_SPACES=XyA
+      CHECK_SPACES=$NORMAL_PREFIX_ENCODED
       @else
-      CHECK_SPACES=XyE
+      CHECK_SPACES=$PRIVATE_PREFIX_ENCODED
       @endif
 
    NUM_TRAILING=0
@@ -269,25 +266,20 @@ NAMES_LEN=@strlen:$NAMES
 
       PRIVATE_PIN=
 
+      PREFIX=@substr:0,$PREFIX_LENGTH_ENCODED:%SOURCE_PARTS:2%
+
       ; NOTE: Only the room's owner can pin (or unpin)
       ; messages but can do so for any user's message.
 
          @ifneq "$USER_NAME" "%SOURCE_PARTS:1%"
-            @ifeq "$MESSAGE" "XyAg"
+            @ifeq "$MESSAGE" "$NORMAL_PREFIX_ENCODED"
                @ifdef $IS_OWNER
                PIN_AUTHOR=%SOURCE_PARTS:1%
                OLD_MESSAGE=%SOURCE_PARTS:2%
 
-               PREFIX=@substr:0,2:%SOURCE_PARTS:2%
-               OLD_PREFIX=@substr:0,3:%SOURCE_PARTS:2%
-
-                  @ifeq "$PREFIX" "Xz"
+                  @ifeq "$PREFIX" "$NORMAL_PREFIX_ENCODED"
                   NOT_EDITABLE=1
-                  @elif "$OLD_PREFIX" = "XyE"
-                  PRIVATE_PIN=1
-                  @elif "$OLD_PREFIX" = "XyF"
-                  PRIVATE_PIN=1
-                  @elif "$OLD_PREFIX" = "XyH"
+                  @elif "$OLD_PREFIX" = "$PRIVATE_PREFIX_ENCODED"
                   PRIVATE_PIN=1
                   @endif
                @else
@@ -303,20 +295,15 @@ NAMES_LEN=@strlen:$NAMES
          @else
          OLD_MESSAGE=%SOURCE_PARTS:2%
 
-         PREFIX=@substr:0,2:%SOURCE_PARTS:2%
+         OLD_PREFIX=@substr:0,$PREFIX_LENGTH_ENCODED:$OLD_MESSAGE
 
-         OLD_PREFIX=@substr:0,3:%SOURCE_PARTS:2%
          OLD_TARGET=public
-            @ifeq "$OLD_PREFIX" "XyE"
-            OLD_TARGET=private
-            @elif "$OLD_PREFIX" = "XyF"
-            OLD_TARGET=private
-            @elif "$OLD_PREFIX" = "XyH"
+            @ifeq "$OLD_PREFIX" "$PRIVATE_PREFIX_ENCODED"
             OLD_TARGET=private
             @endif
 
          BAD_TARGET=
-            @ifeq "$PREFIX" "Xz"
+            @ifeq "$PREFIX" "$NORMAL_PREFIX_ENCODED"
             NOT_EDITABLE=1
             @elif "$TARGET" != "$OLD_TARGET"
             BAD_TARGET=1
@@ -329,7 +316,7 @@ NAMES_LEN=@strlen:$NAMES
             ERROR=Source message for edit was not found (or is not own).
             @else
             DECODED=@base64:$MESSAGE
-            REACTION=@substr:3:$DECODED
+            REACTION=@substr:$PREFIX_LENGTH_DECODED:$DECODED
 
             ; NOTE: Only accepts values
             ; that are between 0 and 9.
@@ -431,13 +418,13 @@ NAMES_LEN=@strlen:$NAMES
          @elif "$NOT_EDITABLE" = "1"
          ERROR=Source message is designated as a system generated message.
          @else
-         ; NOTE: If the new message is just a space then will pin/unpin it.
-            @ifeq  "$MESSAGE" "XyEg"
+         ; NOTE: If the new message is just a prefix then will pin/unpin it.
+            @ifeq  "$MESSAGE" "$PRIVATE_PREFIX_ENCODED"
             ERROR=Pinning of private messages is not supported.
             @elif "$PRIVATE_PIN" = "1"
             ERROR=Pinning of private messages is not supported.
             @else
-               @ifeq "$MESSAGE" "XyAg"
+               @ifeq "$MESSAGE" "$NORMAL_PREFIX_ENCODED"
                   @ifndef $IS_OWNER
                   ERROR=Pinning messages for this room is owner only.
                   @else
@@ -488,17 +475,17 @@ NAMES_LEN=@strlen:$NAMES
       NAMES=@repstr:./@:.$NAMES
       @endif
 
-   ; NOTE: This is for "_/?".
-      @ifeq "$MESSAGE" "Xy8_"
-      PREFIX=Xy9
+   ; NOTE: This is for "_/ ?".
+      @ifeq "$MESSAGE" "%RESERVED_PREFIX_ENCODED%Pw"
+      PREFIX=$RESERVED_PREFIX_ENCODED
       @else
-      PREFIX=@substr:0,3:$MESSAGE
+      PREFIX=@substr:0,$PREFIX_LENGTH_ENCODED:$MESSAGE
       @endif
 
-   ; NOTE: Prefix being "_/".
-      @ifeq "$PREFIX" "Xy9"
+   ; NOTE: Prefix being "_/ ".
+      @ifeq "$PREFIX" "$RESERVED_PREFIX_ENCODED"
 
-         @ifeq "$MESSAGE" "Xy9jbGVhcg"
+         @ifeq "$MESSAGE" "%RESERVED_PREFIX_ENCODED%Y2xlYXI"
          CHANGED=1
          .system_variable @queue_irc_$ROOM_AND_USER ""
          RETURN=History for '$USER_NAME' in $ROOM cleared.
@@ -537,7 +524,7 @@ NAMES_LEN=@strlen:$NAMES
                   ISSUED_PREFIX=$ISSUED_PREFIX for $TARGET_ROOM
                   @endif
 
-               USER_MESSAGE=_:issued ($ISSUED_PREFIX sent to $LIST)
+               USER_MESSAGE=%SYSTEM_PREFIX_DECODED%issued ($ISSUED_PREFIX sent to $LIST)
                USER_MESSAGE=@base64::$USER_MESSAGE
                @endif
             @endif
