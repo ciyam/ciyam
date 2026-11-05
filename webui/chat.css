@@ -2432,6 +2432,35 @@ button.chat-avatar:hover
    align-self: center;
 }
 
+/* NOTE: A private message drawn as a folded note passed in the room (Ian, 2026-11-04: in a meeting, a note slid in front of one
+   person - known at a glance for what it is, with no other room to look in). A slip of paper as wide as its words, a corner
+   folded down, a shadow under it; the pill still says who it is to. */
+.chat-message.is-private .chat-message-text
+{
+   position: relative;
+   justify-self: start;
+   max-width: 100%;
+   padding: 5px 24px 6px 9px;
+   border: 1px solid var(--color-chat-private-border);
+   border-radius: var(--radius-xs) 0 var(--radius-xs) var(--radius-xs);
+   background: var(--color-chat-private-bg);
+   box-shadow: 1px 2px 4px color-mix(in srgb, var(--color-chat-private-strong) 18%, transparent);
+}
+
+/* NOTE: The folded corner - the room's background cut from it, and the fold beneath. */
+.chat-message.is-private .chat-message-text::after
+{
+   content: "";
+   position: absolute;
+   top: -1px;
+   right: -1px;
+   width: 14px;
+   height: 14px;
+   background: linear-gradient(225deg, var(--color-chat-bg) 50%, var(--color-chat-private-border) 50%);
+   border-bottom-left-radius: 3px;
+   pointer-events: none;
+}
+
 /* NOTE: A message keeps its line breaks - typed with shift+enter. */
 .chat-message-body
 {
