@@ -715,19 +715,39 @@ function chat_offer_sealed_actions( element, opened )
 // in it - one scanned in from an offline device is sealed in a room with no key (found by the suites).
 function chat_member_keyless( )
 {
+   return chat_member_keyless_kind( ) !== "";
+}
+
+// NOTE: How a member without the key gets it - "accept": the owner's note with it is here; "codes": not, and each needs the other's
+// contact code (the owner's plain note says so, even when the owner's is here - the owner lacks theirs: found by review, 2026-11-06);
+// "" for a room that is not encrypted, or one they have the key for.
+function chat_member_keyless_kind( )
+{
    var entry = ( g_room !== "" ) ? find_room( g_room ) : null;
 
    if( !entry || chat_is_room_owner( ) || ( chat_dm_other( ) !== "" ) || !can_have_room_key( g_room, g_room_name )
     || ( chat_room_key( g_room ) !== "" ) )
-      return false;
+      return "";
 
    var notice = keyless_note_text( g_room_owner );
+   var sealed = false;
+   var told = false;
 
-   return Array.prototype.some.call( document.querySelectorAll( "#message_list .chat-message-body" ), function( body )
+   document.querySelectorAll( "#message_list .chat-message-body" ).forEach( function( body )
    {
-      return ( body.dataset.private === "1" ) && ( body.dataset.sender === g_room_owner )
-       && ( ( message_prefix( body.dataset.text || "" ) === "X" ) || ( body.dataset.text === notice ) );
+      if( ( body.dataset.private !== "1" ) || ( body.dataset.sender !== g_room_owner ) )
+         return;
+
+      if( message_prefix( body.dataset.text || "" ) === "X" )
+         sealed = true;
+      else if( body.dataset.text === notice )
+         told = true;
    } );
+
+   if( sealed && chat_has_owner_key( ) )
+      return "accept";
+
+   return ( sealed || told ) ? "codes" : "";
 }
 
 // NOTE: For a private message between two - a room key's note, or its receipt (Damon, 2026-11-05) - the secret those two share, or
@@ -1229,8 +1249,8 @@ function chat_room_key_sent( room, text, lead )
    show_alert( ( lead ? lead + " " : "" ) + "Room key: " + text, "is-info" );
 }
 
-// NOTE: Every new room keyed (Ian, 2026-10-28) - a key made as it is created and sent to each invited in an encrypted direct message,
-// as a group's is ("chat_encrypt_group( )"). Without keys of one's own the room is made as it was, Room Details saying why it is
+// NOTE: Every new room keyed (Ian, 2026-10-28) - a key made as it is created and passed to each invited in the room as they join
+// (Damon, 2026-11-05), as a group's is ("chat_encrypt_group( )"). Without keys of one's own the room is made as it was, Room Details saying why it is
 // not encrypted.
 async function chat_key_new_room( room, invitees )
 {
@@ -1259,11 +1279,13 @@ async function chat_key_new_room( room, invitees )
 
 // NOTE: The rooms this account made before it had keys (Damon, 2026-11-05) - kept on this browser by number, as nothing on the node
 // says how a room was made. "cws.unkeyed_rooms_<name>".
+const c_unkeyed_rooms_prefix = "cws.unkeyed_rooms_";
+
 function chat_unkeyed_rooms( )
 {
    try
    {
-      return JSON.parse( localStorage.getItem( "cws.unkeyed_rooms_" + ciyam.username ) || "[]" );
+      return JSON.parse( localStorage.getItem( c_unkeyed_rooms_prefix + ciyam.username ) || "[]" );
    }
    catch( e )
    {
@@ -1280,7 +1302,7 @@ function chat_unkeyed_rooms_change( room, add )
 
    try
    {
-      localStorage.setItem( "cws.unkeyed_rooms_" + ciyam.username, JSON.stringify( rooms ) );
+      localStorage.setItem( c_unkeyed_rooms_prefix + ciyam.username, JSON.stringify( rooms ) );
    }
    catch( e )
    {
@@ -1306,9 +1328,11 @@ async function chat_offer_encrypt_room( room, entry )
    if( !yes || ( g_room !== room ) || ( chat_room_key( room ) !== "" ) )
       return;
 
-   chat_unkeyed_rooms_change( room, false );
-
    await chat_encrypt_group( room, g_members.map( function( member ) { return member.name; } ) );
+
+   // NOTE: Only once it has a key - asked again the next time otherwise (found by review, 2026-11-06).
+   if( chat_room_key( room ) !== "" )
+      chat_unkeyed_rooms_change( room, false );
 }
 
 // NOTE: Anyone invited later is sent the key too (Ian, 2026-10-28) - by the owner, as only the owner's is added by itself. What came
@@ -1337,8 +1361,8 @@ async function do_send_room_key( )
 {
    var room = g_room;
 
-   if( !await ask_dialog( { title: "Send the key to each member?", text: "In an encrypted direct message - one is started with anyone"
-    + " you have none with yet.", yes: "Send it" } ) || ( g_room !== room ) )
+   if( !await ask_dialog( { title: "Send the key to each member?", text: "Each member is passed it again here, in a note only they can"
+    + " open, and asked to accept it.", yes: "Send it" } ) || ( g_room !== room ) )
       return;
 
    g_room_key_busy = true;
@@ -1355,8 +1379,6 @@ async function do_send_room_key( )
       chat_room_key_sent( room, text );
 }
 
-// NOTE: "room"'s key sent to each of "people" in an encrypted direct message - the one with them, or one started for it and sent
-// once they accept. Never in the clear: anyone without a public key here is left out. What came of it ("room_key_sent_text( )").
 // NOTE: Passed to each member as a note in the room since 2026-11-05 (Damon), not in a direct message - and only to those who have joined
 // it, so anyone invited is given it as they join, while the owner has the room open or the next time they open it
 // ("chat_owner_send_keys( )"). "people" looked at afresh. What came of it, or "" for nothing to say.
@@ -1368,55 +1390,6 @@ async function chat_send_room_key( room, people )
    ( people || [ ] ).forEach( function( person ) { delete g_owner_keys_checked[ room + "|" + person ]; } );
 
    return await chat_owner_send_keys( true );
-}
-
-async function chat_send_room_key_to( person, text )
-{
-   if( chat_secret_with( person ) === "" )
-      return "no_key";
-
-   var existing = dm_existing( [ person ], ciyam.username, g_rooms, g_invitations, dm_waiting_rooms( ) );
-
-   if( existing.kind === "request" )
-      return "request";
-
-   if( existing.kind === "waiting" )
-   {
-      g_dm_pending[ existing.room ].texts.push( text );
-
-      return "held";
-   }
-
-   if( existing.kind === "" )
-   {
-      var dm = await start_dm( [ person ] );
-
-      // NOTE: Not started, or signed out meanwhile (no room) - "chat_send_room_key( )" then says nothing.
-      if( ( dm.problem !== "" ) || ( dm.room === "" ) )
-         return "failed";
-
-      g_dm_pending[ dm.room ].texts.push( text );
-
-      return "started";
-   }
-
-   // NOTE: They declined it - nothing sent there reaches them.
-   if( g_dm_shut[ existing.room ] )
-      return "failed";
-
-   var sealing = await chat_seal_for( person, text );
-
-   if( !sealing.sealed || ( sealing.text === "" ) )
-      return "failed";
-
-   var answer = null;
-
-   await serialised( function( )
-   {
-      return ciyam.create_message( existing.room, "text=" + sealing.text, function( response ) { answer = String( response ); } );
-   } );
-
-   return ( ( answer === null ) || is_timeout_response( answer ) || is_error_response( answer ) ) ? "failed" : "sent";
 }
 
 function do_open_add_room_key( )
@@ -1560,9 +1533,10 @@ var g_room_key_later = { };
 // NOTE: Rooms whose owner's messages would not open, said once a sign in ("chat_look_for_owner_key( )").
 var g_owner_key_unopened = { };
 
-// NOTE: The sealed messages "sender" posted in direct message "dm_room" ("sender" a name, or a list of them), read quietly from the
-// start and opened with "secret" - as { opened: [ { sender, text, unique } ], failed: <how many would not open>, newest_failed: <the
-// newest would not> }, or null if it could not be read (looked for again later).
+// NOTE: The sealed private messages "sender" posted in room "dm_room" ("sender" a name, or a list of them) - a room key's notes and
+// their receipts (Damon, 2026-11-05) - read quietly from the start and opened with "secret": as { opened: [ { sender, text, unique } ],
+// failed: <how many would not open>, newest_failed: <the newest would not> }, or null if it could not be read (looked for again
+// later). Not the room's own messages, sealed with its key, which the two's secret never opens (found by review, 2026-11-06).
 async function chat_dm_opened( dm_room, sender, secret )
 {
    var senders = [ ].concat( sender );
@@ -1595,7 +1569,8 @@ async function chat_dm_opened( dm_room, sender, secret )
    {
       var message = result.messages[ i ];
 
-      if( ( message.kind !== c_kind_chat ) || ( senders.indexOf( message.sender ) < 0 ) || ( message_prefix( message.text ) !== "X" ) )
+      if( ( message.kind !== c_kind_chat ) || !message.private || ( senders.indexOf( message.sender ) < 0 )
+       || ( message_prefix( message.text ) !== "X" ) )
          continue;
 
       var cached = g_chat_opened[ secret + "|" + message.text ];
@@ -1689,15 +1664,15 @@ async function chat_look_for_owner_key( member_only )
    if( read !== g_chat_keys_read )
       return;
 
-   // NOTE: Their messages there would not open (Damon, 2026-11-03: a key sent, and never added) - the public key each keeps for the
+   // NOTE: Their note there would not open (Damon, 2026-11-03: a key sent, and never added) - the public key each keeps for the
    // other is not the other's now, one of them having made new keys since. Said once a sign in for the room, and only if the newest
    // would not - older ones sealed before new keys were exchanged never will (found by review, 2026-11-04).
    if( ( key === "" ) && found.newest_failed && ( g_room === room ) && !g_owner_key_unopened[ room ] )
    {
       g_owner_key_unopened[ room ] = true;
 
-      show_alert( owner + "'s messages in your direct message can't be opened here, so a room key in them can't be added - one of you"
-       + " has new keys since you added each other. Add each other's contact code again, under Contacts on My account.", "is-error" );
+      show_alert( "The room key " + owner + " passed you here can't be opened - one of you has new keys since you added each other."
+       + " Add each other's contact code again, under Contacts on My account.", "is-error" );
 
       return;
    }

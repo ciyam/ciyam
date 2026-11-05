@@ -2123,7 +2123,7 @@ function show_encryption_action( )
 
    if( keyless )
    {
-      var known = chat_has_owner_key( );
+      var known = ( chat_member_keyless_kind( ) === "accept" );
 
       document.getElementById( "composer_keys_text" ).textContent = member_keyless_text( g_room_owner, known );
       document.getElementById( "composer_keys_go" ).textContent = known ? "Accept the room key" : "Exchange contact codes";
