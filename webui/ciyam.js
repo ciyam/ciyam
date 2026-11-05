@@ -29,6 +29,8 @@ const c_cmd_verb_employ = "employ";
 const c_cmd_verb_review = "review";
 const c_cmd_verb_update = "update";
 
+const c_user_option_password = "password";
+
 const c_var_name_access = "ACCESS";
 const c_var_name_device = "DEVICE";
 const c_var_name_hashed = "HASHED";
@@ -1085,7 +1087,7 @@ class CIYAM
    }
 
    // NOTE: A password in "options" is hashed with the PIN before it is sent - unless "is_hashed", as "connect( )" switching an
-   // account over gives it.
+   // account over gives it. Any other option ("keys=REPLACE|RESTORE", admin's) goes as it is.
    async update_user( access_pin, options, callback, is_hashed )
    {
       if( this.sessid == "" )
@@ -1102,7 +1104,7 @@ class CIYAM
          {
             var pos = options.indexOf( "=" );
 
-            if( pos > 0 )
+            if( ( pos > 0 ) && ( options.substr( 0, pos ) == c_user_option_password ) )
             {
                var passwd = options.substring( pos + 1 );
 
