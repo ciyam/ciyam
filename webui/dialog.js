@@ -5,7 +5,8 @@
 
 // NOTE: Styled dialogs in place of the browser's "confirm( )" and "alert( )" (Damon, 2026-10-27) - drawn as the page's own
 // dialogs are ("chat.css"'s ".chat-scrim" and ".chat-dialog"), for every page of the node. "ask_dialog( )" resolves true for its
-// yes, and false for its no, Escape or a click outside it; "tell_dialog( )" resolves once it is dismissed. One at a time - a second
+// yes, and false for its no, Escape or a click outside it - or "other" for a third choice, when it has one ("other" in its options,
+// the button's words); "tell_dialog( )" resolves once it is dismissed. One at a time - a second
 // asked while one is open answers the first no. Its text is set with "textContent", so a name from the server can be in it.
 //
 //    if( await ask_dialog( { title: "Remove the key?", text: "...", yes: "Remove", no: "Keep it", danger: true } ) ) ...
@@ -46,15 +47,19 @@ function dialog_parts( )
    var actions = dialog_element( "div", "chat-dialog-actions" );
 
    var no = dialog_element( "button", "chat-btn", "dialog_no" );
+   var other = dialog_element( "button", "chat-btn", "dialog_other" );
    var yes = dialog_element( "button", "chat-btn chat-btn--primary", "dialog_yes" );
 
    no.type = "button";
+   other.type = "button";
    yes.type = "button";
 
    no.addEventListener( "click", function( ) { dialog_end( false ); } );
+   other.addEventListener( "click", function( ) { dialog_end( "other" ); } );
    yes.addEventListener( "click", function( ) { dialog_end( true ); } );
 
    actions.appendChild( no );
+   actions.appendChild( other );
    actions.appendChild( yes );
 
    box.appendChild( dialog_element( "h2", "", "dialog_title" ) );
@@ -123,7 +128,8 @@ function dialog_end( answer )
    open.resolve( answer );
 }
 
-// NOTE: "options" - { title, text, yes, no, danger }; "no" null for one button only (as "tell_dialog( )" has it). A danger's yes
+// NOTE: "options" - { title, text, yes, no, other, danger }; "no" null for one button only (as "tell_dialog( )" has it); "other"
+// a third button's words, between the two, when there is a third choice. A danger's yes
 // is red, and its no has the focus, so Enter straight away does not do it.
 function show_dialog( options )
 {
@@ -145,6 +151,11 @@ function show_dialog( options )
 
    no.textContent = opts.no || "Cancel";
    no.hidden = ( opts.no === null );
+
+   var other = document.getElementById( "dialog_other" );
+
+   other.textContent = opts.other || "";
+   other.hidden = !opts.other;
 
    return new Promise( function( resolve )
    {

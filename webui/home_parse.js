@@ -1121,9 +1121,23 @@ function people_count_text( total, matched, searching, shown )
    return ( ranged !== "" ) ? ranged + matched + " matching" : matched + " of " + total + " match";
 }
 
+// NOTE: Backing up or restoring a person's keys refused ("keys=REPLACE|RESTORE", Ian's "0592816e", 2026-11-04), in words - the
+// node's own for anything else. "Current keys" - none to back up; "Restore keys" - no backup to restore.
+function user_keys_problem_text( problem )
+{
+   if( /^Current keys \(.*\) not found/.test( problem ) )
+      return "There are no keys on the node to back up yet - they are set up on My account.";
+
+   if( /^Restore keys \(.*\) not found/.test( problem ) )
+      return "There is no backup of these keys to restore - none has been made yet.";
+
+   return problem;
+}
+
 if( typeof module !== "undefined" )
 {
    module.exports = {
+      user_keys_problem_text: user_keys_problem_text,
       people_matching: people_matching,
       people_page: people_page,
       people_count_text: people_count_text,

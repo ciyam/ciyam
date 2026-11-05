@@ -3767,6 +3767,7 @@ button.chat-reaction:hover
 .chat-dialog-actions
 {
    display: flex;
+   flex-wrap: wrap;
    gap: 8px;
    justify-content: flex-end;
    margin-top: 6px;

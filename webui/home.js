@@ -3124,6 +3124,16 @@ function render_people( )
       // NOTE: Named, not by PIN - the PIN may be hidden.
       var called = person.name || "this unclaimed account";
 
+      // NOTE: Backing up and restoring keys - admin's own too; not for one unclaimed, which has none.
+      if( ( person.status !== "unclaimed" ) && ( person.name !== "" ) )
+      {
+         var keys = row.querySelector( ".account-keys" );
+
+         keys.hidden = false;
+         keys.setAttribute( "aria-label", person.you ? "Back up or restore your keys" : "Back up or restore the keys of " + person.name );
+         keys.onclick = function( ) { do_user_keys( person ); };
+      }
+
       if( person.you )
       {
          row.querySelector( ".account-you" ).hidden = false;
@@ -3236,6 +3246,49 @@ async function do_remove( pin )
 // NOTE: A forgotten password (Damon and Ian, 2026-10-29) - the account made again as a nominated one with its own PIN and username,
 // in one request ("nominated=!<pin>:<name>"): the password gone, admin never knowing the new one; its rooms, messages and keys
 // kept. The person sets it up again with the PIN, as a new household member does.
+// NOTE: The node keeps one backup of each person's keys - their own, their contacts' and their room keys, locked as My account
+// keeps them, so admin never sees them ("keys=REPLACE|RESTORE", Ian's "0592816e", 2026-11-04). Backing up replaces that backup
+// with the keys as they are now; restoring puts it back, for keys changed by someone who got into the account.
+async function do_user_keys( person )
+{
+   var whose = person.you ? "your" : person.name + "'s";
+   var their = person.you ? "your" : "their";
+
+   var choice = await ask_dialog( { title: ( person.you ? "Your" : person.name + "'s" ) + " keys", text: "The node keeps one backup of "
+    + whose + " keys - " + their + " own, " + their + " contacts' and " + their + " room keys, still locked so you can't read them. Back"
+    + " up when " + their + " keys are as they should be. Restore if someone else got into the account and changed them.",
+    yes: "Back up now", other: "Restore the backup", no: "Cancel" } );
+
+   if( choice === false )
+      return;
+
+   var restoring = ( choice === "other" );
+
+   if( restoring && !await ask_dialog( { title: "Restore " + whose + " keys?", text: "The keys on the node now are replaced by the"
+    + " backup - a contact or room key added since it was made is lost. Only if " + their + " keys were changed by someone else.",
+    yes: "Restore", danger: true } ) )
+      return;
+
+   var asked_for = ciyam.access;
+
+   var response = await request( function( done )
+   {
+      return ciyam.update_user( person.pin, "keys=" + ( restoring ? "RESTORE" : "REPLACE" ), done );
+   } );
+
+   if( ciyam.access !== asked_for )
+      return;
+
+   var problem = people_problem( response );
+
+   if( problem !== "" )
+      people_alert( ( restoring ? "Not restored: " : "Not backed up: " ) + user_keys_problem_text( problem ), true );
+   else if( restoring )
+      people_alert( ( person.you ? "Your" : person.name + "'s" ) + " keys are restored from the backup.", false );
+   else
+      people_alert( ( person.you ? "Your" : person.name + "'s" ) + " keys are backed up - the backup is the keys as they are now.", false );
+}
+
 async function do_reset_password( person )
 {
    // NOTE: The username is theirs again when they set up - the node takes no other for it (ISS-035, 2026-10-30).

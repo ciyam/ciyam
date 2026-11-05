@@ -164,6 +164,9 @@ ok   - every word found
 ok   a page of people
 ok   - held within the pages there are
 ok   the count over the list
+ok   keys - none to back up
+ok   keys - no backup to restore
+ok   keys - any other refusal as the node says it
 ok   a short one kept
 ok   the devices
 ok   devices shown - this browser, then signed in, four in all

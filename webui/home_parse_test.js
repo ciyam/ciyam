@@ -339,6 +339,14 @@ check( "the count over the list", [ hp.people_count_text( 8, 8, false, hp.people
  hp.people_count_text( 57, 23, true, hp.people_page( 23, 2 ) ), hp.people_count_text( 57, 0, true, hp.people_page( 0, 1 ) ),
  hp.people_count_text( 1, 1, false, hp.people_page( 1, 1 ) ) ],
  [ "8 people", "11–20 of 57 people", "3 of 57 match", "11–20 of 23 matching", "No one matches", "1 person" ] );
+
+// NOTE: The node's refusals of "keys=REPLACE|RESTORE" - its words as "0592816e" has them, "upddate" and all.
+check( "keys - none to back up", hp.user_keys_problem_text( "Current keys (20101) not found for user upddate." ),
+ "There are no keys on the node to back up yet - they are set up on My account." );
+check( "keys - no backup to restore", hp.user_keys_problem_text( "Restore keys (20101) not found for user upddate." ),
+ "There is no backup of these keys to restore - none has been made yet." );
+check( "keys - any other refusal as the node says it", hp.user_keys_problem_text( "User key replace/restore is only available to the administrator." ),
+ "User key replace/restore is only available to the administrator." );
 check( "a short one kept", hp.short_device( "abc" ), "abc" );
 check( "the devices", hp.device_rows( [
  { device: "6034a59f4554116a", session: "s1", active: true, current: true },
