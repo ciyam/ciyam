@@ -466,12 +466,17 @@ async function render_keys( )
       set_error( "keys_error", "That code isn't the answer to this device's - it is for another device, or was used already, or is more"
        + " than a quarter of an hour old. Get them from another device again." );
 
+   // NOTE: Another device's code opened here is put in Add another device and answered only on "Use it", under its warning (found by
+   // review, 2026-11-06: answered at once, anyone who got this browser to open their code's address, and to show them what came back,
+   // would have had the keys).
    if( device && ( device.kind === "ask" ) )
    {
       if( !document.getElementById( "keys_here" ).hidden )
       {
          keys_show_device( );
-         await keys_device_answer( device );
+
+         document.getElementById( "keys_device_ask" ).value = device_ask_link( location.origin + location.pathname, device.key );
+         document.getElementById( "keys_device_use" ).focus( );
       }
       else
          set_error( "keys_error", "Another device asked for your keys, but they aren't on this browser to give - type your twelve words"
@@ -904,6 +909,10 @@ function keys_ask_kept( )
 
       if( kept && /^[0-9a-f]{64}$/.test( kept.seed ) && ( Date.now( ) - kept.at < c_keys_ask_life ) )
          return kept;
+
+      // NOTE: Too old, or not one - not left behind (found by review, 2026-11-06).
+      if( kept !== null )
+         localStorage.removeItem( c_keys_ask_name );
    }
    catch( e )
    {
