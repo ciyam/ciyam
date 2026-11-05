@@ -234,10 +234,10 @@ constexpr const char* c_web_session_messages_extra_time = "TIME";
 
 constexpr const char* c_web_session_entrance_room_number = "0000000";
 
-constexpr const char* c_web_session_meta_message_prefix = "_/";
+constexpr const char* c_web_session_meta_message_prefix = "_/ ";
 
-constexpr const char* c_web_session_default_message_prefix = "_ ";
-constexpr const char* c_web_session_private_message_prefix = "_!";
+constexpr const char* c_web_session_default_message_prefix = "_  ";
+constexpr const char* c_web_session_private_message_prefix = "_! ";
 
 constexpr const char* c_web_session_dummy_uuid = "00000000000000000000000000000000";
 
