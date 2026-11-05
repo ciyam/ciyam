@@ -2054,11 +2054,11 @@ check( "a message as drawn, but for its reactions - changed when edited, deleted
  cp.message_state( { text: "hi" } ) === cp.message_state( { text: "hi!", edited: true } ),
  cp.message_state( { text: "  ", edited: true, deleted: true } ) === cp.message_state( { text: "  ", edited: true } ),
  cp.message_state( { text: "hi" } ) === cp.message_state( { text: "hi", pinned: true } ) ], [ true, false, false, false ] );
-check( "- on someone else's message only, not deleted, not for some only", [
+check( "- on someone else's message only, not deleted - one for some only too (2026-11-05)", [
  cp.can_react( { kind: "chat", sender: "maya" }, "ian" ), cp.can_react( { kind: "chat", sender: "ian" }, "ian" ),
  cp.can_react( { kind: "system", sender: "maya" }, "ian" ), cp.can_react( { kind: "chat", sender: "maya", deleted: true }, "ian" ),
  cp.can_react( { kind: "chat", sender: "maya", private: true }, "ian" ), cp.can_react( { kind: "chat", sender: "maya" }, "" ) ],
- [ true, false, false, false, false, false ] );
+ [ true, false, false, false, true, false ] );
 
 console.log( "" );
 console.log( failures === 0 ? "All checks passed." : ( failures + " check(s) FAILED." ) );

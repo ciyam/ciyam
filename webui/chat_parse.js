@@ -1832,10 +1832,11 @@ function message_state( entry )
    return ( entry.edited ? "*" : "" ) + ( entry.deleted ? "-" : "" ) + ( entry.pinned ? "!" : "" ) + " " + ( entry.text || "" );
 }
 
-// NOTE: Only someone else's ordinary message, not deleted - not one for some only, for now, nor a system line.
+// NOTE: Only someone else's ordinary message, not deleted, nor a system line. One for some only too (Damon, 2026-11-05) - the node gives
+// its reactions only with it, so only those it is for see them ("private_react_probe.js": a third member saw neither).
 function can_react( entry, me )
 {
-   return !!entry && ( entry.kind === c_kind_chat ) && ( me !== "" ) && ( entry.sender !== me ) && !entry.deleted && !entry.private;
+   return !!entry && ( entry.kind === c_kind_chat ) && ( me !== "" ) && ( entry.sender !== me ) && !entry.deleted;
 }
 
 // NOTE: New messages added to those already held, as a read without "from" returns only what

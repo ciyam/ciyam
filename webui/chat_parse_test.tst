@@ -955,6 +955,6 @@ ok   a closed poll's outcome - the most votes, a tie, none
 ok   the node busy with another message - tried once more
 ok   - not a room's messages that only say the same words
 ok   a message as drawn, but for its reactions - changed when edited, deleted or pinned since
-ok   - on someone else's message only, not deleted, not for some only
+ok   - on someone else's message only, not deleted - one for some only too (2026-11-05)
 
 All checks passed.
