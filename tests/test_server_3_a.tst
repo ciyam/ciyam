@@ -74,9 +74,9 @@ Now check for messages as 'admin' and join the room created by 'test-1'.
 0000000000000 admin #0000001 2/2 Admin
 0000000000000 admin #0000002 0/0 General
 test-1+1
-test-1 :joined
-test-1 :invite room 0000003-NEW-ROOM-UUID-VALUE Testing
-:joined
+test-1 : joined
+test-1 : invite 0000003-NEW-ROOM-UUID-VALUE Testing
+: joined
 Now rename the new room to Updated and display the entrance information for the room.
 [okay]
 0000000000000 test-1 #0000003 3/3 Updated

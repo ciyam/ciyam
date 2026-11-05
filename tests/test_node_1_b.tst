@@ -29,7 +29,7 @@ Create an initial test message.
 [
   {
     "when": "0000000000001",
-    "payload": "admin  testing..."
+    "payload": "admin   testing..."
   }
 ]
 Output the entrance room details.
@@ -110,7 +110,7 @@ Review messages in room 0000001 for 'test-1'.
 [
   {
     "when": "0000000000001",
-    "payload": "test-1 :joined"
+    "payload": "test-1 : joined"
   }
 ]
 Attempt an initial message for 'test-1' and output entrance room details.
@@ -191,7 +191,7 @@ Review messages in room 0000001 for 'admin'.
 [
   {
     "when": "0000000000001",
-    "payload": "test-1 :joined"
+    "payload": "test-1 : joined"
   }
 ]
 Create a new user '22222' named 'test-2'.
@@ -250,7 +250,7 @@ Review messages in room 0000001 for 'test-2'.
 [
   {
     "when": "0000000000001",
-    "payload": "test-2 :joined"
+    "payload": "test-2 : joined"
   }
 ]
 Attempt an initial message for 'test-2' and output entrance room details.
@@ -347,7 +347,7 @@ Review messages in room 0000001 for 'admin'.
 [
   {
     "when": "0000000000001",
-    "payload": "test-2 :joined"
+    "payload": "test-2 : joined"
   }
 ]
 Attempt to rename room 0000001 with an invalid name.
@@ -583,15 +583,15 @@ Review messages in room 0000001 again for 'test-2' then attempt to rename rooms 
 [
   {
     "when": "0000000000001",
-    "payload": "admin :rename 'Admin' to 'Testing'"
+    "payload": "admin : rename 'Admin' to 'Testing'"
   },
   {
     "when": "0000000000002",
-    "payload": "admin :rename 'Testing' to 'Admin'"
+    "payload": "admin : rename 'Testing' to 'Admin'"
   },
   {
     "when": "0000000000003",
-    "payload": "test-1 :invite room 0000003-NEW-ROOM-UUID-VALUE Private (test-1 and test-2)"
+    "payload": "test-1 : invite 0000003-NEW-ROOM-UUID-VALUE Private (test-1 and test-2)"
   }
 ]
 Error: A room can only be changed by its owner or the administrator.
@@ -611,7 +611,7 @@ Join new romm for 'test-2', create an initial message for the new room and outpu
 [
   {
     "when": "0000000000001",
-    "payload": "test-2 :joined"
+    "payload": "test-2 : joined"
   }
 ]
 {"room":"0000003"}
@@ -628,11 +628,11 @@ Join new romm for 'test-2', create an initial message for the new room and outpu
 [
   {
     "when": "0000000000001",
-    "payload": "test-2 :joined"
+    "payload": "test-2 : joined"
   },
   {
     "when": "0000000000002",
-    "payload": "test-2  hi..."
+    "payload": "test-2   hi..."
   }
 ]
 {"room":"0000000"}
@@ -712,19 +712,19 @@ Output entrance room details for 'test-1' and then review messages in rooms 0000
 [
   {
     "when": "0000000000001",
-    "payload": "test-2 :joined"
+    "payload": "test-2 : joined"
   },
   {
     "when": "0000000000002",
-    "payload": "admin :rename 'Admin' to 'Testing'"
+    "payload": "admin : rename 'Admin' to 'Testing'"
   },
   {
     "when": "0000000000003",
-    "payload": "admin :rename 'Testing' to 'Admin'"
+    "payload": "admin : rename 'Testing' to 'Admin'"
   },
   {
     "when": "0000000000004",
-    "payload": "test-1 :issued (invite for 0000003 sent to test-2)"
+    "payload": "test-1 : issued (invite for 0000003 sent to test-2)"
   }
 ]
 {"room":"0000002"}
@@ -745,11 +745,11 @@ Output entrance room details for 'test-1' and then review messages in rooms 0000
 [
   {
     "when": "0000000000001",
-    "payload": "test-1 :joined"
+    "payload": "test-1 : joined"
   },
   {
     "when": "0000000000002",
-    "payload": "test-2 :joined"
+    "payload": "test-2 : joined"
   }
 ]
 Error: Invalid attempt to invite 'bad_user' to room '0000003'.
@@ -767,26 +767,26 @@ Error: Invalid attempt to invite 'bad_user' to room '0000003'.
 [
   {
     "when": "0000000000001",
-    "payload": "test-1 :create 0000003-NEW-ROOM-UUID-VALUE Private (test-1 and test-2)"
+    "payload": "test-1 : create 0000003-NEW-ROOM-UUID-VALUE Private (test-1 and test-2)"
   },
   {
     "when": "0000000000002",
-    "payload": "test-1 :rename 'Private (test-1 and test-2)' to 'Testing (test-1 and test-2)'"
+    "payload": "test-1 : rename 'Private (test-1 and test-2)' to 'Testing (test-1 and test-2)'"
   },
   {
     "when": "0000000000003",
-    "payload": "test-1 :allows set to NONE"
+    "payload": "test-1 : allows set to NONE"
   },
   {
     "when": "0000000000004",
-    "payload": "test-1 :allows set to ANY"
+    "payload": "test-1 : allows set to ANY"
   },
   {
     "when": "0000000000005",
-    "payload": "test-2 :joined"
+    "payload": "test-2 : joined"
   },
   {
     "when": "0000000000006",
-    "payload": "test-2  hi..."
+    "payload": "test-2   hi..."
   }
 ]

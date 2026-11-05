@@ -27,13 +27,16 @@ PRIVATE=
 EXISTING=
 NEW_ROOM=
 
+@retain *
+<prefixes.cin
+
 ENTRANCE_ROOM=0000000
 RESERVED_ROOM=0000001
 STARTING_ROOM=0000002
 
 DUMMY_JOIN_UUID=00000000000000000000000000000000
 
-DUMMY_JOIN_SUFFIX=-$DUMMY_JOIN_UUID
+DUMMY_JOIN_SUFFIX=$DUMMY_JOIN_UUID
 DUMMY_JOIN_SUFFIX=@base64::$DUMMY_JOIN_SUFFIX
 
 .session_variable @uuid
@@ -343,26 +346,26 @@ CHANGED=
                @ifdef $NEW_ROOM
                SEND_NAME=$USER
                SEND_ROOM=$NEW_ROOM
-               MESSAGE=@strlit:_:create $NEW_ROOM-$UUID $NAME
+               MESSAGE=@strlit:create $NEW_ROOM-$UUID $NAME
                @else
                SEND_NAME=ALL
                SEND_ROOM=$EXISTING
                   @ifdef $POSTS
-                  MESSAGE=@strlit:_:allows set to $NAME
+                  MESSAGE=@strlit:allows set to $NAME
                   @else
                      @ifdef $CLOSE
-                     MESSAGE=@strlit:_:closes set to $WHEN
+                     MESSAGE=@strlit:closes set to $WHEN
                      @else
                         @ifdef $ASSIGN
-                        MESSAGE=@strlit:_:assign '$OLD_NAME' to '$NAME'
+                        MESSAGE=@strlit:assign '$OLD_NAME' to '$NAME'
                         @else
-                        MESSAGE=@strlit:_:rename '$OLD_NAME' to '$NAME'
+                        MESSAGE=@strlit:rename '$OLD_NAME' to '$NAME'
                         @endif
                      @endif
                   @endif
                @endif
 
-            ENCODED=@base64::$MESSAGE
+            ENCODED=@base64::$SYSTEM_PREFIX_DECODED$MESSAGE
 
             .session_variable @irc_user
             OLD_IRC_USER=$OUTPUT
@@ -481,7 +484,6 @@ CHANGED=
          @:NEXT
          .=crypto_hash $NEXT_USER$ASSIGN
          NEXT_JOIN_INFO=@substr:0,32:$OUTPUT
-         NEXT_JOIN_INFO=-$NEXT_JOIN_INFO
          NEXT_JOIN_INFO=@base64::$NEXT_JOIN_INFO
 
             @ifndef $REPLACE
@@ -503,8 +505,8 @@ CHANGED=
    @endif
 
    @ifndef $ERROR
-   MESSAGE=@strlit:_:invite room $EXISTING-$TOKEN $ROOM_NAME
-   ENCODED=@base64::$MESSAGE
+   MESSAGE=@strlit:invite $EXISTING-$TOKEN $ROOM_NAME
+   ENCODED=@base64::$SYSTEM_PREFIX_DECODED$MESSAGE
 
    .session_variable @irc_user
    OLD_IRC_USER=$OUTPUT

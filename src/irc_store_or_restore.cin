@@ -150,7 +150,7 @@
             IS_PINNED=1
             @endif
 
-            @ifndef $PINNED
+            @ifndef $IS_PINNED
 
             PURGE_THIS_MESSAGE=
                @ifndef $OLDEST_QUEUED_MESSAGE
