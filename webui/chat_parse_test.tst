@@ -255,7 +255,10 @@ ok   a stored backslash comes back single
 ok   backslash then break
 ok   an ending backslash is only that
 ok   a tab comes back as one
-ok   a carriage return too - an encrypted message's mark
+ok   the prefixes - ordinary, private, a system event, a prompt read as ordinary
+ok   - encrypted, public and private, as the chat seals them
+ok   - an invitation, "invite <room>" now (no "room")
+ok   a carriage return too - in an encrypted message, its " X" read back to "X\r" (Ian's prefixes, 2026-11-05)
 ok   anything else after a backslash kept as it came
 ok   sending doubles a backslash
 ok   sending leaves breaks alone
@@ -824,7 +827,7 @@ ok   a message edited to spaces - deleted, public or private (Ian, 2026-10-15)
 ok   - an ordinary one carries no deleted mark
 ok   deleting - an edit to two spaces, private with its "!"
 ok   - not pinned, nor announced
-ok   pinning - an edit to a single space
+ok   pinning - an edit to nothing but the prefix
 ok   who may pin - the room's owner, any ordinary message (2026-10-30)
 ok   - a member refused, said plainly
 ok   the ninth pin refused - said plainly
@@ -924,7 +927,7 @@ ok   - a message only ending like them, or with a tab typed, is words
 ok   - none, none shown
 ok   reactions as shown - who, how many, one's own
 ok   reacting - given, the same again taken off, another replacing it
-ok   - sent as an edit to a space and its digits
+ok   - sent as an edit to its digits
 
 == polls =======================================================
 ok   a poll's message - the question, then each option after its letter, one line each, empty ones left out

@@ -549,7 +549,17 @@ check( "a stored backslash comes back single", multi[ 1 ].text, "double\\slash" 
 check( "backslash then break", multi[ 2 ].text, "bs then nl\\\nnext" );
 check( "an ending backslash is only that", [ multi[ 3 ].text, multi[ 4 ].text ], [ "ends with\\", "after" ] );
 check( "a tab comes back as one", multi[ 5 ].text, "a\tb" );
-check( "a carriage return too - an encrypted message's mark", cp.parse_message_line( "1790426396000 admin  X\\rAbCd" ).text, "X\rAbCd" );
+// NOTE: Ian's three-character prefixes (2026-11-05) - the kind and then " " or "X", read back to the kind alone.
+check( "the prefixes - ordinary, private, a system event, a prompt read as ordinary", [ cp.parse_message_line( "1793900000000 admin   hello" ).text,
+ cp.parse_message_line( "1793900000001 admin ! a note" ).text, cp.parse_message_line( "1793900000001 admin ! a note" ).private,
+ cp.parse_message_line( "1793900000002 test-1 : joined" ).event.verb, cp.parse_message_line( "1793900000003 admin ? lunch?" ).text ],
+ [ "hello", "a note", true, "joined", "lunch?" ] );
+check( "- encrypted, public and private, as the chat seals them", [ cp.parse_message_line( "1793900000004 admin  XAb" ).text,
+ cp.parse_message_line( "1793900000005 admin !XAb" ).text, cp.parse_message_line( "1793900000005 admin !XAb" ).private ], [ "X\rAb", "X\rAb", true ] );
+check( "- an invitation, \"invite <room>\" now (no \"room\")", cp.parse_message_line( "1793900000006 test-1 : invite 0000003-abc Lunch" ).event,
+ { verb: "invite", detail: "0000003-abc Lunch", name: "Lunch", room: "0000003", token: "abc" } );
+check( "a carriage return too - in an encrypted message, its \" X\" read back to \"X\\r\" (Ian's prefixes, 2026-11-05)",
+ cp.parse_message_line( "1790426396000 admin  XAb\\rCd" ).text, "X\rAb\rCd" );
 check( "anything else after a backslash kept as it came", cp.unescape_message_text( "a\\qb" ), "a\\qb" );
 
 check( "sending doubles a backslash", cp.escape_message_text( "a\\b \\\\ c" ), "a\\\\b \\\\\\\\ c" );
@@ -1646,15 +1656,15 @@ check( "Up edits the newest of your own - others' and nothing to edit passed ove
 // NOTE: Saved unchanged, nothing sent (Ian, 2026-10-31).
 check( "an edit saved as it was - unchanged, space at the ends aside", [ cp.edit_unchanged( "Lunch at %B1%one%B0%", "Lunch at %B1%one%B0%" ),
  cp.edit_unchanged( "Lunch", "  Lunch\n" ), cp.edit_unchanged( "Lunch", "Lunch!" ), cp.edit_unchanged( "Lunch", "lunch" ) ], [ true, true, false, false ] );
-check( "a message edited to spaces - deleted, public or private (Ian, 2026-10-15)", [ cp.parse_message_line( "1792032681000 admin*    " ),
- cp.parse_message_line( "1792032682000 admin* !  " ).deleted ], [ { kind: "chat", unique: "1792032681000", sender: "admin", edited: true, private: false,
+check( "a message edited to spaces - deleted, public or private (Ian, 2026-10-15)", [ cp.parse_message_line( "1792032681000 admin*     " ),
+ cp.parse_message_line( "1792032682000 admin* !   " ).deleted ], [ { kind: "chat", unique: "1792032681000", sender: "admin", edited: true, private: false,
  text: "  ", deleted: true }, true ] );
 check( "- an ordinary one carries no deleted mark", "deleted" in cp.parse_message_line( "1792032683000 admin  still here" ), false );
 check( "deleting - an edit to two spaces, private with its \"!\"", [ cp.delete_options( "1792032681000", false ), cp.delete_options( "1792032682000", true ) ],
  [ "for=1792032681000;text=  ", "for=!1792032682000;text=  " ] );
 check( "- not pinned, nor announced", [ cp.can_pin( cp.parse_message_line( "1792032681000 admin*    " ), "admin", "admin" ),
  cp.pending_announcements( [ cp.parse_message_line( "1792032681000 admin*    " ) ], [ ] ).length ], [ false, 0 ] );
-check( "pinning - an edit to a single space", cp.pin_options( "1791951506000" ), "for=1791951506000;text= " );
+check( "pinning - an edit to nothing but the prefix", cp.pin_options( "1791951506000" ), "for=1791951506000;text=" );
 var own = cp.parse_message_line( "1791951508000 admin  mine" );
 check( "who may pin - the room's owner, any ordinary message (2026-10-30)", [ cp.can_pin( own, "admin", "admin" ), cp.can_pin( own, "verify-a", "admin" ),
  cp.can_pin( own, "verify-a", "verify-a" ), cp.can_pin( cp.parse_message_line( "1791951587000 admin !private" ), "admin", "admin" ),
@@ -1923,7 +1933,7 @@ check( "- one with nobody left in it, left out", [ cp.parse_reactions( "05aaaaaa
 check( "- after a tab, on their message's line (2026-10-29)", cp.parse_fetch_response( "maya+1 ian+1\n1793192805000 maya  well done\t014b573fx\n"
  + "1793192806000 ian  thanks" ).messages.map( function( m ) { return [ m.text, m.reactions || null ]; } ),
  [ [ "well done", [ { code: "01", people: [ "4b573f" ] } ] ], [ "thanks", null ] ] );
-check( "- an encrypted one's apart from it, so it can still be opened", cp.parse_message_line( "1793192805000 maya  X\\rAbCd+/==\t09159e43x" ).text,
+check( "- an encrypted one's apart from it, so it can still be opened", cp.parse_message_line( "1793192805000 maya  XAbCd+/==\t09159e43x" ).text,
  "X\rAbCd+/==" );
 check( "- after a message with a line break", cp.parse_message_line( "1793192805000 maya  two\\nlines\t094b573fx" ), { kind: "chat",
  unique: "1793192805000", sender: "maya", edited: false, private: false, text: "two\nlines", reactions: [ { code: "09", people: [ "4b573f" ] } ] } );
@@ -1943,7 +1953,7 @@ check( "reacting - given, the same again taken off, another replacing it", [
  [ { code: "01", people: [ "4b573f" ] } ], [ ],
  [ { code: "01", people: [ "159e43" ] }, { code: "09", people: [ "4b573f" ] } ],
  [ { code: "01", people: [ "4b573f" ] }, { code: "05", people: [ "159e43" ] } ] ] );
-check( "- sent as an edit to a space and its digits", cp.reaction_options( "1793192805000", "07" ), "for=1793192805000;text= 07" );
+check( "- sent as an edit to its digits", cp.reaction_options( "1793192805000", "07" ), "for=1793192805000;text=07" );
 
 // NOTE: Polls (Ian, 2026-10-31) - an ordinary message, a vote a reaction to it.
 heading( "polls" );

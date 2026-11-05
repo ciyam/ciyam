@@ -3607,8 +3607,8 @@ async function open_new_room( response )
 {
    var value = String( response ).trim( );
 
-   if( value.charAt( 0 ) === ":" )
-      value = value.substring( 1 );
+   // NOTE: ":" and a space before it since Ian's three-character prefixes (2026-11-05).
+   value = value.replace( /^:\s*/, "" );
 
    var pos = value.indexOf( "-" );
 

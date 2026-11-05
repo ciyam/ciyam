@@ -217,6 +217,26 @@ function parse_system_event( text )
    return event;
 }
 
+// NOTE: Ian's three-character prefixes (2026-11-05, "prefixes.cin"): after the "_" the server takes off, a message's kind - " "
+// ordinary, "!" private, ":" system, "?" a prompt, "/" reserved - and then " ", or "X" when it is encrypted, where there was the
+// kind alone before. Read back to that one character, an encrypted message's text starting "X\r" as the chat seals it
+// ("chat_seal_with( )", the server taking the "X\r" off as it is posted), so nothing after the reading changes. A prompt is read
+// as ordinary. A room listing ("#<room> ...") has no second character, and anything else is left as it came.
+function unprefixed_remainder( remainder )
+{
+   var value = String( remainder || "" );
+   var kind = value.charAt( 0 );
+   var flag = value.charAt( 1 );
+
+   if( ( value.length < 2 ) || ( " !:?/".indexOf( kind ) < 0 ) || ( ( flag !== " " ) && ( flag !== "X" ) ) )
+      return value;
+
+   if( ( kind === "?" ) || ( kind === "/" ) )
+      kind = " ";
+
+   return kind + ( ( flag === "X" ) ? "X\r" : "" ) + value.substring( 2 );
+}
+
 // NOTE: Every non-member line is "<unique> <sender> <remainder>". The first
 // character of the remainder says what kind of line it is - a space for
 // ordinary chat (the stripped "_" marker), "!" for a private message (Ian,
@@ -271,7 +291,7 @@ function parse_message_line( line )
 
    var reactions = ( tab < 0 ) ? null : parse_reactions( remainder.substring( tab + 1 ) );
 
-   remainder = unescape_message_text( ( tab < 0 ) ? remainder : remainder.substring( 0, tab ) );
+   remainder = unprefixed_remainder( unescape_message_text( ( tab < 0 ) ? remainder : remainder.substring( 0, tab ) ) );
 
    var first = remainder.charAt( 0 );
 
@@ -1506,10 +1526,11 @@ function apply_reaction( reactions, code, my_short )
    return kept.sort( function( a, b ) { return ( a.code < b.code ) ? -1 : ( ( a.code > b.code ) ? 1 : 0 ); } );
 }
 
-// NOTE: A reaction is an edit of someone else's message to a space and its two digits (Ian, 2026-10-28).
+// NOTE: A reaction is an edit of someone else's message to its two digits (Ian, 2026-10-28; a space before them until his
+// three-character prefixes, 2026-11-05 - the server knows one by its length, the prefix and the digits).
 function reaction_options( unique, code )
 {
-   return "for=" + unique + ";text= " + code;
+   return "for=" + unique + ";text=" + code;
 }
 
 // NOTE: Polls (Ian, 2026-10-31: everyone joins, the question is pinned, a close set, then reactions only - the poll itself all in
@@ -3308,12 +3329,13 @@ function in_time_order( messages )
    } ).map( function( item ) { return item.entry; } );
 }
 
-// NOTE: Pinning is an edit to a single space, which pins or unpins (Ian, 2026-10-14). Only ordinary messages - not private
+// NOTE: Pinning is an edit to nothing but the prefix, which pins or unpins (Ian, 2026-10-14 - to a single space until his
+// three-character prefixes, 2026-11-05). Only ordinary messages - not private
 // ones, nor system events - and only by the room's owner, of anyone's message (Damon and Ian, 2026-10-30: anyone could pin
 // their own, in any room) - "can_pin( )".
 function pin_options( unique )
 {
-   return "for=" + unique + ";text= ";
+   return "for=" + unique + ";text=";
 }
 
 function can_pin( entry, me, owner )
