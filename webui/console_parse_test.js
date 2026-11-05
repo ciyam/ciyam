@@ -116,6 +116,9 @@ check( "options keep their spaces", cp.resolve_command( "messages create 0000000
 check( "invite", pick( cp.resolve_command( "messages update 0000004 for=tester-1,tester-2" ), keys ),
  { kind: "cws", method: "PUT", path: "/messages/0000004", options: "for=tester-1,tester-2" } );
 
+check( "a record's fields changed (Ian's PUT, 2026-11-04)", pick( cp.resolve_command( "update storage-instance 100/100100/guest assigns=100102=0" ), keys ),
+ { kind: "cws", method: "PUT", path: "/storage-instances/100/100100/guest", options: "assigns=100102=0" } );
+
 check( "users create secret", pick( cp.resolve_command( "users create secret" ), keys ),
  { kind: "cws", method: "POST", path: "/users", options: "secret" } );
 

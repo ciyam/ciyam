@@ -27,6 +27,7 @@ ok   synonym verb
 ok   singular noun
 ok   options keep their spaces
 ok   invite
+ok   a record's fields changed (Ian's PUT, 2026-11-04)
 ok   users create secret
 ok   users create nominated
 ok   unlock keys

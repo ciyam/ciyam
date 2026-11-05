@@ -113,7 +113,10 @@ const c_console_routes =
    "user-keys|delete": { method: "DELETE", name: false, options: false },
 
    "storage-modules|review": { method: "GET", name: "optional", options: false },
-   "storage-instances|review": { method: "GET", name: true, options: true }
+   "storage-instances|review": { method: "GET", name: true, options: true },
+
+   // NOTE: Ian's "348b4803" (2026-11-04) - fields of one record changed: "update storage-instance <id>/<cid>/<key> assigns=..."
+   "storage-instances|update": { method: "PUT", name: true, options: true }
 };
 
 const c_console_local_commands = [ "help", "clear", "vars", "var", "unset", "echo", "seed", "history", "wait", "run", "exec", "ntfy" ];
