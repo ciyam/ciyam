@@ -2484,6 +2484,51 @@ function owner_room_key( opened, owner, room, removed )
    return found;
 }
 
+// NOTE: A member's receipt for a room's key, sent sealed in their direct message with its owner once the key is added (Ian's idea:
+// the message that carried the key deleted once each member has it; Damon, 2026-11-05: known by a receipt rather than by its being
+// seen, which a browser without the keys also does). "mark" - the key's fingerprint, so a receipt is for that key only.
+const c_room_key_receipt = /^Room key for #([0-9]{7}) added \(([0-9a-f]{8})\)\.$/;
+
+function room_key_receipt_text( room, mark )
+{
+   return "Room key for #" + room + " added (" + mark + ").";
+}
+
+// NOTE: A receipt as { room, mark }, or null.
+function room_key_receipt( text )
+{
+   var match = c_room_key_receipt.exec( String( text || "" ).trim( ) );
+
+   return match ? { room: match[ 1 ], mark: match[ 2 ] } : null;
+}
+
+// NOTE: Where a member stands with the owner's key for "room" - from their direct message as opened (oldest first, each { sender,
+// text, unique }), "mark" the key's fingerprint: "received" - their receipt for it is there, and "remove" the owner's messages that
+// carried this key, to delete (one with another key for the room left, perhaps sent by hand since); "sent" - the newest key from
+// the owner for the room is this one, waiting to be added; "send" - neither.
+function owner_key_delivery( opened, owner, member, room, key, mark )
+{
+   var received = false;
+   var carried = [ ];
+
+   ( opened || [ ] ).forEach( function( message )
+   {
+      var receipt = ( message.sender === member ) ? room_key_receipt( message.text ) : null;
+      var shared = ( message.sender === owner ) ? room_key_in_message( message.text ) : null;
+
+      if( receipt && ( receipt.room === room ) && ( receipt.mark === mark ) )
+         received = true;
+
+      if( shared && ( shared.room === room ) && ( shared.key === key ) && message.unique )
+         carried.push( message.unique );
+   } );
+
+   if( received )
+      return { state: "received", remove: carried };
+
+   return { state: ( owner_room_key( opened, owner, room, [ ] ) === key ) ? "sent" : "send", remove: [ ] };
+}
+
 // NOTE: A message that starts with a room key - one shared in an encrypted direct message, perhaps with words after it (Ian,
 // 2026-10-26) - as { room, key }, or null.
 function room_key_in_message( text )
@@ -4930,6 +4975,9 @@ if( typeof module !== "undefined" )
       group_encryption_note: group_encryption_note,
       encryption_badge: encryption_badge,
       encryption_action: encryption_action,
+      room_key_receipt_text: room_key_receipt_text,
+      room_key_receipt: room_key_receipt,
+      owner_key_delivery: owner_key_delivery,
       member_key_hint: member_key_hint,
       room_key_recipients: room_key_recipients,
       room_key_sent_text: room_key_sent_text,

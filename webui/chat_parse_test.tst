@@ -575,6 +575,14 @@ ok   - a member: where the owner's key comes from, and what it needs (Damon, 202
 ok   the owner's room key in their direct message - the newest for the room, from them
 ok   - none from the owner, or none for the room
 ok   - not one this person removed
+ok   a room key's receipt - written and read back
+ok   - as the member sees it
+ok   - not a receipt: words around it, or a key
+ok   the owner's key received - its receipt there, the message carrying that key to delete, not one with another key or room
+ok   - a receipt for another key: this one sent, waiting to be added
+ok   - a new key since: to send
+ok   - a receipt only from the member, not from the owner
+ok   - received, its key message already deleted: nothing left to delete
 ok   - a room key sent to each other person once
 ok   - and what came of it
 ok   - a message too long to encrypt: over 1,000 bytes

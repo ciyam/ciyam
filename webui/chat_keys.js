@@ -1415,11 +1415,13 @@ var g_owner_key_looked = { };
 // NOTE: Rooms whose owner's messages would not open, said once a sign in ("chat_look_for_owner_key( )").
 var g_owner_key_unopened = { };
 
-// NOTE: The sealed messages "sender" posted in direct message "dm_room", read quietly from the start and opened with "secret" - as
-// { opened: [ { sender, text } ], failed: <how many would not open>, newest_failed: <the newest would not> }, or null if it could
-// not be read (looked for again later).
+// NOTE: The sealed messages "sender" posted in direct message "dm_room" ("sender" a name, or a list of them), read quietly from the
+// start and opened with "secret" - as { opened: [ { sender, text, unique } ], failed: <how many would not open>, newest_failed: <the
+// newest would not> }, or null if it could not be read (looked for again later).
 async function chat_dm_opened( dm_room, sender, secret )
 {
+   var senders = [ ].concat( sender );
+
    var response = null;
 
    // NOTE: Quiet, like the poll it comes from ("watch_held_rooms( )").
@@ -1448,7 +1450,7 @@ async function chat_dm_opened( dm_room, sender, secret )
    {
       var message = result.messages[ i ];
 
-      if( ( message.kind !== c_kind_chat ) || ( message.sender !== sender ) || ( message_prefix( message.text ) !== "X" ) )
+      if( ( message.kind !== c_kind_chat ) || ( senders.indexOf( message.sender ) < 0 ) || ( message_prefix( message.text ) !== "X" ) )
          continue;
 
       var cached = g_chat_opened[ secret + "|" + message.text ];
@@ -1467,7 +1469,7 @@ async function chat_dm_opened( dm_room, sender, secret )
       }
 
       if( plain !== null )
-         opened.push( { sender: message.sender, text: plain } );
+         opened.push( { sender: message.sender, text: plain, unique: message.unique } );
       else
          failed++;
 
@@ -1564,9 +1566,32 @@ async function chat_look_for_owner_key( member_only )
       return;
 
    if( problem === "" )
+   {
       show_alert( "Room key for " + entry.name + " added - " + owner + " sent it in your direct message.", "is-info" );
+
+      chat_send_room_key_receipt( owner, room, key );
+   }
    else if( problem !== "kept" )
       show_alert( problem, "is-error" );
+}
+
+// NOTE: The fingerprint a receipt names its key by ("room_key_receipt_text( )") - not the key, which is in no receipt.
+function room_key_mark( key )
+{
+   return hex_sha256( "room_key:" + key ).substr( 0, 8 );
+}
+
+// NOTE: The key the owner sent added - a receipt sent back in the direct message with them, sealed as the key was, so their chat can
+// delete the message that carried it ("chat_owner_send_keys( )"). Not said if it could not be sent: the key is still in the message.
+async function chat_send_room_key_receipt( owner, room, key )
+{
+   try
+   {
+      await chat_send_room_key_to( owner, room_key_receipt_text( room, room_key_mark( key ) ) );
+   }
+   catch( e )
+   {
+   }
 }
 
 // ---- The owner's side (Damon, 2026-11-03: a key held for a new direct message waited in the owner's page until it was accepted -
@@ -1614,7 +1639,7 @@ async function chat_owner_send_keys( )
          if( g_owner_keys_checked[ room + "|" + person ] === marker )
             continue;
 
-         var found = await chat_dm_opened( dm.room, ciyam.username, secret );
+         var found = await chat_dm_opened( dm.room, [ ciyam.username, person ], secret );
 
          if( ( read !== g_chat_keys_read ) || ( g_room !== room ) || ( chat_room_key( room ) !== key ) )
             return;
@@ -1624,7 +1649,18 @@ async function chat_owner_send_keys( )
 
          g_owner_keys_checked[ room + "|" + person ] = marker;
 
-         if( owner_room_key( found.opened, ciyam.username, room, [ ] ) === key )
+         var delivery = owner_key_delivery( found.opened, ciyam.username, person, room, key, room_key_mark( key ) );
+
+         // NOTE: Their receipt for it there (Ian's idea, Damon 2026-11-05) - the messages that carried a key for the room deleted, so
+         // it is not left in the conversation; not sent again, as the receipt stays. Looked at again once the conversation changes.
+         if( delivery.state === "received" )
+         {
+            await chat_delete_key_messages( dm.room, delivery.remove );
+
+            continue;
+         }
+
+         if( delivery.state === "sent" )
             continue;
 
          var how = await chat_send_room_key_to( person, whole );
@@ -1646,6 +1682,21 @@ async function chat_owner_send_keys( )
 
    if( outcomes.length > 0 )
       chat_room_key_sent( room, room_key_sent_text( outcomes ) );
+}
+
+// NOTE: The owner's own messages that carried a room key, deleted from a member's direct message once they have the key - one at a
+// time, as a message's delete is. One that fails is tried again when the conversation is next looked at.
+async function chat_delete_key_messages( dm_room, uniques )
+{
+   for( var i = 0; i < uniques.length; i++ )
+   {
+      var unique = uniques[ i ];
+
+      await serialised( function( )
+      {
+         return ciyam.create_message( dm_room, delete_options( unique, false ), function( ) { } );
+      } );
+   }
 }
 
 // NOTE: A room this person is invited to and has not joined yet, as a room - whoever invited them taken as its owner. A group's key
@@ -1685,6 +1736,7 @@ function chat_offer_room_key( element, text )
 
    var offered = ( kept !== "" ) ? "Use this room key for " + entry.name : "Add this room key for " + entry.name;
    var whole = shared.room + "#" + shared.key;
+   var from_owner = ( element.dataset.sender || "" ) === entry.owner;
 
    var save = function( only_if_none )
    {
@@ -1706,7 +1758,12 @@ function chat_offer_room_key( element, text )
             show_alert( problem, "is-error" );
          }
          else
+         {
             chat_room_key_removed( whole, false );
+
+            if( from_owner )
+               chat_send_room_key_receipt( entry.owner, shared.room, shared.key );
+         }
       } );
    };
 
@@ -1723,8 +1780,6 @@ function chat_offer_room_key( element, text )
 
       save( false );
    } );
-
-   var from_owner = ( element.dataset.sender || "" ) === entry.owner;
 
    if( ( kept === "" ) && from_owner && !g_room_keys_tried.hasOwnProperty( whole ) && ( chat_room_keys_removed( ).indexOf( whole ) < 0 ) )
    {
