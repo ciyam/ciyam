@@ -7,7 +7,8 @@
 // from popped bubbles and the browser's randomness, as a node's are, written down and some checked back. The words go nowhere:
 // from them come the keys, kept on the node ("user-keys") with others' public keys, locked under an access key - many rounds of
 // a hash of the words - which is what each browser keeps ("ciyam_user_keys.js"; Ian: a hash "won't help anyone trying to crack
-// the actual twelve words"). Another browser gets the access key from this one by a QR code, or makes it from the words typed.
+// the actual twelve words"). Another browser gets the access key from this one by Ian's exchange of two codes ("keys_ask_start( )",
+// "keys_device_answer( )"), or makes it from the words typed.
 // It is kept while the account is remembered here, for the tab only when it is not, and goes with "Reset this browser" or the
 // account forgotten at a sign in.
 //
@@ -17,7 +18,7 @@ const c_keys_scripts = [ "ed25519.min.js", "ciyam_harden.js", "ciyam_chacha20.js
  "ciyam_user_keys.js", "home_parse.js", "bubbles.js", "qrcode.min.js",
  "qr_scan.js" ];
 
-const c_keys_parts = [ "keys_loading", "keys_none", "keys_random", "keys_words", "keys_check", "keys_enter", "keys_here" ];
+const c_keys_parts = [ "keys_loading", "keys_none", "keys_random", "keys_words", "keys_check", "keys_enter", "keys_ask", "keys_here" ];
 
 const c_keys_pops = 12;
 const c_keys_most_bubbles = 16;
@@ -25,10 +26,22 @@ const c_keys_entropy_length = 32;
 const c_keys_qr_size = 120;
 const c_keys_device_qr_size = 168;
 
-// NOTE: An access key brought by another browser's QR code ("#keys=" - the part after "#" never goes to the server), held for the
-// tab until this account's keys are known.
-const c_keys_link_prefix = "#keys=";
+// NOTE: An access key brought by another browser - opened from its answer ("keys_device_link_taken( )") - held for the tab until this
+// account's keys are known.
 const c_keys_pending_name = c_signin_pending_keys_name;
+
+// NOTE: The address that carried the access key itself, before Ian's exchange (2026-11-05) - taken out of the address, not used.
+const c_keys_old_link_prefix = "#keys=";
+
+// NOTE: Another device's code, or the answer to this one's, brought by its address ("#keys-ask=" or "#keys-reply=" - the part after
+// "#" never goes to the server) - held for the tab until the keys are read.
+const c_keys_device_link_name = "cws.device_link";
+
+// NOTE: This device's half of the exchange - its one-off private key, kept until the answer is opened (perhaps in another tab, as the
+// camera opens an address there) and for a quarter of an hour at most. In memory too, for a browser that keeps nothing.
+const c_keys_ask_name = "cws.device_ask";
+const c_keys_ask_life = 15 * 60 * 1000;
+var g_keys_ask = null;
 
 // NOTE: What browsers kept before 2026-10-25's change - the entropy itself. Removed wherever it is found.
 const c_keys_old_prefix = "cws.user_entropy_";
@@ -142,23 +155,41 @@ function keys_forget_here( )
 // in the address bar, and held for the tab until the keys are shown.
 function keys_take_link( )
 {
-   if( location.hash.indexOf( c_keys_link_prefix ) !== 0 )
-      return false;
+   var device = parse_device_link( location.hash );
 
-   var access = location.hash.substring( c_keys_link_prefix.length ).toLowerCase( );
+   if( ( device === null ) && ( location.hash.indexOf( c_keys_old_link_prefix ) !== 0 ) )
+      return false;
 
    try
    {
-      if( /^[0-9a-f]{64}$/.test( access ) )
-         sessionStorage.setItem( c_keys_pending_name, access );
+      if( device !== null )
+         sessionStorage.setItem( c_keys_device_link_name, location.hash.substring( 1 ) );
    }
    catch( e )
    {
    }
 
-   history.replaceState( null, "", location.pathname + location.search + "#keys" );
+   // NOTE: Another device's code is answered under Devices, where Add another device is; an answer opens Your keys.
+   history.replaceState( null, "", location.pathname + location.search + ( ( device && ( device.kind === "ask" ) ) ? "#devices" : "#keys" ) );
 
    return true;
+}
+
+// NOTE: The device address held for the tab, taken - { kind, ... } as "parse_device_link( )" reads it, or null.
+function keys_device_link_taken( )
+{
+   try
+   {
+      var held = sessionStorage.getItem( c_keys_device_link_name ) || "";
+
+      sessionStorage.removeItem( c_keys_device_link_name );
+
+      return parse_device_link( held );
+   }
+   catch( e )
+   {
+      return null;
+   }
 }
 
 // NOTE: Taken only once the node's answer could be read (found by review, 2026-10-26) - after a time-out or an error it is
@@ -312,18 +343,25 @@ function keys_clear( )
 
    g_keys = fresh_keys( );
 
-   [ "keys_word_list", "keys_check_rows", "keys_qr", "keys_contact_list", "keys_device_qr" ].forEach( function( id )
+   [ "keys_word_list", "keys_check_rows", "keys_qr", "keys_contact_list", "keys_device_qr", "keys_ask_qr" ].forEach( function( id )
    {
       document.getElementById( id ).replaceChildren( );
    } );
 
-   [ "keys_enter_words", "keys_add_key", "keys_device_link" ].forEach( function( id ) { document.getElementById( id ).value = ""; } );
+   [ "keys_enter_words", "keys_add_key", "keys_device_link", "keys_device_ask", "keys_ask_link", "keys_ask_reply" ].forEach( function( id )
+   {
+      document.getElementById( id ).value = "";
+   } );
+
+   keys_scan_stop( );
 
    document.getElementById( "keys_written" ).checked = false;
    keys_hide_public( );
    document.getElementById( "keys_device_part" ).hidden = true;
    document.getElementById( "keys_device_row" ).hidden = false;
    document.getElementById( "keys_rooms" ).textContent = "";
+
+   set_error( "device_error", "" );
    document.getElementById( "keys_room_list" ).replaceChildren( );
 
    g_keys_room_names = null;
@@ -363,6 +401,31 @@ async function render_keys( )
    if( ( ciyam.access === "" ) || ( ciyam.access !== asked_for ) || ( render !== g_keys_render ) )
       return;
 
+   // NOTE: Another device's code to answer, once the keys are shown here - or the answer to this one's, opened into an access key.
+   var device = keys_device_link_taken( );
+   var unopened = false;
+
+   if( device && ( device.kind === "reply" ) )
+   {
+      var brought = await keys_ask_open( device );
+
+      if( ( ciyam.access !== asked_for ) || ( render !== g_keys_render ) )
+         return;
+
+      if( brought !== "" )
+      {
+         try
+         {
+            sessionStorage.setItem( c_keys_pending_name, brought );
+         }
+         catch( e )
+         {
+         }
+      }
+      else
+         unopened = true;
+   }
+
    var pending = keys_pending( false );
    var here = keys_kept_here( );
    var state = keys_state( ( here !== "" ) || ( pending !== "" ), response );
@@ -395,6 +458,25 @@ async function render_keys( )
       keys_show_enter( "elsewhere" );
    else
       await keys_show_here( here, "Your keys are on this browser.", false );
+
+   if( render !== g_keys_render )
+      return;
+
+   if( unopened )
+      set_error( "keys_error", "That code isn't the answer to this device's - it is for another device, or was used already, or is more"
+       + " than a quarter of an hour old. Get them from another device again." );
+
+   if( device && ( device.kind === "ask" ) )
+   {
+      if( !document.getElementById( "keys_here" ).hidden )
+      {
+         keys_show_device( );
+         await keys_device_answer( device );
+      }
+      else
+         set_error( "keys_error", "Another device asked for your keys, but they aren't on this browser to give - type your twelve words"
+          + " here first." );
+   }
 }
 
 // NOTE: The words asked for - "elsewhere": on a browser new to the keys; "other": what this browser kept does not open the
@@ -409,14 +491,15 @@ function keys_show_enter( mode )
    g_keys.entering = mode;
 
    document.getElementById( "keys_enter_lede" ).textContent = {
-      elsewhere: "Your keys are set up. To use them on this browser, type your twelve words - or open the QR code from"
-       + " \"Add another device\" on a browser that has them." + lost,
+      elsewhere: "Your keys are set up. To use them on this browser, type your twelve words - or get them from another device"
+       + " that has them." + lost,
       other: "The keys on the node were locked by another browser since. Type the twelve words they were set up with." + lost,
       restore: "Type your twelve words, and your keys are made again from them.",
       change: "Type your twelve words for a new access key. Use it if a browser or phone with your keys is lost: any other browser"
-       + " that has them will then need your words, or this browser's QR code, again." }[ mode ];
+       + " that has them will then need your words, or to get them from this one, again." }[ mode ];
 
    document.getElementById( "keys_enter_new" ).hidden = ( mode === "restore" ) || ( mode === "change" ) || guarded;
+   document.getElementById( "keys_ask_start" ).hidden = ( mode !== "elsewhere" ) && ( mode !== "other" );
    document.getElementById( "keys_enter_cancel" ).hidden = ( mode !== "restore" ) && ( mode !== "change" );
    document.getElementById( "keys_enter_go" ).textContent = ( mode === "change" ) ? "Change the access key" : "Use my keys here";
    document.getElementById( "keys_enter_words" ).value = "";
@@ -445,7 +528,7 @@ async function keys_show_here( access, lede, from_link )
       if( from_link )
       {
          keys_show_enter( "elsewhere" );
-         set_error( "keys_error", "That QR code is not for this account's keys - is it from another account?" );
+         set_error( "keys_error", "Those keys aren't this account's - was the other device signed in as someone else?" );
       }
       else
       {
@@ -693,32 +776,252 @@ async function keys_make_and_save( entropy, lede )
 
 // ---- Adding another device
 
-// NOTE: The access key as a QR code that opens this page on another device ("#keys=", "keys_take_link( )") - shown only when
-// asked, as anyone who scans it can open the keys.
-function keys_show_device( )
+// NOTE: Ian's exchange (2026-10-26; Damon, 2026-11-05 - in place of an address that carried the access key itself): the new device
+// shows the public key of a pair it makes for this once; this one, which has the keys, makes a pair of its own and shows its public
+// key with the access key sealed under the X25519 secret between the two ("device_reply_link( )"). Both private keys are thrown away
+// once used, so a photo of either code opens nothing; nothing goes to the node. Sealed as a one-time pad - an HMAC of the secret,
+// which is never used again - with a check, so a wrong or damaged answer is said rather than taken.
+const c_keys_device_pad = "ciyam device access key";
+const c_keys_device_check = "ciyam device access check ";
+
+function keys_draw_qr( id, text )
 {
-   var link = location.origin + location.pathname + c_keys_link_prefix + g_keys.access;
-   var box = document.getElementById( "keys_device_qr" );
+   var box = document.getElementById( id );
 
    box.replaceChildren( );
 
-   new QRCode( box, { text: link, width: c_keys_device_qr_size, height: c_keys_device_qr_size, colorDark: "#1b1f2a", colorLight: "#ffffff",
+   new QRCode( box, { text: text, width: c_keys_device_qr_size, height: c_keys_device_qr_size, colorDark: "#1b1f2a", colorLight: "#ffffff",
     correctLevel: QRCode.CorrectLevel.M } );
 
    box.removeAttribute( "title" );
    box.querySelectorAll( "[title]" ).forEach( function( node ) { node.removeAttribute( "title" ); } );
+}
 
-   document.getElementById( "keys_device_link" ).value = link;
+// NOTE: 32 random bytes as hex - a one-off private key's seed.
+function keys_random_seed( )
+{
+   var bytes = new Uint8Array( 32 );
+
+   crypto.getRandomValues( bytes );
+
+   return Array.prototype.map.call( bytes, function( b ) { return ( "0" + b.toString( 16 ) ).slice( -2 ); } ).join( "" );
+}
+
+async function keys_device_seal( secret, access )
+{
+   var sm = keys_module( "secure_message" );
+
+   return { sealed: xor_hex( access, await sm.hmac_sha256( secret, c_keys_device_pad ) ),
+    check: ( await sm.hmac_sha256( secret, c_keys_device_check + access ) ).substr( 0, 16 ) };
+}
+
+// ---- The device that has the keys - Add another device, under Devices
+
+function keys_show_device( )
+{
+   keys_hide_device( );
+
    document.getElementById( "keys_device_part" ).hidden = false;
    document.getElementById( "keys_device_row" ).hidden = true;
+   document.getElementById( "keys_device_ask" ).focus( );
 }
 
 function keys_hide_device( )
 {
+   if( g_keys_scan_target === "device" )
+      keys_scan_stop( );
+
    document.getElementById( "keys_device_qr" ).replaceChildren( );
    document.getElementById( "keys_device_link" ).value = "";
+   document.getElementById( "keys_device_ask" ).value = "";
+   document.getElementById( "keys_device_ask_part" ).hidden = false;
+   document.getElementById( "keys_device_reply_part" ).hidden = true;
    document.getElementById( "keys_device_part" ).hidden = true;
    document.getElementById( "keys_device_row" ).hidden = false;
+   document.getElementById( "device_scan_status" ).textContent = "";
+
+   set_error( "device_error", "" );
+}
+
+// NOTE: The other device's code, read - its address, scanned or pasted ("parse_device_link( )"); its answer shown for it alone.
+async function keys_device_answer( device )
+{
+   set_error( "device_error", "" );
+
+   if( !device || ( device.kind !== "ask" ) )
+   {
+      set_error( "device_error", "That isn't another device's code - on it, choose Get them from another device under Your keys." );
+
+      return;
+   }
+
+   if( g_keys.access === "" )
+      return;
+
+   var sm = keys_module( "secure_message" );
+   var seed = keys_random_seed( );
+   var secret = "";
+
+   try
+   {
+      secret = sm.shared_secret_of_seed( seed, device.key );
+   }
+   catch( e )
+   {
+      set_error( "device_error", "That code could not be read - scan it again, or paste its address." );
+
+      return;
+   }
+
+   var sealing = await keys_device_seal( secret, g_keys.access );
+   var link = device_reply_link( location.origin + location.pathname, sm.public_key_of_seed( seed ), sealing.sealed, sealing.check );
+
+   seed = "";
+   secret = "";
+
+   keys_draw_qr( "keys_device_qr", link );
+
+   document.getElementById( "keys_device_link" ).value = link;
+   document.getElementById( "keys_device_ask_part" ).hidden = true;
+   document.getElementById( "keys_device_reply_part" ).hidden = false;
+}
+
+function keys_device_use( )
+{
+   keys_device_answer( parse_device_link( document.getElementById( "keys_device_ask" ).value ) );
+}
+
+// ---- The new device - Get them from another device, under Your keys
+
+function keys_ask_kept( )
+{
+   if( ( g_keys_ask !== null ) && ( Date.now( ) - g_keys_ask.at < c_keys_ask_life ) )
+      return g_keys_ask;
+
+   try
+   {
+      var kept = JSON.parse( localStorage.getItem( c_keys_ask_name ) || "null" );
+
+      if( kept && /^[0-9a-f]{64}$/.test( kept.seed ) && ( Date.now( ) - kept.at < c_keys_ask_life ) )
+         return kept;
+   }
+   catch( e )
+   {
+   }
+
+   return null;
+}
+
+function keys_ask_forget( )
+{
+   g_keys_ask = null;
+
+   try
+   {
+      localStorage.removeItem( c_keys_ask_name );
+   }
+   catch( e )
+   {
+   }
+}
+
+function keys_ask_start( )
+{
+   var sm = keys_module( "secure_message" );
+
+   g_keys_ask = { seed: keys_random_seed( ), at: Date.now( ) };
+
+   try
+   {
+      localStorage.setItem( c_keys_ask_name, JSON.stringify( g_keys_ask ) );
+   }
+   catch( e )
+   {
+   }
+
+   var link = device_ask_link( location.origin + location.pathname, sm.public_key_of_seed( g_keys_ask.seed ) );
+
+   keys_draw_qr( "keys_ask_qr", link );
+
+   document.getElementById( "keys_ask_link" ).value = link;
+   document.getElementById( "keys_ask_reply" ).value = "";
+   document.getElementById( "ask_scan_status" ).textContent = "";
+
+   set_error( "keys_error", "" );
+   keys_show( "keys_ask" );
+}
+
+function keys_ask_cancel( )
+{
+   keys_scan_stop( );
+   keys_ask_forget( );
+
+   document.getElementById( "keys_ask_qr" ).replaceChildren( );
+   document.getElementById( "keys_ask_link" ).value = "";
+
+   set_error( "keys_error", "" );
+   keys_show_enter( g_keys.entering || "elsewhere" );
+}
+
+// NOTE: The answer opened with this device's one-off key - the access key, or "" if it is not the answer to this device's code (or
+// the code has gone: used, or too old). The one-off key is thrown away once it has opened one.
+async function keys_ask_open( device )
+{
+   var kept = keys_ask_kept( );
+
+   if( ( kept === null ) || !device || ( device.kind !== "reply" ) || !await keys_load_scripts( ) )
+      return "";
+
+   var sm = keys_module( "secure_message" );
+   var access = "";
+
+   try
+   {
+      var secret = sm.shared_secret_of_seed( kept.seed, device.key );
+
+      access = xor_hex( device.sealed, await sm.hmac_sha256( secret, c_keys_device_pad ) );
+
+      // NOTE: Sealed again as the other device sealed it - the same check only if this is what it sent, to this device.
+      if( ( ( await keys_device_seal( secret, access ) ).check !== device.check ) || !/^[0-9a-f]{64}$/.test( access ) )
+         access = "";
+   }
+   catch( e )
+   {
+      access = "";
+   }
+
+   if( access !== "" )
+      keys_ask_forget( );
+
+   return access;
+}
+
+// NOTE: The answer scanned or pasted here - opened, and the keys shown as from another device's address.
+async function keys_ask_use( text )
+{
+   var device = parse_device_link( ( typeof text === "string" ) ? text : document.getElementById( "keys_ask_reply" ).value );
+
+   set_error( "keys_error", "" );
+
+   if( !device || ( device.kind !== "reply" ) )
+   {
+      set_error( "keys_error", "That isn't the other device's answer - it shows one once it has read this device's code." );
+
+      return;
+   }
+
+   var access = await keys_ask_open( device );
+
+   if( access === "" )
+   {
+      set_error( "keys_error", "That answer isn't for this device's code - scan the code shown here on the other device again." );
+
+      return;
+   }
+
+   keys_scan_stop( );
+
+   await keys_show_here( access, "Your keys are now on this browser too.", true );
 }
 
 // ---- Others' public keys
@@ -816,38 +1119,54 @@ function keys_hide_public( )
 var g_keys_scanner = null;
 var g_keys_scan_opened = 0;
 
+// NOTE: Where the camera reads for - a contact's code, the other device's code (Add another device), or its answer (Get them from
+// another device) - one at a time; its reader, status line and button by id, and what to say while it looks.
+const c_keys_scan_targets = {
+   contacts: { reader: "contacts_scan_reader", status: "contacts_scan_status", button: "contacts_scan", error: "keys_add_error",
+    hint: "Hold their contact code up to the camera." },
+   device: { reader: "device_scan_reader", status: "device_scan_status", button: "device_scan", error: "device_error",
+    hint: "Hold the other device's code up to the camera." },
+   ask: { reader: "ask_scan_reader", status: "ask_scan_status", button: "ask_scan", error: "keys_error",
+    hint: "Hold the code the other device shows up to the camera." } };
+
+var g_keys_scan_target = "contacts";
+
 function keys_scan_status( text )
 {
-   document.getElementById( "contacts_scan_status" ).textContent = text;
+   document.getElementById( c_keys_scan_targets[ g_keys_scan_target ].status ).textContent = text;
 }
 
 function keys_scan_stop( )
 {
    var scanner = g_keys_scanner;
+   var target = c_keys_scan_targets[ g_keys_scan_target ];
 
    g_keys_scan_opened++;
    g_keys_scanner = null;
 
-   document.getElementById( "contacts_scan" ).disabled = false;
+   document.getElementById( target.button ).disabled = false;
 
    // NOTE: Not "qr_scan_stop( )" without a camera - "qr_scan.js" is read with the keys' scripts, and this can come before them.
    if( scanner === null )
    {
-      document.getElementById( "contacts_scan_reader" ).replaceChildren( );
+      document.getElementById( target.reader ).replaceChildren( );
 
       return Promise.resolve( );
    }
 
-   return qr_scan_stop( scanner ).then( function( ) { document.getElementById( "contacts_scan_reader" ).replaceChildren( ); } );
+   return qr_scan_stop( scanner ).then( function( ) { document.getElementById( target.reader ).replaceChildren( ); } );
 }
 
-async function keys_scan_start( )
+async function keys_scan_start( which )
 {
    await keys_scan_stop( );
 
+   g_keys_scan_target = ( typeof which === "string" ) ? which : "contacts";
+
+   var target = c_keys_scan_targets[ g_keys_scan_target ];
    var opened = g_keys_scan_opened;
 
-   set_error( "keys_add_error", "" );
+   set_error( target.error, "" );
    keys_scan_status( "Starting the camera…" );
 
    if( !await qr_scan_library( ) )
@@ -863,15 +1182,16 @@ async function keys_scan_start( )
 
    if( !qr_scan_can_use_camera( ) )
    {
-      keys_scan_status( "The camera needs this page opened as https - choose a picture of their code instead." );
+      keys_scan_status( ( g_keys_scan_target === "contacts" ) ? "The camera needs this page opened as https - choose a picture of their"
+       + " code instead." : "The camera needs this page opened as https - paste the address instead." );
 
       return;
    }
 
-   var scanner = qr_scan_reader( "contacts_scan_reader" );
+   var scanner = qr_scan_reader( target.reader );
 
    g_keys_scanner = scanner;
-   document.getElementById( "contacts_scan" ).disabled = true;
+   document.getElementById( target.button ).disabled = true;
 
    try
    {
@@ -882,9 +1202,10 @@ async function keys_scan_start( )
       if( opened === g_keys_scan_opened )
       {
          g_keys_scanner = null;
-         document.getElementById( "contacts_scan" ).disabled = false;
+         document.getElementById( target.button ).disabled = false;
 
-         keys_scan_status( "No camera could be used - choose a picture of their code instead." );
+         keys_scan_status( ( g_keys_scan_target === "contacts" ) ? "No camera could be used - choose a picture of their code instead."
+          : "No camera could be used - paste the address instead." );
       }
 
       return;
@@ -898,7 +1219,16 @@ async function keys_scan_start( )
       return;
    }
 
-   keys_scan_status( "Hold their contact code up to the camera." );
+   keys_scan_status( target.hint );
+}
+
+// NOTE: The camera let go on leaving the section it reads for ("show_section( )" in "account.js").
+function keys_leave_section( name )
+{
+   var section = { contacts: "contacts", device: "devices", ask: "keys" }[ g_keys_scan_target ];
+
+   if( ( g_keys_scanner !== null ) && ( section !== name ) )
+      keys_scan_stop( );
 }
 
 // NOTE: The camera reads a code many times a second - the first taken, then the camera let go.
@@ -910,9 +1240,25 @@ async function keys_scan_read( text )
    await keys_scan_stop( );
 
    keys_scan_status( "" );
-   document.getElementById( "keys_add_key" ).value = text;
 
-   await keys_add_contact( );
+   if( g_keys_scan_target === "device" )
+   {
+      document.getElementById( "keys_device_ask" ).value = text;
+
+      await keys_device_answer( parse_device_link( text ) );
+   }
+   else if( g_keys_scan_target === "ask" )
+   {
+      document.getElementById( "keys_ask_reply" ).value = text;
+
+      await keys_ask_use( text );
+   }
+   else
+   {
+      document.getElementById( "keys_add_key" ).value = text;
+
+      await keys_add_contact( );
+   }
 }
 
 async function keys_scan_picture( input )
@@ -925,6 +1271,8 @@ async function keys_scan_picture( input )
       return;
 
    await keys_scan_stop( );
+
+   g_keys_scan_target = "contacts";
 
    var opened = g_keys_scan_opened;
 
@@ -1403,8 +1751,15 @@ function install_keys( )
    document.getElementById( "keys_public_hide" ).addEventListener( "click", keys_hide_public );
    document.getElementById( "keys_device" ).addEventListener( "click", keys_show_device );
    document.getElementById( "keys_device_hide" ).addEventListener( "click", keys_hide_device );
+   document.getElementById( "keys_device_done" ).addEventListener( "click", keys_hide_device );
+   document.getElementById( "keys_device_use" ).addEventListener( "click", keys_device_use );
+   document.getElementById( "device_scan" ).addEventListener( "click", function( ) { keys_scan_start( "device" ); } );
+   document.getElementById( "keys_ask_start" ).addEventListener( "click", keys_ask_start );
+   document.getElementById( "keys_ask_cancel" ).addEventListener( "click", keys_ask_cancel );
+   document.getElementById( "keys_ask_use" ).addEventListener( "click", function( ) { keys_ask_use( ); } );
+   document.getElementById( "ask_scan" ).addEventListener( "click", function( ) { keys_scan_start( "ask" ); } );
    document.getElementById( "keys_add" ).addEventListener( "click", keys_add_contact );
-   document.getElementById( "contacts_scan" ).addEventListener( "click", keys_scan_start );
+   document.getElementById( "contacts_scan" ).addEventListener( "click", function( ) { keys_scan_start( "contacts" ); } );
    document.getElementById( "contacts_picture" ).addEventListener( "click", function( ) { document.getElementById( "contacts_scan_file" ).click( ); } );
    document.getElementById( "contacts_scan_file" ).addEventListener( "change", function( ) { keys_scan_picture( this ); } );
 

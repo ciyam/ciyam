@@ -252,6 +252,22 @@ check( "- listed by name, then number; one not in the listing last, by number (D
  { "0000072": "lunch", "0000069": "Budget", "0000070": "Lunch" } ), [ { room: "0000069", name: "Budget" }, { room: "0000070", name: "Lunch" },
  { room: "0000072", name: "lunch" }, { room: "0000068", name: "" }, { room: "0000071", name: "" } ] );
 
+// NOTE: Your keys to another device by Ian's exchange (Damon, 2026-11-05) - the two addresses, and reading them back.
+var ask_key = "a1".repeat( 32 ), reply_key = "b2".repeat( 32 ), sealed_key = "c3".repeat( 32 );
+check( "another device - the ask, this page with its public key after #", ap.device_ask_link( "http://n/account.html", ask_key ),
+ "http://n/account.html#keys-ask=" + ask_key );
+check( "- read back, whole, after # only, or pasted broken over lines in capitals", [ ap.parse_device_link( ap.device_ask_link( "http://n/account.html",
+ ask_key ) ), ap.parse_device_link( "keys-ask=" + ask_key ), ap.parse_device_link( "#keys-ask=" + ask_key.substr( 0, 30 ).toUpperCase( ) + "\n "
+ + ask_key.substr( 30 ) ) ], [ { kind: "ask", key: ask_key }, { kind: "ask", key: ask_key }, { kind: "ask", key: ask_key } ] );
+check( "- the reply, read back", ap.parse_device_link( ap.device_reply_link( "http://n/account.html", reply_key, sealed_key, "0123456789abcdef" ) ),
+ { kind: "reply", key: reply_key, sealed: sealed_key, check: "0123456789abcdef" } );
+check( "- not one: the old address with the access key, a key too short, a reply with no check, nothing", [ ap.parse_device_link( "http://n/account"
+ + ".html#keys=" + sealed_key ), ap.parse_device_link( "keys-ask=" + ask_key.substr( 2 ) ), ap.parse_device_link( "keys-reply=" + reply_key + "."
+ + sealed_key ), ap.parse_device_link( "" ) ], [ null, null, null, null ] );
+check( "xor of two hex strings - and back", [ ap.xor_hex( "0f0f", "ffff" ), ap.xor_hex( ap.xor_hex( sealed_key, ask_key ), ask_key ) ],
+ [ "f0f0", sealed_key ] );
+check( "- not the same length, or not hex", [ ap.xor_hex( "0f", "fff" ), ap.xor_hex( "zz", "00" ) ], [ "", "" ] );
+
 console.log( "" );
 console.log( failures === 0 ? "All checks passed." : ( failures + " check(s) FAILED." ) );
 

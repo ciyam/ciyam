@@ -488,9 +488,73 @@ function keys_step_text( have )
     + " read. They come from twelve words you write down, and take a minute. You can skip this and set them up later on My account." };
 }
 
+// NOTE: Your keys to another device by Ian's exchange (2026-10-26; Damon, 2026-11-05 - in place of an address that carried the
+// access key itself). The new device makes a key pair for this once and shows its public key - an "ask"; one with the keys scans
+// it, makes a pair of its own, and shows that public key with the access key sealed under the secret between the two - a
+// "reply", as an address the new device's own camera can open. Both pairs are thrown away, so a photo of either code is no use.
+// Each is this page's address with the part after "#", which never goes to the server.
+const c_device_ask_prefix = "keys-ask=";
+const c_device_reply_prefix = "keys-reply=";
+
+function device_ask_link( page, public_key )
+{
+   return page + "#" + c_device_ask_prefix + public_key;
+}
+
+function device_reply_link( page, public_key, sealed, check )
+{
+   return page + "#" + c_device_reply_prefix + public_key + "." + sealed + "." + check;
+}
+
+// NOTE: An ask or a reply - a whole address, the part after "#", or pasted with spaces or line breaks in it - as { kind: "ask", key }
+// or { kind: "reply", key, sealed, check }, or null for anything else.
+function parse_device_link( text )
+{
+   var value = String( text || "" ).replace( /\s+/g, "" );
+   var at = value.indexOf( "#" );
+
+   if( at >= 0 )
+      value = value.substring( at + 1 );
+
+   var ask = /^keys-ask=([0-9a-fA-F]{64})$/.exec( value );
+
+   if( ask )
+      return { kind: "ask", key: ask[ 1 ].toLowerCase( ) };
+
+   var reply = /^keys-reply=([0-9a-fA-F]{64})\.([0-9a-fA-F]{64})\.([0-9a-fA-F]{16})$/.exec( value );
+
+   if( reply )
+      return { kind: "reply", key: reply[ 1 ].toLowerCase( ), sealed: reply[ 2 ].toLowerCase( ), check: reply[ 3 ].toLowerCase( ) };
+
+   return null;
+}
+
+// NOTE: Two hex strings of the same length, XORed digit by digit - "" if they are not.
+function xor_hex( a, b )
+{
+   var x = String( a || "" ).toLowerCase( );
+   var y = String( b || "" ).toLowerCase( );
+
+   if( ( x.length !== y.length ) || !/^[0-9a-f]*$/.test( x + y ) )
+      return "";
+
+   var out = "";
+
+   for( var i = 0; i < x.length; i++ )
+      out += ( parseInt( x.charAt( i ), 16 ) ^ parseInt( y.charAt( i ), 16 ) ).toString( 16 );
+
+   return out;
+}
+
 if( typeof module !== "undefined" )
 {
    module.exports = {
+      c_device_ask_prefix: c_device_ask_prefix,
+      c_device_reply_prefix: c_device_reply_prefix,
+      device_ask_link: device_ask_link,
+      device_reply_link: device_reply_link,
+      parse_device_link: parse_device_link,
+      xor_hex: xor_hex,
       account_sections: account_sections,
       keys_step_text: keys_step_text,
       account_section: account_section,

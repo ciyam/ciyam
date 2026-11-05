@@ -1156,6 +1156,15 @@ button.account-back,
    gap: 12px;
 }
 
+.account-keys-device-step
+{
+   display: flex;
+   flex-direction: column;
+   gap: 12px;
+}
+
+.account-keys-device-step[hidden],
+#device_error:empty,
 .account-keys-device-show[hidden],
 .account-keys-needed[hidden],
 .account-keys-people[hidden]

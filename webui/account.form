@@ -353,7 +353,29 @@ http://www.opensource.org/licenses/mit-license.php.
                         <div class="account-actions-row">
                            <button type="button" class="chat-btn" id="keys_enter_new">Start again with new words</button>
                            <button type="button" class="chat-btn" id="keys_enter_cancel" hidden>Cancel</button>
+                           <button type="button" class="chat-btn" id="keys_ask_start">Get them from another device</button>
                            <button type="button" class="chat-btn chat-btn--primary" id="keys_enter_go">Use my keys here</button>
+                        </div>
+                     </div>
+
+                     <!-- NOTE: Your keys from another device by Ian's exchange (Damon, 2026-11-05) - this browser's code for one that has
+                          them, and the code it shows back read here: by its address opened with this device's camera, scanned in the
+                          page, or pasted. "keys_ask_start( )". -->
+                     <div class="account-keys-part" id="keys_ask" hidden>
+                        <p class="account-lede">On a device that has your keys, open this code with its camera - or open the address
+                         there, signed in as you. It shows a code back: open that with this device's camera, scan it here, or paste
+                         its address.</p>
+                        <div class="account-keys-qr" id="keys_ask_qr" aria-hidden="true"></div>
+                        <label class="chat-label" for="keys_ask_link">This device's address</label>
+                        <input type="text" class="chat-field account-keys-key" id="keys_ask_link" readonly>
+                        <div class="chat-scan-reader" id="ask_scan_reader"></div>
+                        <p class="account-lede" id="ask_scan_status" role="status" aria-live="polite"></p>
+                        <label class="chat-label" for="keys_ask_reply">The address it shows back</label>
+                        <input type="text" class="chat-field account-keys-key" id="keys_ask_reply" autocomplete="off" spellcheck="false">
+                        <div class="account-actions-row">
+                           <button type="button" class="chat-btn" id="keys_ask_cancel">Cancel</button>
+                           <button type="button" class="chat-btn" id="ask_scan">Scan its code</button>
+                           <button type="button" class="chat-btn chat-btn--primary" id="keys_ask_use">Use it</button>
                         </div>
                      </div>
 
@@ -474,26 +496,42 @@ http://www.opensource.org/licenses/mit-license.php.
 
                <div class="account-column-side">
                   <!-- NOTE: Another device (Ian, 2026-10-25: the access key "passed via QR code for simplicity rather than needing to
-                       provide the twelve words for every device") - "keys_show_device( )". Only once the keys are on this browser. -->
+                       provide the twelve words for every device"), by his exchange since 2026-11-05 - its code read here, and this
+                       browser's answer shown for it alone ("keys_device_answer( )"). Only once the keys are on this browser. -->
                   <div class="account-card account-form account-keys-device" id="device_add_part" hidden>
                      <div>
                         <h2>Add another device</h2>
-                        <p class="account-lede">Your keys on another of your own devices - this shows a QR code to scan with its
-                         camera.</p>
+                        <p class="account-lede">Your keys on another of your own devices - each shows the other a code.</p>
                      </div>
                      <div class="account-actions-row" id="keys_device_row">
                         <button type="button" class="chat-btn" id="keys_device">Add another device</button>
                      </div>
                      <div class="account-keys-device-show" id="keys_device_part" hidden>
-                        <p class="account-lede">Scan it with the other device's camera. Once you sign in there as yourself, your keys
-                         are on it too.</p>
-                        <div class="account-keys-qr" id="keys_device_qr" aria-hidden="true"></div>
-                        <label class="chat-label" for="keys_device_link">Or open this address there</label>
-                        <input type="text" class="chat-field account-keys-key" id="keys_device_link" readonly>
-                        <div class="recover-warning"><b>Only for your own devices.</b> Anyone who scans this or has the address can read
-                         your encrypted messages. Hide it once you're done.</div>
-                        <div class="account-actions-row">
-                           <button type="button" class="chat-btn" id="keys_device_hide">Hide</button>
+                        <div class="account-keys-device-step" id="keys_device_ask_part">
+                           <p class="account-lede">On the other device, sign in as you and choose <b>Get them from another device</b>
+                            under Your keys. Scan the code it shows, or paste its address.</p>
+                           <div class="chat-scan-reader" id="device_scan_reader"></div>
+                           <p class="account-lede" id="device_scan_status" role="status" aria-live="polite"></p>
+                           <label class="chat-label" for="keys_device_ask">Its address</label>
+                           <input type="text" class="chat-field account-keys-key" id="keys_device_ask" autocomplete="off" spellcheck="false">
+                           <div class="recover-warning"><b>Only a device of your own, in front of you.</b> Your keys go to whichever
+                            device showed the code.</div>
+                           <div class="chat-error-text" id="device_error" role="alert"></div>
+                           <div class="account-actions-row">
+                              <button type="button" class="chat-btn" id="keys_device_hide">Cancel</button>
+                              <button type="button" class="chat-btn" id="device_scan">Scan its code</button>
+                              <button type="button" class="chat-btn chat-btn--primary" id="keys_device_use">Use it</button>
+                           </div>
+                        </div>
+                        <div class="account-keys-device-step" id="keys_device_reply_part" hidden>
+                           <p class="account-lede">Now open this with the other device's camera, or scan or paste it there. It
+                            works only on that device, and only once.</p>
+                           <div class="account-keys-qr" id="keys_device_qr" aria-hidden="true"></div>
+                           <label class="chat-label" for="keys_device_link">The address for it</label>
+                           <input type="text" class="chat-field account-keys-key" id="keys_device_link" readonly>
+                           <div class="account-actions-row">
+                              <button type="button" class="chat-btn" id="keys_device_done">Done</button>
+                           </div>
                         </div>
                      </div>
                   </div>

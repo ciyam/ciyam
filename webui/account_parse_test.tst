@@ -92,5 +92,11 @@ ok   My account's sections, in order
 ok   - the one an address asks for, else the first
 ok   the room keys kept - said under them, or none yet
 ok   - listed by name, then number; one not in the listing last, by number (Damon, 2026-11-04)
+ok   another device - the ask, this page with its public key after #
+ok   - read back, whole, after # only, or pasted broken over lines in capitals
+ok   - the reply, read back
+ok   - not one: the old address with the access key, a key too short, a reply with no check, nothing
+ok   xor of two hex strings - and back
+ok   - not the same length, or not hex
 
 All checks passed.

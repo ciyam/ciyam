@@ -542,13 +542,16 @@ function show_section( name )
 
    shell_mark( [ "account", name ] );
 
-   // NOTE: What is shown only when asked is hidden again on leaving its section (Ian, 2026-10-27) - the contact code, and the QR
-   // code that carries the access key to another device.
+   // NOTE: What is shown only when asked is hidden again on leaving its section (Ian, 2026-10-27) - the contact code, and the
+   // answer to another device's code; the camera let go.
    if( ( name !== "contacts" ) && ( typeof keys_hide_public === "function" ) )
       keys_hide_public( );
 
    if( ( name !== "devices" ) && ( typeof keys_hide_device === "function" ) )
       keys_hide_device( );
+
+   if( typeof keys_leave_section === "function" )
+      keys_leave_section( name );
    shell_close_rail( );
 
    if( window.location.hash !== "#" + name )
