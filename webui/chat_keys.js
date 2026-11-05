@@ -711,7 +711,8 @@ function chat_offer_sealed_actions( element, opened )
 }
 
 // NOTE: A member of a room that is encrypted, without its key here (Damon, 2026-11-05: nothing to be posted there in the clear) -
-// known by the encrypted messages in it, a room key's note to them among them.
+// known by the owner's private notes to them: the key's, sealed, or the plain one saying it is encrypted. Not by any encrypted message
+// in it - one scanned in from an offline device is sealed in a room with no key (found by the suites).
 function chat_member_keyless( )
 {
    var entry = ( g_room !== "" ) ? find_room( g_room ) : null;
@@ -724,8 +725,8 @@ function chat_member_keyless( )
 
    return Array.prototype.some.call( document.querySelectorAll( "#message_list .chat-message-body" ), function( body )
    {
-      return ( message_prefix( body.dataset.text || "" ) === "X" )
-       || ( ( body.dataset.private === "1" ) && ( body.dataset.sender === g_room_owner ) && ( body.dataset.text === notice ) );
+      return ( body.dataset.private === "1" ) && ( body.dataset.sender === g_room_owner )
+       && ( ( message_prefix( body.dataset.text || "" ) === "X" ) || ( body.dataset.text === notice ) );
    } );
 }
 
