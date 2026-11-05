@@ -277,9 +277,11 @@ NAMES_LEN=@strlen:$NAMES
                PIN_AUTHOR=%SOURCE_PARTS:1%
                OLD_MESSAGE=%SOURCE_PARTS:2%
 
-                  @ifeq "$PREFIX" "$NORMAL_PREFIX_ENCODED"
+                  @ifeq "$PREFIX" "$SYSTEM_PREFIX_ENCODED"
                   NOT_EDITABLE=1
-                  @elif "$OLD_PREFIX" = "$PRIVATE_PREFIX_ENCODED"
+                  @elif "$PREFIX" = "$PRIVATE_PREFIX_ENCODED"
+                  PRIVATE_PIN=1
+                  @elif "$PREFIX" = "$PRIVATE_CRYPT_PREFIX_ENCODED"
                   PRIVATE_PIN=1
                   @endif
                @else
@@ -300,10 +302,12 @@ NAMES_LEN=@strlen:$NAMES
          OLD_TARGET=public
             @ifeq "$OLD_PREFIX" "$PRIVATE_PREFIX_ENCODED"
             OLD_TARGET=private
+            @elif "$OLD_PREFIX" = "$PRIVATE_CRYPT_PREFIX_ENCODED"
+            OLD_TARGET=private
             @endif
 
          BAD_TARGET=
-            @ifeq "$PREFIX" "$NORMAL_PREFIX_ENCODED"
+            @ifeq "$PREFIX" "$SYSTEM_PREFIX_ENCODED"
             NOT_EDITABLE=1
             @elif "$TARGET" != "$OLD_TARGET"
             BAD_TARGET=1
