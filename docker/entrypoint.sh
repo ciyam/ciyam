@@ -23,6 +23,12 @@
 
 cd /ciyam/src || exit 1
 
+# NOTE: An image built with Meta ("CIYAM_META=1" in the Dockerfile) keeps that storage's records in MariaDB, which has to be
+# answering before "ciyam_server" starts.
+if [ -f Meta.dat ]; then
+   /usr/local/bin/start_mariadb.sh || exit 1
+fi
+
 show_banner( )
 {
    if [ -f .web_access_admin ]; then

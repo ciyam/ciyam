@@ -15,6 +15,10 @@
 #
 # Build from the repository root:
 #   docker build -f docker/Dockerfile -t ciyam-server .
+#
+# NOTE: "--build-arg CIYAM_META=1" adds MariaDB and the Meta application's storage (2026-11-05), so a web session can
+# "attach storage Meta" and use the "storage-modules" and "storage-instances" endpoints - for trying those and the
+# Software Manufacturing work. Empty, the build is as before. "rebuild-container.sh -meta" builds one.
 
 # NOTE: Ubuntu 26.04 since 2026-10-02, as Ian's nodes - its OpenSSL 3.5 offers ML-KEM, the
 # post-quantum key exchange, for TLS.
@@ -37,6 +41,13 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
       libmysqlclient-dev libmysqlcppconn-dev \
       nodejs \
  && rm -rf /var/lib/apt/lists/*
+
+# NOTE: With Meta, "mariadb-server" - its "mariadb" client is what "create_db" prefers, and the MySQL client library above
+# talks to it over the Unix socket the same; "procps" for the "pkill" in "meta_setup.sh".
+ARG CIYAM_META=
+RUN if [ -n "$CIYAM_META" ]; then \
+       apt-get update && apt-get install -y --no-install-recommends mariadb-server procps && rm -rf /var/lib/apt/lists/*; \
+    fi
 
 # NOTE: "--build-arg CIYAM_CPP_OPTS=-g" builds with debug information, as Ian builds his development system, so a
 # crash's core dump gives a stack with source lines - and adds gdb to read one. Empty, the build is as before.
@@ -88,11 +99,6 @@ RUN sed -i "s|^\( *\)<user_home_path>.*|\1<user_home_path>/home/$CIYAM_USER|" ci
 # to run where the Linux account password cannot be set.
 RUN touch "/ciyam/src/.${CIYAM_USER}_password_protected"
 
-# NOTE: "config" creates a system identity, but the seeded "admin" bootstrap that the
-# entrypoint performs expects to create one itself - so it is erased here, exactly as
-# "tests/test_node_init.sh" does before running its own bootstrap.
-RUN ./save_identity && ./erase_identity
-
 # NOTE: IRC only runs if the "irc_store_or_restore" autoscript entry is active, and
 # "autoscript.sio.default" ships it commented out so that a new development
 # environment starts minimal. The "install" script uncomments every entry; only this
@@ -112,7 +118,27 @@ RUN chmod +x /usr/local/bin/enable_autoscript.sh && dos2unix -q /usr/local/bin/e
 # "ciyam_client" is needed too - starting a web session spawns it as a child process
 # to run "web_session.cin" (see the system( ) call in "ciyam_web_session.cpp"), so
 # without it every session start fails with "Was unable to start a web session".
-RUN make ciyam_base.so ciyam_client ciyam_server
+#
+# With Meta, its module "Meta.so" too ("modules.lst" names it, so "config" made it a target), which "storage_init Meta"
+# loads - and the tools "init Meta Meta" runs as it installs the package types: "unbundle" (the "135410" procedure in
+# "Meta_Package_Type.cpp"), "bundle", and "construct", which "install_package" runs to regenerate "ciyam_class.cpp".
+RUN make ciyam_base.so ciyam_client ciyam_server $( [ -n "$CIYAM_META" ] && echo Meta.so bundle unbundle construct )
+
+# NOTE: With Meta, its storage is made here - before the identity is erased, in the order "linux_lubuntu.txt" does it, as
+# "init" runs its own server, which needs the identity "config" made. The Meta storage is not encrypted with the identity
+# (the "c_meta_storage_name" exception to "ods_use_encrypted" in "ciyam_base.cpp"), so the new identity the entrypoint's
+# bootstrap makes can still read it. Left out: Apache, FCGI and its UI ("setup Meta meta", "install_fcgi"), "reconstruct_meta"
+# and the guide's "Meta_tests.sio" step.
+COPY docker/start_mariadb.sh /usr/local/bin/start_mariadb.sh
+COPY docker/meta_setup.sh /usr/local/bin/meta_setup.sh
+RUN chmod +x /usr/local/bin/start_mariadb.sh /usr/local/bin/meta_setup.sh \
+ && dos2unix -q /usr/local/bin/start_mariadb.sh /usr/local/bin/meta_setup.sh \
+ && if [ -n "$CIYAM_META" ]; then /usr/local/bin/meta_setup.sh; fi
+
+# NOTE: "config" creates a system identity, but the seeded "admin" bootstrap that the
+# entrypoint performs expects to create one itself - so it is erased here, exactly as
+# "tests/test_node_init.sh" does before running its own bootstrap.
+RUN ./save_identity && ./erase_identity
 
 # NOTE: Static files are served from "g_html_dir" in "http_handler.cpp", which is
 # the fixed relative path "html" - not <web_root>, which belongs to the Meta
