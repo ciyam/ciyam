@@ -1146,19 +1146,24 @@ async function do_make_room_key( )
    {
       var people = chat_room_people( );
 
-      if( await ask_dialog( { title: "Encrypt this conversation?", text: "A key is made for it and sent to each of its people in an"
-       + " encrypted direct message - one is started with anyone you have none with yet.", yes: "Encrypt it" } ) && ( g_room === room ) )
+      if( await ask_dialog( { title: "Encrypt this conversation?", text: "A key is made for it and passed to each of its people here,"
+       + " who are asked to accept it.", yes: "Encrypt it" } ) && ( g_room === room ) )
          chat_encrypt_group( room, people );
 
       return;
    }
 
-   if( !await ask_dialog( { title: "Make a key for this room?", text: "From now on your messages here are encrypted - members can"
-    + " read them once you've sent them the key with Send to members.", yes: "Make the key" } ) || ( g_room !== room ) )
+   if( !await ask_dialog( { title: "Make a key for this room?", text: "From now on your messages here are encrypted - each member is"
+    + " passed the key here and asked to accept it.", yes: "Make the key" } ) || ( g_room !== room ) )
       return;
 
+   // NOTE: Passed to the members straight away (Damon, 2026-11-05) - as a new room's is to each who joins.
    if( await chat_room_key_change( room, chat_random_room_key( ) ) && ( g_room === room ) )
+   {
       do_share_room_key( );
+
+      chat_owner_send_keys( );
+   }
 }
 
 // ---- Sending a room key to its people (Damon, 2026-10-27: sharing it with each by hand in a group, one was missed - they had no
