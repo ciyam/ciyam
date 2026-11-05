@@ -1184,6 +1184,12 @@ check( "- a new key since: to send", cp.owner_key_delivery( delivered, "damon", 
  { state: "send", remove: [ ] } );
 check( "- a receipt only from the member, not from the owner", cp.owner_key_delivery( [ { sender: "damon", text: "Room key for #0000124"
  + " added (0d0d0d0d).", unique: "u1" } ], "damon", "tester-1", "0000124", "d".repeat( 32 ), "0d0d0d0d" ), { state: "send", remove: [ ] } );
+check( "a key note in words - never the key - to its sender and to its member", [ cp.key_note_text( "0000124#" + "d".repeat( 32 ), "damon",
+ "damon", "tester-1" ), cp.key_note_text( "0000124#" + "d".repeat( 32 ), "damon", "tester-1", "" ) ],
+ [ "The room key, passed to tester-1", "The room key for this room, from damon" ] );
+check( "- its receipt, both ways; any other message not one", [ cp.key_note_text( "Room key for #0000124 added (0d0d0d0d).", "tester-1",
+ "tester-1", "damon" ), cp.key_note_text( "Room key for #0000124 added (0d0d0d0d).", "tester-1", "damon", "" ),
+ cp.key_note_text( "hello", "damon", "damon", "tester-1" ) ], [ "Room key added - damon has been told", "tester-1 has added the room key", "" ] );
 check( "- received, its key message already deleted: nothing left to delete", cp.owner_key_delivery( delivered.slice( 4 ), "damon", "tester-1",
  "0000124", "d".repeat( 32 ), "0d0d0d0d" ), { state: "received", remove: [ ] } );
 check( "- a room key sent to each other person once", cp.room_key_recipients( [ "tester-2", "damon", "Tester-1", "tester-2", "" ], "damon" ),

@@ -4167,6 +4167,10 @@ function build_message( entry )
    // NOTE: Who sent it, before it is drawn - a room key is added by itself only from its room's owner ("chat_offer_room_key( )").
    body.dataset.sender = entry.sender || "";
 
+   // NOTE: A private message's people too - one sealed for its two alone (a room key's note) is opened with their secret.
+   body.dataset.private = entry.private ? "1" : "";
+   body.dataset.recipients = ( entry.recipients || [ ] ).join( "," );
+
    // NOTE: Colour and style drawn ("draw_formatted( )"); the text as stored kept, for the check after a time-out.
    if( entry.deleted )
       body.textContent = "Message deleted";

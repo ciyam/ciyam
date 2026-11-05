@@ -2529,6 +2529,22 @@ function owner_key_delivery( opened, owner, member, room, key, mark )
    return { state: ( owner_room_key( opened, owner, room, [ ] ) === key ) ? "sent" : "send", remove: [ ] };
 }
 
+// NOTE: A room's key note or its receipt, opened, in words for the conversation (Damon, 2026-11-05 - passed in the room as a private
+// message, never shown as the key itself): "sender" sent it, "me" is reading it, "other" the one it is to when "me" sent it. "" for
+// any other message.
+function key_note_text( text, sender, me, other )
+{
+   var to = String( other || "" ) || "them";
+
+   if( room_key_receipt( text ) !== null )
+      return ( sender === me ) ? "Room key added - " + to + " has been told" : sender + " has added the room key";
+
+   if( room_key_in_message( text ) !== null )
+      return ( sender === me ) ? "The room key, passed to " + to : "The room key for this room, from " + sender;
+
+   return "";
+}
+
 // NOTE: A message that starts with a room key - one shared in an encrypted direct message, perhaps with words after it (Ian,
 // 2026-10-26) - as { room, key }, or null.
 function room_key_in_message( text )
@@ -4977,6 +4993,7 @@ if( typeof module !== "undefined" )
       encryption_action: encryption_action,
       room_key_receipt_text: room_key_receipt_text,
       room_key_receipt: room_key_receipt,
+      key_note_text: key_note_text,
       owner_key_delivery: owner_key_delivery,
       member_key_hint: member_key_hint,
       room_key_recipients: room_key_recipients,
