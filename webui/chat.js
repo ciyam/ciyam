@@ -75,6 +75,9 @@ var g_dm_pending = { };
 var g_dm_declined = { };
 var g_dm_shut = { };
 
+// NOTE: Rooms whose offer of keys or a contact code was put off with "Not now" ("do_keys_offer_later( )") - until the next sign in.
+var g_keys_offer_later = { };
+
 // NOTE: Conversations whose waiting has been worked out this session - started here, or restored
 // once. A restored one is not restored again after its people have joined.
 var g_dm_checked = { };
@@ -296,11 +299,17 @@ function chat( )
          do_toggle_new_menu( false );
    } );
 
-   // NOTE: Back to the tab, the room read whole at the next poll - what changed while away is shown ("poll( )").
+   // NOTE: Back to the tab, the room read whole at the next poll - what changed while away is shown ("poll( )"). The keys read
+   // again too while the room offers a way to them - set up, or a contact added, on My account in another tab.
    document.addEventListener( "visibilitychange", function( )
    {
       if( !document.hidden )
+      {
          g_last_whole_read = 0;
+
+         if( ( g_room !== "" ) && ( g_chat_keys !== null ) && ( encryption_action( chat_encryption_note( ) ) !== null ) )
+            chat_keys_read( );
+      }
    } );
 
    // NOTE: The reactions sit beside their message - scrolled away from it, they close.
@@ -1321,6 +1330,7 @@ async function do_disconnect( already_ended )
    g_dm_pending = { };
    g_dm_declined = { };
    g_dm_shut = { };
+   g_keys_offer_later = { };
    g_dm_checked = { };
 
    // NOTE: What was typed, its undo and an edit open were this account's too - the next could have undone back to its words
@@ -2069,7 +2079,11 @@ function show_encryption( )
    } );
 
    if( badge === null )
+   {
+      show_encryption_action( );
+
       return;
+   }
 
    var button = document.getElementById( "encryption_badge" );
 
@@ -2079,6 +2093,45 @@ function show_encryption( )
 
    document.getElementById( "encryption_row_label" ).textContent = badge.label;
    document.getElementById( "encryption_row_detail" ).textContent = badge.detail;
+
+   show_encryption_action( );
+}
+
+// NOTE: The way to My account for what would encrypt the room ("encryption_action( )") - in its details always, and over the message
+// box in a direct message (Damon, 2026-11-05), until put off with "Not now".
+function show_encryption_action( )
+{
+   var action = ( g_room === "" ) ? null : encryption_action( chat_encryption_note( ) );
+   var row = document.getElementById( "encryption_row_action" );
+   var bar = document.getElementById( "composer_keys" );
+
+   row.hidden = ( action === null );
+   bar.hidden = ( action === null ) || ( parse_dm_name( g_room_name ) === null ) || !!g_keys_offer_later[ g_room ];
+
+   // NOTE: Emptied when hidden - its words would otherwise still be read as part of the row's.
+   row.textContent = ( action !== null ) ? action.label : "";
+
+   if( action === null )
+      return;
+
+   document.getElementById( "composer_keys_text" ).textContent = action.text;
+   document.getElementById( "composer_keys_go" ).textContent = action.label;
+}
+
+// NOTE: As "Account settings" opens My account - in this tab, or its own with ctrl or cmd and click ("apps_go( )").
+function do_encryption_action( event )
+{
+   var action = encryption_action( chat_encryption_note( ) );
+
+   if( action !== null )
+      apps_go( "account", "#" + action.section, event );
+}
+
+function do_keys_offer_later( )
+{
+   g_keys_offer_later[ g_room ] = true;
+
+   show_encryption_action( );
 }
 
 // NOTE: The badge clicked - the details, where a phone has them out of sight brought in, with its row shown.

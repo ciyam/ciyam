@@ -563,6 +563,10 @@ ok   the same conversation as the prototype's, by its people
 ok   the other person in a direct message, to encrypt to
 ok   - what the line under it says
 ok   - a group's, with a room key or without
+ok   what would encrypt it - your keys set up
+ok   - their contact code added
+ok   - a group's, your keys set up
+ok   - nothing to offer: encrypted, a room key to make, keys unread, or not yet known
 ok   the encryption badge - none while the keys are read, or where it cannot be encrypted
 ok   - encrypted, and who can read it
 ok   - not encrypted, and what would encrypt it

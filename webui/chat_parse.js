@@ -2352,6 +2352,26 @@ function encryption_badge( note, others, kind, owner, room_owner, known )
    return { locked: false, label: "Not encrypted", detail: reason.charAt( 0 ).toUpperCase( ) + reason.substring( 1 ) + "." };
 }
 
+// NOTE: What would encrypt a conversation, offered in it as a button (Damon, 2026-11-05: the chat offering set up at a first direct
+// message, as a way to My account rather than a second copy of it) - from what "dm_encryption_note( )" or "group_encryption_note( )"
+// said. null when nothing on My account would; else { label, section, text } - the button's words, the section of My account it
+// opens, and the words of the bar that offers it.
+function encryption_action( note )
+{
+   var value = String( note || "" );
+
+   if( value === "not encrypted - set up your keys on My account" )
+      return { label: "Set up your keys", section: "keys", text: "Messages here aren't encrypted until your keys are set up on this browser." };
+
+   var match = /^not encrypted - add (.+)'s contact code to Contacts on My account$/.exec( value );
+
+   if( match !== null )
+      return { label: "Add " + match[ 1 ] + "'s contact code", section: "contacts", text: "Messages with " + match[ 1 ] + " aren't encrypted"
+       + " until you have added each other's contact code." };
+
+   return null;
+}
+
 // NOTE: Who a room's key is sent to - each other person once, in order; not "me".
 function room_key_recipients( names, me )
 {
@@ -4909,6 +4929,7 @@ if( typeof module !== "undefined" )
       dm_encryption_note: dm_encryption_note,
       group_encryption_note: group_encryption_note,
       encryption_badge: encryption_badge,
+      encryption_action: encryption_action,
       member_key_hint: member_key_hint,
       room_key_recipients: room_key_recipients,
       room_key_sent_text: room_key_sent_text,

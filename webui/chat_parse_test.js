@@ -1122,6 +1122,15 @@ check( "- a group's, with a room key or without", [ cp.group_encryption_note( tr
  cp.group_encryption_note( false, false ), cp.group_encryption_note( null, true ), cp.group_encryption_note( "unread", false ) ],
  [ "encrypted with the room key", "not encrypted - encrypt it in Chat Details", "not encrypted - set up your keys on My account", "",
  "not encrypted - your keys could not be read just now; reload to try again" ] );
+// NOTE: The way to My account offered in the conversation (Damon, 2026-11-05) - only for what My account would put right.
+check( "what would encrypt it - your keys set up", cp.encryption_action( cp.dm_encryption_note( "verify-a", false, false ) ),
+ { label: "Set up your keys", section: "keys", text: "Messages here aren't encrypted until your keys are set up on this browser." } );
+check( "- their contact code added", cp.encryption_action( cp.dm_encryption_note( "verify-a", true, false ) ),
+ { label: "Add verify-a's contact code", section: "contacts", text: "Messages with verify-a aren't encrypted until you have added each other's"
+ + " contact code." } );
+check( "- a group's, your keys set up", cp.encryption_action( cp.group_encryption_note( false, false ) ).section, "keys" );
+check( "- nothing to offer: encrypted, a room key to make, keys unread, or not yet known", [ cp.dm_encryption_note( "verify-a", true, true ),
+ cp.group_encryption_note( true, false ), cp.dm_encryption_note( "verify-a", "unread", false ), "" ].map( cp.encryption_action ), [ null, null, null, null ] );
 // NOTE: The badge at the right of the bar and the row in the details (Damon, 2026-11-02) - a label and a sentence from the note.
 check( "the encryption badge - none while the keys are read, or where it cannot be encrypted", cp.encryption_badge( "", [ "verify-a" ], "dm", false ),
  null );

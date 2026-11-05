@@ -225,6 +225,14 @@ http://www.opensource.org/licenses/mit-license.php.
          <div class="chat-held" id="held_list" hidden></div>
 
          <div class="chat-composer" id="composer" hidden>
+            <!-- NOTE: A direct message not encrypted for want of keys or a contact code - the way to it on My account offered (Damon,
+                 2026-11-05), "Not now" leaving it off for the room until the next sign in. "show_encryption( )". -->
+            <div class="chat-composer-keys" id="composer_keys" role="region" aria-label="Encryption" hidden>
+               <span id="composer_keys_text"></span>
+               <button type="button" class="chat-btn chat-btn--small chat-btn--primary" id="composer_keys_go"
+                onclick="do_encryption_action( event )"></button>
+               <button type="button" class="chat-btn chat-btn--small" onclick="do_keys_offer_later( )">Not now</button>
+            </div>
             <!-- NOTE: A poll's room - this line in place of the message box, which takes nothing there (the poll review, 2026-11-03:
                  a disabled box saying the room takes reactions only). "update_poll_bar( )". -->
             <div class="chat-composer-poll" id="composer_poll" role="status" hidden>
@@ -376,6 +384,8 @@ http://www.opensource.org/licenses/mit-license.php.
                <div>
                   <div class="chat-encryption-word" id="encryption_row_label"></div>
                   <div class="chat-encryption-detail" id="encryption_row_detail"></div>
+                  <button type="button" class="chat-btn chat-btn--small chat-encryption-action" id="encryption_row_action"
+                   onclick="do_encryption_action( event )" hidden></button>
                </div>
             </div>
             <dl class="chat-room-facts">

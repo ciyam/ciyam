@@ -2837,6 +2837,40 @@ button.chat-poll-option:hover
    display: none;
 }
 
+/* NOTE: The way to My account for a direct message not encrypted ("composer_keys") - amber, as the bar's line along the thread's
+   head says the same. */
+.chat-composer-keys
+{
+   display: flex;
+   flex-wrap: wrap;
+   align-items: center;
+   gap: 8px;
+   margin-bottom: 8px;
+   padding: 8px 12px;
+   border: 1px solid var(--color-chat-warning-border);
+   border-radius: var(--radius-sm);
+   background: var(--color-chat-warning-bg);
+   color: var(--color-chat-warning-text);
+   font-size: var(--font-size-chat-small);
+   line-height: 1.4;
+}
+
+.chat-composer-keys[hidden]
+{
+   display: none;
+}
+
+.chat-composer-keys span
+{
+   flex: 1 1 220px;
+   min-width: 0;
+}
+
+.chat-encryption-action
+{
+   margin-top: 6px;
+}
+
 .chat-composer-poll svg
 {
    flex: none;
