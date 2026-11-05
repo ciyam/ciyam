@@ -35,13 +35,18 @@ ENTRANCE_ROOM=0000000
 RESERVED_ROOM=0000001
 STARTING_ROOM=0000002
 
+@retain *
+<prefixes.cin
+
 PREFIX=@substr:0,2:$ROOM_NO
+
    @ifeq "$PREFIX" "~0"
    ROOM_NO=@substr:1:$ROOM_NO
    REMOVE=1
    @endif
 
 FIRST=@substr:0,1:$ROOM_NO
+
    @ifeq "$FIRST" "_"
    INCLUDE_NAME=
    ROOM_NO=@substr:1:$ROOM_NO
@@ -184,7 +189,7 @@ POS=@strpos:-:$ROOM_NO
                               CHANGED=1
                               .system_variable @irc_xinvr_%ROOM_NO%_$USER 1
                               .system_variable @irc_xinvs_%ROOM_NO%_$USER ""
-                              EXTRA=_:reject (invite for $ROOM_NO was rejected)
+                              EXTRA=%SYSTEM_PREFIX_DECODED%reject (invite for $ROOM_NO was rejected)
                               ROOM_NO=$RESERVED_ROOM
                               @endif
 
@@ -203,7 +208,7 @@ POS=@strpos:-:$ROOM_NO
 
                            ALL_USERS=$PREFIX$SUFFIX
 
-                           EXTRA=_:remove
+                           EXTRA=%SYSTEM_PREFIX_DECODED%remove
 
                            .session_variable @irc_is_remove 1
                            .session_variable -id=$SESSION @irc_$ROOM_NO ""
@@ -289,7 +294,7 @@ POS=@strpos:-:$ROOM_NO
                   ALL_USERS=@strlit:$ALL_USERS@$USER
                   ALL_USERS=@set_sort:@:$ALL_USERS
 
-                  EXTRA=_:joined
+                  EXTRA=%SYSTEM_PREFIX_DECODED%joined
 
                   .system_variable @irc_users_$ROOM_NO $ALL_USERS
 
