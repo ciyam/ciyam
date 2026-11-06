@@ -1999,7 +1999,9 @@ function chat_offer_room_key( element, text )
 
    var offered = ( kept !== "" ) ? "Use this room key for " + entry.name : "Add this room key for " + entry.name;
    var whole = shared.room + "#" + shared.key;
-   var from_owner = ( element.dataset.sender || "" ) === entry.owner;
+   // NOTE: The owner's by the conversation it was opened in, not by the sender the server names (found by review, 2026-11-06: the
+   // node could name the owner as the sender of a key another sealed, and have it added unasked).
+   var from_owner = ( ( element.dataset.sender || "" ) === entry.owner ) && ( chat_dm_other( ) === entry.owner );
 
    var save = function( only_if_none )
    {
