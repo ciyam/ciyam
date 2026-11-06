@@ -218,10 +218,12 @@ NAMES_LEN=@strlen:$NAMES
    @ifndef $EDIT_MESSAGE
    MLEN=@strlen:$MESSAGE
 
+   ; NOTE: Only the first three characters of the encoded prefix
+   ; are used (as the padding below starts with its fourth "g").
       @ifeq "$TARGET" "public"
-      CHECK_SPACES=$NORMAL_PREFIX_ENCODED
+      CHECK_SPACES=@substr:0,3:$NORMAL_PREFIX_ENCODED
       @else
-      CHECK_SPACES=$PRIVATE_PREFIX_ENCODED
+      CHECK_SPACES=@substr:0,3:$PRIVATE_PREFIX_ENCODED
       @endif
 
    NUM_TRAILING=0
