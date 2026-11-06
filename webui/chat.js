@@ -4295,8 +4295,9 @@ function build_message( entry )
    }
 
    // NOTE: Delete - the sender's own, public or private: an edit to two spaces ("delete_options( )"), two clicks as Decline
-   // is, since what was said is gone (Ian's idea, 2026-10-15). Not one between two as a direct message is - the node takes no edit
-   // of one (Ian, 2026-11-06).
+   // is, since what was said is gone (Ian's idea, 2026-10-15). Not one between two as a direct message is (Ian, 2026-11-06) - a room
+   // key's note or receipt: the node lets its sender delete one, but the owner's chat does that as the receipt arrives, and one
+   // deleted by hand before then would only be passed again ("chat_owner_send_keys( )").
    if( ( entry.kind === "chat" ) && ( entry.sender === ciyam.username ) && !entry.deleted && !entry.pair )
    {
       var remove = row.querySelector( ".chat-message-delete" );
