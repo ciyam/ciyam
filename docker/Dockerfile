@@ -72,6 +72,11 @@ COPY webui/ /ciyam/webui/
 # make every shell script fail with "bad interpreter". dos2unix skips binaries.
 RUN find /ciyam -type f -not -path "*/fonts/*" -exec dos2unix -q {} + 2>/dev/null || true
 
+# NOTE: A COPY from Windows also makes every file executable, which "test_bundle"
+# records (for "test.png" and "test.jpg"). In git only ".sh" files and the scripts
+# without an extension are executable, so every other file is put back to 644.
+RUN find /ciyam -type f -name "*.*" -not -name "*.sh" -exec chmod 644 {} +
+
 WORKDIR /ciyam/src
 
 # NOTE: "config" bootstraps itself - it copies the ".default" files, builds the
