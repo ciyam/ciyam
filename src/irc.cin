@@ -227,19 +227,15 @@ IS_DIRECT=
 
                   EDIT_MSG_PREFIX=@substr:0,$PREFIX_LENGTH_DECODED:$EDIT_MSG_CONTENT
 
-                  ; NOTE: If was pinned then remove the prefix.
-                  FIRST=@substr:0,1:$EDIT_MSG_OWNER
+                  IS_SPECIAL_DM=
 
-                     @ifeq "$FIRST" "!"
-                     EDIT_MSG_OWNER=@substr:1:$EDIT_MSG_OWNER
+                  POS=@strpos:!:$EDIT_MSG_OWNER
+                     @if "$POS" #> 0
+                     IS_SPECIAL_DM=1
                      @endif
 
-                  ; NOTE: If was edited then remove the suffix.
-                  POS=@strpos:*:$EDIT_MSG_OWNER
-
-                     @ifdef $POS
-                     EDIT_MSG_OWNER=@substr:0,$POS:$EDIT_MSG_OWNER
-                     @endif
+                  EDIT_MSG_OWNER=@repstr:!/:$EDIT_MSG_OWNER
+                  EDIT_MSG_OWNER=@repstr:*/:$EDIT_MSG_OWNER
 
                   IS_REACTION=
 
@@ -250,6 +246,9 @@ IS_DIRECT=
                      @ifeq "$EDIT_MSG_PREFIX" "$SYSTEM_PREFIX_DECODED"
                      EDIT_UNIX_UNIQUE=
                      #(system messages are not editable)
+                     @elif "$IS_SPECIAL_DM" = "1"
+                     EDIT_UNIX_UNIQUE=
+                     #(special private messages are not editable)
                      @else
 
                      IS_ENCRYPTED_PREFIX=
@@ -264,6 +263,8 @@ IS_DIRECT=
 
                         @ifdef $IS_ENCRYPTED_PREFIX
                            @ifdef $KEY_FILE_DATA
+                           OLD_KEY_FILE_DATA=$KEY_FILE_DATA
+
                            PREFIX=_
                               @ifdef $DIRECT_PUB_SUFFIX
                               PREFIX=_!
@@ -274,9 +275,11 @@ IS_DIRECT=
 
                            EDIT_MSG_CONTENT=$MESSAGE
                            MESSAGE=
+
+                           KEY_FILE_DATA=$OLD_KEY_FILE_DATA
                            @else
                               @ifdef $DIRECT_PUB_SUFFIX
-                              EDIT_MSG_CONTENT=$LOCK_EMOJI ($CHECK_USER_NAME)
+                              EDIT_MSG_CONTENT=$LOCK_EMOJI ($EDIT_MSG_OWNER)
                               @else
                               EDIT_MSG_CONTENT=$LOCK_EMOJI (room key unknown)
                               @endif
@@ -1065,6 +1068,23 @@ IS_DIRECT=
 
    USER_NAME=@strlit:%NEXT_MSG_PARTS:2%
 
+   ; NOTE: If the user name is suffixed by "!" then
+   ; a private encrypted message is instead treated
+   ; as a direct message (and if this user had also
+   ; been this message creator then their user name
+   ; will have been appended after an "@").
+   CHECK_USER_NAME=
+   POS=@strpos:!:$USER_NAME
+
+      @if "$POS" #> 0
+      CHECK_USER_NAME=@substr:0,$POS:$USER_NAME
+      POS=@strpos:@:$USER_NAME
+         @ifdef $POS
+         POS=@$POS+1
+         USER_NAME=@substr:$POS:$USER_NAME
+         @endif
+      @endif
+
    IS_ENCRYPTED_PREFIX=
 
       @ifeq "$CHECK_ENCRYPTED" "$NORMAL_CRYPT_PREFIX_DECODED"
@@ -1078,10 +1098,19 @@ IS_DIRECT=
       @ifdef $IS_ENCRYPTED_PREFIX
 
          @ifdef $KEY_FILE_DATA
+         OLD_KEY_FILE_DATA=$KEY_FILE_DATA
 
          PREFIX=
             @ifdef $DIRECT_PUB_SUFFIX
             PREFIX=!
+            @endif
+
+            @ifdef $CHECK_USER_NAME
+            CHECK_PUB_KEY_FILE=@files:$LOCAL_FILES_DIR:.irc_$USER.public.$CHECK_USER_NAME
+               @ifdef $CHECK_PUB_KEY_FILE
+               PREFIX=!
+               KEY_FILE_DATA=@file:$LOCAL_FILES_DIR/.irc_$USER.public.$CHECK_USER_NAME
+               @endif
             @endif
 
          @retain MESSAGE
@@ -1089,6 +1118,8 @@ IS_DIRECT=
 
          DECODED_MESSAGE=$MESSAGE
          MESSAGE=
+
+         KEY_FILE_DATA=$OLD_KEY_FILE_DATA
 
          PREFIX=@substr:0,3:$DECODED_MESSAGE
          DECODED_MESSAGE=@substr:3:$DECODED_MESSAGE
