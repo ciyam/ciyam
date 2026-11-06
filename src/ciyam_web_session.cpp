@@ -337,7 +337,27 @@ struct session_request
 
 inline string escaped_json( const string& s )
 {
-   return escaped( s, "/\"", '\\', c_json_escape_specials );
+   string str( escaped( s, "/\"", '\\', c_json_escape_specials ) );
+
+   // NOTE: Any other control character (such as the ESC of an ANSI colour in a message) is not
+   // allowed as it is in a JSON string so is given as "\u00XX" instead.
+   string retval;
+
+   for( size_t i = 0; i < str.size( ); i++ )
+   {
+      unsigned char c = str[ i ];
+
+      if( c >= 0x20 )
+         retval += str[ i ];
+      else
+      {
+         retval += "\\u00";
+         retval += "0123456789abcdef"[ c >> 4 ];
+         retval += "0123456789abcdef"[ c & 0x0f ];
+      }
+   }
+
+   return retval;
 }
 
 bool has_error_prefix( const string& s )
