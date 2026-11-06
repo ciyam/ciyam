@@ -2528,9 +2528,10 @@ function parse_room_key( text, room )
 }
 
 // NOTE: The key for "room" in the direct message with its owner, as opened here - "opened" oldest first, each { sender, text }:
-// the newest from "owner", or "" for none. One this person removed ("removed", each "<room>#<key>") is not taken back by itself
-// (Damon, 2026-11-02: a member who joined and stayed in the room never had it - it was added only as the direct message was drawn).
-function owner_room_key( opened, owner, room, removed )
+// the newest from "owner", or "" for none. One this person removed ("removed", each "<room>#<key>", or its "mark_of( )" when one is
+// given - the chat keeps only marks: found by review, 2026-11-06) is not taken back by itself (Damon, 2026-11-02: a member who joined
+// and stayed in the room never had it - it was added only as the direct message was drawn).
+function owner_room_key( opened, owner, room, removed, mark_of )
 {
    var found = "";
 
@@ -2542,7 +2543,9 @@ function owner_room_key( opened, owner, room, removed )
          found = shared.key;
    } );
 
-   if( ( found === "" ) || ( ( removed || [ ] ).indexOf( room_key_text( room, found ) ) >= 0 ) )
+   var shared = ( found !== "" ) ? room_key_text( room, found ) : "";
+
+   if( ( found === "" ) || ( ( removed || [ ] ).indexOf( mark_of ? mark_of( shared ) : shared ) >= 0 ) )
       return "";
 
    return found;

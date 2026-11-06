@@ -578,6 +578,7 @@ ok   - a member: where the owner's key comes from, and what it needs (Damon, 202
 ok   the owner's room key in their direct message - the newest for the room, from them
 ok   - none from the owner, or none for the room
 ok   - not one this person removed
+ok   - nor one removed, known by its mark (the chat keeps only marks)
 ok   a room key's receipt - written and read back
 ok   - as the member sees it
 ok   - not a receipt: words around it, or a key

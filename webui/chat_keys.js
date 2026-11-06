@@ -1500,19 +1500,30 @@ async function do_remove_room_key( )
       chat_room_key_removed( room + "#" + removed, true );
 }
 
-// NOTE: The room keys removed on this browser, "<room>#<key>" - not added again by themselves when the direct message that
-// brought one is seen again (found by review, 2026-10-27); added by hand, one is forgotten from here. Kept for the account on
-// this browser, as the notifications switch is.
+// NOTE: The room keys removed on this browser - not added again by themselves when the direct message that brought one is seen
+// again (found by review, 2026-10-27); added by hand, one is forgotten from here. Kept for the account on this browser, as the
+// notifications switch is: only a mark of each "<room>#<key>" (found by review, 2026-11-06: the keys themselves stayed here after
+// sign out, for the next to use the browser to read). Those kept whole before are made marks as they are next read.
 function chat_room_keys_removed_name( )
+{
+   return "cws.room_key_marks_removed_" + ciyam.access;
+}
+
+function chat_room_keys_removed_old_name( )
 {
    return "cws.room_keys_removed_" + ciyam.access;
 }
 
-function chat_room_keys_removed( )
+function chat_room_key_removed_mark( shared )
+{
+   return hex_sha256( "room_key_removed:" + shared );
+}
+
+function chat_room_keys_read( name )
 {
    try
    {
-      var kept = JSON.parse( localStorage.getItem( chat_room_keys_removed_name( ) ) || "[]" );
+      var kept = JSON.parse( localStorage.getItem( name ) || "[]" );
 
       return Array.isArray( kept ) ? kept : [ ];
    }
@@ -1522,20 +1533,61 @@ function chat_room_keys_removed( )
    }
 }
 
-function chat_room_key_removed( shared, removed )
+function chat_room_keys_write( marks )
 {
-   var kept = chat_room_keys_removed( ).filter( function( entry ) { return entry !== shared; } );
-
-   if( removed )
-      kept.push( shared );
-
    try
    {
-      localStorage.setItem( chat_room_keys_removed_name( ), JSON.stringify( kept ) );
+      localStorage.setItem( chat_room_keys_removed_name( ), JSON.stringify( marks ) );
    }
    catch( e )
    {
    }
+}
+
+// NOTE: The marks ("chat_room_key_removed_mark( )").
+function chat_room_keys_removed( )
+{
+   var marks = chat_room_keys_read( chat_room_keys_removed_name( ) );
+   var old = chat_room_keys_read( chat_room_keys_removed_old_name( ) );
+
+   if( old.length > 0 )
+   {
+      old.forEach( function( shared )
+      {
+         var mark = chat_room_key_removed_mark( String( shared ) );
+
+         if( marks.indexOf( mark ) < 0 )
+            marks.push( mark );
+      } );
+
+      chat_room_keys_write( marks );
+   }
+
+   try
+   {
+      localStorage.removeItem( chat_room_keys_removed_old_name( ) );
+   }
+   catch( e )
+   {
+   }
+
+   return marks;
+}
+
+function chat_room_key_was_removed( shared )
+{
+   return chat_room_keys_removed( ).indexOf( chat_room_key_removed_mark( shared ) ) >= 0;
+}
+
+function chat_room_key_removed( shared, removed )
+{
+   var mark = chat_room_key_removed_mark( shared );
+   var kept = chat_room_keys_removed( ).filter( function( entry ) { return entry !== mark; } );
+
+   if( removed )
+      kept.push( mark );
+
+   chat_room_keys_write( kept );
 }
 
 // NOTE: Under a message in a direct message that starts with a room key ("room_key_in_message( )") for a room this person is in.
@@ -1683,7 +1735,7 @@ async function chat_look_for_owner_key( member_only )
       return;
    }
 
-   var key = owner_room_key( found.opened, owner, room, chat_room_keys_removed( ) );
+   var key = owner_room_key( found.opened, owner, room, chat_room_keys_removed( ), chat_room_key_removed_mark );
    var whole = room_key_text( room, key );
 
    if( read !== g_chat_keys_read )
@@ -2046,7 +2098,7 @@ function chat_offer_room_key( element, text )
       save( false );
    } );
 
-   if( ( kept === "" ) && from_owner && !g_room_keys_tried.hasOwnProperty( whole ) && ( chat_room_keys_removed( ).indexOf( whole ) < 0 ) )
+   if( ( kept === "" ) && from_owner && !g_room_keys_tried.hasOwnProperty( whole ) && !chat_room_key_was_removed( whole ) )
    {
       g_room_keys_tried[ whole ] = true;
 

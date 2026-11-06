@@ -1176,6 +1176,10 @@ check( "- none from the owner, or none for the room", [ cp.owner_room_key( [ { s
  cp.owner_room_key( [ ], "damon", "0000124" ) ], [ "", "", "" ] );
 check( "- not one this person removed", cp.owner_room_key( [ { sender: "damon", text: "0000124#" + "d".repeat( 32 ) } ], "damon", "0000124",
  [ "0000124#" + "d".repeat( 32 ) ] ), "" );
+check( "- nor one removed, known by its mark (the chat keeps only marks)", [ cp.owner_room_key( [ { sender: "damon",
+ text: "0000124#" + "d".repeat( 32 ) } ], "damon", "0000124", [ "m:0000124#" + "d".repeat( 32 ) ], function( s ) { return "m:" + s; } ),
+ cp.owner_room_key( [ { sender: "damon", text: "0000124#" + "d".repeat( 32 ) } ], "damon", "0000124", [ "0000124#" + "d".repeat( 32 ) ],
+ function( s ) { return "m:" + s; } ) ], [ "", "d".repeat( 32 ) ] );
 
 // NOTE: A member's receipt for the key, and what the owner's chat does with it (Damon, 2026-11-05).
 check( "a room key's receipt - written and read back", cp.room_key_receipt( cp.room_key_receipt_text( "0000124", "0a1b2c3d" ) ),
