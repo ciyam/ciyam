@@ -4,15 +4,18 @@
 # Distributed under the MIT/X11 software license, please refer to the file license.txt
 # in the root project directory or http://www.opensource.org/licenses/mit-license.php.
 
+# NOTE: The stop file is removed when the listener starts but the server is not ready for
+# requests until it has created "/tmp/ciyam/.ready" (which is removed when stopping).
 check_if_started( )
 {
- for i in {1..10}
+ for i in {1..60}
  do
   sleep 0.5
-  if [ ! -f ciyam_server.stop ]; then
-   break;
+  if [ ! -f ciyam_server.stop ] && [ -f /tmp/ciyam/.ready ]; then
+   return;
   fi
  done
+ echo "Error: Timed out waiting for the server to be ready."
 }
 
 if [ ! -f /tmp/ciyam/.test_node ]; then

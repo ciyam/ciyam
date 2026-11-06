@@ -5023,6 +5023,11 @@ void unregister_listener( unsigned int port, const char* p_id_info )
       g_listeners.erase( port );
 }
 
+int has_listener_for_port( unsigned int port )
+{
+   return has_registered_listener( port );
+}
+
 listener_registration::listener_registration( unsigned int port, const string& info, const char* p_id_info )
  :
  port( port )

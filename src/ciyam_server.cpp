@@ -118,6 +118,7 @@ const char* const c_listener_rpc_data = "rpc_data";
 
 
 const char* const c_tmp_ciyam_file_pid = "/tmp/ciyam/.pid";
+const char* const c_tmp_ciyam_file_ready = "/tmp/ciyam/.ready";
 const char* const c_tmp_ciyam_file_dummy = "/tmp/ciyam/dummy";
 
 unsigned int g_port = 0;
@@ -166,6 +167,7 @@ const char* const c_set_log_files_path_func_name = "set_log_files_path";
 const char* const c_set_test_peer_port_func_name = "set_test_peer_port";
 const char* const c_set_files_area_path_func_name = "set_files_area_path";
 const char* const c_unregister_listener_func_name = "unregister_listener";
+const char* const c_has_listener_for_port_func_name = "has_listener_for_port";
 const char* const c_has_external_ip_address_func_name = "has_external_ip_address";
 
 string application_title( app_info_request request )
@@ -483,6 +485,9 @@ int main( int argc, char* argv[ ] )
          fp_unregister_listener fp_unregister_listener_func;
          fp_unregister_listener_func = ( fp_unregister_listener )up_dynamic_library->bind_to_function( c_unregister_listener_func_name );
 
+         fp_has_listener_for_port fp_has_listener_for_port_func;
+         fp_has_listener_for_port_func = ( fp_has_listener_for_port )up_dynamic_library->bind_to_function( c_has_listener_for_port_func_name );
+
          fp_has_external_ip_address fp_has_external_ip_address_func;
          fp_has_external_ip_address_func = ( fp_has_external_ip_address )up_dynamic_library->bind_to_function( c_has_external_ip_address_func_name );
 
@@ -535,6 +540,9 @@ int main( int argc, char* argv[ ] )
                cout << "warning: set_reuse_addr failed (for tcp)..." << endl;
 
             ( *fp_register_listener_func )( g_port, listener_rpc_core.c_str( ), "" );
+
+            // NOTE: In case had been left behind by a server that did not finish normally.
+            file_remove( c_tmp_ciyam_file_ready );
 
             if( is_update )
                write_file( c_tmp_ciyam_file_pid, pid );
@@ -629,7 +637,24 @@ int main( int argc, char* argv[ ] )
                   ( *fp_init_peer_sessions_func )( true );
 
                if( web_port && g_start_http_listener )
+               {
                   ( *fp_init_http_handler_func )( web_port, g_start_auto_script );
+
+                  // NOTE: The web listener is started in its own thread so waits for it
+                  // to be listening before indicating that the server is now ready.
+                  for( int i = 0; i < c_max_wait_attempts; i++ )
+                  {
+                     if( ( *fp_has_listener_for_port_func )( web_port ) )
+                        break;
+
+                     msleep( c_active_start_delay );
+                  }
+               }
+
+               // NOTE: Indicates that the server is now ready for requests (which the
+               // stop file's removal does not as it occurs when the listener starts).
+               if( !g_server_shutdown )
+                  write_file( c_tmp_ciyam_file_ready, pid );
 
                int64_t utm = unix_time( );
 
@@ -670,6 +695,7 @@ int main( int argc, char* argv[ ] )
                      reported_shutdown = true;
 
                      file_remove( c_tmp_ciyam_file_pid );
+                     file_remove( c_tmp_ciyam_file_ready );
 
                      if( !is_update && !g_is_quiet )
                         cout << "server shutdown (" << shutdown_reason << ") now underway..." << endl;
@@ -831,6 +857,7 @@ int main( int argc, char* argv[ ] )
    // already been removed removes it now just to
    // be sure.
    file_remove( c_tmp_ciyam_file_pid );
+   file_remove( c_tmp_ciyam_file_ready );
 
    return rc;
 }

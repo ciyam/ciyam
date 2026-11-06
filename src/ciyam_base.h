@@ -162,8 +162,12 @@ typedef void ( *fp_set_stream_socket )( unsigned int, unsigned int );
 extern "C" void register_listener( unsigned int port, const char* p_info, const char* p_id_info = 0 );
 extern "C" void unregister_listener( unsigned int port, const char* p_id_info = 0 );
 
+extern "C" int has_listener_for_port( unsigned int port );
+
 typedef void ( *fp_register_listener )( unsigned int, const char*, const char* );
 typedef void ( *fp_unregister_listener )( unsigned int, const char* );
+
+typedef int ( *fp_has_listener_for_port )( unsigned int );
 
 class listener_registration
 {
