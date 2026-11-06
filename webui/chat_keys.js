@@ -874,6 +874,31 @@ async function chat_seal_with( secret, text )
    return { sealed: true, text: await ciyam_module_named( "secure_message" ).seal( secret, text ) };
 }
 
+// NOTE: Whether this account's keys are not known here yet - still being read after a sign in, or not read (an error or a time-out:
+// "g_chat_keys_unread"). Either way there is no telling whether a text should have been sealed.
+function chat_keys_unknown( )
+{
+   return ( g_chat_keys === null ) || ( ( g_chat_keys === false ) && g_chat_keys_unread );
+}
+
+// NOTE: Whether a text may go unsealed (found by review, 2026-11-06: while the keys were still being read, or could not be, one went
+// in the clear even where a room key or a contact was kept) - not while they are read, and only once asked if they could not be.
+async function chat_may_send_unsealed( )
+{
+   if( g_chat_keys === null )
+   {
+      show_alert( "Your keys are still being read - send it again in a moment.", "is-error" );
+
+      return false;
+   }
+
+   if( chat_keys_unknown( ) )
+      return await ask_dialog( { title: "Send it unencrypted?", text: "Your keys could not be read from the node, so it can't be"
+       + " encrypted here - whoever runs the node could read it.", yes: "Send unencrypted", danger: true } );
+
+   return true;
+}
+
 // ---- Room keys (Ian, 2026-10-25) - made with a new room (Ian, 2026-10-28), in the Room key dialog, or added from one shared in an
 // encrypted direct message
 

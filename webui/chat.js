@@ -2857,8 +2857,10 @@ function send_held( room, pending )
          {
             var answered = false;
 
-            // NOTE: Nor a room key that could not be sealed - never sent in the clear ("chat_send_room_key( )").
-            if( ( sealing.sealed && ( sealing.text === "" ) ) || ( !sealing.sealed && ( room_key_in_message( text ) !== null ) ) )
+            // NOTE: Nor a room key that could not be sealed - never sent in the clear ("chat_send_room_key( )"), nor anything while
+            // the keys are not known here (found by review, 2026-11-06).
+            if( ( sealing.sealed && ( sealing.text === "" ) )
+             || ( !sealing.sealed && ( ( room_key_in_message( text ) !== null ) || chat_keys_unknown( ) ) ) )
             {
                resolve( text );
 
@@ -6230,6 +6232,13 @@ async function do_start_poll( )
       return;
    }
 
+   if( !sealing.sealed && !await chat_may_send_unsealed( ) )
+   {
+      document.getElementById( "poll_dialog_submit" ).disabled = false;
+
+      return;
+   }
+
    var sent = sealing.sealed ? sealing.text : escape_message_text( text );
 
    var posted = await poll_step( function( done ) { return ciyam.create_message( room, "text=" + sent, done ); } );
@@ -7146,6 +7155,8 @@ async function do_send( )
 
    if( sealing.sealed )
       sent = sealing.text;
+   else if( !await chat_may_send_unsealed( ) )
+      return;
 
    if( g_edit_unique !== "" )
       options = "for=" + edit_for_value( g_edit_unique, g_edit_private ) + ";text=" + sent;
