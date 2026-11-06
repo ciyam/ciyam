@@ -64,9 +64,9 @@ POS=@strpos:_:$ROOM
    @else
    PREFIX=@substr:0,$PREFIX_LENGTH_ENCODED:$MESSAGE
 
-   ; NOTE: Special messages begin with "_:[a-z]"
-   ; and (unless is "admin") are the only type
-   ; of messages allowed in the "starting room".
+   ; NOTE: Check for the special message prefix
+   ; and (unless is "admin") is disallowing any
+   ; non-special messages in the reserved room.
    SPECIAL=
       @ifeq "$PREFIX" "$SYSTEM_PREFIX_ENCODED"
       SPECIAL=1
@@ -186,6 +186,15 @@ POS=@strpos:_:$ROOM
 EDIT_MESSAGE=
 USER_MESSAGE=
 
+IS_SPECIAL=
+
+POS=@strpos:~:$NAMES
+   @ifdef $POS
+   IS_SPECIAL=1
+   POS=@$POS+1
+   NAMES=@substr:$POS:$NAMES
+   @endif
+
 ISSUED_PREFIX=message
 
 POS=@strpos:_:$NAMES
@@ -237,7 +246,7 @@ NAMES_LEN=@strlen:$NAMES
          @endif
       @endif
 
-      @ifeq $MESSAGE $CHECK_SPACES
+      @ifeq "$MESSAGE" "$CHECK_SPACES"
       ERROR=Invalid blank message for IRC.
       @endif
 
@@ -550,7 +559,11 @@ NAMES_LEN=@strlen:$NAMES
                @else
                   @ifndef $SPECIAL
                   CREATED_KEYED=1
-                  .system_variable @keyed_irc_$ROOM:$UNIX_UNIQUE "$USER_NAME $MESSAGE"
+                     @ifndef $IS_SPECIAL
+                     .system_variable @keyed_irc_$ROOM:$UNIX_UNIQUE "$USER_NAME $MESSAGE"
+                     @else
+                     .system_variable @keyed_irc_$ROOM:$UNIX_UNIQUE "_%USER_NAME%_%NAMES%_ $MESSAGE"
+                     @endif
                   .system_variable @queue_irc_%ROOM%_$IRC_USER_SUFFIXES "$UNIX_UNIQUE @"
                   @endif
                @endif
