@@ -214,8 +214,9 @@ NAMES_LEN=@strlen:$NAMES
 
 ; NOTE: Will not allow the
 ; creation of any messages
-; that are just spaces.
-   @ifndef $EDIT_MESSAGE
+; that are just spaces (an
+; edit to which is delete).
+IS_BLANK=
    MLEN=@strlen:$MESSAGE
 
    ; NOTE: Only the first three characters of the encoded prefix
@@ -249,10 +250,12 @@ NAMES_LEN=@strlen:$NAMES
       @endif
 
       @ifeq "$MESSAGE" "$CHECK_SPACES"
-      ERROR=Invalid blank message for IRC.
+         @ifndef $EDIT_MESSAGE
+         ERROR=Invalid blank message for IRC.
+         @else
+         IS_BLANK=1
+         @endif
       @endif
-
-   @endif
 
 @endif
 
@@ -279,10 +282,28 @@ NAMES_LEN=@strlen:$NAMES
 
       PREFIX=@substr:0,$PREFIX_LENGTH_ENCODED:%SOURCE_PARTS:2%
 
+      ; NOTE: A special message ("_<sender>_<other>_")
+      ; can't be edited or reacted to but its sender is
+      ; permitted to delete it (i.e. edit it to blank).
+      IS_PAIRED=
+      SOURCE_AUTHOR=%SOURCE_PARTS:1%
+      FIRST_CHAR=@substr:0,1:$SOURCE_AUTHOR
+         @ifeq "$FIRST_CHAR" "_"
+         IS_PAIRED=1
+         PAIRED_OWNER=_%USER_NAME%_
+         PAIRED_LENGTH=@strlen:$PAIRED_OWNER
+         PAIRED_PREFIX=@substr:0,$PAIRED_LENGTH:$SOURCE_AUTHOR
+            @ifeq "$PAIRED_PREFIX" "$PAIRED_OWNER"
+               @ifdef $IS_BLANK
+               SOURCE_AUTHOR=$USER_NAME
+               @endif
+            @endif
+         @endif
+
       ; NOTE: Only the room's owner can pin (or unpin)
       ; messages but can do so for any user's message.
 
-         @ifneq "$USER_NAME" "%SOURCE_PARTS:1%"
+         @ifneq "$USER_NAME" "$SOURCE_AUTHOR"
             @ifeq "$MESSAGE" "$NORMAL_PREFIX_ENCODED"
                @ifdef $IS_OWNER
                PIN_AUTHOR=%SOURCE_PARTS:1%
@@ -302,7 +323,9 @@ NAMES_LEN=@strlen:$NAMES
             NOT_FOUND=1
             MSG_LENGTH=@strlen:$MESSAGE
                @ifeq $MSG_LENGTH 7
-               IS_REACTION=1
+                  @ifndef $IS_PAIRED
+                  IS_REACTION=1
+                  @endif
                @endif
             @endif
          @else
@@ -541,6 +564,14 @@ NAMES_LEN=@strlen:$NAMES
 
                USER_MESSAGE=%SYSTEM_PREFIX_DECODED%issued ($ISSUED_PREFIX sent to $LIST)
                USER_MESSAGE=@base64::$USER_MESSAGE
+
+               ; NOTE: A special message is also
+               ; queued for its sender to see it.
+                  @ifdef $IS_SPECIAL
+                     @ifdef $IRC_USERS
+                     IRC_USERS=@strlit:%IRC_USERS%@$USER_NAME
+                     @endif
+                  @endif
                @endif
             @endif
 
