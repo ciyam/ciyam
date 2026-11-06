@@ -248,6 +248,15 @@ function paired_sender( sender )
    return match ? { sender: match[ 1 ], other: match[ 2 ] } : null;
 }
 
+// NOTE: The "for" of a private message to "person" alone that the node names as between the two ("_<sender>_<person>_") - the
+// sender sent a copy, and only they may delete it.
+const c_paired_marker = "~";
+
+function paired_for( person )
+{
+   return c_paired_marker + person;
+}
+
 // NOTE: Every non-member line is "<unique> <sender> <remainder>". The first
 // character of the remainder says what kind of line it is - a space for
 // ordinary chat (the stripped "_" marker), "!" for a private message (Ian,
@@ -5013,6 +5022,7 @@ if( typeof module !== "undefined" )
       reaction_options: reaction_options,
       can_react: can_react,
       paired_sender: paired_sender,
+      paired_for: paired_for,
       keeps_focus_after_send: keeps_focus_after_send,
       message_bytes: message_bytes,
       c_max_message_bytes: c_max_message_bytes,

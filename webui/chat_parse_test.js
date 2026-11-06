@@ -2080,6 +2080,13 @@ check( "a fetched line from one - its sender, who it is between, and private", (
    return [ line.sender, line.pair, line.private, line.text ];
 } )( ), [ "admin", "verify-a", true, "X\rabc\rdef\rghi" ] );
 check( "- an ordinary line has no pair", cp.parse_message_line( "1793954655000 admin  hi" ).pair, undefined );
+check( "- one deleted by its sender (edited to blank)", ( function( )
+{
+   var line = cp.parse_message_line( "1793954655000 _admin_verify-a_* !   " );
+
+   return [ line.sender, line.pair, line.private, line.edited, line.text.trim( ) ];
+} )( ), [ "admin", "verify-a", true, true, "" ] );
+check( "posted to one person as between the two", cp.paired_for( "verify-a" ), "~verify-a" );
 
 console.log( "" );
 console.log( failures === 0 ? "All checks passed." : ( failures + " check(s) FAILED." ) );

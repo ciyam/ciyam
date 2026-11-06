@@ -964,5 +964,7 @@ ok   the sender "_<sender>_<other>_" read as the two
 ok   - not any other sender
 ok   a fetched line from one - its sender, who it is between, and private
 ok   - an ordinary line has no pair
+ok   - one deleted by its sender (edited to blank)
+ok   posted to one person as between the two
 
 All checks passed.

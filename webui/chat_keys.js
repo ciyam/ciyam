@@ -1849,7 +1849,9 @@ async function chat_send_plain_note( room, person, text )
 
 // NOTE: A private message in "room" to "person" alone (and the sender), sealed with the secret the two share - how a room key is
 // passed to a member, and its receipt sent back (Damon, 2026-11-05: in the room, as a folded note, rather than in a direct message
-// that has to be accepted first). "sent", "no_key" (nothing to seal it with) or "failed".
+// that has to be accepted first). Posted "for=~<person>" (Ian, 2026-11-06), so the node names both ("_<sender>_<person>_") and
+// the console opens it as a direct message's; the sender gets a copy, and only they may delete it. "sent", "no_key" (nothing to
+// seal it with) or "failed".
 async function chat_send_key_note( room, person, text )
 {
    var sealing = await chat_seal_for( person, text );
@@ -1861,7 +1863,7 @@ async function chat_send_key_note( room, person, text )
 
    await serialised( function( )
    {
-      return ciyam.create_message( room, "for=" + with_sender( [ person ], ciyam.username ).join( "," ) + ";text=" + sealing.text,
+      return ciyam.create_message( room, "for=" + paired_for( person ) + ";text=" + sealing.text,
        function( response ) { answer = String( response ); } );
    } );
 
