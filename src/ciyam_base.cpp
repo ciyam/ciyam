@@ -6153,6 +6153,8 @@ void set_identity( const string& info, const char* p_encrypted_sid )
             }
             else if( file_exists( c_ciyam_server_sid_file ) )
             {
+               temp_umask tum( 077 );
+
                write_file( c_ciyam_server_sid_chk_file, dbl_hash );
 
                TRACE_LOG( TRACE_MINIMAL, "*** created system identity verify file ***" );
