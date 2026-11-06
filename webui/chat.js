@@ -4223,6 +4223,7 @@ function build_message( entry )
    // NOTE: A private message's people too - one sealed for its two alone (a room key's note) is opened with their secret.
    body.dataset.private = entry.private ? "1" : "";
    body.dataset.recipients = ( entry.recipients || [ ] ).join( "," );
+   body.dataset.pair = entry.pair || "";
 
    // NOTE: Colour and style drawn ("draw_formatted( )"); the text as stored kept, for the check after a time-out.
    if( entry.deleted )
@@ -4258,8 +4259,8 @@ function build_message( entry )
 
    // NOTE: Private messages too, since 2026-09-28 - the edit says it is private
    // ("edit_for_value( )"), and the server keeps it so. An encrypted one too, edited as it reads ("begin_edit( )"); not one of a
-   // kind the chat cannot read - an edit would send it as words.
-   if( ( entry.sender === ciyam.username ) && !entry.deleted
+   // kind the chat cannot read - an edit would send it as words. Nor one between two as a direct message is (Ian, 2026-11-06).
+   if( ( entry.sender === ciyam.username ) && !entry.deleted && !entry.pair
     && ( ( message_unreadable_label( entry.text ) === "" ) || ( message_prefix( entry.text ) === "X" ) ) )
    {
       var edit = row.querySelector( ".chat-message-edit" );
@@ -4294,8 +4295,9 @@ function build_message( entry )
    }
 
    // NOTE: Delete - the sender's own, public or private: an edit to two spaces ("delete_options( )"), two clicks as Decline
-   // is, since what was said is gone (Ian's idea, 2026-10-15).
-   if( ( entry.kind === "chat" ) && ( entry.sender === ciyam.username ) && !entry.deleted )
+   // is, since what was said is gone (Ian's idea, 2026-10-15). Not one between two as a direct message is - the node takes no edit
+   // of one (Ian, 2026-11-06).
+   if( ( entry.kind === "chat" ) && ( entry.sender === ciyam.username ) && !entry.deleted && !entry.pair )
    {
       var remove = row.querySelector( ".chat-message-delete" );
 

@@ -2063,6 +2063,23 @@ check( "- on someone else's message only, not deleted - one for some only too (2
  cp.can_react( { kind: "system", sender: "maya" }, "ian" ), cp.can_react( { kind: "chat", sender: "maya", deleted: true }, "ian" ),
  cp.can_react( { kind: "chat", sender: "maya", private: true }, "ian" ), cp.can_react( { kind: "chat", sender: "maya" }, "" ) ],
  [ true, false, false, false, true, false ] );
+check( "- nor on one between two as a direct message is (Ian, 2026-11-06)",
+ cp.can_react( { kind: "chat", sender: "maya", private: true, pair: "ian" }, "ian" ), false );
+
+console.log( "" );
+console.log( "Private messages between two, posted \"for=~<other>\" (Ian, 2026-11-06):" );
+
+check( "the sender \"_<sender>_<other>_\" read as the two", [ cp.paired_sender( "_admin_verify-a_" ), cp.paired_sender( "_ian_maya2_" ) ],
+ [ { sender: "admin", other: "verify-a" }, { sender: "ian", other: "maya2" } ] );
+check( "- not any other sender", [ cp.paired_sender( "admin" ), cp.paired_sender( "_admin_verify-a" ), cp.paired_sender( "_admin__" ),
+ cp.paired_sender( "_Admin_maya_" ), cp.paired_sender( "_a_b_c_" ), cp.paired_sender( "" ) ], [ null, null, null, null, null, null ] );
+check( "a fetched line from one - its sender, who it is between, and private", ( function( )
+{
+   var line = cp.parse_message_line( "1793954655000 _admin_verify-a_ !Xabc\rdef\rghi" );
+
+   return [ line.sender, line.pair, line.private, line.text ];
+} )( ), [ "admin", "verify-a", true, "X\rabc\rdef\rghi" ] );
+check( "- an ordinary line has no pair", cp.parse_message_line( "1793954655000 admin  hi" ).pair, undefined );
 
 console.log( "" );
 console.log( failures === 0 ? "All checks passed." : ( failures + " check(s) FAILED." ) );

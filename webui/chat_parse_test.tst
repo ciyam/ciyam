@@ -957,5 +957,12 @@ ok   the node busy with another message - tried once more
 ok   - not a room's messages that only say the same words
 ok   a message as drawn, but for its reactions - changed when edited, deleted or pinned since
 ok   - on someone else's message only, not deleted - one for some only too (2026-11-05)
+ok   - nor on one between two as a direct message is (Ian, 2026-11-06)
+
+Private messages between two, posted "for=~<other>" (Ian, 2026-11-06):
+ok   the sender "_<sender>_<other>_" read as the two
+ok   - not any other sender
+ok   a fetched line from one - its sender, who it is between, and private
+ok   - an ordinary line has no pair
 
 All checks passed.

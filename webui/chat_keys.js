@@ -758,6 +758,11 @@ function chat_note_other( element )
       return "";
 
    var sender = element.dataset.sender || "";
+
+   // NOTE: Posted "for=~<other>" (Ian, 2026-11-06) - the node names both.
+   if( element.dataset.pair )
+      return ( sender === ciyam.username ) ? element.dataset.pair : sender;
+
    var others = ( element.dataset.recipients || "" ).split( "," ).filter( function( name ) { return ( name !== "" ) && ( name !== ciyam.username ); } );
 
    if( sender !== ciyam.username )

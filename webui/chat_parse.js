@@ -237,6 +237,17 @@ function unprefixed_remainder( remainder )
    return kind + ( ( flag === "X" ) ? "X\r" : "" ) + value.substring( 2 );
 }
 
+// NOTE: A sender "_<sender>_<other>_" (Ian, 2026-11-06 - a private message posted "for=~<other>") as { sender, other }, or null.
+// No username has an underscore ("c_username_pattern"), so the two cannot be mistaken.
+const c_paired_sender = /^_([a-z][-a-z0-9]*)_([a-z][-a-z0-9]*)_$/;
+
+function paired_sender( sender )
+{
+   var match = c_paired_sender.exec( String( sender || "" ) );
+
+   return match ? { sender: match[ 1 ], other: match[ 2 ] } : null;
+}
+
 // NOTE: Every non-member line is "<unique> <sender> <remainder>". The first
 // character of the remainder says what kind of line it is - a space for
 // ordinary chat (the stripped "_" marker), "!" for a private message (Ian,
@@ -284,6 +295,13 @@ function parse_message_line( line )
       edited = true;
       sender = sender.substring( 0, sender.length - 1 );
    }
+
+   // NOTE: Between two, as a direct message is, in the room (Ian, 2026-11-06: posted "for=~<other>") - a room key's note or its
+   // receipt, the sender "_<sender>_<other>_": both kept, as the two's secret opens it.
+   var pair = paired_sender( sender );
+
+   if( pair )
+      sender = pair.sender;
 
    // NOTE: Reactions after a tab - a tab in the text comes as "\t", so one as it is can only be theirs (2026-10-29, with Ian);
    // then the text's escapes undone ("unescape_message_text( )").
@@ -335,6 +353,9 @@ function parse_message_line( line )
 
    if( reactions )
       entry.reactions = reactions;
+
+   if( pair )
+      entry.pair = pair.other;
 
    // NOTE: Only spaces - deleted (Ian, 2026-10-15): there is no deleting yet, so a message is edited to spaces, which the
    // node takes (a new one of only spaces it refuses).
@@ -1833,10 +1854,11 @@ function message_state( entry )
 }
 
 // NOTE: Only someone else's ordinary message, not deleted, nor a system line. One for some only too (Damon, 2026-11-05) - the node gives
-// its reactions only with it, so only those it is for see them ("private_react_probe.js": a third member saw neither).
+// its reactions only with it, so only those it is for see them ("private_react_probe.js": a third member saw neither). Not one between
+// two as a direct message is (Ian, 2026-11-06: a room key's note or receipt - neither edited nor reacted to).
 function can_react( entry, me )
 {
-   return !!entry && ( entry.kind === c_kind_chat ) && ( me !== "" ) && ( entry.sender !== me ) && !entry.deleted;
+   return !!entry && ( entry.kind === c_kind_chat ) && ( me !== "" ) && ( entry.sender !== me ) && !entry.deleted && !entry.pair;
 }
 
 // NOTE: New messages added to those already held, as a read without "from" returns only what
@@ -4990,6 +5012,7 @@ if( typeof module !== "undefined" )
       apply_reaction: apply_reaction,
       reaction_options: reaction_options,
       can_react: can_react,
+      paired_sender: paired_sender,
       keeps_focus_after_send: keeps_focus_after_send,
       message_bytes: message_bytes,
       c_max_message_bytes: c_max_message_bytes,
