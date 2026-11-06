@@ -337,6 +337,34 @@ LAST_UNIQUE=
 
       MSG_UNIQUE=%MESSAGE_PARTS:1%
       MSG_AUTHOR=%MESSAGE_PARTS:2%
+
+         @ifndef $IS_WEB_SESSION
+         FIRST=@substr:0,1:$MSG_AUTHOR
+            @ifeq "$FIRST" "_"
+            EXTRA=!
+            USER_IS_AUTHOR=
+            POS=@strpos:_%USER%_:$MSG_AUTHOR
+               @ifeq "$POS" "0"
+               USER_IS_AUTHOR=1
+               @endif
+            MSG_AUTHOR=@repstr:_%USER%_/:$MSG_AUTHOR
+            MSG_AUTHOR=@repstr:_/:$MSG_AUTHOR
+
+               @ifdef $USER_IS_AUTHOR
+               MSG_AUTHOR=@strlit:$MSG_AUTHOR!
+
+               ; NOTE: If this user was the author
+               ; of the message then add "@<user>"
+               ; in order to provide both users to
+               ; the caller (where your "own" user
+               ; is what will be displayed).
+               MSG_AUTHOR=$MSG_AUTHOR@$USER
+               @endif
+
+            NEXT_MESSAGE=@repstr: %MESSAGE_PARTS:2%/ $MSG_AUTHOR$EXTRA:$NEXT_MESSAGE
+            @endif
+         @endif
+
       MSG_BASE64=%MESSAGE_PARTS:3%
 
          @if $NUM_PINNED #> 0
