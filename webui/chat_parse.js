@@ -1652,6 +1652,16 @@ function poll_text( question, options )
    } ).join( "" );
 }
 
+// NOTE: A poll as it is posted - its text as sent (escaped, or as sealed) after "P\r", which the web session takes off as it sends
+// it with Ian's prompt prefix ("_? ", or "_?X" when sealed - Ian, 2026-11-07: polls went as ordinary messages, so his console
+// showed reactions rather than its options). Read back as an ordinary message ("unprefixed_remainder( )").
+const c_prompt_marker = "P\r";
+
+function poll_sent( sent )
+{
+   return c_prompt_marker + String( sent || "" );
+}
+
 // NOTE: A message read as a poll - { question, options: [ { code, letter, label } ] } - or null for any other. The options in
 // order from A, none missed.
 function parse_poll( text )
@@ -5075,6 +5085,7 @@ if( typeof module !== "undefined" )
       c_poll_letters: c_poll_letters,
       poll_problem: poll_problem,
       poll_text: poll_text,
+      poll_sent: poll_sent,
       parse_poll: parse_poll,
       poll_results: poll_results,
       poll_field_problems: poll_field_problems,

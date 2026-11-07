@@ -1988,6 +1988,12 @@ check( "a poll's message - the question, then each option after its letter, one 
  "📊 Lunch on Friday?\nA) Pizza\nB) Sushi rolls\nC) Salad" );
 check( "- read back as a poll", cp.parse_poll( poll_written ), { question: "Lunch on Friday?", options: [ { code: "00", letter: "A", label: "Pizza" },
  { code: "01", letter: "B", label: "Sushi rolls" }, { code: "02", letter: "C", label: "Salad" } ] } );
+// NOTE: Posted with Ian's prompt prefix (2026-11-07) - after "P\r", which the web session takes off; read back as ordinary.
+check( "- posted after \"P\\r\", as written or as sealed", [ cp.poll_sent( "📊 Lunch?\nA) Pizza" ), cp.poll_sent( "X\rAb" ) ],
+ [ "P\r📊 Lunch?\nA) Pizza", "P\rX\rAb" ] );
+check( "- read back with its prompt prefix as a poll, and sealed as the chat seals one", [
+ cp.parse_poll( cp.parse_message_line( "1793900000007 admin ? 📊 Lunch?\\nA) Pizza\\nB) Sushi" ).text ) !== null,
+ cp.parse_message_line( "1793900000008 admin ?XAb" ).text ], [ true, "X\rAb" ] );
 check( "- ten at most, A to J, each its reaction in turn", cp.parse_poll( cp.poll_text( "Which?", "abcdefghij".split( "" ) ) ).options.map( function( o )
  { return o.letter + o.code; } ).join( " " ), "A00 B01 C02 D03 E04 F05 G06 H07 I08 J09" );
 check( "not a poll - plain words, one option, a line with no letter, letters out of order, no question", [ cp.parse_poll( "Lunch?" ),

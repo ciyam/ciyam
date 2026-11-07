@@ -6245,7 +6245,7 @@ async function do_start_poll( )
       return;
    }
 
-   var sent = sealing.sealed ? sealing.text : escape_message_text( text );
+   var sent = poll_sent( sealing.sealed ? sealing.text : escape_message_text( text ) );
 
    var posted = await poll_step( function( done ) { return ciyam.create_message( room, "text=" + sent, done ); } );
 

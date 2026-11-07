@@ -939,6 +939,8 @@ ok   - sent as an edit to its digits
 == polls =======================================================
 ok   a poll's message - the question, then each option after its letter, one line each, empty ones left out
 ok   - read back as a poll
+ok   - posted after "P\r", as written or as sealed
+ok   - read back with its prompt prefix as a poll, and sealed as the chat seals one
 ok   - ten at most, A to J, each its reaction in turn
 ok   not a poll - plain words, one option, a line with no letter, letters out of order, no question
 ok   what is wrong with one - none, no question, too few, too many, the same twice
