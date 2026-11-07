@@ -3426,6 +3426,36 @@ bool process_cws_request( http_request_type request_type, const string& uri_suff
 
                         string next_name( get_user_name( next_pin ) );
 
+                        if( !next_name.empty( ) )
+                        {
+                           string keys_file_name( g_cws_artifacts_dir + '/' + c_ciyam_prefix + next_pin + c_keys_suffix );
+
+                           bool changed_keys = false;
+
+                           if( !file_exists( keys_file_name ) )
+                              next_name += '?';
+                           else
+                           {
+                              string saved_file_name( keys_file_name );
+
+                              replace( saved_file_name, string( c_keys_suffix ), upper( c_keys_suffix ) );
+
+                              if( !file_exists( saved_file_name ) )
+                                 changed_keys = true;
+                              else
+                              {
+                                 int64_t keys_tm_val = last_modification_time( keys_file_name );
+                                 int64_t saved_tm_val = last_modification_time( saved_file_name );
+
+                                 if( keys_tm_val > saved_tm_val )
+                                    changed_keys = true;
+                              }
+                           }
+
+                           if( changed_keys )
+                              next_name += '!';
+                        }
+
                         if( !is_json_output )
                         {
                            if( !all_user_info.empty( ) )
