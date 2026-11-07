@@ -222,7 +222,7 @@ id=602610,cid=118100,name=602610_name,class=View
 id=602710,cid=120100,name=602710_name,class=View_Field
 Session terminated.
 Now will list all standard access tokens and then remove the previously activated new user access token.
-88888 test-1
+88888 test-1?
 [okay]
 admin
 Finally will perform admin structured I/O queries for enums/lists and views after attaching to the Meta storage.
