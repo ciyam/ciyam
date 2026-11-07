@@ -1198,6 +1198,14 @@ check( "- a new key since: to send", cp.owner_key_delivery( delivered, "damon", 
  { state: "send", remove: [ ] } );
 check( "- a receipt only from the member, not from the owner", cp.owner_key_delivery( [ { sender: "damon", text: "Room key for #0000124"
  + " added (0d0d0d0d).", unique: "u1" } ], "damon", "tester-1", "0000124", "d".repeat( 32 ), "0d0d0d0d" ), { state: "send", remove: [ ] } );
+
+// NOTE: A member with the key already, passed it again (Ian, 2026-11-07: after a restore from scratch).
+check( "a member with the key passed it again - a receipt due", cp.member_receipt_due( delivered.slice( 0, 4 ), "damon", "tester-1",
+ "0000124", "d".repeat( 32 ), "0d0d0d0d" ), true );
+check( "- not once their receipt for it is there, nor for a note with another key, nor from anyone but the owner", [
+ cp.member_receipt_due( delivered, "damon", "tester-1", "0000124", "d".repeat( 32 ), "0d0d0d0d" ),
+ cp.member_receipt_due( delivered, "damon", "tester-1", "0000124", "e".repeat( 32 ), "0e0e0e0e" ),
+ cp.member_receipt_due( delivered.slice( 0, 4 ), "maya", "tester-1", "0000124", "d".repeat( 32 ), "0d0d0d0d" ) ], [ false, false, false ] );
 check( "a member's state with the room key, for the owner", [ "has", "passed", "needs_codes", "failed", "other" ].map( cp.member_key_state_text ),
  [ "has the key", "passed the key - not yet accepted", "needs your contact codes - exchange them on My account",
  "the key could not be passed - opening the room tries again", "" ] );

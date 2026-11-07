@@ -2627,6 +2627,29 @@ function owner_key_delivery( opened, owner, member, room, key, mark )
    return { state: ( owner_room_key( opened, owner, room, [ ] ) === key ) ? "sent" : "send", remove: [ ] };
 }
 
+// NOTE: Whether a member who already has the room's key ("key", its fingerprint "mark") owes the owner a receipt all the same - a
+// note from "owner" there carrying it, and none from "me" naming it (Ian, 2026-11-07: after a restore from scratch the room's
+// history is gone, so the owner passes the key again, and without a receipt counts the member as without it for good).
+function member_receipt_due( opened, owner, me, room, key, mark )
+{
+   var carried = false;
+   var answered = false;
+
+   ( opened || [ ] ).forEach( function( message )
+   {
+      var shared = ( message.sender === owner ) ? room_key_in_message( message.text ) : null;
+      var receipt = ( message.sender === me ) ? room_key_receipt( message.text ) : null;
+
+      if( shared && ( shared.room === room ) && ( shared.key === key ) )
+         carried = true;
+
+      if( receipt && ( receipt.room === room ) && ( receipt.mark === mark ) )
+         answered = true;
+   } );
+
+   return carried && !answered;
+}
+
 // NOTE: A room's key note or its receipt, opened, in words for the conversation (Damon, 2026-11-05 - passed in the room as a private
 // message, never shown as the key itself): "sender" sent it, "me" is reading it, "other" the one it is to when "me" sent it. "" for
 // any other message.
@@ -5100,6 +5123,7 @@ if( typeof module !== "undefined" )
       member_keyless_text: member_keyless_text,
       keyless_note_text: keyless_note_text,
       owner_key_delivery: owner_key_delivery,
+      member_receipt_due: member_receipt_due,
       member_key_hint: member_key_hint,
       room_key_recipients: room_key_recipients,
       room_key_sent_text: room_key_sent_text,

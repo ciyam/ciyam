@@ -1706,7 +1706,7 @@ async function chat_look_for_owner_key( member_only )
       return;
    }
 
-   if( !entry || !g_chat_keys || g_chat_keys_unread || !can_have_room_key( room, entry.name ) || ( chat_room_key( room ) !== "" ) )
+   if( !entry || !g_chat_keys || g_chat_keys_unread || !can_have_room_key( room, entry.name ) )
       return;
 
    // NOTE: Asked again each time the room is opened, not at every poll of it (Damon, 2026-11-05) - the room read again for it.
@@ -1714,6 +1714,13 @@ async function chat_look_for_owner_key( member_only )
    {
       delete g_room_key_later[ room ];
       delete g_owner_key_looked[ room ];
+   }
+
+   if( chat_room_key( room ) !== "" )
+   {
+      await chat_answer_held_key( room, entry );
+
+      return;
    }
 
    if( g_room_key_later[ room ] )
@@ -1806,6 +1813,47 @@ async function chat_look_for_owner_key( member_only )
       show_alert( problem, "is-error" );
 }
 
+// NOTE: The room's key already here, and the owner's note for it there all the same - answered with a receipt if it has none
+// ("member_receipt_due( )", Ian, 2026-11-07: after a restore from scratch the owner passes it again, and would otherwise count
+// this member as without it for good). The room read only when it shows a sealed private message from the owner, and only once
+// it has something new.
+async function chat_answer_held_key( room, entry )
+{
+   var owner = entry.owner;
+   var secret = chat_secret_with( owner );
+   var key = chat_room_key( room );
+
+   if( ( secret === "" ) || ( g_owner_key_looked[ room ] === room + "/" + entry.total ) || !chat_owner_note_shown( owner ) )
+      return;
+
+   g_owner_key_looked[ room ] = room + "/" + entry.total;
+
+   var read = g_chat_keys_read;
+   var found = await chat_dm_opened( room, [ owner, ciyam.username ], secret );
+
+   if( found === null )
+   {
+      delete g_owner_key_looked[ room ];
+
+      return;
+   }
+
+   if( ( read !== g_chat_keys_read ) || ( chat_room_key( room ) !== key ) )
+      return;
+
+   if( member_receipt_due( found.opened, owner, ciyam.username, room, key, room_key_mark( key ) ) )
+      await chat_send_room_key_receipt( owner, room, key );
+}
+
+// NOTE: Whether the open room shows a sealed private message from "owner" - a note with a key, perhaps.
+function chat_owner_note_shown( owner )
+{
+   return Array.prototype.some.call( document.querySelectorAll( "#message_list .chat-message-body" ), function( body )
+   {
+      return ( body.dataset.private === "1" ) && ( body.dataset.sender === owner ) && ( message_prefix( body.dataset.text || "" ) === "X" );
+   } );
+}
+
 // NOTE: The fingerprint a receipt names its key by ("room_key_receipt_text( )") - not the key, which is in no receipt.
 function room_key_mark( key )
 {
@@ -1828,13 +1876,25 @@ async function chat_send_room_key_receipt( owner, room, key )
 // NOTE: Whether the open room shows this person's plain note to "person" saying the room is encrypted ("keyless_note_text( )").
 function chat_keyless_note_shown( person )
 {
-   var text = keyless_note_text( ciyam.username );
+   return chat_keyless_note_uniques( person ).length > 0;
+}
 
-   return Array.prototype.some.call( document.querySelectorAll( "#message_list .chat-message-body" ), function( body )
+// NOTE: Those notes' uniques.
+function chat_keyless_note_uniques( person )
+{
+   var text = keyless_note_text( ciyam.username );
+   var uniques = [ ];
+
+   document.querySelectorAll( "#message_list .chat-message-body" ).forEach( function( body )
    {
-      return ( body.dataset.sender === ciyam.username ) && ( body.dataset.private === "1" ) && ( body.dataset.text === text )
-       && ( ( body.dataset.recipients || "" ).split( "," ).indexOf( person ) >= 0 );
+      var row = body.closest( ".chat-message" );
+
+      if( ( body.dataset.sender === ciyam.username ) && ( body.dataset.private === "1" ) && ( body.dataset.text === text )
+       && ( ( body.dataset.recipients || "" ).split( "," ).indexOf( person ) >= 0 ) && row && row.dataset.unique )
+         uniques.push( row.dataset.unique );
    } );
+
+   return uniques;
 }
 
 // NOTE: A private message in "room" to "person" alone, as it is - nothing to seal it with.
@@ -1932,6 +1992,13 @@ async function chat_owner_send_keys( quiet )
 
             continue;
          }
+
+         // NOTE: Their contact code here now - the plain note that said it was needed deleted, as no longer so (Ian, 2026-11-07:
+         // members with the code still read it).
+         var stale = chat_keyless_note_uniques( person );
+
+         if( stale.length > 0 )
+            await chat_delete_key_messages( room, stale );
 
          var marker = whole + "|" + room + "/" + entry.total;
 
