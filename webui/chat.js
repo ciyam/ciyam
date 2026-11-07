@@ -1658,6 +1658,9 @@ function on_rooms_response( response )
 
       watch_held_rooms( );
 
+      // NOTE: The owner's other keyed rooms looked through as they change, those who joined passed the key (Damon, 2026-11-07).
+      chat_owner_send_keys_away( );
+
       notify_rooms( );
 
       show_notify_bar( );
