@@ -238,7 +238,9 @@ constexpr const char* c_web_session_meta_message_prefix = "_/ ";
 
 constexpr const char* c_web_session_default_message_prefix = "_  ";
 constexpr const char* c_web_session_private_message_prefix = "_! ";
+constexpr const char* c_web_session_prompt_message_prefix = "_? ";
 
+constexpr const char c_web_session_prompt_marker = 'P';
 constexpr const char c_web_session_encrypted_marker = 'X';
 
 constexpr const char* c_web_session_dummy_uuid = "00000000000000000000000000000000";
@@ -3907,8 +3909,18 @@ bool process_cws_request( http_request_type request_type, const string& uri_suff
 
                                        string text( option_parameters[ c_cws_request_messages_create_options_text ] );
 
+                                       // NOTE: Text that is a prompt (such as a poll) starts with "P\r" so is sent with the
+                                       // prompt prefix ("_? ") which replaces the "P\r" itself (only if is not private).
+                                       if( !is_special_request && ( prefix == c_web_session_default_message_prefix )
+                                        && ( text.size( ) > 1 ) && ( text[ 0 ] == c_web_session_prompt_marker ) && ( text[ 1 ] == '\r' ) )
+                                       {
+                                          prefix = c_web_session_prompt_message_prefix;
+
+                                          text.erase( 0, 2 );
+                                       }
+
                                        // NOTE: Text that has been encrypted by the client starts with "X\r" so is sent with
-                                       // the encrypted form of its prefix ("_ X" or "_!X") which replaces the "X\r" itself.
+                                       // the encrypted form of its prefix ("_ X", "_!X" or "_?X") which replaces the "X\r" itself.
                                        if( !is_special_request && ( text.size( ) > 1 )
                                         && ( text[ 0 ] == c_web_session_encrypted_marker ) && ( text[ 1 ] == '\r' ) )
                                        {
