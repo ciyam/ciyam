@@ -780,6 +780,12 @@ button.chat-avatar:hover
    color: var(--color-chat-text-secondary);
 }
 
+/* NOTE: The way to a member's contact codes, at the end of their row (Damon, 2026-11-08). */
+.chat-room-key-member-go
+{
+   margin-left: auto;
+}
+
 .chat-room-key-sent:empty
 {
    display: none;

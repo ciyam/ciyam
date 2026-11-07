@@ -404,6 +404,18 @@ function contact_problem( contact, contacts, own_key, own_name )
    return "";
 }
 
+// NOTE: What is wrong with adding "contact" as "person"'s, in the chat's exchange with them (Damon, 2026-11-08) - as for any contact
+// ("contact_problem( )"), and someone else's code said as that.
+function exchange_contact_problem( contact, person, contacts, own_key, own_name )
+{
+   var problem = contact_problem( contact, contacts, own_key, own_name );
+
+   if( ( problem === "" ) && ( contact.name !== person ) )
+      return "That's " + contact.name + "'s contact code - this is for " + person + "'s.";
+
+   return problem;
+}
+
 // NOTE: The keys kept, as the card lists them - by name, each key shortened ("short_public_key( )").
 function contact_rows( contacts )
 {
@@ -581,6 +593,7 @@ if( typeof module !== "undefined" )
       contact_code: contact_code,
       parse_contact_code: parse_contact_code,
       contact_problem: contact_problem,
+      exchange_contact_problem: exchange_contact_problem,
       contact_rows: contact_rows,
       short_public_key: short_public_key
    };

@@ -87,6 +87,7 @@ ok   reading one - the console's, ours, and one copied with spaces, a break and 
 ok   - not one: a bare key, the wrong length, no "I", a name that isn't a username, a short key
 ok   adding someone - fine
 ok   - not a code, your own key or name, one already kept, or theirs under another name
+ok   in the chat's exchange with someone - theirs fine; another's, or not one, said
 ok   the keys kept, by name, shortened
 ok   My account's sections, in order
 ok   - the one an address asks for, else the first

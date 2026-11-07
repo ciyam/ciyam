@@ -1207,8 +1207,17 @@ check( "- not once their receipt for it is there, nor for a note with another ke
  cp.member_receipt_due( delivered, "damon", "tester-1", "0000124", "e".repeat( 32 ), "0e0e0e0e" ),
  cp.member_receipt_due( delivered.slice( 0, 4 ), "maya", "tester-1", "0000124", "d".repeat( 32 ), "0d0d0d0d" ) ], [ false, false, false ] );
 check( "a member's state with the room key, for the owner", [ "has", "passed", "needs_codes", "failed", "other" ].map( cp.member_key_state_text ),
- [ "has the key", "passed the key - not yet accepted", "needs your contact codes - exchange them on My account",
+ [ "has the key", "passed the key - not yet accepted", "needs each other's contact codes",
  "the key could not be passed - opening the room tries again", "" ] );
+// NOTE: Contact codes exchanged in the chat (Damon, 2026-11-08) - sent another way, theirs pasted.
+check( "exchanging contact codes with someone - neither, theirs here, theirs just added", [ cp.contact_exchange_text( "damon", false, false ),
+ cp.contact_exchange_text( "damon", true, false ), cp.contact_exchange_text( "damon", false, true ) ], [
+ "You and damon each need the other's contact code to read what is encrypted between you. Send yours another way you trust - Signal,"
+ + " email or a call - or show it to them to scan. Then paste theirs here.",
+ "You have damon's contact code - they need yours. Send yours another way you trust - Signal, email or a call - or show it to them to scan.",
+ "damon is added. Once they have added yours too, room keys pass between you by themselves." ] );
+check( "- the owner told as someone joins without it", cp.owner_codes_needed_text( "tester-1", "Lunch" ),
+ "To pass tester-1 the key to Lunch, exchange contact codes with them - from its Room key." );
 check( "the owner's plain note to a member without their contact code", cp.keyless_note_text( "damon" ),
  "This room is encrypted with a room key - exchange contact codes with damon to be given it." );
 check( "over a member's message box without the key - accept it, or exchange codes first", [ cp.member_keyless_text( "damon", true ),
@@ -1231,7 +1240,7 @@ check( "- and what came of it", [ cp.room_key_sent_text( [ { name: "tester-1", h
  cp.room_key_sent_text( [ { name: "a", how: "no_key" }, { name: "b", how: "no_key" }, { name: "c", how: "request" }, { name: "d", how: "failed" } ] ),
  cp.room_key_sent_text( [ ] ) ],
  [ "Sent to tester-1. Sent to tester-2 once they accept your direct message.",
- "Not sent to a and b - add their contact codes to Contacts on My account first. Not sent to c - accept their direct message first."
+ "Not sent to a and b - exchange contact codes with each first, from Room key. Not sent to c - accept their direct message first."
  + " Could not send it to d - try again.",
  "No one else has joined yet - each is sent it as they join, or when you next open this room." ] );
 check( "- a message too long to encrypt: over 1,000 bytes", [ cp.sealed_too_long( "a".repeat( 1000 ) ), cp.sealed_too_long( "a".repeat( 1001 ) ),

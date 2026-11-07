@@ -2442,8 +2442,32 @@ function member_key_state_text( state )
    return {
       has: "has the key",
       passed: "passed the key - not yet accepted",
-      needs_codes: "needs your contact codes - exchange them on My account",
+      needs_codes: "needs each other's contact codes",
       failed: "the key could not be passed - opening the room tries again" }[ state ] || "";
+}
+
+// NOTE: What the dialog to exchange contact codes with "person" says (Damon, 2026-11-08: members far apart could not meet to scan
+// each other's) - "have_theirs" whether their code is here already, "added" whether it has just been added. Sent another way the two
+// trust, as the node is never given anyone's public key (Ian, 2026-11-03).
+function contact_exchange_text( person, have_theirs, added )
+{
+   if( added )
+      return person + " is added. Once they have added yours too, room keys pass between you by themselves.";
+
+   var send = "Send yours another way you trust - Signal, email or a call - or show it to them to scan.";
+
+   if( have_theirs )
+      return "You have " + person + "'s contact code - they need yours. " + send;
+
+   return "You and " + person + " each need the other's contact code to read what is encrypted between you. " + send
+    + " Then paste theirs here.";
+}
+
+// NOTE: Said to a room's owner as someone is found in it without their contact code here (Damon, 2026-11-08) - the way to it. Found
+// as they join, or at a sign in long after, so not said as joining.
+function owner_codes_needed_text( person, room_name )
+{
+   return "To pass " + person + " the key to " + room_name + ", exchange contact codes with them - from its Room key.";
 }
 
 // NOTE: The owner's plain note to a member without their contact code (Damon, 2026-11-05) - the room is encrypted, and what its key
@@ -2506,8 +2530,8 @@ function room_key_sent_text( outcomes )
        + " your direct message." );
 
    if( by.no_key.length > 0 )
-      parts.push( "Not sent to " + name_list( by.no_key ) + " - add " + ( ( by.no_key.length === 1 ) ? "their contact code" : "their contact codes" )
-       + " to Contacts on My account first." );
+      parts.push( "Not sent to " + name_list( by.no_key ) + " - exchange contact codes with " + ( ( by.no_key.length === 1 ) ? "them" : "each" )
+       + " first, from Room key." );
 
    if( by.request.length > 0 )
       parts.push( "Not sent to " + name_list( by.request ) + " - accept " + ( ( by.request.length === 1 ) ? "their direct message" : "their direct messages" )
@@ -5130,6 +5154,8 @@ if( typeof module !== "undefined" )
       room_key_receipt: room_key_receipt,
       key_note_text: key_note_text,
       member_key_state_text: member_key_state_text,
+      contact_exchange_text: contact_exchange_text,
+      owner_codes_needed_text: owner_codes_needed_text,
       owner_keyless_text: owner_keyless_text,
       member_keyless_text: member_keyless_text,
       keyless_note_text: keyless_note_text,

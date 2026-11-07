@@ -589,6 +589,8 @@ ok   - a receipt only from the member, not from the owner
 ok   a member with the key passed it again - a receipt due
 ok   - not once their receipt for it is there, nor for a note with another key, nor from anyone but the owner
 ok   a member's state with the room key, for the owner
+ok   exchanging contact codes with someone - neither, theirs here, theirs just added
+ok   - the owner told as someone joins without it
 ok   the owner's plain note to a member without their contact code
 ok   over a member's message box without the key - accept it, or exchange codes first
 ok   under the owner's room in the rail - members without the key, as last found

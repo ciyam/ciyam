@@ -236,6 +236,13 @@ check( "- not a code, your own key or name, one already kept, or theirs under an
  "That's your own contact code - theirs is shown on their My account, under Contacts.",
  "That's your own contact code - theirs is shown on their My account, under Contacts.",
  "You have a key for verify-a already - remove it first to change it.", "That key is saved for verify-a already." ] );
+// NOTE: The chat's exchange with one person (Damon, 2026-11-08) - their code alone.
+check( "in the chat's exchange with someone - theirs fine; another's, or not one, said", [
+ ap.exchange_contact_problem( ap.parse_contact_code( verify_a_code ), "verify-a", { }, own_key, "damon" ),
+ ap.exchange_contact_problem( ap.parse_contact_code( verify_a_code ), "tester-1", { }, own_key, "damon" ),
+ ap.exchange_contact_problem( null, "verify-a", { }, own_key, "damon" ) ], [ "",
+ "That's verify-a's contact code - this is for tester-1's.",
+ "That isn't a contact code - copy all of it, or scan it, from Contacts on their My account." ] );
 check( "the keys kept, by name, shortened", ap.contact_rows( { "verify-b": own_key, "verify-a": verify_a_key } ), [
  { name: "verify-a", key: verify_a_key, short: "0028b35f…789493e0" }, { name: "verify-b", key: own_key, short: "bd03d5c9…ea1b6bc9" } ] );
 

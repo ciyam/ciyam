@@ -652,6 +652,35 @@ http://www.opensource.org/licenses/mit-license.php.
    </div>
 </div>
 
+<!-- NOTE: Contact codes exchanged with one person in the chat (Damon, 2026-11-08: members far apart could not meet to scan each
+     other's) - yours to copy or show, theirs pasted - as an invitation is joined, from the bar over the message box, or from a
+     member's row in Room key ("do_open_contact_dialog( )"). Your code is in the page only while it is open (Ian, 2026-10-27). -->
+<div id="contact_dialog" class="chat-scrim" hidden onclick="if( event.target === this ) do_close_contact_dialog( );">
+   <div class="chat-dialog chat-room-key-dialog" role="dialog" aria-modal="true" aria-labelledby="contact_dialog_title">
+      <h2 id="contact_dialog_title" tabindex="-1">Exchange contact codes</h2>
+      <p class="chat-dialog-note" id="contact_dialog_note"></p>
+      <div class="chat-room-key-share" id="contact_dialog_own_part">
+         <div class="chat-label">Your contact code</div>
+         <div class="chat-qr-box" id="contact_dialog_qr" aria-hidden="true"></div>
+         <code class="chat-room-key-text chat-mono" id="contact_dialog_own" aria-label="Your contact code"></code>
+         <div class="chat-room-key-actions">
+            <button type="button" class="chat-btn" id="contact_dialog_copy" onclick="do_copy_contact_code( )">Copy</button>
+         </div>
+      </div>
+      <div class="chat-room-key-add" id="contact_dialog_theirs_part">
+         <label class="chat-label" for="contact_dialog_input" id="contact_dialog_input_label">Their contact code</label>
+         <textarea class="chat-field chat-mono chat-room-key-input" id="contact_dialog_input" rows="3" autocomplete="off"
+          autocapitalize="off" spellcheck="false"
+          onkeydown="if( ( event.key === 'Enter' ) &amp;&amp; !event.shiftKey ) { event.preventDefault( ); do_add_contact_code( ); }"></textarea>
+      </div>
+      <div class="chat-error-text" id="contact_dialog_error" role="alert"></div>
+      <div class="chat-dialog-actions">
+         <button type="button" class="chat-btn" id="contact_dialog_close" onclick="do_close_contact_dialog( )">Not now</button>
+         <button type="button" class="chat-btn chat-btn--accent" id="contact_dialog_add" onclick="do_add_contact_code( )">Add them</button>
+      </div>
+   </div>
+</div>
+
 <!-- ================================================================
      Templates
 

@@ -552,6 +552,7 @@ async function chat_keys_read( )
    g_owner_keys_checked = { };
    g_owner_key_states = { };
    g_owner_away_checked = { };
+   g_owner_codes_told = { };
 
    show_thread_title( );
    chat_render_room_key( );
@@ -583,6 +584,7 @@ function chat_keys_forget( )
    g_owner_keys_checked = { };
    g_owner_key_states = { };
    g_owner_away_checked = { };
+   g_owner_codes_told = { };
 }
 
 // NOTE: The open room's other person, if it is a direct message the console would encrypt too - by its name, whoever else is in
@@ -946,6 +948,42 @@ function chat_keys_save_room( room, key, only_if_none )
 
 async function chat_keys_save_room_now( room, key )
 {
+   return chat_keys_save_now( function( latest )
+   {
+      if( key === "" )
+         delete latest.rooms[ room ];
+      else
+         latest.rooms[ room ] = key;
+   }, "The room key" );
+}
+
+// NOTE: "person"'s contact code ("parse_contact_code( )") added in the chat (Damon, 2026-11-08) - on the node's latest copy, checked
+// again there ("exchange_contact_problem( )"), one change at a time as a room key's is ("chat_keys_save_room( )"). "" when done, else
+// what to say.
+function chat_keys_save_contact( contact, person, own_key, own_name )
+{
+   var saved = g_room_key_saving.then( function( )
+   {
+      return chat_keys_save_now( function( latest )
+      {
+         var problem = exchange_contact_problem( contact, person, latest.contacts, own_key, own_name );
+
+         if( problem === "" )
+            latest.contacts[ contact.name ] = contact.key;
+
+         return problem;
+      }, "Their contact code" );
+   } );
+
+   g_room_key_saving = saved.catch( function( ) { } );
+
+   return saved;
+}
+
+// NOTE: "change" made to copies of the node's latest rooms and contacts - what it says is wrong returned, if anything - then locked
+// again and sent; "what" names it if not saved.
+async function chat_keys_save_now( change, what )
+{
    if( !g_chat_keys )
       return "Set up your keys on My account first.";
 
@@ -965,18 +1003,19 @@ async function chat_keys_save_room_now( room, key )
    }
 
    var rooms = Object.assign( { }, latest.rooms );
+   var contacts = Object.assign( { }, latest.contacts );
 
-   if( key === "" )
-      delete rooms[ room ];
-   else
-      rooms[ room ] = key;
+   var problem = change( { rooms: rooms, contacts: contacts } ) || "";
+
+   if( problem !== "" )
+      return problem;
 
    var locked = "";
 
    try
    {
       // NOTE: With the guard's line the node has, which only the words could change (Ian, 2026-10-27).
-      locked = uk.kept_text( latest.guard, await uk.lock( access, { primary: latest.primary, secondary: latest.secondary, contacts: latest.contacts,
+      locked = uk.kept_text( latest.guard, await uk.lock( access, { primary: latest.primary, secondary: latest.secondary, contacts: contacts,
        rooms: rooms }, { rounds: latest.rounds } ) );
    }
    catch( e )
@@ -994,7 +1033,7 @@ async function chat_keys_save_room_now( room, key )
       return "The server didn't answer in time - try again.";
 
    if( is_error_response( answer ) )
-      return "The room key could not be saved: " + error_text( answer );
+      return what + " could not be saved: " + error_text( answer );
 
    // NOTE: Signed out, or in again, meanwhile - saved, but not this sign in's to keep. Signing out leaves "ciyam.access" as it
    // was, so it is the keys read's count that says so - else the keys came back after signing out (found by review).
@@ -1002,6 +1041,7 @@ async function chat_keys_save_room_now( room, key )
       return "";
 
    latest.rooms = rooms;
+   latest.contacts = contacts;
 
    g_chat_keys = chat_keys_from( access, latest );
    g_chat_secrets = { };
@@ -1136,6 +1176,25 @@ function chat_render_member_key_states( shown )
 
       item.appendChild( who );
       item.appendChild( what );
+
+      // NOTE: The way to their codes, from their row (Damon, 2026-11-08).
+      if( states[ name ] === "needs_codes" )
+      {
+         var go = document.createElement( "button" );
+
+         go.type = "button";
+         go.className = "chat-btn chat-btn--small chat-room-key-member-go";
+         go.textContent = "Exchange codes";
+
+         go.addEventListener( "click", function( )
+         {
+            do_close_room_key_dialog( );
+            do_open_contact_dialog( name );
+         } );
+
+         item.appendChild( go );
+      }
+
       list.appendChild( item );
    } );
 }
@@ -1491,7 +1550,13 @@ function do_share_room_key( )
 
 function do_copy_room_key( )
 {
-   var field = document.getElementById( "room_key_share_text" );
+   chat_copy_text( "room_key_share_text", "room_key_copy" );
+}
+
+// NOTE: The text of "field_id" selected and copied, its button "button_id" saying so for a moment.
+function chat_copy_text( field_id, button_id )
+{
+   var field = document.getElementById( field_id );
    var range = document.createRange( );
 
    range.selectNodeContents( field );
@@ -1504,10 +1569,164 @@ function do_copy_room_key( )
 
    copied.then( function( done )
    {
-      document.getElementById( "room_key_copy" ).textContent = done ? "Copied" : "Copy";
+      document.getElementById( button_id ).textContent = done ? "Copied" : "Copy";
 
-      setTimeout( function( ) { document.getElementById( "room_key_copy" ).textContent = "Copy"; }, 2000 );
+      setTimeout( function( ) { document.getElementById( button_id ).textContent = "Copy"; }, 2000 );
    } );
+}
+
+// ---- Contact codes exchanged in the chat (Damon, 2026-11-08: members far apart, the room's owner among them, could not meet to scan
+// each other's, and the room's key waited on it) - yours to copy, or to show as a QR code, and theirs pasted. Sent between the two
+// another way they trust, never by the node (Ian, 2026-11-03: no public keys kept on the node).
+
+const c_contact_qr_size = 160;
+
+var g_contact_person = "";
+var g_contact_opened = 0;
+
+// NOTE: Owners told once a sign in, for each room and member, that they need each other's codes ("chat_owner_send_keys_in( )").
+var g_owner_codes_told = { };
+
+// NOTE: Whether "person"'s contact code is wanted here - this account's keys read, and no code kept for them.
+function chat_contact_missing( person )
+{
+   return !!g_chat_keys && !g_chat_keys_unread && ( String( person || "" ) !== "" ) && ( person !== ciyam.username )
+    && !g_chat_keys.contacts.hasOwnProperty( person );
+}
+
+function chat_own_public_key( )
+{
+   return g_chat_keys ? ciyam_module_named( "secure_message" ).public_key_of_seed( g_chat_keys.primary ) : "";
+}
+
+// NOTE: Opened for "person" - your code in the page only now, and taken out again as it is closed (Ian, 2026-10-27).
+async function do_open_contact_dialog( person )
+{
+   if( !g_chat_keys || g_chat_keys_unread || ( String( person || "" ) === "" ) || ( person === ciyam.username ) )
+      return;
+
+   var padding = Array.from( crypto.getRandomValues( new Uint8Array( 13 ) ), function( b ) { return b.toString( 16 ).padStart( 2, "0" ); } ).join( "" );
+   var code = contact_code( account_display_name( ciyam.username, ciyam.is_admin ), chat_own_public_key( ), padding );
+
+   if( code === "" )
+      return;
+
+   var opened = ++g_contact_opened;
+   var have = g_chat_keys.contacts.hasOwnProperty( person );
+   var dialog = document.getElementById( "contact_dialog" );
+   var box = document.getElementById( "contact_dialog_qr" );
+
+   g_contact_person = person;
+
+   document.getElementById( "contact_dialog_title" ).textContent = "Exchange contact codes with " + person;
+   document.getElementById( "contact_dialog_note" ).textContent = contact_exchange_text( person, have, false );
+   document.getElementById( "contact_dialog_own" ).textContent = code;
+   document.getElementById( "contact_dialog_input_label" ).textContent = person + "'s contact code";
+   document.getElementById( "contact_dialog_input" ).value = "";
+   document.getElementById( "contact_dialog_error" ).textContent = "";
+   document.getElementById( "contact_dialog_theirs_part" ).hidden = have;
+   document.getElementById( "contact_dialog_add" ).hidden = have;
+   document.getElementById( "contact_dialog_add" ).disabled = false;
+   document.getElementById( "contact_dialog_close" ).textContent = have ? "Done" : "Not now";
+   document.getElementById( "contact_dialog_copy" ).textContent = "Copy";
+
+   box.replaceChildren( );
+   dialog.hidden = false;
+
+   document.getElementById( have ? "contact_dialog_copy" : "contact_dialog_input" ).focus( );
+
+   // NOTE: Drawn in the page - "qrcode.min.js" - so the code goes nowhere else; the library's own title taken off, as My account's.
+   if( !await chat_qr_library( ) || ( opened !== g_contact_opened ) )
+      return;
+
+   new QRCode( box, { text: code, width: c_contact_qr_size, height: c_contact_qr_size, colorDark: "#1b1f2a", colorLight: "#ffffff",
+    correctLevel: QRCode.CorrectLevel.M } );
+
+   box.removeAttribute( "title" );
+   box.querySelectorAll( "[title]" ).forEach( function( node ) { node.removeAttribute( "title" ); } );
+}
+
+function do_close_contact_dialog( )
+{
+   ++g_contact_opened;
+
+   g_contact_person = "";
+
+   document.getElementById( "contact_dialog" ).hidden = true;
+   document.getElementById( "contact_dialog_own" ).textContent = "";
+   document.getElementById( "contact_dialog_qr" ).replaceChildren( );
+   document.getElementById( "contact_dialog_input" ).value = "";
+}
+
+function do_copy_contact_code( )
+{
+   chat_copy_text( "contact_dialog_own", "contact_dialog_copy" );
+}
+
+// NOTE: Their code as pasted - checked as for this person, then kept as My account keeps one. Kept even if the dialog was closed
+// meanwhile, and the keys looked at again for them at once ("chat_contact_added( )").
+async function do_add_contact_code( )
+{
+   var person = g_contact_person;
+   var opened = g_contact_opened;
+   var error = document.getElementById( "contact_dialog_error" );
+   var add = document.getElementById( "contact_dialog_add" );
+
+   if( ( person === "" ) || !g_chat_keys || add.disabled )
+      return;
+
+   var contact = parse_contact_code( document.getElementById( "contact_dialog_input" ).value );
+   var own_key = chat_own_public_key( );
+   var own_name = account_display_name( ciyam.username, ciyam.is_admin );
+   var problem = exchange_contact_problem( contact, person, g_chat_keys.contacts, own_key, own_name );
+
+   error.textContent = problem;
+
+   if( problem !== "" )
+      return;
+
+   add.disabled = true;
+
+   var said = await chat_keys_save_contact( contact, person, own_key, own_name );
+
+   if( said === "" )
+      chat_contact_added( person );
+
+   if( opened !== g_contact_opened )
+      return;
+
+   add.disabled = false;
+
+   if( said !== "" )
+   {
+      error.textContent = said;
+
+      return;
+   }
+
+   document.getElementById( "contact_dialog_note" ).textContent = contact_exchange_text( person, false, true );
+   document.getElementById( "contact_dialog_theirs_part" ).hidden = true;
+   document.getElementById( "contact_dialog_add" ).hidden = true;
+   document.getElementById( "contact_dialog_close" ).textContent = "Done";
+   document.getElementById( "contact_dialog_close" ).focus( );
+}
+
+// NOTE: "person"'s code here now - the room keys looked at again for them at once, not at the next change: the owner's rooms passing
+// theirs to them, and the open room's taken from its owner.
+function chat_contact_added( person )
+{
+   Object.keys( g_owner_keys_checked ).forEach( function( checked )
+   {
+      if( checked.slice( -( person.length + 1 ) ) === "|" + person )
+         delete g_owner_keys_checked[ checked ];
+   } );
+
+   g_owner_away_checked = { };
+
+   show_encryption_action( );
+
+   chat_look_for_owner_key( false );
+   chat_owner_send_keys_away( );
 }
 
 async function do_remove_room_key( )
@@ -2183,6 +2402,14 @@ async function chat_owner_send_keys_in( entry )
       if( secret === "" )
       {
          states[ person ] = "needs_codes";
+
+         // NOTE: Said once a sign in for each (Damon, 2026-11-08: the owner had no prompt to exchange them as someone joined).
+         if( !g_owner_codes_told[ room + "|" + person ] )
+         {
+            g_owner_codes_told[ room + "|" + person ] = true;
+
+            show_alert( owner_codes_needed_text( person, entry.name ), "is-info" );
+         }
 
          continue;
       }

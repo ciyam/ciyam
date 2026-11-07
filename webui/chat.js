@@ -222,6 +222,12 @@ function chat( )
 
          event.preventDefault( );
       }
+      else if( !document.getElementById( "contact_dialog" ).hidden )
+      {
+         do_close_contact_dialog( );
+
+         event.preventDefault( );
+      }
       else if( !document.getElementById( "qr_dialog" ).hidden )
       {
          do_close_qr_dialog( );
@@ -1385,6 +1391,7 @@ async function do_disconnect( already_ended )
    do_close_poll_dialog( );
    do_close_qr_dialog( );
    do_close_scan_dialog( );
+   do_close_contact_dialog( );
 
    chat_room_key_reset( );
 
@@ -2165,9 +2172,10 @@ function do_encryption_action( event )
       return;
    }
 
+   // NOTE: Exchanged here, with the room's owner (Damon, 2026-11-08) - rather than on My account.
    if( keyless === "codes" )
    {
-      apps_go( "account", "#contacts", event );
+      do_open_contact_dialog( g_room_owner );
 
       return;
    }
@@ -2384,6 +2392,11 @@ function do_join_invitation( )
       join_quietly( dm_invite );
 
    load_rooms( );
+
+   // NOTE: Contact codes exchanged with whoever invited them as it is joined, if theirs is not here (Damon, 2026-11-08: members far
+   // apart had no prompt to, and the room's key waited on it) - each sends theirs another way and pastes the other's.
+   if( chat_contact_missing( invite.inviter ) )
+      do_open_contact_dialog( invite.inviter );
 }
 
 // NOTE: An invitation accepted without opening its room - its token given in a quiet read, as opening it would.
