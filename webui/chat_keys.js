@@ -721,6 +721,15 @@ function chat_member_keyless( )
    return chat_member_keyless_kind( ) !== "";
 }
 
+// NOTE: Whether the open room shows a message sealed with a room key - not a private one, which a secret between two seals.
+function chat_room_shows_sealed( )
+{
+   return Array.prototype.some.call( document.querySelectorAll( "#message_list .chat-message-body" ), function( body )
+   {
+      return ( body.dataset.private !== "1" ) && ( message_prefix( body.dataset.text || "" ) === "X" );
+   } );
+}
+
 // NOTE: How a member without the key gets it - "accept": the owner's note with it is here; "codes": not, and each needs the other's
 // contact code (the owner's plain note says so, even when the owner's is here - the owner lacks theirs: found by review, 2026-11-06);
 // "" for a room that is not encrypted, or one they have the key for.
@@ -1064,8 +1073,12 @@ function chat_render_room_key( )
 
    document.getElementById( "room_key_state" ).textContent = state;
    document.getElementById( "room_key_dialog_state" ).textContent = state;
-   // NOTE: The owner's alone (Damon, 2026-11-05) - a member is given the key, and asked to accept it ("chat_look_for_owner_key( )").
-   document.getElementById( "room_key_open" ).hidden = !g_chat_keys || !owner;
+   // NOTE: The owner's (Damon, 2026-11-05) - a member is given the key, and asked to accept it ("chat_look_for_owner_key( )"); but
+   // a member without one, in a room that is encrypted, may add it by hand (Damon, 2026-11-07, as Ian asked: a poll's voters were
+   // never passed it) - only then, so a member's key can neither replace the room's nor encrypt a room that has none.
+   var member_may_add = !owner && ( key === "" ) && ( chat_member_keyless( ) || chat_room_shows_sealed( ) );
+
+   document.getElementById( "room_key_open" ).hidden = !g_chat_keys || ( !owner && !member_may_add );
 
    // NOTE: Nothing to do there without keys - the dialog put away if they are forgotten meanwhile.
    if( !g_chat_keys || ( state === "" ) )
@@ -1151,7 +1164,10 @@ function do_close_room_key_dialog( )
    chat_room_key_reset( );
    chat_render_room_key( );
 
-   document.getElementById( "room_key_open" ).focus( );
+   // NOTE: A member who has added the key is offered the dialog no longer - the message box instead.
+   var opener = document.getElementById( "room_key_open" );
+
+   ( opener.hidden ? document.getElementById( "composer_input" ) : opener ).focus( );
 }
 
 function chat_room_key_reset( )
