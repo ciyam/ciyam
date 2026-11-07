@@ -78,7 +78,7 @@ Basic tokens:
 
 `# include expression file
 
-Note: If `! is used after the template value expression then the value expression will not be split into a set.
+NOTE: If `! is used after the template value expression then the value expression will not be split into a set.
 
 Special tokens for item expressions in template expressions (versions above zero require ` prior to initial \):
 
@@ -96,7 +96,7 @@ Special tokens for item expressions in template expressions (versions above zero
 \0..9 secondary set value (secondary set separator is literal text after `% in value expression)
 
 Version zero only:
-\=n (where n is a number between 1 and 9) expands to (n*2) \ characters (so \=5 becomes \\\\\\\\\\) *
+\=n (where n is a number between 1 and 9) expands to (n*2) \ characters (so \=5 becomes \\\\\\\\\\)
 
 Literal text (as used in template expressions) can be broken across multiple lines. Version zero expressions can be
 split across lines with a trailing \ and for newer versions lines ending with `\ are considered line continuations.
@@ -536,6 +536,7 @@ string set_union( const string& lhs, const string& rhs, const string& separator 
 string set_intersection( const string& lhs, const string& rhs, bool exclusive_intersection = false, const string& separator = " " )
 {
    string result;
+
    vector< string > lhs_set;
    vector< string > rhs_set;
 
@@ -665,6 +666,7 @@ string xrep_info::get_variable( const string& identifier, bool opt )
 string xrep_info::set_variable( const string& identifier, const string& value )
 {
    variables[ identifier ] = value;
+
    return value;
 }
 
@@ -740,6 +742,7 @@ class xrep_lexer : public lexer
    {
       if( restore )
          input = input_stack.top( );
+
       input_stack.pop( );
    }
 
@@ -811,6 +814,7 @@ class scoped_lexer_input_holder
 
    private:
    lexer& l;
+
    bool restore_original;
 };
 
@@ -867,6 +871,7 @@ void xrep_lexer::write_back_token( const string& token )
       throw runtime_error( "attempt to write back token '" + token + "' when expecting token '" + last_read_token + "'" );
 
    input = token + input;
+
    last_read_token.erase( );
 }
 
@@ -1067,9 +1072,11 @@ string include_expression::evaluate( xrep_info& xi )
    string str( up_lhs->evaluate( xi ) );
 
    bool use_current_variables = false;
+
    vector< pair< string, string > > variable_values;
 
    string::size_type pos = str.find( ' ' );
+
    string filename( str.substr( 0, pos ) );
 
    while( pos != string::npos )
@@ -1079,6 +1086,7 @@ string include_expression::evaluate( xrep_info& xi )
       if( variable_values.empty( ) && ( str == "@" ) )
       {
          use_current_variables = true;
+
          break;
       }
 
@@ -1087,7 +1095,8 @@ string include_expression::evaluate( xrep_info& xi )
       if( pos == string::npos )
          throw runtime_error( "unexpected include argument format '" + str + "'" );
 
-      string identifier = str.substr( 0, pos );
+      string identifier( str.substr( 0, pos ) );
+
       str.erase( 0, pos + 1 );
 
       pos = str.find( ' ' );
@@ -1101,7 +1110,9 @@ string include_expression::evaluate( xrep_info& xi )
             if( str[ i ] == '"' )
             {
                str.erase( i, 1 );
+
                pos = i;
+
                break;
             }
          }
@@ -1148,6 +1159,7 @@ string include_expression::evaluate( xrep_info& xi )
          process_input( inpf, use_current_variables ? xi : new_xi, osstr, false );
 
          retval = osstr.str( );
+
          xi.set_handled_include( true );
       }
       catch( exception& x )
@@ -1384,6 +1396,7 @@ string value_expression::evaluate( xrep_info& xi )
       while( true )
       {
          string::size_type pos = retval.find( find_text, lpos );
+
          if( pos == string::npos )
             break;
 
