@@ -113,6 +113,8 @@ const size_t c_var_check_wait_timeout = 100; // i.e. 1/10 sec
 
 const size_t c_rpc_retry_unlock_timeout = 2000; // i.e. 2 secs
 
+const size_t c_max_non_local_request_size = 10000;
+
 const int c_pdf_default_limit = 10000;
 const int c_max_pdf_or_single_limit = 100000;
 
@@ -9841,6 +9843,11 @@ void socket_command_processor::get_cmd_and_args( string& cmd_and_args )
       TRACE_LOG( TRACE_INITIAL | TRACE_SESSION, "started session (tid = " + to_string( current_thread_id( ) ) + ")" );
    }
 
+   size_t max_request_size = 0;
+
+   if( !dynamic_cast< socket_command_handler& >( handler ).is_local_session( ) )
+      max_request_size = c_max_non_local_request_size;
+
    while( true )
    {
       progress* p_progress = 0;
@@ -9850,7 +9857,8 @@ void socket_command_processor::get_cmd_and_args( string& cmd_and_args )
       if( get_trace_flags( ) & ( TRACE_VERBOSE | TRACE_SOCKETS ) )
          p_progress = &progress;
 
-      if( socket.read_line( cmd_and_args, c_request_timeout, 0, p_progress ) <= 0 )
+      if( socket.read_line( cmd_and_args,
+       c_request_timeout, max_request_size, p_progress ) <= 0 )
       {
          if( !is_captured_session( )
           && ( is_condemned_session( ) || g_server_shutdown || !socket.had_timeout( ) ) )
