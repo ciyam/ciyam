@@ -5200,6 +5200,7 @@ Meta_List::Meta_List( )
 Meta_List::~Meta_List( )
 {
    cleanup( );
+
    delete p_impl;
 }
 

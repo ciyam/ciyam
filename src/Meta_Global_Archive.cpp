@@ -1256,6 +1256,7 @@ Meta_Global_Archive::Meta_Global_Archive( )
 Meta_Global_Archive::~Meta_Global_Archive( )
 {
    cleanup( );
+
    delete p_impl;
 }
 

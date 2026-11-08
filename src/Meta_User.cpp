@@ -1267,6 +1267,7 @@ Meta_User::Meta_User( )
 Meta_User::~Meta_User( )
 {
    cleanup( );
+
    delete p_impl;
 }
 

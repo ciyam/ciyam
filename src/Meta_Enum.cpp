@@ -1186,6 +1186,7 @@ Meta_Enum::Meta_Enum( )
 Meta_Enum::~Meta_Enum( )
 {
    cleanup( );
+
    delete p_impl;
 }
 

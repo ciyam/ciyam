@@ -929,6 +929,7 @@ Meta_Global_Repository_Entry::Meta_Global_Repository_Entry( )
 Meta_Global_Repository_Entry::~Meta_Global_Repository_Entry( )
 {
    cleanup( );
+
    delete p_impl;
 }
 

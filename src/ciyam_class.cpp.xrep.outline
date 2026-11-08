@@ -1563,8 +1563,8 @@ const string& `{`$full_class_name`}::impl::get_foreign_key_value( const string& 
    if( field.empty( ) )
       throw runtime_error( "unexpected empty field name/id" );
 `{`[`$parent_fields`,\
-   else if( ( field == c_field_id_\0 ) || ( field == c_field_name_\0 ) )
-      return v_\0;\
+   else if( ( field == c_field_id_\$ ) || ( field == c_field_name_\$ ) )
+      return v_\$;\
 `+\n`]`}
 `{`(`?`$parent_class`)\
    else
@@ -1581,7 +1581,7 @@ void `{`$full_class_name`}::impl::get_foreign_key_values( foreign_key_data_conta
    ( void )foreign_key_values;\
 `}
 `{`[`$parent_fields`,\
-   foreign_key_values.insert( foreign_key_data_value_type( c_field_id_\0, v_\0 ) );\
+   foreign_key_values.insert( foreign_key_data_value_type( c_field_id_\$, v_\$ ) );\
 `+\n`]`}
 }
 
@@ -3888,7 +3888,7 @@ void `{`$full_class_name`}::impl::transform( read_stream& rs, int32_t version )
 `{`$full_class_name`}::~`{`$full_class_name`}( )
 {
 `{`(`!`?`$parent_class`)\
-   cleanup( );\
+   cleanup( );
 `}
    delete p_impl;
 }
@@ -3933,7 +3933,7 @@ void `{`$full_class_name`}::\0( const string& key )
    p_impl->impl_\0( key );
 }
 `}`]`}
-`{`?`$child_info`[`$child_info`,\
+`{`?`$child_info`[`$child_info`%,`,\
 \1& `{`$full_class_name`}::\0( )
 {
    return p_impl->impl_\0( );

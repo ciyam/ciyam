@@ -806,6 +806,7 @@ Meta_View_Field_Type::Meta_View_Field_Type( )
 Meta_View_Field_Type::~Meta_View_Field_Type( )
 {
    cleanup( );
+
    delete p_impl;
 }
 

@@ -5423,6 +5423,7 @@ Meta_List_Field::Meta_List_Field( )
 Meta_List_Field::~Meta_List_Field( )
 {
    cleanup( );
+
    delete p_impl;
 }
 

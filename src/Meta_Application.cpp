@@ -4162,6 +4162,7 @@ Meta_Application::Meta_Application( )
 Meta_Application::~Meta_Application( )
 {
    cleanup( );
+
    delete p_impl;
 }
 

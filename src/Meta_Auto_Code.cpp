@@ -961,6 +961,7 @@ Meta_Auto_Code::Meta_Auto_Code( )
 Meta_Auto_Code::~Meta_Auto_Code( )
 {
    cleanup( );
+
    delete p_impl;
 }
 

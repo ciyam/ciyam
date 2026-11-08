@@ -9000,6 +9000,7 @@ Meta_Specification::Meta_Specification( )
 Meta_Specification::~Meta_Specification( )
 {
    cleanup( );
+
    delete p_impl;
 }
 

@@ -739,6 +739,7 @@ Meta_Global_Blacklist_Entry::Meta_Global_Blacklist_Entry( )
 Meta_Global_Blacklist_Entry::~Meta_Global_Blacklist_Entry( )
 {
    cleanup( );
+
    delete p_impl;
 }
 

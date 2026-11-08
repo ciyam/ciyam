@@ -1472,6 +1472,7 @@ Meta_Package_Type::Meta_Package_Type( )
 Meta_Package_Type::~Meta_Package_Type( )
 {
    cleanup( );
+
    delete p_impl;
 }
 

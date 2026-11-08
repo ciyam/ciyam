@@ -1078,6 +1078,7 @@ Meta_Module::Meta_Module( )
 Meta_Module::~Meta_Module( )
 {
    cleanup( );
+
    delete p_impl;
 }
 
