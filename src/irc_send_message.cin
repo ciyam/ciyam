@@ -66,7 +66,11 @@ POS=@strpos:_:$ROOM
 
    ; NOTE: Check for the special message prefix
    ; and (unless is "admin") is disallowing any
-   ; non-special messages in the reserved room.
+   ; non-special messages in the reserved room
+   ; (other than a special private "~<name>" for
+   ; one user name - so not "ALL" or "OTHERS" -
+   ; or a private edit which for such a message
+   ; is only permitted to be its sender's delete).
    SPECIAL=
       @ifeq "$PREFIX" "$SYSTEM_PREFIX_ENCODED"
       SPECIAL=1
@@ -75,7 +79,27 @@ POS=@strpos:_:$ROOM
       @ifeq "$ROOM" "$RESERVED_ROOM"
          @ifneq "$USER_NAME" "admin"
             @ifndef $SPECIAL
-            ERROR=Normal messages for this room are disallowed.
+            RESERVED_OKAY=
+            RESERVED_PAIRED=@strpos:~:$NAMES
+               @ifdef $RESERVED_PAIRED
+               .regex "^(~[-a-z0-9]+)$$" "$NAMES"
+                  @ifeq "$OUTPUT" "$NAMES"
+                  RESERVED_OKAY=1
+                  @endif
+               @endif
+
+               @ifndef $RESERVED_OKAY
+                  @ifeq "$PREFIX" "$PRIVATE_PREFIX_ENCODED"
+                  .regex "^([0-9]{13})$$" "$NAMES"
+                     @ifeq "$OUTPUT" "$NAMES"
+                     RESERVED_OKAY=1
+                     @endif
+                  @endif
+               @endif
+
+               @ifndef $RESERVED_OKAY
+               ERROR=Normal messages for this room are disallowed.
+               @endif
             @endif
          @endif
       @endif
