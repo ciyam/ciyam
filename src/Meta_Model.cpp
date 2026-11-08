@@ -8064,6 +8064,7 @@ Meta_Model::Meta_Model( )
 Meta_Model::~Meta_Model( )
 {
    cleanup( );
+
    delete p_impl;
 }
 

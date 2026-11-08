@@ -4856,6 +4856,7 @@ Meta_Field::Meta_Field( )
 Meta_Field::~Meta_Field( )
 {
    cleanup( );
+
    delete p_impl;
 }
 

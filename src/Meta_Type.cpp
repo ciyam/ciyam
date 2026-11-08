@@ -2350,6 +2350,7 @@ Meta_Type::Meta_Type( )
 Meta_Type::~Meta_Type( )
 {
    cleanup( );
+
    delete p_impl;
 }
 

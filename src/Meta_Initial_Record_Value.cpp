@@ -912,6 +912,7 @@ Meta_Initial_Record_Value::Meta_Initial_Record_Value( )
 Meta_Initial_Record_Value::~Meta_Initial_Record_Value( )
 {
    cleanup( );
+
    delete p_impl;
 }
 

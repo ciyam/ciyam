@@ -1352,6 +1352,7 @@ Meta_Enum_Item::Meta_Enum_Item( )
 Meta_Enum_Item::~Meta_Enum_Item( )
 {
    cleanup( );
+
    delete p_impl;
 }
 

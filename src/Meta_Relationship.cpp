@@ -2710,6 +2710,7 @@ Meta_Relationship::Meta_Relationship( )
 Meta_Relationship::~Meta_Relationship( )
 {
    cleanup( );
+
    delete p_impl;
 }
 

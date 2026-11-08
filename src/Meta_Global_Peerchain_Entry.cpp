@@ -1660,6 +1660,7 @@ Meta_Global_Peerchain_Entry::Meta_Global_Peerchain_Entry( )
 Meta_Global_Peerchain_Entry::~Meta_Global_Peerchain_Entry( )
 {
    cleanup( );
+
    delete p_impl;
 }
 

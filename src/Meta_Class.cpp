@@ -5637,6 +5637,7 @@ Meta_Class::Meta_Class( )
 Meta_Class::~Meta_Class( )
 {
    cleanup( );
+
    delete p_impl;
 }
 

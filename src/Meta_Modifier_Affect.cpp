@@ -1432,6 +1432,7 @@ Meta_Modifier_Affect::Meta_Modifier_Affect( )
 Meta_Modifier_Affect::~Meta_Modifier_Affect( )
 {
    cleanup( );
+
    delete p_impl;
 }
 

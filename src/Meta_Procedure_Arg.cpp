@@ -1489,6 +1489,7 @@ Meta_Procedure_Arg::Meta_Procedure_Arg( )
 Meta_Procedure_Arg::~Meta_Procedure_Arg( )
 {
    cleanup( );
+
    delete p_impl;
 }
 

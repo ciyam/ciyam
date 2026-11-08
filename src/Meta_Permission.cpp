@@ -1495,6 +1495,7 @@ Meta_Permission::Meta_Permission( )
 Meta_Permission::~Meta_Permission( )
 {
    cleanup( );
+
    delete p_impl;
 }
 

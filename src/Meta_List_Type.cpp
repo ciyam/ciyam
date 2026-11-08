@@ -1032,6 +1032,7 @@ Meta_List_Type::Meta_List_Type( )
 Meta_List_Type::~Meta_List_Type( )
 {
    cleanup( );
+
    delete p_impl;
 }
 

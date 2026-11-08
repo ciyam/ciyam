@@ -1530,6 +1530,7 @@ Meta_Procedure::Meta_Procedure( )
 Meta_Procedure::~Meta_Procedure( )
 {
    cleanup( );
+
    delete p_impl;
 }
 

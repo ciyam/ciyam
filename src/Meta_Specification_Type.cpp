@@ -6645,6 +6645,7 @@ Meta_Specification_Type::Meta_Specification_Type( )
 Meta_Specification_Type::~Meta_Specification_Type( )
 {
    cleanup( );
+
    delete p_impl;
 }
 

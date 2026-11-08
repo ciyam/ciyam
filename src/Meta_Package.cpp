@@ -2963,6 +2963,7 @@ Meta_Package::Meta_Package( )
 Meta_Package::~Meta_Package( )
 {
    cleanup( );
+
    delete p_impl;
 }
 

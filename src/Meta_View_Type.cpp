@@ -806,6 +806,7 @@ Meta_View_Type::Meta_View_Type( )
 Meta_View_Type::~Meta_View_Type( )
 {
    cleanup( );
+
    delete p_impl;
 }
 

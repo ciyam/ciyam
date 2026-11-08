@@ -1646,6 +1646,7 @@ Meta_List_Field_Type::Meta_List_Field_Type( )
 Meta_List_Field_Type::~Meta_List_Field_Type( )
 {
    cleanup( );
+
    delete p_impl;
 }
 

@@ -1337,6 +1337,7 @@ Meta_Modifier::Meta_Modifier( )
 Meta_Modifier::~Meta_Modifier( )
 {
    cleanup( );
+
    delete p_impl;
 }
 

@@ -1478,6 +1478,7 @@ Meta_Workgroup::Meta_Workgroup( )
 Meta_Workgroup::~Meta_Workgroup( )
 {
    cleanup( );
+
    delete p_impl;
 }
 

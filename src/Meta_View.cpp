@@ -2781,6 +2781,7 @@ Meta_View::Meta_View( )
 Meta_View::~Meta_View( )
 {
    cleanup( );
+
    delete p_impl;
 }
 

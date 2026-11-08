@@ -1024,6 +1024,7 @@ Meta_Application_Script::Meta_Application_Script( )
 Meta_Application_Script::~Meta_Application_Script( )
 {
    cleanup( );
+
    delete p_impl;
 }
 

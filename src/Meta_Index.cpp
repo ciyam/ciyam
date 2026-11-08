@@ -1778,6 +1778,7 @@ Meta_Index::Meta_Index( )
 Meta_Index::~Meta_Index( )
 {
    cleanup( );
+
    delete p_impl;
 }
 

@@ -3832,6 +3832,7 @@ Meta_Package_Option::Meta_Package_Option( )
 Meta_Package_Option::~Meta_Package_Option( )
 {
    cleanup( );
+
    delete p_impl;
 }
 

@@ -4235,6 +4235,7 @@ Meta_View_Field::Meta_View_Field( )
 Meta_View_Field::~Meta_View_Field( )
 {
    cleanup( );
+
    delete p_impl;
 }
 
