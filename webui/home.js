@@ -3124,7 +3124,6 @@ function render_people( )
       pill.textContent = { admin: "Administrator", active: "Active", unclaimed: "Not yet claimed" }[ person.status ];
       pill.classList.add( "account-pill--" + person.status );
 
-      var remove = row.querySelector( ".account-remove" );
       var confirm = row.querySelector( ".account-confirm" );
 
       // NOTE: Named, not by PIN - the PIN may be hidden.
