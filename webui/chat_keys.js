@@ -555,6 +555,7 @@ async function chat_keys_read( )
    g_owner_away_checked = { };
    g_owner_away_members = { };
    g_owner_codes_told = { };
+   g_keyless_deleted = { };
 
    show_thread_title( );
    chat_render_room_key( );
@@ -589,6 +590,7 @@ function chat_keys_forget( )
    g_owner_away_checked = { };
    g_owner_away_members = { };
    g_owner_codes_told = { };
+   g_keyless_deleted = { };
 }
 
 // NOTE: The open room's other person, if it is a direct message the console would encrypt too - by its name, whoever else is in
@@ -1600,6 +1602,9 @@ var g_contact_opened = 0;
 // NOTE: Owners told once a sign in, for each room and member, that they need each other's codes ("chat_owner_send_keys_in( )").
 var g_owner_codes_told = { };
 
+// NOTE: The plain notes saying codes were needed already deleted - not asked to go again as the room is looked at before it is redrawn.
+var g_keyless_deleted = { };
+
 // NOTE: Whether "person"'s contact code is wanted here - this account's keys read, and no code kept for them.
 function chat_contact_missing( person )
 {
@@ -2305,7 +2310,9 @@ async function chat_owner_send_keys( quiet, invited )
 
          // NOTE: Their contact code here now - the plain note that said it was needed deleted, as no longer so (Ian, 2026-11-07:
          // members with the code still read it).
-         var stale = chat_keyless_note_uniques( person );
+         var stale = chat_keyless_note_uniques( person ).filter( function( unique ) { return !g_keyless_deleted[ unique ]; } );
+
+         stale.forEach( function( unique ) { g_keyless_deleted[ unique ] = true; } );
 
          if( stale.length > 0 )
             await chat_delete_key_messages( room, stale );
@@ -2430,13 +2437,19 @@ async function chat_owner_send_keys_away( )
       if( notes === null )
          return;
 
+      // NOTE: Those without a contact code here, said together once the rooms are looked through.
+      var needed = [ ];
+
       for( var i = 0; i < due.length; i++ )
       {
          if( read !== g_chat_keys_read )
             return;
 
-         await chat_owner_send_keys_in( due[ i ], notes );
+         await chat_owner_send_keys_in( due[ i ], notes, needed );
       }
+
+      if( needed.length > 0 )
+         show_alert( owner_codes_needed_text( needed ), "is-info" );
    }
    finally
    {
@@ -2447,7 +2460,7 @@ async function chat_owner_send_keys_away( )
    render_rooms( true );
 }
 
-async function chat_owner_send_keys_in( entry, notes )
+async function chat_owner_send_keys_in( entry, notes, needed )
 {
    var room = entry.room;
    var key = chat_room_key( room );
@@ -2498,7 +2511,7 @@ async function chat_owner_send_keys_in( entry, notes )
          {
             g_owner_codes_told[ room + "|" + person ] = true;
 
-            show_alert( owner_codes_needed_text( person, entry.name ), "is-info" );
+            needed.push( { person: person, room_name: entry.name } );
          }
 
          continue;

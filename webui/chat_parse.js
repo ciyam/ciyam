@@ -2464,10 +2464,32 @@ function contact_exchange_text( person, have_theirs, added )
 }
 
 // NOTE: Said to a room's owner as someone is found in it without their contact code here (Damon, 2026-11-08) - the way to it. Found
-// as they join, or at a sign in long after, so not said as joining.
-function owner_codes_needed_text( person, room_name )
+// as they join, or at a sign in long after, so not said as joining. Each of "needed" is { person, room_name }; all of them said in one,
+// as the rooms looked through together would otherwise each replace the last.
+function owner_codes_needed_text( needed )
 {
-   return "To pass " + person + " the key to " + room_name + ", exchange contact codes with them - from its Room key.";
+   if( needed.length === 1 )
+      return "To pass " + needed[ 0 ].person + " the key to " + needed[ 0 ].room_name + ", exchange contact codes with them - from Room key in "
+       + needed[ 0 ].room_name + ".";
+
+   var people = [ ];
+   var rooms = { };
+
+   needed.forEach( function( item )
+   {
+      if( !rooms.hasOwnProperty( item.person ) )
+      {
+         people.push( item.person );
+         rooms[ item.person ] = [ ];
+      }
+
+      rooms[ item.person ].push( item.room_name );
+   } );
+
+   return "To pass them room keys, exchange contact codes with " + people.map( function( person )
+   {
+      return person + " (" + rooms[ person ].join( ", " ) + ")";
+   } ).join( ", " ) + " - from Room key in each room.";
 }
 
 // NOTE: The owner's plain note to a member without their contact code (Damon, 2026-11-05) - the room is encrypted, and what its key

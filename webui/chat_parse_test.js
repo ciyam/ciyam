@@ -1216,8 +1216,11 @@ check( "exchanging contact codes with someone - neither, theirs here, theirs jus
  + " email or a call - or show it to them to scan. Then paste theirs here.",
  "You have damon's contact code - they need yours. Send yours another way you trust - Signal, email or a call - or show it to them to scan.",
  "damon is added. Once they have added yours too, room keys pass between you by themselves." ] );
-check( "- the owner told as someone joins without it", cp.owner_codes_needed_text( "tester-1", "Lunch" ),
- "To pass tester-1 the key to Lunch, exchange contact codes with them - from its Room key." );
+check( "- the owner told as someone joins without it", cp.owner_codes_needed_text( [ { person: "tester-1", room_name: "Lunch" } ] ),
+ "To pass tester-1 the key to Lunch, exchange contact codes with them - from Room key in Lunch." );
+check( "- several, found together at a sign in, said in one", cp.owner_codes_needed_text( [ { person: "tester-1", room_name: "Lunch" },
+ { person: "tester-2", room_name: "Lunch" }, { person: "tester-1", room_name: "Quiz" } ] ),
+ "To pass them room keys, exchange contact codes with tester-1 (Lunch, Quiz), tester-2 (Lunch) - from Room key in each room." );
 check( "the owner's plain note to a member without their contact code", cp.keyless_note_text( "damon" ),
  "This room is encrypted with a room key - exchange contact codes with damon to be given it." );
 check( "over a member's message box without the key - accept it, or exchange codes first", [ cp.member_keyless_text( "damon", true ),
