@@ -80,11 +80,17 @@ var review = [ "40712 admin", "20101 ", "51093 bob", "20401 alice", "35887 ", "n
 
 check( "admin first, then by name, then unclaimed by PIN", ap.parse_people( review, "40712" ).map( function( r ) { return r.pin + ":" + r.status; } ),
  [ "40712:admin", "20401:active", "51093:active", "20101:unclaimed", "35887:unclaimed" ] );
-check( "a row", ap.parse_people( review, "40712" )[ 1 ], { pin: "20401", name: "alice", you: false, status: "active" } );
+check( "a row", ap.parse_people( review, "40712" )[ 1 ], { pin: "20401", name: "alice", you: false, keys: "saved", status: "active" } );
 check( "admin is not in the review - added from the session", ap.parse_people( "20401 alice\n", "40712", "admin" ),
- [ { pin: "40712", name: "admin", you: true, status: "admin" }, { pin: "20401", name: "alice", you: false, status: "active" } ] );
+ [ { pin: "40712", name: "admin", you: true, status: "admin", keys: "" }, { pin: "20401", name: "alice", you: false, keys: "saved",
+ status: "active" } ] );
 check( "nobody, and no session", ap.parse_people( "", "" ), [ ] );
 check( "Windows line ends", ap.parse_people( "20401 alice\r\n35887 \r\n", "" ).map( function( r ) { return r.name; } ), [ "alice", "" ] );
+// NOTE: The keys state ending each name (Ian, 2026-11-07) - taken off it, and kept.
+check( "keys - none, not backed up, backed up; none for one unclaimed", ap.parse_people( "20401 alice?\n51093 bob!\n20202 carol\n35887 \n", "" )
+ .map( function( r ) { return r.name + ":" + r.keys; } ), [ "alice:none", "bob:unsaved", "carol:saved", ":" ] );
+check( "- said under the name", [ "none", "unsaved", "saved", "" ].map( ap.people_keys_text ),
+ [ "No keys yet", "Keys need backing up", "Keys backed up", "" ] );
 
 // --------------------------------------------------------------------
 heading( "a PIN admin chooses" );

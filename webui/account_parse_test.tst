@@ -24,6 +24,8 @@ ok   a row
 ok   admin is not in the review - added from the session
 ok   nobody, and no session
 ok   Windows line ends
+ok   keys - none, not backed up, backed up; none for one unclaimed
+ok   - said under the name
 
 == a PIN admin chooses =========================================
 ok   both

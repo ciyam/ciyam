@@ -89,10 +89,16 @@ function parse_join_reply( reply )
    return result;
 }
 
+// NOTE: The keys state ending a name in the users review (Ian, 2026-11-07 - "7dc5cf6d"): "?" none on the node, "!" not backed up
+// or changed since the backup; nothing after it, backed up as they are.
+const c_people_keys_none = "?";
+const c_people_keys_unsaved = "!";
+
 // NOTE: The users review, as text - a line per account, "<pin> <username>", with nothing after
 // the space for an account nobody has claimed. admin's own PIN is not in it - admin is not an
 // account in the system ODS - so it is added, as "own_name". admin comes first, then everyone
-// by name, then the unclaimed by PIN.
+// by name, then the unclaimed by PIN. Each row's "keys" - "none", "unsaved" or "saved" from the
+// name's end, or "" for one unclaimed and for admin added.
 function parse_people( text, own_pin, own_name )
 {
    var rows = [ ];
@@ -105,8 +111,19 @@ function parse_people( text, own_pin, own_name )
          return;
 
       var name = ( match[ 2 ] || "" ).trim( );
+      var keys = "";
 
-      var row = { pin: match[ 1 ], name: name, you: ( match[ 1 ] === own_pin ) };
+      if( name !== "" )
+      {
+         var mark = name.slice( -1 );
+
+         keys = ( mark === c_people_keys_none ) ? "none" : ( ( mark === c_people_keys_unsaved ) ? "unsaved" : "saved" );
+
+         if( keys !== "saved" )
+            name = name.slice( 0, -1 );
+      }
+
+      var row = { pin: match[ 1 ], name: name, you: ( match[ 1 ] === own_pin ), keys: keys };
 
       row.status = row.you ? "admin" : ( ( name === "" ) ? "unclaimed" : "active" );
 
@@ -114,7 +131,7 @@ function parse_people( text, own_pin, own_name )
    } );
 
    if( ( ( own_pin || "" ) !== "" ) && !rows.some( function( row ) { return row.you; } ) )
-      rows.push( { pin: own_pin, name: own_name || "", you: true, status: "admin" } );
+      rows.push( { pin: own_pin, name: own_name || "", you: true, status: "admin", keys: "" } );
 
    var rank = { admin: 0, active: 1, unclaimed: 2 };
 
@@ -130,6 +147,12 @@ function parse_people( text, own_pin, own_name )
    } );
 
    return rows;
+}
+
+// NOTE: Under a person's name in People - their keys as the users review says (Ian, 2026-11-07), "" if it says nothing.
+function people_keys_text( keys )
+{
+   return { none: "No keys yet", unsaved: "Keys need backing up", saved: "Keys backed up" }[ keys ] || "";
 }
 
 // NOTE: The options for "create user" with a PIN admin chooses. Both parts are optional:
@@ -592,6 +615,7 @@ if( typeof module !== "undefined" )
       normalise_public_key: normalise_public_key,
       contact_code: contact_code,
       parse_contact_code: parse_contact_code,
+      people_keys_text: people_keys_text,
       contact_problem: contact_problem,
       exchange_contact_problem: exchange_contact_problem,
       contact_rows: contact_rows,

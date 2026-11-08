@@ -3093,6 +3093,9 @@ function render_people( )
          avatar.style.background = "var(--color-sender-" + sender_colour_index( person.name ) + ")";
 
          name.textContent = person.name;
+
+         // NOTE: Their keys as the node says (Ian, 2026-11-07) - none yet, to back up, or backed up as they are.
+         row.querySelector( ".account-sub" ).textContent = people_keys_text( person.keys );
       }
       else
       {
@@ -3287,6 +3290,10 @@ async function do_user_keys( person )
       people_alert( ( person.you ? "Your" : person.name + "'s" ) + " keys are restored from the backup.", false );
    else
       people_alert( ( person.you ? "Your" : person.name + "'s" ) + " keys are backed up - the backup is the keys as they are now.", false );
+
+   // NOTE: Read again, so the keys said under their name are as they are now.
+   if( problem === "" )
+      load_people( );
 }
 
 async function do_reset_password( person )
