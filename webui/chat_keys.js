@@ -548,10 +548,12 @@ async function chat_keys_read( )
    g_chat_keys_unread = unread;
    g_owner_key_looked = { };
    g_room_key_later = { };
+   g_room_key_waiting = { };
    g_owner_key_unopened = { };
    g_owner_keys_checked = { };
    g_owner_key_states = { };
    g_owner_away_checked = { };
+   g_owner_away_members = { };
    g_owner_codes_told = { };
 
    show_thread_title( );
@@ -580,10 +582,12 @@ function chat_keys_forget( )
    g_room_keys_tried = { };
    g_owner_key_looked = { };
    g_room_key_later = { };
+   g_room_key_waiting = { };
    g_owner_key_unopened = { };
    g_owner_keys_checked = { };
    g_owner_key_states = { };
    g_owner_away_checked = { };
+   g_owner_away_members = { };
    g_owner_codes_told = { };
 }
 
@@ -757,6 +761,15 @@ function chat_member_keyless_kind( )
       else if( body.dataset.text === notice )
          told = true;
    } );
+
+   // NOTE: The owner's note with the key is in the reserved room since 2026-11-08 ("c_key_notes_room") - found there for this room; or,
+   // without the owner's code, a sealed note from them there that cannot be opened, so for which room is not known. Taken as this
+   // one, so nothing is posted in the clear - and once the codes are exchanged, that no longer holds.
+   if( g_room_key_waiting[ g_room ] && chat_has_owner_key( ) )
+      return "accept";
+
+   if( !chat_has_owner_key( ) && chat_owner_note_in_notes( g_room_owner ) )
+      sealed = true;
 
    if( sealed && chat_has_owner_key( ) )
       return "accept";
@@ -1283,7 +1296,7 @@ async function do_make_room_key( )
    }
 
    if( !await ask_dialog( { title: "Make a key for this room?", text: "From now on your messages here are encrypted - each member is"
-    + " passed the key here and asked to accept it.", yes: "Make the key" } ) || ( g_room !== room ) )
+    + " passed the key and asked to accept it.", yes: "Make the key" } ) || ( g_room !== room ) )
       return;
 
    // NOTE: Passed to the members straight away (Damon, 2026-11-05) - as a new room's is to each who joins.
@@ -1344,7 +1357,7 @@ async function chat_encrypt_group( room, people )
    if( text !== "" )
       chat_room_key_sent( room, text );
    else if( room_key_recipients( people, ciyam.username ).length > 0 )
-      chat_room_key_sent( room, "Each member is passed it here as they join - and asked to accept it." );
+      chat_room_key_sent( room, "Each member is passed it - and asked to accept it." );
 }
 
 // NOTE: Said in the Room key dialog, and in the alert after "lead" (what was done, an invitation say) - "Room key:" there, as the
@@ -1357,9 +1370,9 @@ function chat_room_key_sent( room, text, lead )
    show_alert( ( lead ? lead + " " : "" ) + "Room key: " + text, "is-info" );
 }
 
-// NOTE: Every new room keyed (Ian, 2026-10-28) - a key made as it is created and passed to each invited in the room as they join
-// (Damon, 2026-11-05), as a group's is ("chat_encrypt_group( )"). Without keys of one's own the room is made as it was, Room Details saying why it is
-// not encrypted.
+// NOTE: Every new room keyed (Ian, 2026-10-28) - a key made as it is created and passed to each invited, as a group's is
+// ("chat_encrypt_group( )"): as they join (Damon, 2026-11-05), and since 2026-11-08 at once, before they have (Ian). Without keys of
+// one's own the room is made as it was, Room Details saying why it is not encrypted.
 async function chat_key_new_room( room, invitees )
 {
    var entry = find_room( room );
@@ -1469,7 +1482,7 @@ async function do_send_room_key( )
 {
    var room = g_room;
 
-   if( !await ask_dialog( { title: "Send the key to each member?", text: "Each member is passed it again here, in a note only they can"
+   if( !await ask_dialog( { title: "Send the key to each member?", text: "Each member is passed it again, in a note only they can"
     + " open, and asked to accept it.", yes: "Send it" } ) || ( g_room !== room ) )
       return;
 
@@ -1487,9 +1500,9 @@ async function do_send_room_key( )
       chat_room_key_sent( room, text );
 }
 
-// NOTE: Passed to each member as a note in the room since 2026-11-05 (Damon), not in a direct message - and only to those who have joined
-// it, so anyone invited is given it as they join, while the owner has the room open or the next time they open it
-// ("chat_owner_send_keys( )"). "people" looked at afresh. What came of it, or "" for nothing to say.
+// NOTE: Passed to each as a note, not in a direct message (Damon, 2026-11-05) - since 2026-11-08 in the reserved room (Ian), so to
+// "people" whether or not they have joined, the members too ("chat_owner_send_keys( )"). "people" looked at afresh. What came of it,
+// or "" for nothing to say.
 async function chat_send_room_key( room, people )
 {
    if( ( chat_room_key( room ) === "" ) || ( room !== g_room ) )
@@ -1497,7 +1510,7 @@ async function chat_send_room_key( room, people )
 
    ( people || [ ] ).forEach( function( person ) { delete g_owner_keys_checked[ room + "|" + person ]; } );
 
-   return await chat_owner_send_keys( true );
+   return await chat_owner_send_keys( true, people );
 }
 
 function do_open_add_room_key( )
@@ -1850,6 +1863,10 @@ var g_owner_key_looked = { };
 // NOTE: Rooms whose key was put off with "Not now" - asked again the next time the room is opened ("chat_look_for_owner_key( )").
 var g_room_key_later = { };
 
+// NOTE: Rooms whose key from the owner was found waiting in the reserved room, and not yet added - so the room is known to be encrypted
+// ("chat_member_keyless_kind( )"), the note not being in it.
+var g_room_key_waiting = { };
+
 // NOTE: Rooms whose owner's messages would not open, said once a sign in ("chat_look_for_owner_key( )").
 var g_owner_key_unopened = { };
 
@@ -1938,7 +1955,7 @@ async function chat_sealed_opened( messages, sender, secret )
 // they stay in the room waits for it to be opened again (Damon, 2026-11-03, after review). Since 2026-11-04 at each poll too, but
 // read only once the direct message has something new - the key often comes a moment after the room is joined (Damon accepting
 // that a message arriving there meanwhile is marked read). The owner's own room has its members sent the key instead
-// ("chat_owner_send_keys( )") - not at a poll ("member_only").
+// ("chat_owner_send_keys( )") - not at a poll ("member_only"). The notes are in the reserved room since 2026-11-08 ("c_key_notes_room").
 async function chat_look_for_owner_key( member_only )
 {
    var room = g_room;
@@ -1980,15 +1997,17 @@ async function chat_look_for_owner_key( member_only )
    var owner = entry.owner;
    var secret = chat_secret_with( owner );
 
-   // NOTE: The owner's note with the key is in the room itself, to this member only (Damon, 2026-11-05 - no direct message to
-   // accept first) - read again once the room has something new.
-   if( ( secret === "" ) || ( g_owner_key_looked[ room ] === room + "/" + entry.total ) )
+   // NOTE: The owner's note with the key is in the reserved room, to this member only (Ian, 2026-11-08 - "c_key_notes_room") - read
+   // again once that has something new.
+   var looked = room + "/" + chat_key_notes_total( );
+
+   if( ( secret === "" ) || ( g_owner_key_looked[ room ] === looked ) )
       return;
 
-   g_owner_key_looked[ room ] = room + "/" + entry.total;
+   g_owner_key_looked[ room ] = looked;
 
    var read = g_chat_keys_read;
-   var found = await chat_dm_opened( room, owner, secret );
+   var found = await chat_dm_opened( c_key_notes_room, owner, secret );
 
    // NOTE: Not read - looked for again the next time the room is opened.
    if( found === null )
@@ -2011,14 +2030,23 @@ async function chat_look_for_owner_key( member_only )
    {
       g_owner_key_unopened[ room ] = true;
 
-      show_alert( "The room key " + owner + " passed you here can't be opened - one of you has new keys since you added each other."
-       + " Add each other's contact code again, under Contacts on My account.", "is-error" );
+      show_alert( "The room key " + owner + " passed you for " + entry.name + " can't be opened - one of you has new keys since you added"
+       + " each other. Add each other's contact code again, under Contacts on My account.", "is-error" );
 
       return;
    }
 
    // NOTE: Signed out, or the key added meanwhile - in another tab, say.
-   if( ( key === "" ) || ( chat_room_key( room ) !== "" ) || g_room_keys_tried.hasOwnProperty( whole ) )
+   if( ( key === "" ) || ( chat_room_key( room ) !== "" ) )
+      return;
+
+   // NOTE: Known to be encrypted now, its note being elsewhere - the bar over the message box says so ("chat_member_keyless_kind( )").
+   g_room_key_waiting[ room ] = true;
+
+   if( g_room === room )
+      show_encryption_action( );
+
+   if( g_room_keys_tried.hasOwnProperty( whole ) )
       return;
 
    g_room_keys_tried[ whole ] = true;
@@ -2035,6 +2063,9 @@ async function chat_look_for_owner_key( member_only )
       g_room_key_later[ room ] = true;
 
       delete g_room_keys_tried[ whole ];
+
+      if( g_room === room )
+         show_encryption_action( );
 
       return;
    }
@@ -2066,21 +2097,22 @@ async function chat_look_for_owner_key( member_only )
 
 // NOTE: The room's key already here, and the owner's note for it there all the same - answered with a receipt if it has none
 // ("member_receipt_due( )", Ian, 2026-11-07: after a restore from scratch the owner passes it again, and would otherwise count
-// this member as without it for good). The room read only when it shows a sealed private message from the owner, and only once
-// it has something new.
+// this member as without it for good). The reserved room read only when it holds a sealed private message from the owner, and only
+// once it has something new.
 async function chat_answer_held_key( room, entry )
 {
    var owner = entry.owner;
    var secret = chat_secret_with( owner );
    var key = chat_room_key( room );
+   var looked = room + "/" + chat_key_notes_total( );
 
-   if( ( secret === "" ) || ( g_owner_key_looked[ room ] === room + "/" + entry.total ) || !chat_owner_note_shown( owner ) )
+   if( ( secret === "" ) || ( g_owner_key_looked[ room ] === looked ) || !chat_owner_note_waiting( owner ) )
       return;
 
-   g_owner_key_looked[ room ] = room + "/" + entry.total;
+   g_owner_key_looked[ room ] = looked;
 
    var read = g_chat_keys_read;
-   var found = await chat_dm_opened( room, [ owner, ciyam.username ], secret );
+   var found = await chat_dm_opened( c_key_notes_room, [ owner, ciyam.username ], secret );
 
    if( found === null )
    {
@@ -2096,12 +2128,19 @@ async function chat_answer_held_key( room, entry )
       await chat_send_room_key_receipt( owner, room, key );
 }
 
-// NOTE: Whether the open room shows a sealed private message from "owner" - a note with a key, perhaps.
-function chat_owner_note_shown( owner )
+// NOTE: Whether the reserved room, as the invitations' poll last read it, holds a sealed private message from "owner" - a note with a
+// key, perhaps. Not known for admin, whose chat does not read it for invitations, nor before its first read - looked at as if it might.
+function chat_owner_note_waiting( owner )
 {
-   return Array.prototype.some.call( document.querySelectorAll( "#message_list .chat-message-body" ), function( body )
+   return ciyam.is_admin || !g_invitations_known || chat_owner_note_in_notes( owner );
+}
+
+// NOTE: The same, only as far as it is known.
+function chat_owner_note_in_notes( owner )
+{
+   return g_invite_messages.some( function( message )
    {
-      return ( body.dataset.private === "1" ) && ( body.dataset.sender === owner ) && ( message_prefix( body.dataset.text || "" ) === "X" );
+      return ( message.kind === c_kind_chat ) && message.private && ( message.sender === owner ) && ( message_prefix( message.text ) === "X" );
    } );
 }
 
@@ -2111,13 +2150,13 @@ function room_key_mark( key )
    return hex_sha256( "room_key:" + key ).substr( 0, 8 );
 }
 
-// NOTE: The key the owner sent added - a receipt sent back to them alone in the room, sealed as the key was, so their chat can delete
-// the note that carried it ("chat_owner_send_keys( )"). Not said if it could not be sent: the key is still in the note.
+// NOTE: The key the owner sent added - a receipt sent back to them alone where the key came, sealed as the key was, so their chat can
+// delete the note that carried it ("chat_owner_send_keys( )"). Not said if it could not be sent: the key is still in the note.
 async function chat_send_room_key_receipt( owner, room, key )
 {
    try
    {
-      await chat_send_key_note( room, owner, room_key_receipt_text( room, room_key_mark( key ) ) );
+      await chat_send_key_note( c_key_notes_room, owner, room_key_receipt_text( room, room_key_mark( key ) ) );
    }
    catch( e )
    {
@@ -2159,10 +2198,10 @@ async function chat_send_plain_note( room, person, text )
 }
 
 // NOTE: A private message in "room" to "person" alone (and the sender), sealed with the secret the two share - how a room key is
-// passed to a member, and its receipt sent back (Damon, 2026-11-05: in the room, as a folded note, rather than in a direct message
-// that has to be accepted first). Posted "for=~<person>" (Ian, 2026-11-06), so the node names both ("_<sender>_<person>_") and
-// the console opens it as a direct message's; the sender gets a copy, and only they may delete it. "sent", "no_key" (nothing to
-// seal it with) or "failed".
+// passed to a member, and its receipt sent back (Damon, 2026-11-05: as a folded note, rather than in a direct message that has to be
+// accepted first; since 2026-11-08 in the reserved room, "c_key_notes_room"). Posted "for=~<person>" (Ian, 2026-11-06), so the node
+// names both ("_<sender>_<person>_") and the console opens it as a direct message's; the sender gets a copy, and only they may
+// delete it. "sent", "no_key" (nothing to seal it with) or "failed".
 async function chat_send_key_note( room, person, text )
 {
    var sealing = await chat_seal_for( person, text );
@@ -2193,10 +2232,24 @@ var g_owner_keys_checked = { };
 var g_owner_key_states = { };
 var g_owner_keys_sending = false;
 
-// NOTE: The owner's open room, if it has a key here - each member with an open direct message sent the key, unless the owner's own
-// sealed messages there already have it. Nothing kept anywhere, so whichever of the owner's browsers opens the room does it. As the
-// room is first read, once the keys are read, and as someone joins it. Said only when something was sent.
-async function chat_owner_send_keys( quiet )
+// NOTE: Where a room key's notes and their receipts go (Ian, 2026-11-08: a sealed key is nearly the largest message, so a new room's
+// invitation could not carry one for each invited) - each its own "~" note in the reserved room, which everyone is in, as the key
+// names its room. So it is passed as soon as the owner has someone's contact code, joined or not.
+const c_key_notes_room = c_reserved_room;
+
+// NOTE: The reserved room's total in the room list - what moves as a note or a receipt arrives there.
+function chat_key_notes_total( )
+{
+   var entry = find_room( c_key_notes_room );
+
+   return entry ? String( entry.total ) : "";
+}
+
+// NOTE: The owner's open room, if it has a key here - each member, and each of "invited" (not yet joined, perhaps), sent the key
+// unless the owner's own sealed notes already have it. Nothing kept anywhere, so whichever of the owner's browsers opens the room does
+// it. As the room is first read, once the keys are read, as someone joins it, and as people are invited. Said only when something was
+// sent.
+async function chat_owner_send_keys( quiet, invited )
 {
    var room = g_room;
    var entry = ( room !== "" ) ? find_room( room ) : null;
@@ -2208,7 +2261,9 @@ async function chat_owner_send_keys( quiet )
 
    var read = g_chat_keys_read;
    var whole = room_key_text( room, key );
-   var people = room_key_recipients( g_members.map( function( member ) { return member.name; } ), ciyam.username );
+   var members = g_members.map( function( member ) { return member.name; } );
+   var people = room_key_recipients( members.concat( invited || [ ] ), ciyam.username );
+   var notes = null;
    var outcomes = [ ];
 
    if( !g_owner_key_states.hasOwnProperty( room ) )
@@ -2228,17 +2283,21 @@ async function chat_owner_send_keys( quiet )
          // NOTE: Without their contact code there is nothing to seal it with - said, and tried again as the room changes.
          if( secret === "" )
          {
-            if( g_owner_keys_checked[ room + "|" + person ] !== "no_key" )
+            // NOTE: Looked at again as an invited person joins - the note below is only for those in it.
+            var joined = ( members.indexOf( person ) >= 0 );
+            var no_key = joined ? "no_key" : "no_key_invited";
+
+            if( g_owner_keys_checked[ room + "|" + person ] !== no_key )
             {
                outcomes.push( { name: person, how: "no_key" } );
 
                // NOTE: Told, in a plain note to them alone, that the room is encrypted and what the key needs (Damon, 2026-11-05: a
                // member who joins after the last encrypted message sees none, so nothing else would say so) - once, if not there.
-               if( !chat_keyless_note_shown( person ) )
+               if( joined && !chat_keyless_note_shown( person ) )
                   await chat_send_plain_note( room, person, keyless_note_text( ciyam.username ) );
             }
 
-            g_owner_keys_checked[ room + "|" + person ] = "no_key";
+            g_owner_keys_checked[ room + "|" + person ] = no_key;
             states[ person ] = "needs_codes";
 
             continue;
@@ -2251,19 +2310,22 @@ async function chat_owner_send_keys( quiet )
          if( stale.length > 0 )
             await chat_delete_key_messages( room, stale );
 
-         var marker = whole + "|" + room + "/" + entry.total;
+         var marker = whole + "|" + room + "/" + entry.total + "|" + chat_key_notes_total( );
 
          if( g_owner_keys_checked[ room + "|" + person ] === marker )
             continue;
 
-         // NOTE: The room itself read for the notes to them and their receipt (Damon, 2026-11-05 - no direct message).
-         var found = await chat_dm_opened( room, [ ciyam.username, person ], secret );
+         // NOTE: The reserved room read for the notes to them and their receipt - once for everyone ("c_key_notes_room").
+         if( notes === null )
+            notes = await chat_room_read_quietly( c_key_notes_room );
 
          if( ( read !== g_chat_keys_read ) || ( g_room !== room ) || ( chat_room_key( room ) !== key ) )
             return "";
 
-         if( found === null )
+         if( notes === null )
             continue;
+
+         var found = await chat_sealed_opened( notes.messages, [ ciyam.username, person ], secret );
 
          g_owner_keys_checked[ room + "|" + person ] = marker;
 
@@ -2275,7 +2337,7 @@ async function chat_owner_send_keys( quiet )
          {
             states[ person ] = "has";
 
-            await chat_delete_key_messages( room, delivery.remove );
+            await chat_delete_key_messages( c_key_notes_room, delivery.remove );
 
             continue;
          }
@@ -2287,7 +2349,7 @@ async function chat_owner_send_keys( quiet )
             continue;
          }
 
-         var how = await chat_send_key_note( room, person, whole );
+         var how = await chat_send_key_note( c_key_notes_room, person, whole );
 
          if( read !== g_chat_keys_read )
             return "";
@@ -2323,15 +2385,26 @@ async function chat_owner_send_keys( quiet )
    return text;
 }
 
-// NOTE: For each owned room with a key here and not open, as "room/total" when last looked through ("chat_owner_send_keys_away( )").
+// NOTE: For each owned room with a key here and not open, as "chat_owner_away_marker( )" was when last looked through
+// ("chat_owner_send_keys_away( )").
 var g_owner_away_checked = { };
 var g_owner_away_running = false;
 
-// NOTE: The owner's other rooms with a key here - each looked through once it has changed, and those who have joined passed the key
-// as "chat_owner_send_keys( )" does for the open room (Damon, 2026-11-07: Ian, in one browser, made a poll and signed out, and its
-// voters, joining later, were never given its key - the owner never opened the room again). Damon accepting that a room looked
-// through is marked read. A member without a contact code here is left to the open room's look, which tells them plainly. Called
-// as the room list is read; quietly, one room at a time.
+// NOTE: For each of those rooms, its members as last read - { total, names } - so a room is read again only once it has changed, not
+// each time a note or receipt arrives in the reserved room.
+var g_owner_away_members = { };
+
+// NOTE: A room as last looked through - its own total, and the reserved room's, where its notes and receipts are.
+function chat_owner_away_marker( entry )
+{
+   return entry.room + "/" + entry.total + "|" + chat_key_notes_total( );
+}
+
+// NOTE: The owner's other rooms with a key here - each looked through once it or the reserved room has changed, and those who have
+// joined passed the key as "chat_owner_send_keys( )" does for the open room (Damon, 2026-11-07: Ian, in one browser, made a poll and
+// signed out, and its voters, joining later, were never given its key - the owner never opened the room again). Damon accepting that
+// a room looked through is marked read. A member without a contact code here is left to the open room's look, which tells them
+// plainly. Called as the room list is read; quietly, one room at a time.
 async function chat_owner_send_keys_away( )
 {
    if( !g_chat_keys || g_chat_keys_unread || g_owner_away_running || ( ciyam.username === "" ) )
@@ -2341,7 +2414,7 @@ async function chat_owner_send_keys_away( )
    var due = g_rooms.filter( function( entry )
    {
       return ( entry.owner === ciyam.username ) && ( entry.room !== g_room ) && ( chat_room_key( entry.room ) !== "" )
-       && can_have_room_key( entry.room, entry.name ) && ( g_owner_away_checked[ entry.room ] !== entry.room + "/" + entry.total );
+       && can_have_room_key( entry.room, entry.name ) && ( g_owner_away_checked[ entry.room ] !== chat_owner_away_marker( entry ) );
    } );
 
    if( due.length === 0 )
@@ -2351,12 +2424,18 @@ async function chat_owner_send_keys_away( )
 
    try
    {
+      // NOTE: The notes and receipts for all of them in one read.
+      var notes = await chat_room_read_quietly( c_key_notes_room );
+
+      if( notes === null )
+         return;
+
       for( var i = 0; i < due.length; i++ )
       {
          if( read !== g_chat_keys_read )
             return;
 
-         await chat_owner_send_keys_in( due[ i ] );
+         await chat_owner_send_keys_in( due[ i ], notes );
       }
    }
    finally
@@ -2368,26 +2447,37 @@ async function chat_owner_send_keys_away( )
    render_rooms( true );
 }
 
-async function chat_owner_send_keys_in( entry )
+async function chat_owner_send_keys_in( entry, notes )
 {
    var room = entry.room;
    var key = chat_room_key( room );
    var whole = room_key_text( room, key );
    var read = g_chat_keys_read;
+   var known = g_owner_away_members[ room ];
+   var names = ( known && ( known.total === entry.total ) ) ? known.names : null;
 
-   g_owner_away_checked[ room ] = room + "/" + entry.total;
+   g_owner_away_checked[ room ] = chat_owner_away_marker( entry );
 
-   var result = await chat_room_read_quietly( room );
-
-   if( ( result === null ) || ( read !== g_chat_keys_read ) || ( chat_room_key( room ) !== key ) || ( g_room === room ) )
+   if( names === null )
    {
+      var result = await chat_room_read_quietly( room );
+
       if( result === null )
+      {
          delete g_owner_away_checked[ room ];
 
-      return;
+         return;
+      }
+
+      names = result.members.map( function( member ) { return member.name; } );
+
+      g_owner_away_members[ room ] = { total: entry.total, names: names };
    }
 
-   var people = room_key_recipients( result.members.map( function( member ) { return member.name; } ), ciyam.username );
+   if( ( read !== g_chat_keys_read ) || ( chat_room_key( room ) !== key ) || ( g_room === room ) )
+      return;
+
+   var people = room_key_recipients( names, ciyam.username );
 
    if( !g_owner_key_states.hasOwnProperty( room ) )
       g_owner_key_states[ room ] = { };
@@ -2414,7 +2504,7 @@ async function chat_owner_send_keys_in( entry )
          continue;
       }
 
-      var found = await chat_sealed_opened( result.messages, [ ciyam.username, person ], secret );
+      var found = await chat_sealed_opened( notes.messages, [ ciyam.username, person ], secret );
 
       if( ( read !== g_chat_keys_read ) || ( chat_room_key( room ) !== key ) )
          return;
@@ -2425,13 +2515,13 @@ async function chat_owner_send_keys_in( entry )
       {
          states[ person ] = "has";
 
-         await chat_delete_key_messages( room, delivery.remove );
+         await chat_delete_key_messages( c_key_notes_room, delivery.remove );
       }
       else if( delivery.state === "sent" )
          states[ person ] = "passed";
       else
       {
-         var how = await chat_send_key_note( room, person, whole );
+         var how = await chat_send_key_note( c_key_notes_room, person, whole );
 
          states[ person ] = ( how === "sent" ) ? "passed" : ( ( how === "no_key" ) ? "needs_codes" : "failed" );
 

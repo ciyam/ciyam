@@ -2371,8 +2371,8 @@ function group_encryption_note( keys, keyed )
 }
 
 // NOTE: Where a member's room key comes from, for a room without one here (Damon, 2026-11-02: "If the owner has a room key, they
-// can send it to you" did not say where it comes, nor that each needs the other's public key). Since 2026-11-05 it is passed to
-// them here, in the room, once the owner is next in the chat. "room_owner" its owner's name ("the owner" if not known); "known"
+// can send it to you" did not say where it comes, nor that each needs the other's public key). Since 2026-11-08 it is passed as
+// soon as the owner has their contact code, joined or not (Ian). "room_owner" its owner's name ("the owner" if not known); "known"
 // whether their public key is here.
 function member_key_hint( room_owner, known )
 {
@@ -2381,7 +2381,7 @@ function member_key_hint( room_owner, known )
    if( !known )
       return "For a room key from " + name + ", each of you needs the other in Contacts on My account";
 
-   return "A room key from " + name + " is passed to you here once they are next in the chat, and you are asked to accept it";
+   return "A room key from " + name + " is passed to you once they have your contact code too, and you are asked to accept it";
 }
 
 // NOTE: The badge at the right of a room's bar and the row at the top of its details (Damon, 2026-11-02: in the line under the
@@ -2540,9 +2540,9 @@ function room_key_sent_text( outcomes )
    if( by.failed.length > 0 )
       parts.push( "Could not send it to " + name_list( by.failed ) + " - try again." );
 
-   // NOTE: Nobody but the owner yet - those invited are sent it as they join ("chat_owner_send_keys( )"), Damon having pressed Send
-   // before anyone had (2026-11-03) and seen nothing come of it.
-   return ( parts.length > 0 ) ? parts.join( " " ) : "No one else has joined yet - each is sent it as they join, or when you next open this room.";
+   // NOTE: Nobody but the owner yet (Damon having pressed Send before anyone was in it, 2026-11-03, and seen nothing come of it) -
+   // those invited are sent it as they are ("chat_owner_send_keys( )").
+   return ( parts.length > 0 ) ? parts.join( " " ) : "No one else is in it yet - each you invite is sent it.";
 }
 
 // NOTE: Room keys (Ian, 2026-10-25) - "irc.cin"'s "k" makes "<room>#<32 hex digits>" to send each member in an encrypted direct

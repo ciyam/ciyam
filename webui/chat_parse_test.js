@@ -1164,7 +1164,7 @@ check( "- a room with no key: for its owner, for anyone else, and a group's dire
 check( "- a member: where the owner's key comes from, and what it needs (Damon, 2026-11-02)", [
  cp.encryption_badge( "not encrypted - encrypt it in Chat Details", [ ], "room", false, "damon", true ).detail,
  cp.encryption_badge( "not encrypted - encrypt it in Chat Details", [ ], "room", false, "damon", false ).detail ],
- [ "Messages here are sent as they are. A room key from damon is passed to you here once they are next in the chat, and you are"
+ [ "Messages here are sent as they are. A room key from damon is passed to you once they have your contact code too, and you are"
   + " asked to accept it.",
  "Messages here are sent as they are. For a room key from damon, each of you needs the other in Contacts on My account." ] );
 check( "the owner's room key in their direct message - the newest for the room, from them", cp.owner_room_key( [
@@ -1242,7 +1242,7 @@ check( "- and what came of it", [ cp.room_key_sent_text( [ { name: "tester-1", h
  [ "Sent to tester-1. Sent to tester-2 once they accept your direct message.",
  "Not sent to a and b - exchange contact codes with each first, from Room key. Not sent to c - accept their direct message first."
  + " Could not send it to d - try again.",
- "No one else has joined yet - each is sent it as they join, or when you next open this room." ] );
+ "No one else is in it yet - each you invite is sent it." ] );
 check( "- a message too long to encrypt: over 1,000 bytes", [ cp.sealed_too_long( "a".repeat( 1000 ) ), cp.sealed_too_long( "a".repeat( 1001 ) ),
  cp.sealed_too_long( "ä".repeat( 500 ) ), cp.sealed_too_long( "ä".repeat( 501 ) ) ], [ false, true, false, true ] );
 
