@@ -3057,6 +3057,9 @@ function render_people( )
 {
    var body = document.getElementById( "people_rows" );
 
+   // NOTE: The rows drawn again - an open menu goes with its row.
+   g_person_menu = null;
+
    body.replaceChildren( );
 
    var many = ( g_people.length > c_people_page_size );
@@ -3127,25 +3130,29 @@ function render_people( )
       // NOTE: Named, not by PIN - the PIN may be hidden.
       var called = person.name || "this unclaimed account";
 
+      var more = row.querySelector( ".account-more" );
+
+      // NOTE: Each of the menu's items closes it first ("close_person_menu( )").
+      var item = function( selector, label, act )
+      {
+         var button = row.querySelector( selector );
+
+         button.hidden = false;
+         button.setAttribute( "aria-label", label );
+         button.onclick = function( ) { close_person_menu( false ); act( ); };
+      };
+
       // NOTE: Backing up and restoring keys - admin's own too; not for one unclaimed, which has none.
       if( ( person.status !== "unclaimed" ) && ( person.name !== "" ) )
-      {
-         var keys = row.querySelector( ".account-keys" );
-
-         keys.hidden = false;
-         keys.setAttribute( "aria-label", person.you ? "Back up or restore your keys" : "Back up or restore the keys of " + person.name );
-         keys.onclick = function( ) { do_user_keys( person ); };
-      }
+         item( ".account-keys", person.you ? "Back up or restore your keys" : "Back up or restore the keys of " + person.name,
+          function( ) { do_user_keys( person ); } );
 
       if( person.you )
-      {
          row.querySelector( ".account-you" ).hidden = false;
-
-         remove.hidden = true;
-      }
       else if( g_people_armed === person.pin )
       {
-         remove.hidden = true;
+         // NOTE: Being removed - asked in the row itself, in place of the menu.
+         more = null;
          confirm.hidden = false;
 
          row.querySelector( ".account-confirm-text" ).textContent = "Remove " + called + "? They can no longer sign in.";
@@ -3155,18 +3162,19 @@ function render_people( )
       }
       else
       {
-         remove.setAttribute( "aria-label", "Remove " + called );
-         remove.onclick = function( ) { arm_remove( person.pin ); };
-
          // NOTE: Only for someone who has claimed their account - one not yet claimed has no password to forget.
          if( ( person.status === "active" ) && ( person.name !== "" ) )
-         {
-            var reset = row.querySelector( ".account-reset" );
+            item( ".account-reset", "Reset the password of " + person.name, function( ) { do_reset_password( person ); } );
 
-            reset.hidden = false;
-            reset.setAttribute( "aria-label", "Reset the password of " + person.name );
-            reset.onclick = function( ) { do_reset_password( person ); };
-         }
+         item( ".account-remove", "Remove " + called, function( ) { arm_remove( person.pin ); } );
+      }
+
+      // NOTE: The menu offered only where it has something in it.
+      if( ( more !== null ) && ( row.querySelector( ".account-more-menu [role=menuitem]:not([hidden])" ) !== null ) )
+      {
+         more.hidden = false;
+         more.setAttribute( "aria-label", person.you ? "Your account's actions" : "Actions for " + called );
+         more.onclick = function( ) { toggle_person_menu( row ); };
       }
 
       body.appendChild( row );
@@ -3213,6 +3221,95 @@ function toggle_pin( pin )
 
    render_people( );
 }
+
+// NOTE: A person's menu (Damon, 2026-11-08) - one open at a time, its row's. Placed against the window under its button, or over it
+// where there is no room below, as the table's own box scrolls sideways and would cut it off; closed by a click elsewhere, Escape,
+// Tab, or the page moving.
+var g_person_menu = null;
+
+function toggle_person_menu( row )
+{
+   var open = ( g_person_menu === row );
+
+   close_person_menu( false );
+
+   if( open )
+      return;
+
+   var more = row.querySelector( ".account-more" );
+   var menu = row.querySelector( ".account-more-menu" );
+
+   g_person_menu = row;
+
+   menu.hidden = false;
+   more.setAttribute( "aria-expanded", "true" );
+
+   var at = more.getBoundingClientRect( );
+   var height = menu.offsetHeight;
+   var below = ( at.bottom + 4 + height <= window.innerHeight ) || ( at.top - 4 - height < 0 );
+
+   menu.style.position = "fixed";
+   menu.style.top = ( below ? at.bottom + 4 : at.top - 4 - height ) + "px";
+   menu.style.left = Math.max( 8, at.right - menu.offsetWidth ) + "px";
+   menu.style.right = "auto";
+
+   person_menu_items( row )[ 0 ].focus( );
+}
+
+function close_person_menu( focus_button )
+{
+   var row = g_person_menu;
+
+   g_person_menu = null;
+
+   if( row === null )
+      return;
+
+   row.querySelector( ".account-more-menu" ).hidden = true;
+   row.querySelector( ".account-more" ).setAttribute( "aria-expanded", "false" );
+
+   if( focus_button )
+      row.querySelector( ".account-more" ).focus( );
+}
+
+function person_menu_items( row )
+{
+   return Array.from( row.querySelectorAll( ".account-more-menu [role=menuitem]" ) ).filter( function( button ) { return !button.hidden; } );
+}
+
+document.addEventListener( "click", function( event )
+{
+   if( ( g_person_menu !== null ) && !g_person_menu.querySelector( ".account-row-actions" ).contains( event.target ) )
+      close_person_menu( false );
+} );
+
+document.addEventListener( "keydown", function( event )
+{
+   if( g_person_menu === null )
+      return;
+
+   var items = person_menu_items( g_person_menu );
+   var at = items.indexOf( document.activeElement );
+
+   if( event.key === "Escape" )
+   {
+      event.preventDefault( );
+      close_person_menu( true );
+   }
+   else if( event.key === "Tab" )
+      close_person_menu( false );
+   else if( ( ( event.key === "ArrowDown" ) || ( event.key === "ArrowUp" ) ) && ( items.length > 0 ) )
+   {
+      var down = ( event.key === "ArrowDown" );
+      var next = ( at < 0 ) ? ( down ? 0 : items.length - 1 ) : ( at + ( down ? 1 : -1 ) );
+
+      event.preventDefault( );
+      items[ ( next + items.length ) % items.length ].focus( );
+   }
+} );
+
+window.addEventListener( "resize", function( ) { close_person_menu( false ); } );
+window.addEventListener( "scroll", function( ) { close_person_menu( false ); }, true );
 
 // NOTE: Removing asks once more in the row itself, as the chat's "Block for good" does.
 function arm_remove( pin )

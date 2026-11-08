@@ -826,9 +826,14 @@ http://www.opensource.org/licenses/mit-license.php.
                   <td><span class="account-pill"></span></td>
                   <td class="account-row-actions">
                      <span class="account-you" hidden>You</span>
-                     <button type="button" class="chat-btn account-keys" hidden>Keys</button>
-                     <button type="button" class="chat-btn account-reset" hidden>Reset password</button>
-                     <button type="button" class="chat-btn account-remove">Remove</button>
+                     <!-- NOTE: A person's actions in a menu of their own (Damon, 2026-11-08: three buttons a row crowded it, a phone's
+                          most) - "toggle_person_menu( )"; each item shown only where it can be done. -->
+                     <button type="button" class="chat-btn account-more" aria-haspopup="menu" aria-expanded="false" hidden>&#x22EF;</button>
+                     <div class="chat-new-menu account-more-menu" role="menu" hidden>
+                        <button type="button" role="menuitem" class="account-keys" hidden>Back up or restore keys</button>
+                        <button type="button" role="menuitem" class="account-reset" hidden>Reset password</button>
+                        <button type="button" role="menuitem" class="account-remove" hidden>Remove</button>
+                     </div>
                      <div class="account-confirm" hidden>
                         <span class="account-confirm-text"></span>
                         <button type="button" class="account-btn-danger account-confirm-yes">Remove for good</button>

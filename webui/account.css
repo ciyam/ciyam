@@ -781,6 +781,19 @@ button.account-back,
    white-space: nowrap;
 }
 
+/* NOTE: A person's menu in People (Damon, 2026-11-08) - "toggle_person_menu( )" places it; Remove said as what it is. */
+.account-more
+{
+   min-width: 36px;
+   font-size: 18px;
+   line-height: 1;
+}
+
+.account-more-menu .account-remove
+{
+   color: var(--color-chat-critical-text);
+}
+
 .account-you
 {
    font-size: var(--font-size-chat-small);
