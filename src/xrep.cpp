@@ -841,6 +841,7 @@ string xrep_lexer::get_next_token( )
          if( ( i < input.size( ) - 1 ) && ( input[ i + 1 ] == c_escape ) )
          {
             ++i;
+
             break;
          }
       }
@@ -859,6 +860,7 @@ string xrep_lexer::read_next_token( )
    if( !retval.empty( ) )
    {
       last_read_token = retval;
+
       input.erase( 0, retval.size( ) );
    }
 
@@ -886,13 +888,13 @@ string xrep_lexer::get_input_error( const string& prefix )
 
    for( string::size_type i = 0; i < initial.size( ); i++ )
    {
-      if( i == initial.size( ) - input.size( ) )
+      if( i == ( initial.size( ) - input.size( ) ) )
          break;
 
-      if( initial[ i ] == '\n' )
-         pos = 0;
-      else
+      if( initial[ i ] != '\n' )
          ++pos;
+      else
+         pos = 0;
    }
 
    val += string( pos, ' ' );
@@ -1421,7 +1423,9 @@ string value_expression::evaluate( xrep_info& xi )
    xi.set_variable( c_modified_variable_name, retval );
    xi.set_variable( c_primary_split_value, primary_split_value );
 
-   if( !secondary_split_value.empty( ) )
+   if( secondary_split_value.empty( ) )
+      xi.remove_variable( c_secondary_split_value );
+   else
       xi.set_variable( c_secondary_split_value, secondary_split_value );
 
    if( do_not_split_into_set_name )
@@ -4005,6 +4009,7 @@ void process_input( istream& is, xrep_info& xi, ostream& os, bool append_final_l
          else
          {
             last += '\n';
+
             ++num_continuations;
          }
 
