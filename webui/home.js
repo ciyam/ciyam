@@ -3173,12 +3173,18 @@ function render_people( )
          confirm.hidden = false;
 
          row.querySelector( ".account-confirm-text" ).textContent = disabling ? "Disable " + called + "? They can't sign in again until"
-          + " you enable them - a device signed in now stays in until it signs out." : "Remove " + called + "? Its PIN can no longer be used.";
+          + " you enable them - a device signed in now stays in until it signs out." : "Remove " + called + "? Nobody can set it up with its PIN.";
 
          var yes = row.querySelector( ".account-confirm-yes" );
 
          yes.textContent = disabling ? "Disable" : "Remove for good";
-         yes.onclick = function( ) { if( disabling ) do_disable( person ); else do_remove( person.pin ); };
+         yes.onclick = function( )
+         {
+            if( disabling )
+               do_disable( person );
+            else
+               do_remove( person.pin );
+         };
 
          row.querySelector( ".account-confirm-no" ).onclick = function( ) { arm_remove( "" ); };
       }

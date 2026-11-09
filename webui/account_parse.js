@@ -94,8 +94,8 @@ function parse_join_reply( reply )
 const c_people_keys_none = "?";
 const c_people_keys_unsaved = "!";
 
-// NOTE: Ending a name in its place, one disabled (Ian, 2026-11-09 - "d6ef2fe2"): its password hash all zeroes, so no sign in matches.
-// Brought back by a reset of the password.
+// NOTE: Ending the name in place of the keys state when disabled (Ian, 2026-11-09 - "d6ef2fe2"): the password hash all zeroes, so
+// no sign in matches. Brought back by a reset of the password.
 const c_people_inactive = "~";
 const c_people_disabled_hash = "0".repeat( 64 );
 
