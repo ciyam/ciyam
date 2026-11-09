@@ -837,81 +837,87 @@ regex .* (test)
 Error: invalid response '(test)' (could be confused with a protocol response)
 regex -prefix=X .* (test)
 X(test)
-regex "(\\[\\+[0-9]+\\])$$" "aaa [+0]"
+regex "(~[^,_]+)$" "~abc"
+~abc
+regex "(~[^,_]+)$" "~a,b"
+regex "(~[^,_]+)$" "~a_b"
+regex "(~[^,_]+)$" "~a,_"
+regex "(~[^,_]+)$" "~a_,"
+regex "(\\[\\+[0-9]+\\])$" "aaa [+0]"
 [+0]
-regex "(\\[\\+[0-9]+\\])$$" "aaa [+10]"
+regex "(\\[\\+[0-9]+\\])$" "aaa [+10]"
 [+10]
-regex "(\\[\\+[0-9]+\\])$$" "aaa [+100]"
+regex "(\\[\\+[0-9]+\\])$" "aaa [+100]"
 [+100]
-regex "(\\[\\+[0-9]+\\])$$" "aaa [+1000]"
+regex "(\\[\\+[0-9]+\\])$" "aaa [+1000]"
 [+1000]
-regex "^[@]?[a-b][a-b]+$$" "@"
-regex "^[@]?[a-b][a-b]+$$" "a"
-regex "^[@]?[a-b][a-b]+$$" "@@"
-regex "^[@]?[a-b][a-b]+$$" "@a"
-regex "^[@]?[a-b][a-b]+$$" "@b"
-regex "^[@]?[a-b][a-b]+$$" "aa"
+regex "^[@]?[a-b][a-b]+$" "@"
+regex "^[@]?[a-b][a-b]+$" "a"
+regex "^[@]?[a-b][a-b]+$" "@@"
+regex "^[@]?[a-b][a-b]+$" "@a"
+regex "^[@]?[a-b][a-b]+$" "@b"
+regex "^[@]?[a-b][a-b]+$" "aa"
 aa
-regex "^[@]?[a-b][a-b]+$$" "ab"
+regex "^[@]?[a-b][a-b]+$" "ab"
 ab
-regex "^[@]?[a-b][a-b]+$$" "ba"
+regex "^[@]?[a-b][a-b]+$" "ba"
 ba
-regex "^[@]?[a-b][a-b]+$$" "bb"
+regex "^[@]?[a-b][a-b]+$" "bb"
 bb
-regex "^[@]?[a-b][a-b]+$$" "a@"
-regex "^[@]?[a-b][a-b]+$$" "b@"
-regex "^[@]?[a-b][a-b]+$$" "@aa"
+regex "^[@]?[a-b][a-b]+$" "a@"
+regex "^[@]?[a-b][a-b]+$" "b@"
+regex "^[@]?[a-b][a-b]+$" "@aa"
 @aa
-regex "^[@]?[a-b][a-b]+$$" "@ab"
+regex "^[@]?[a-b][a-b]+$" "@ab"
 @ab
-regex "^[@]?[a-b][a-b]+$$" "@ba"
+regex "^[@]?[a-b][a-b]+$" "@ba"
 @ba
-regex "^[@]?[a-b][a-b]+$$" "@bb"
+regex "^[@]?[a-b][a-b]+$" "@bb"
 @bb
-regex "^[@]?[a-b][a-b]+$$" "@@a"
-regex "^[@]?[a-b][a-b]+$$" "@@b"
-regex "^[@]?[a-b][a-b]+$$" "@a@"
-regex "^[@]?[a-b][a-b]+$$" "@b@"
-regex "^[@]?[a-b][a-b]+$$" "aaa"
+regex "^[@]?[a-b][a-b]+$" "@@a"
+regex "^[@]?[a-b][a-b]+$" "@@b"
+regex "^[@]?[a-b][a-b]+$" "@a@"
+regex "^[@]?[a-b][a-b]+$" "@b@"
+regex "^[@]?[a-b][a-b]+$" "aaa"
 aaa
-regex "^[@]?[a-b][a-b]+$$" "aab"
+regex "^[@]?[a-b][a-b]+$" "aab"
 aab
-regex "^[@]?[a-b][a-b]+$$" "aba"
+regex "^[@]?[a-b][a-b]+$" "aba"
 aba
-regex "^[@]?[a-b][a-b]+$$" "abb"
+regex "^[@]?[a-b][a-b]+$" "abb"
 abb
-regex "^[@]?[a-b][a-b]+$$" "baa"
+regex "^[@]?[a-b][a-b]+$" "baa"
 baa
-regex "^[@]?[a-b][a-b]+$$" "bab"
+regex "^[@]?[a-b][a-b]+$" "bab"
 bab
-regex "^[@]?[a-b][a-b]+$$" "bba"
+regex "^[@]?[a-b][a-b]+$" "bba"
 bba
-regex "^[@]?[a-b][a-b]+$$" "bbb"
+regex "^[@]?[a-b][a-b]+$" "bbb"
 bbb
-regex "^[@]?[a-b][a-b]+$$" "@aaa"
+regex "^[@]?[a-b][a-b]+$" "@aaa"
 @aaa
-regex "^[@]?[a-b][a-b]+$$" "@aab"
+regex "^[@]?[a-b][a-b]+$" "@aab"
 @aab
-regex "^[@]?[a-b][a-b]+$$" "@aba"
+regex "^[@]?[a-b][a-b]+$" "@aba"
 @aba
-regex "^[@]?[a-b][a-b]+$$" "@abb"
+regex "^[@]?[a-b][a-b]+$" "@abb"
 @abb
-regex "^[@]?[a-b][a-b]+$$" "@baa"
+regex "^[@]?[a-b][a-b]+$" "@baa"
 @baa
-regex "^[@]?[a-b][a-b]+$$" "@bab"
+regex "^[@]?[a-b][a-b]+$" "@bab"
 @bab
-regex "^[@]?[a-b][a-b]+$$" "@bba"
+regex "^[@]?[a-b][a-b]+$" "@bba"
 @bba
-regex "^[@]?[a-b][a-b]+$$" "@bbb"
+regex "^[@]?[a-b][a-b]+$" "@bbb"
 @bbb
-regex "^[@]?[a-b][a-b]+$$" "@aa@"
-regex "^[@]?[a-b][a-b]+$$" "@aa@"
-regex "^[@]?[a-b][a-b]+$$" "@ab@"
-regex "^[@]?[a-b][a-b]+$$" "@ab@"
-regex "^[@]?[a-b][a-b]+$$" "@ba@"
-regex "^[@]?[a-b][a-b]+$$" "@ba@"
-regex "^[@]?[a-b][a-b]+$$" "@bb@"
-regex "^[@]?[a-b][a-b]+$$" "@bb@"
+regex "^[@]?[a-b][a-b]+$" "@aa@"
+regex "^[@]?[a-b][a-b]+$" "@aa@"
+regex "^[@]?[a-b][a-b]+$" "@ab@"
+regex "^[@]?[a-b][a-b]+$" "@ab@"
+regex "^[@]?[a-b][a-b]+$" "@ba@"
+regex "^[@]?[a-b][a-b]+$" "@ba@"
+regex "^[@]?[a-b][a-b]+$" "@bb@"
+regex "^[@]?[a-b][a-b]+$" "@bb@"
 regex "abc(def)?ghi" abcghi
 regex "abc(def)?ghi" abcdefghi
 def
@@ -927,37 +933,37 @@ regex "bc\\\.(.*)\\\." bc.abc123def.zenith
 abc123def
 regex "^([a-z]{1}[a-z0-9]{0,8}[a-z]{1})" abc123def
 abc
-regex "([a-z]{1}[a-z0-9]{0,8}[a-z]{1})$$" abc123def
+regex "([a-z]{1}[a-z0-9]{0,8}[a-z]{1})$" abc123def
 def
-regex "^([a-z]{1}[a-z0-9]{0,8}[a-z]{1})$$" abc123def
+regex "^([a-z]{1}[a-z0-9]{0,8}[a-z]{1})$" abc123def
 abc123def
-regex -matched "([a-b]*[0-9]{3,5}[a-z]{1})$$" abcdef1234g
+regex -matched "([a-b]*[0-9]{3,5}[a-z]{1})$" abcdef1234g
 234g
-regex -matched "([a-f]+[0-9]{3,5}[a-z]{1})$$" abcdef1234g
+regex -matched "([a-f]+[0-9]{3,5}[a-z]{1})$" abcdef1234g
 f1234g
-regex -chain "^[a-z][-a-z0-9]{2,29}$$&&.*[^-]$$&!^.*--.*$$" abc
+regex -chain "^[a-z][-a-z0-9]{2,29}$&&.*[^-]$&!^.*--.*$" abc
 abc
-regex -chain "^[a-z][-a-z0-9]{2,29}$$&&.*[^-]$$&!^.*--.*$$" a-c
+regex -chain "^[a-z][-a-z0-9]{2,29}$&&.*[^-]$&!^.*--.*$" a-c
 a-c
-regex -chain "^[a-z][-a-z0-9]{2,29}$$&&.*[^-]$$&!^.*--.*$$" -b-
-regex -chain "^[a-z][-a-z0-9]{2,29}$$&&.*[^-]$$&!^.*--.*$$" ---
-regex -chain "^[a-z][-a-z0-9]{2,29}$$&&.*[^-]$$&!^.*--.*$$" a--
-regex -chain "^[a-z][-a-z0-9]{2,29}$$&&.*[^-]$$&!^.*--.*$$" --c
-regex -chain "^[a-z][-a-z0-9]{2,29}$$&&.*[^-]$$&!^.*--.*$$" abcd
+regex -chain "^[a-z][-a-z0-9]{2,29}$&&.*[^-]$&!^.*--.*$" -b-
+regex -chain "^[a-z][-a-z0-9]{2,29}$&&.*[^-]$&!^.*--.*$" ---
+regex -chain "^[a-z][-a-z0-9]{2,29}$&&.*[^-]$&!^.*--.*$" a--
+regex -chain "^[a-z][-a-z0-9]{2,29}$&&.*[^-]$&!^.*--.*$" --c
+regex -chain "^[a-z][-a-z0-9]{2,29}$&&.*[^-]$&!^.*--.*$" abcd
 abcd
-regex -chain "^[a-z][-a-z0-9]{2,29}$$&&.*[^-]$$&!^.*--.*$$" -bcd
-regex -chain "^[a-z][-a-z0-9]{2,29}$$&&.*[^-]$$&!^.*--.*$$" a-cd
+regex -chain "^[a-z][-a-z0-9]{2,29}$&&.*[^-]$&!^.*--.*$" -bcd
+regex -chain "^[a-z][-a-z0-9]{2,29}$&&.*[^-]$&!^.*--.*$" a-cd
 a-cd
-regex -chain "^[a-z][-a-z0-9]{2,29}$$&&.*[^-]$$&!^.*--.*$$" ab-d
+regex -chain "^[a-z][-a-z0-9]{2,29}$&&.*[^-]$&!^.*--.*$" ab-d
 ab-d
-regex -chain "^[a-z][-a-z0-9]{2,29}$$&&.*[^-]$$&!^.*--.*$$" abc-
-regex -chain "^[a-z][-a-z0-9]{2,29}$$&&.*[^-]$$&!^.*--.*$$" ab--
-regex -chain "^[a-z][-a-z0-9]{2,29}$$&&.*[^-]$$&!^.*--.*$$" --cd
-regex -chain "^[a-z][-a-z0-9]{2,29}$$&&.*[^-]$$&!^.*--.*$$" abcde
+regex -chain "^[a-z][-a-z0-9]{2,29}$&&.*[^-]$&!^.*--.*$" abc-
+regex -chain "^[a-z][-a-z0-9]{2,29}$&&.*[^-]$&!^.*--.*$" ab--
+regex -chain "^[a-z][-a-z0-9]{2,29}$&&.*[^-]$&!^.*--.*$" --cd
+regex -chain "^[a-z][-a-z0-9]{2,29}$&&.*[^-]$&!^.*--.*$" abcde
 abcde
-regex -chain "^[a-z][-a-z0-9]{2,29}$$&&.*[^-]$$&!^.*--.*$$" a-c-e
+regex -chain "^[a-z][-a-z0-9]{2,29}$&&.*[^-]$&!^.*--.*$" a-c-e
 a-c-e
-regex -chain "^[a-z][-a-z0-9]{2,29}$$&&.*[^-]$$&!^.*--.*$$" a---e
+regex -chain "^[a-z][-a-z0-9]{2,29}$&&.*[^-]$&!^.*--.*$" a---e
 regex "([a-z]+)" abc-def
 abc
 regex "([a-z]+)([-_.][a-z]+)" abc-def
