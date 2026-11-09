@@ -1670,18 +1670,43 @@ void replace_environment_variables( string& s, char c, bool as_quotes, const cha
 
    while( pos != string::npos )
    {
-      if( ( s.size( ) > ( pos + 1 ) )
-       && ( ( s[ pos + 1 ] == c ) || ( s[ pos + 1 ] == '*' )
-       || ( ( s[ pos + 1 ] >= '0' ) && ( s[ pos + 1 ] <= '9' ) ) ) )
+      size_t slen = s.size( );
+
+      if( pos == ( slen - 1 ) )
+         break;
+
+      size_t first = 1;
+
+      bool ignore = false;
+
+      // NOTE: Ignore if doubled
+      // and is skipping over an
+      // initial tilda (which is
+      // an optional prefix).
+      if( s[ pos + first ] == c )
+         ignore = true;
+      else if( s[ pos + first ] == '~' )
+         ++first;
+
+      // NOTE: Will only check for names that begin with a letter.
+      if( ( slen == ( pos + first ) )
+       || ( ( s[ pos + first ] < 'A' ) || ( s[ pos + first ] > 'z' ) )
+       || ( ( s[ pos + first ] > 'Z' ) && ( s[ pos + first ] < 'a' ) ) )
+         ignore = true;
+
+      if( ignore )
       {
-         pos = s.find( c, pos + 2 );
+         if( slen <= pos + first + 1 )
+            break;
+
+         pos = s.find( c, pos + first + 1 );
 
          continue;
       }
 
       string::size_type npos = string::npos;
 
-      int skip = 1;
+      size_t skip = 1;
 
       if( as_quotes )
          npos = s.find( c, pos + skip );
@@ -1701,7 +1726,7 @@ void replace_environment_variables( string& s, char c, bool as_quotes, const cha
             npos = s.length( );
       }
 
-      if( npos != pos + skip )
+      if( npos != ( pos + skip ) )
       {
          string env_var_name( s.substr( pos + 1, npos - pos - 1 ) );
 
