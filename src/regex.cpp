@@ -1955,7 +1955,14 @@ string::size_type regex::impl::do_search(
                            matched = true;
                      }
                      else if( last_set_inverted )
-                        matched = true;
+                     {
+                        // NOTE: If inverted then will only
+                        // be a match when all of the pairs
+                        // have been checked (and none were
+                        // a match).
+                        if( x == ( last_set.size( ) - 1 ) )
+                           matched = true;
+                     }
 
                      if( matched )
                      {
