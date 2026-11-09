@@ -1947,7 +1947,11 @@ string::size_type regex::impl::do_search(
                      if( ( last_set[ x ].first == '\0' )
                       || ( ( text[ i ] >= last_set[ x ].first ) && ( text[ i ] <= last_set[ x ].second ) ) )
                      {
-                        if( !last_set_inverted )
+                        // NOTE: If is inverted
+                        // then do not proceed.
+                        if( last_set_inverted )
+                           x = last_set.size( );
+                        else
                            matched = true;
                      }
                      else if( last_set_inverted )
@@ -2023,6 +2027,7 @@ string::size_type regex::impl::do_search(
          if( ( i > finishes ) && ( i < ( text.length( ) - 1 ) ) )
          {
             okay = false;
+
             break;
          }
       }
@@ -2047,6 +2052,7 @@ string::size_type regex::impl::do_search(
                 || !match_set( text, ( text.length( ) - parts[ j ].min_matches ), parts[ j ] ) ) ) )
                {
                   okay = false;
+
                   break;
                }
             }
@@ -2117,6 +2123,8 @@ bool regex::impl::match_set( const string& text, size_t off, const part& p )
 
    int rounds = p.min_matches;
 
+   bool inverted = p.inverted;
+
    while( true )
    {
       okay = false;
@@ -2127,11 +2135,12 @@ bool regex::impl::match_set( const string& text, size_t off, const part& p )
           || ( ( text[ off ] >= p.matches[ x ].first ) && ( text[ off ] <= p.matches[ x ].second ) ) )
          {
             okay = true;
+
             break;
          }
       }
 
-      if( p.inverted )
+      if( inverted )
          okay = !okay;
 
       if( !okay )
