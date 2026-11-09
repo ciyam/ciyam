@@ -642,11 +642,16 @@ http://www.opensource.org/licenses/mit-license.php.
                   <button type="button" class="chat-btn chat-btn--primary" id="people_add">Add a person</button>
                </div>
 
-               <!-- NOTE: Search and pages (Damon, 2026-10-28: the list scrolled) - offered once there is more than a page ("render_people( )"). -->
+               <!-- NOTE: Search and pages (Damon, 2026-10-28: the list scrolled) - offered once there is more than a page ("render_people( )").
+                    Show inactive only while someone is disabled (Ian, 2026-11-09: hidden unless asked for). -->
                <div class="home-people-tools" id="people_tools" hidden>
                   <input type="search" class="chat-field home-people-search" id="people_search" placeholder="Search by name, PIN or status"
                    aria-label="Search people" autocomplete="off" spellcheck="false">
                   <span class="home-people-count" id="people_count" role="status"></span>
+                  <label class="account-check home-people-inactive" id="people_inactive_box" hidden>
+                     <input type="checkbox" id="people_inactive">
+                     <span id="people_inactive_text">Show inactive</span>
+                  </label>
                </div>
 
                <div class="account-card account-table-wrap">
@@ -832,6 +837,8 @@ http://www.opensource.org/licenses/mit-license.php.
                      <div class="chat-new-menu account-more-menu" role="menu" hidden>
                         <button type="button" role="menuitem" class="account-keys" hidden>Back up or restore keys</button>
                         <button type="button" role="menuitem" class="account-reset" hidden>Reset password</button>
+                        <button type="button" role="menuitem" class="account-enable" hidden>Enable</button>
+                        <button type="button" role="menuitem" class="account-disable" hidden>Disable</button>
                         <button type="button" role="menuitem" class="account-remove" hidden>Remove</button>
                      </div>
                      <div class="account-confirm" hidden>

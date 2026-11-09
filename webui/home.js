@@ -2965,6 +2965,9 @@ var g_people_shown = { };
 // NOTE: People's search and the page shown (2026-10-28) - kept while Home is open, the page held within those there are.
 var g_people_query = "";
 var g_people_page = 1;
+
+// NOTE: Show inactive ticked - the disabled listed too (Ian, 2026-11-09: hidden unless asked for).
+var g_people_inactive = false;
 var g_handover_code = "";
 var g_ready = null;
 var g_people_alert_timer = null;
@@ -3062,23 +3065,34 @@ function render_people( )
 
    body.replaceChildren( );
 
-   var many = ( g_people.length > c_people_page_size );
+   var inactive = g_people.length - people_shown( g_people, false ).length;
+
+   // NOTE: Nobody disabled now - not still ticked for the next.
+   if( inactive === 0 )
+      g_people_inactive = false;
+
+   var listed = people_shown( g_people, g_people_inactive );
+   var many = ( listed.length > c_people_page_size );
    var query = many ? g_people_query.trim( ) : "";
-   var matched = people_matching( g_people, query );
+   var matched = people_matching( listed, query );
    var shown = people_page( matched.length, g_people_page, c_people_page_size );
 
    g_people_page = shown.page;
 
-   document.getElementById( "people_tools" ).hidden = !many;
+   document.getElementById( "people_tools" ).hidden = !many && ( inactive === 0 );
+   document.getElementById( "people_search" ).hidden = !many;
+   document.getElementById( "people_inactive_box" ).hidden = ( inactive === 0 );
+   document.getElementById( "people_inactive" ).checked = g_people_inactive;
    document.getElementById( "people_pager" ).hidden = ( shown.pages <= 1 );
 
-   set_text( "people_count", people_count_text( g_people.length, matched.length, query !== "", shown ) );
+   set_text( "people_inactive_text", "Show inactive (" + inactive + ")" );
+   set_text( "people_count", people_count_text( listed.length, matched.length, query !== "", shown ) );
    set_text( "people_page", "Page " + shown.page + " of " + shown.pages );
 
    document.getElementById( "people_prev" ).disabled = ( shown.page <= 1 );
    document.getElementById( "people_next" ).disabled = ( shown.page >= shown.pages );
 
-   set_text( "people_empty", ( g_people.length === 0 ) ? "Nobody yet." : ( ( matched.length === 0 ) ? "No one matches that search." : "" ) );
+   set_text( "people_empty", ( listed.length === 0 ) ? "Nobody yet." : ( ( matched.length === 0 ) ? "No one matches that search." : "" ) );
 
    matched.slice( shown.from, shown.to ).forEach( function( person )
    {
@@ -3097,8 +3111,10 @@ function render_people( )
 
          name.textContent = person.name;
 
-         // NOTE: Their keys as the node says (Ian, 2026-11-07) - none yet, to back up, or backed up as they are.
-         row.querySelector( ".account-sub" ).textContent = people_keys_text( person.keys );
+         // NOTE: Their keys as the node says (Ian, 2026-11-07) - none yet, to back up, or backed up as they are; the disabled's not
+         // said by it.
+         row.querySelector( ".account-sub" ).textContent = ( person.status === "inactive" ) ? "Disabled - can't sign in"
+          : people_keys_text( person.keys );
       }
       else
       {
@@ -3121,7 +3137,7 @@ function render_people( )
 
       var pill = row.querySelector( ".account-pill" );
 
-      pill.textContent = { admin: "Administrator", active: "Active", unclaimed: "Not yet claimed" }[ person.status ];
+      pill.textContent = { admin: "Administrator", active: "Active", unclaimed: "Not yet claimed", inactive: "Inactive" }[ person.status ];
       pill.classList.add( "account-pill--" + person.status );
 
       var confirm = row.querySelector( ".account-confirm" );
@@ -3150,23 +3166,33 @@ function render_people( )
          row.querySelector( ".account-you" ).hidden = false;
       else if( g_people_armed === person.pin )
       {
-         // NOTE: Being removed - asked in the row itself, in place of the menu.
+         // NOTE: Being disabled, or one unclaimed removed - asked in the row itself, in place of the menu.
+         var disabling = ( person.status === "active" );
+
          more = null;
          confirm.hidden = false;
 
-         row.querySelector( ".account-confirm-text" ).textContent = "Remove " + called + "? They can no longer sign in.";
+         row.querySelector( ".account-confirm-text" ).textContent = disabling ? "Disable " + called + "? They can't sign in again until"
+          + " you enable them - a device signed in now stays in until it signs out." : "Remove " + called + "? Its PIN can no longer be used.";
 
-         row.querySelector( ".account-confirm-yes" ).onclick = function( ) { do_remove( person.pin ); };
+         var yes = row.querySelector( ".account-confirm-yes" );
+
+         yes.textContent = disabling ? "Disable" : "Remove for good";
+         yes.onclick = function( ) { if( disabling ) do_disable( person ); else do_remove( person.pin ); };
+
          row.querySelector( ".account-confirm-no" ).onclick = function( ) { arm_remove( "" ); };
       }
-      else
+      else if( person.status === "active" )
       {
-         // NOTE: Only for someone who has claimed their account - one not yet claimed has no password to forget.
-         if( ( person.status === "active" ) && ( person.name !== "" ) )
-            item( ".account-reset", "Reset the password of " + person.name, function( ) { do_reset_password( person ); } );
-
-         item( ".account-remove", "Remove " + called, function( ) { arm_remove( person.pin ); } );
+         // NOTE: Only for someone who has claimed their account - one not yet claimed has no password to forget. Disabled, not
+         // removed (Ian, 2026-11-09): a PIN removed could be given out again, and its new holder would have the old one's rooms.
+         item( ".account-reset", "Reset the password of " + person.name, function( ) { do_reset_password( person ); } );
+         item( ".account-disable", "Disable " + called, function( ) { arm_remove( person.pin ); } );
       }
+      else if( person.status === "inactive" )
+         item( ".account-enable", "Enable " + called, function( ) { do_reset_password( person ); } );
+      else
+         item( ".account-remove", "Remove " + called, function( ) { arm_remove( person.pin ); } );
 
       // NOTE: The menu offered only where it has something in it.
       if( ( more !== null ) && ( row.querySelector( ".account-more-menu [role=menuitem]:not([hidden])" ) !== null ) )
@@ -3310,12 +3336,38 @@ document.addEventListener( "keydown", function( event )
 window.addEventListener( "resize", function( ) { close_person_menu( false ); } );
 window.addEventListener( "scroll", function( ) { close_person_menu( false ); }, true );
 
-// NOTE: Removing asks once more in the row itself, as the chat's "Block for good" does.
+// NOTE: Disabling, and removing one unclaimed, ask once more in the row itself, as the chat's "Block for good" does.
 function arm_remove( pin )
 {
    g_people_armed = pin;
 
    render_people( );
+}
+
+// NOTE: A password hash of all zeroes (Ian, 2026-11-09 - "d6ef2fe2"), sent as it is, so no sign in matches it; the users review
+// then ends their name with "~". Undone by a reset of the password ("do_reset_password( )"). The node refuses it for a PIN nobody
+// has claimed - one of those is removed, as nothing is yet tied to it.
+async function do_disable( person )
+{
+   var asked_for = ciyam.access;
+
+   var response = await request( function( done )
+   {
+      return ciyam.update_user( person.pin, "password=" + c_people_disabled_hash, done, true );
+   } );
+
+   if( ciyam.access !== asked_for )
+      return;
+
+   g_people_armed = "";
+
+   if( people_problem( response ) !== "" )
+      people_alert( "Not disabled: " + people_problem( response ), true );
+   else
+      people_alert( person.name + " is disabled and can't sign in. To bring them back, tick Show inactive and choose Enable from"
+       + " their menu." );
+
+   load_people( );
 }
 
 async function do_remove( pin )
@@ -3392,12 +3444,16 @@ async function do_user_keys( person )
       load_people( );
 }
 
+// NOTE: Enabling someone disabled is the same reset (Ian, 2026-11-09: "a reset brings them back") - said as enabling.
 async function do_reset_password( person )
 {
+   var enabling = ( person.status === "inactive" );
+
    // NOTE: The username is theirs again when they set up - the node takes no other for it (ISS-035, 2026-10-30).
-   if( !await ask_dialog( { title: "Reset " + person.name + "'s password?", text: "Their password stops working now. They set up their"
-    + " account again with their PIN, keeping the username " + person.name + ", and choose a new password - you won't see it. Their"
-    + " rooms, messages and keys stay with that username.", yes: "Reset password" } ) )
+   if( !await ask_dialog( { title: enabling ? "Enable " + person.name + " again?" : "Reset " + person.name + "'s password?", text:
+    ( enabling ? "They" : "Their password stops working now. They" ) + " set up their account again with their PIN, keeping the"
+    + " username " + person.name + ", and choose a new password - you won't see it. Their rooms, messages and keys stay with that"
+    + " username.", yes: enabling ? "Enable" : "Reset password" } ) )
       return;
 
    var asked_for = ciyam.access;
@@ -3411,10 +3467,10 @@ async function do_reset_password( person )
       return;
 
    if( people_problem( response ) !== "" )
-      people_alert( "Not reset: " + people_problem( response ), true );
+      people_alert( ( enabling ? "Not enabled: " : "Not reset: " ) + people_problem( response ), true );
    else
-      people_alert( person.name + "'s password was reset. Give them their PIN, " + person.pin + " - they set up their account again with"
-       + " it (New here? on the sign in) and choose a new password.", false, true );
+      people_alert( person.name + ( enabling ? " is enabled again" : "'s password was reset" ) + ". Give them their PIN, " + person.pin
+       + " - they set up their account again with it (New here? on the sign in) and choose a new password.", false, true );
 
    load_people( );
 }
@@ -3637,6 +3693,7 @@ function forget_people( )
    g_people_shown = { };
    g_people_query = "";
    g_people_page = 1;
+   g_people_inactive = false;
 
    document.getElementById( "people_search" ).value = "";
 
@@ -3668,6 +3725,15 @@ function install_people( )
 
          do_people_search( );
       }
+   } );
+
+   document.getElementById( "people_inactive" ).addEventListener( "change", function( event )
+   {
+      g_people_inactive = event.target.checked;
+      g_people_page = 1;
+      g_people_armed = "";
+
+      render_people( );
    } );
 
    document.getElementById( "people_prev" ).addEventListener( "click", function( ) { do_people_page( -1 ); } );

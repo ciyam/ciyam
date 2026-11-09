@@ -1079,7 +1079,14 @@ function word_choices( words, index, wordlist, random )
 // NOTE: How many people a page shows - and the search is offered only when there are more than this.
 const c_people_page_size = 10;
 
-const c_people_status_words = { admin: "administrator", active: "active", unclaimed: "not yet claimed no username" };
+const c_people_status_words = { admin: "administrator", active: "active", unclaimed: "not yet claimed no username", inactive: "inactive disabled" };
+
+// NOTE: Those of "people" (from "parse_people( )") People lists - the inactive (disabled) only when "inactive" is ticked (Ian,
+// 2026-11-09: hidden unless asked for).
+function people_shown( people, inactive )
+{
+   return ( people || [ ] ).filter( function( person ) { return inactive || ( person.status !== "inactive" ); } );
+}
 
 // NOTE: Those of "people" (from "parse_people( )") matching "query" - each of its words found in the name, the PIN or the
 // status as People shows it ("not yet claimed"), case aside. Nothing typed matches everyone.
@@ -1141,6 +1148,7 @@ if( typeof module !== "undefined" )
       people_matching: people_matching,
       people_page: people_page,
       people_count_text: people_count_text,
+      people_shown: people_shown,
       parse_system: parse_system,
       setup_reply: setup_reply,
       setup_refused: setup_refused,

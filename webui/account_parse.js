@@ -94,11 +94,17 @@ function parse_join_reply( reply )
 const c_people_keys_none = "?";
 const c_people_keys_unsaved = "!";
 
+// NOTE: Ending a name in its place, one disabled (Ian, 2026-11-09 - "d6ef2fe2"): its password hash all zeroes, so no sign in matches.
+// Brought back by a reset of the password.
+const c_people_inactive = "~";
+const c_people_disabled_hash = "0".repeat( 64 );
+
 // NOTE: The users review, as text - a line per account, "<pin> <username>", with nothing after
 // the space for an account nobody has claimed. admin's own PIN is not in it - admin is not an
 // account in the system ODS - so it is added, as "own_name". admin comes first, then everyone
-// by name, then the unclaimed by PIN. Each row's "keys" - "none", "unsaved" or "saved" from the
-// name's end, or "" for one unclaimed and for admin added.
+// by name - the inactive (disabled) in their place among them (Damon, 2026-11-09: seen where
+// they are once shown) - then the unclaimed by PIN. Each row's "keys" - "none", "unsaved" or
+// "saved" from the name's end, or "" for one unclaimed or inactive and for admin added.
 function parse_people( text, own_pin, own_name )
 {
    var rows = [ ];
@@ -112,12 +118,15 @@ function parse_people( text, own_pin, own_name )
 
       var name = ( match[ 2 ] || "" ).trim( );
       var keys = "";
+      var inactive = false;
 
       if( name !== "" )
       {
          var mark = name.slice( -1 );
 
-         keys = ( mark === c_people_keys_none ) ? "none" : ( ( mark === c_people_keys_unsaved ) ? "unsaved" : "saved" );
+         inactive = ( mark === c_people_inactive );
+
+         keys = inactive ? "" : ( ( mark === c_people_keys_none ) ? "none" : ( ( mark === c_people_keys_unsaved ) ? "unsaved" : "saved" ) );
 
          if( keys !== "saved" )
             name = name.slice( 0, -1 );
@@ -125,7 +134,7 @@ function parse_people( text, own_pin, own_name )
 
       var row = { pin: match[ 1 ], name: name, you: ( match[ 1 ] === own_pin ), keys: keys };
 
-      row.status = row.you ? "admin" : ( ( name === "" ) ? "unclaimed" : "active" );
+      row.status = row.you ? "admin" : ( ( name === "" ) ? "unclaimed" : ( inactive ? "inactive" : "active" ) );
 
       rows.push( row );
    } );
@@ -133,7 +142,7 @@ function parse_people( text, own_pin, own_name )
    if( ( ( own_pin || "" ) !== "" ) && !rows.some( function( row ) { return row.you; } ) )
       rows.push( { pin: own_pin, name: own_name || "", you: true, status: "admin", keys: "" } );
 
-   var rank = { admin: 0, active: 1, unclaimed: 2 };
+   var rank = { admin: 0, active: 1, inactive: 1, unclaimed: 2 };
 
    rows.sort( function( a, b )
    {

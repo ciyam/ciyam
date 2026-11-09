@@ -329,6 +329,16 @@ check( "- a PIN, or part of one", pins_of( hp.people_matching( folk, "314" ) ), 
 check( "- the status as shown", pins_of( hp.people_matching( folk, "not yet" ) ), [ "31415" ] );
 check( "- every word found", [ hp.people_matching( folk, "verify active" ).length, hp.people_matching( folk, "verify admin" ).length ], [ 2, 0 ] );
 
+// NOTE: The disabled (Ian, 2026-11-09) - listed only with Show inactive ticked, and found by the status as shown.
+const with_gone = folk.concat( [ { name: "gone", pin: "52020", status: "inactive" } ] );
+
+check( "people shown - the inactive left out", pins_of( hp.people_shown( with_gone, false ) ), [ "10301", "20401", "20402", "31415" ] );
+check( "- listed with Show inactive", hp.people_shown( with_gone, true ).length, 5 );
+check( "- nobody", [ hp.people_shown( null, false ), hp.people_shown( [ ], true ) ], [ [ ], [ ] ] );
+check( "- found as inactive or disabled", [ pins_of( hp.people_matching( with_gone, "inactive" ) ),
+ pins_of( hp.people_matching( with_gone, "disabled" ) ) ], [ [ "52020" ], [ "52020" ] ] );
+check( "- not counted as active on the Overview", hp.people_summary( with_gone ), { active: 2, unclaimed: 1 } );
+
 check( "a page of people", [ hp.people_page( 57, 2, 10 ), hp.people_page( 57, 6, 10 ), hp.people_page( 0, 1, 10 ) ], [
  { page: 2, pages: 6, from: 10, to: 20 }, { page: 6, pages: 6, from: 50, to: 57 }, { page: 1, pages: 1, from: 0, to: 0 } ] );
 check( "- held within the pages there are", [ hp.people_page( 21, 9, 10 ).page,

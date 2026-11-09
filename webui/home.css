@@ -1430,6 +1430,18 @@
    color: var(--color-chat-text-secondary);
 }
 
+.home-people-inactive
+{
+   margin-left: auto;
+   font-size: var(--font-size-chat-meta);
+}
+
+.home-people-inactive[hidden],
+.home-people-search[hidden]
+{
+   display: none;
+}
+
 .home-pager
 {
    display: flex;

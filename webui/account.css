@@ -264,6 +264,13 @@
    color: var(--color-chat-warning-text);
 }
 
+/* NOTE: Disabled (Ian, 2026-11-09) - no longer able to sign in, so quieter than the rest. */
+.account-pill--inactive
+{
+   background: var(--color-chat-bg-band);
+   color: var(--color-chat-text-band);
+}
+
 .account-avatar
 {
    flex: none;
@@ -789,7 +796,8 @@ button.account-back,
    line-height: 1;
 }
 
-.account-more-menu .account-remove
+.account-more-menu .account-remove,
+.account-more-menu .account-disable
 {
    color: var(--color-chat-critical-text);
 }

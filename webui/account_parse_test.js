@@ -91,6 +91,13 @@ check( "keys - none, not backed up, backed up; none for one unclaimed", ap.parse
  .map( function( r ) { return r.name + ":" + r.keys; } ), [ "alice:none", "bob:unsaved", "carol:saved", ":" ] );
 check( "- said under the name", [ "none", "unsaved", "saved", "" ].map( ap.people_keys_text ),
  [ "No keys yet", "Keys need backing up", "Keys backed up", "" ] );
+// NOTE: Disabled (Ian, 2026-11-09 - "d6ef2fe2"): "~" in place of the keys state - taken off, inactive, in their place by name.
+check( "disabled - inactive, the mark taken off, no keys said, among the others by name", ap.parse_people( "20401 alice~\n51093 bob\n35887 \n20202 cara~\n",
+ "" ).map( function( r ) { return r.pin + ":" + r.name + ":" + r.status + ":" + r.keys; } ),
+ [ "20401:alice:inactive:", "51093:bob:active:saved", "20202:cara:inactive:", "35887::unclaimed:" ] );
+check( "- their PIN and username still taken", [ ap.nominate_problem( "20401", "", ap.parse_people( "20401 alice~\n", "" ) ),
+ ap.nominate_problem( "", "alice", ap.parse_people( "20401 alice~\n", "" ) ) ], [ "PIN 20401 is already in use.",
+ "Someone already has the username alice." ] );
 
 // --------------------------------------------------------------------
 heading( "a PIN admin chooses" );

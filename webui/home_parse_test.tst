@@ -161,6 +161,11 @@ ok   - a name, case aside
 ok   - a PIN, or part of one
 ok   - the status as shown
 ok   - every word found
+ok   people shown - the inactive left out
+ok   - listed with Show inactive
+ok   - nobody
+ok   - found as inactive or disabled
+ok   - not counted as active on the Overview
 ok   a page of people
 ok   - held within the pages there are
 ok   the count over the list

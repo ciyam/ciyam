@@ -26,6 +26,8 @@ ok   nobody, and no session
 ok   Windows line ends
 ok   keys - none, not backed up, backed up; none for one unclaimed
 ok   - said under the name
+ok   disabled - inactive, the mark taken off, no keys said, among the others by name
+ok   - their PIN and username still taken
 
 == a PIN admin chooses =========================================
 ok   both
