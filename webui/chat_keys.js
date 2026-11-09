@@ -2094,11 +2094,26 @@ async function chat_look_for_owner_key( member_only )
    {
       show_alert( "Room key for " + entry.name + " added - " + owner + "'s messages here, and yours, are encrypted with it.", "is-info" );
 
-      chat_send_room_key_receipt( owner, room, key );
+      // NOTE: Not looked for again until it is sent ("g_room_receipt_busy").
+      g_room_receipt_busy[ room ] = true;
+
+      try
+      {
+         await chat_send_room_key_receipt( owner, room, key );
+      }
+      finally
+      {
+         delete g_room_receipt_busy[ room ];
+      }
    }
    else if( problem !== "kept" )
       show_alert( problem, "is-error" );
 }
+
+// NOTE: The rooms whose receipt is being looked for or sent (Ian, 2026-11-09: each member's receipt came back to the owner twice,
+// about a second apart) - a sign in looks for it twice at once, as the room is first read and as the keys are, and each read the
+// reserved room before the other's receipt was there. One at a time for a room, so a look begun after it ends finds the receipt.
+var g_room_receipt_busy = { };
 
 // NOTE: The room's key already here, and the owner's note for it there all the same - answered with a receipt if it has none
 // ("member_receipt_due( )", Ian, 2026-11-07: after a restore from scratch the owner passes it again, and would otherwise count
@@ -2111,26 +2126,34 @@ async function chat_answer_held_key( room, entry )
    var key = chat_room_key( room );
    var looked = room + "/" + chat_key_notes_total( );
 
-   if( ( secret === "" ) || ( g_owner_key_looked[ room ] === looked ) || !chat_owner_note_waiting( owner ) )
+   if( ( secret === "" ) || g_room_receipt_busy[ room ] || ( g_owner_key_looked[ room ] === looked ) || !chat_owner_note_waiting( owner ) )
       return;
 
    g_owner_key_looked[ room ] = looked;
+   g_room_receipt_busy[ room ] = true;
 
-   var read = g_chat_keys_read;
-   var found = await chat_dm_opened( c_key_notes_room, [ owner, ciyam.username ], secret );
-
-   if( found === null )
+   try
    {
-      delete g_owner_key_looked[ room ];
+      var read = g_chat_keys_read;
+      var found = await chat_dm_opened( c_key_notes_room, [ owner, ciyam.username ], secret );
 
-      return;
+      if( found === null )
+      {
+         delete g_owner_key_looked[ room ];
+
+         return;
+      }
+
+      if( ( read !== g_chat_keys_read ) || ( chat_room_key( room ) !== key ) )
+         return;
+
+      if( member_receipt_due( found.opened, owner, ciyam.username, room, key, room_key_mark( key ) ) )
+         await chat_send_room_key_receipt( owner, room, key );
    }
-
-   if( ( read !== g_chat_keys_read ) || ( chat_room_key( room ) !== key ) )
-      return;
-
-   if( member_receipt_due( found.opened, owner, ciyam.username, room, key, room_key_mark( key ) ) )
-      await chat_send_room_key_receipt( owner, room, key );
+   finally
+   {
+      delete g_room_receipt_busy[ room ];
+   }
 }
 
 // NOTE: Whether the reserved room, as the invitations' poll last read it, holds a sealed private message from "owner" - a note with a
