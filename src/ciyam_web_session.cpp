@@ -244,6 +244,7 @@ constexpr const char c_web_session_prompt_marker = 'P';
 constexpr const char c_web_session_encrypted_marker = 'X';
 
 constexpr const char* c_web_session_dummy_uuid = "00000000000000000000000000000000";
+constexpr const char* c_web_session_dunmy_pwd_hash = "0000000000000000000000000000000000000000000000000000000000000000";
 
 constexpr const char* c_storage_attribute_id = "id";
 constexpr const char* c_storage_attribute_user_info = "user_info";
@@ -3280,7 +3281,10 @@ bool process_cws_request( http_request_type request_type, const string& uri_suff
 
                         if( !is_keys_op )
                         {
-                           string pwd_hash( sha256( password ).get_digest_as_string( ) );
+                           string pwd_hash( password );
+
+                           if( pwd_hash != c_web_session_dunmy_pwd_hash )
+                              pwd_hash = sha256( password ).get_digest_as_string( );
 
                            replace_user_pwd_hash( pin, pwd_hash );
                         }
@@ -3430,32 +3434,39 @@ bool process_cws_request( http_request_type request_type, const string& uri_suff
 
                         if( !next_name.empty( ) )
                         {
-                           string keys_file_name( g_cws_artifacts_dir + '/' + c_ciyam_prefix + next_pin + c_keys_suffix );
+                           string pwd_hash( get_user_pwd_hash( next_pin ) );
 
-                           bool changed_keys = false;
-
-                           if( !file_exists( keys_file_name ) )
-                              next_name += '?';
+                           if( pwd_hash == c_web_session_dunmy_pwd_hash )
+                              next_name += '~';
                            else
                            {
-                              string saved_file_name( keys_file_name );
+                              string keys_file_name( g_cws_artifacts_dir + '/' + c_ciyam_prefix + next_pin + c_keys_suffix );
 
-                              replace( saved_file_name, string( c_keys_suffix ), upper( c_keys_suffix ) );
+                              bool changed_keys = false;
 
-                              if( !file_exists( saved_file_name ) )
-                                 changed_keys = true;
+                              if( !file_exists( keys_file_name ) )
+                                 next_name += '?';
                               else
                               {
-                                 int64_t keys_tm_val = last_modification_time( keys_file_name );
-                                 int64_t saved_tm_val = last_modification_time( saved_file_name );
+                                 string saved_file_name( keys_file_name );
 
-                                 if( keys_tm_val > saved_tm_val )
+                                 replace( saved_file_name, string( c_keys_suffix ), upper( c_keys_suffix ) );
+
+                                 if( !file_exists( saved_file_name ) )
                                     changed_keys = true;
-                              }
-                           }
+                                 else
+                                 {
+                                    int64_t keys_tm_val = last_modification_time( keys_file_name );
+                                    int64_t saved_tm_val = last_modification_time( saved_file_name );
 
-                           if( changed_keys )
-                              next_name += '!';
+                                    if( keys_tm_val > saved_tm_val )
+                                       changed_keys = true;
+                                 }
+                              }
+
+                              if( changed_keys )
+                                 next_name += '!';
+                           }
                         }
 
                         if( !is_json_output )
