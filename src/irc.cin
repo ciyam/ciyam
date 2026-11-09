@@ -1096,21 +1096,20 @@ IS_DIRECT=
       @endif
 
       @ifdef $IS_ENCRYPTED_PREFIX
+      PREFIX=
+      OLD_KEY_FILE_DATA=$KEY_FILE_DATA
+
+         @ifdef $CHECK_USER_NAME
+         CHECK_PUB_KEY_FILE=@files:$LOCAL_FILES_DIR:.irc_$USER.public.$CHECK_USER_NAME
+            @ifdef $CHECK_PUB_KEY_FILE
+            PREFIX=!
+            KEY_FILE_DATA=@file:$LOCAL_FILES_DIR/.irc_$USER.public.$CHECK_USER_NAME
+            @endif
+         @endif
 
          @ifdef $KEY_FILE_DATA
-         OLD_KEY_FILE_DATA=$KEY_FILE_DATA
-
-         PREFIX=
             @ifdef $DIRECT_PUB_SUFFIX
             PREFIX=!
-            @endif
-
-            @ifdef $CHECK_USER_NAME
-            CHECK_PUB_KEY_FILE=@files:$LOCAL_FILES_DIR:.irc_$USER.public.$CHECK_USER_NAME
-               @ifdef $CHECK_PUB_KEY_FILE
-               PREFIX=!
-               KEY_FILE_DATA=@file:$LOCAL_FILES_DIR/.irc_$USER.public.$CHECK_USER_NAME
-               @endif
             @endif
 
          @retain MESSAGE
