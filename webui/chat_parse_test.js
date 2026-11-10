@@ -906,6 +906,8 @@ check( "a multi-line one keeps its lines", cp.pending_announcements( admin_room,
 check( "an edited one is still admin's", cp.pending_announcements( admin_room, [ ] )[ 0 ].text, "Edited announcement" );
 check( "dismissed ones are left out", ids( cp.pending_announcements( admin_room, [ "1790435793000" ] ) ), [ "1790436900000", "1790435700000" ] );
 check( "nothing read, nothing shown", cp.pending_announcements( null, null ), [ ] );
+check( "admin's note to one person (a room key's) is not an announcement",
+ cp.pending_announcements( [ cp.parse_message_line( "1794283798000 _admin_bob_ ! Xsealed" ) ], [ ] ), [ ] );
 
 var five = [ "e", "d", "c", "b", "a" ].map( function( u ) { return { unique: u }; } );
 

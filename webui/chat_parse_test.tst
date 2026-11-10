@@ -449,6 +449,7 @@ ok   a multi-line one keeps its lines
 ok   an edited one is still admin's
 ok   dismissed ones are left out
 ok   nothing read, nothing shown
+ok   admin's note to one person (a room key's) is not an announcement
 ok   a stack of five shows the newest two
 ok   expanded, all of them
 ok   two or fewer are never held back

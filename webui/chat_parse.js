@@ -3032,7 +3032,9 @@ function pending_announcements( messages, dismissed )
 
    return ( messages || [ ] ).filter( function( message )
    {
-      return message && ( message.kind === c_kind_chat ) && ( message.sender === c_announcer ) && !message.deleted
+      // NOTE: Not a private message between two ("pair") - admin's note with a room key for one person, posted in the same room
+      // (found by review, 2026-11-10).
+      return message && ( message.kind === c_kind_chat ) && ( message.sender === c_announcer ) && !message.deleted && !message.pair
        && ( gone.indexOf( message.unique ) < 0 );
    } ).sort( function( a, b ) { return Number( b.unique ) - Number( a.unique ); } );
 }
