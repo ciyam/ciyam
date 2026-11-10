@@ -2318,6 +2318,12 @@ bool process_cws_request( http_request_type request_type, const string& uri_suff
                   set_system_variable( web_lock_name, to_string( now ) );
             }
 
+            // NOTE: A disabled user's password hash is all zeroes (and so known to everyone) so
+            // no session can be created for it (otherwise the session could still be derived).
+            if( error.empty( ) && ( access_token == c_web_session_dunmy_pwd_hash ) )
+               // FUTURE: This message should be handled as a server string message.
+               error = "This account has been disabled.";
+
             // NOTE: If is not currently handling another session
             // request for the same device then the session value
             // is obtained from the leading characters of a hash.
