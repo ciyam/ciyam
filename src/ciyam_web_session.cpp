@@ -813,6 +813,19 @@ void remove_session_for_device_if_present( const string& access_token, const str
       remove_session_info( session );
 }
 
+void remove_all_sessions_for_access( const string& access_token )
+{
+   guard g( g_mutex );
+
+   for( auto i = g_session_info.begin( ); i != g_session_info.end( ); )
+   {
+      if( i->second->access == access_token )
+         i = g_session_info.erase( i );
+      else
+         i++;
+   }
+}
+
 struct cws_active_command
 {
    cws_active_command( bool lock_for_admin )
@@ -3293,6 +3306,12 @@ bool process_cws_request( http_request_type request_type, const string& uri_suff
                               pwd_hash = sha256( password ).get_digest_as_string( );
 
                            replace_user_pwd_hash( pin, pwd_hash );
+
+                           // NOTE: If the user is being disabled then will
+                           // end all of their sessions now (so that a device
+                           // already signed in cannot continue to be used).
+                           if( pwd_hash == c_web_session_dummy_pwd_hash )
+                              remove_all_sessions_for_access( pin );
                         }
                         else
                         {
