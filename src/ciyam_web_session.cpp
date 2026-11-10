@@ -244,7 +244,7 @@ constexpr const char c_web_session_prompt_marker = 'P';
 constexpr const char c_web_session_encrypted_marker = 'X';
 
 constexpr const char* c_web_session_dummy_uuid = "00000000000000000000000000000000";
-constexpr const char* c_web_session_dunmy_pwd_hash = "0000000000000000000000000000000000000000000000000000000000000000";
+constexpr const char* c_web_session_dummy_pwd_hash = "0000000000000000000000000000000000000000000000000000000000000000";
 
 constexpr const char* c_storage_attribute_id = "id";
 constexpr const char* c_storage_attribute_user_info = "user_info";
@@ -2318,9 +2318,9 @@ bool process_cws_request( http_request_type request_type, const string& uri_suff
                   set_system_variable( web_lock_name, to_string( now ) );
             }
 
-            // NOTE: A disabled user's password hash is all zeroes (and so known to everyone) so
-            // no session can be created for it (otherwise the session could still be derived).
-            if( error.empty( ) && ( access_token == c_web_session_dunmy_pwd_hash ) )
+            // NOTE: A disabled user's password hash is all zeroes (and so usable by anyone) so
+            // no session can be created for it (otherwise the session would still be accepted).
+            if( error.empty( ) && ( access_token == c_web_session_dummy_pwd_hash ) )
                // FUTURE: This message should be handled as a server string message.
                error = "This account has been disabled.";
 
@@ -3289,7 +3289,7 @@ bool process_cws_request( http_request_type request_type, const string& uri_suff
                         {
                            string pwd_hash( password );
 
-                           if( pwd_hash != c_web_session_dunmy_pwd_hash )
+                           if( pwd_hash != c_web_session_dummy_pwd_hash )
                               pwd_hash = sha256( password ).get_digest_as_string( );
 
                            replace_user_pwd_hash( pin, pwd_hash );
@@ -3442,7 +3442,7 @@ bool process_cws_request( http_request_type request_type, const string& uri_suff
                         {
                            string pwd_hash( get_user_pwd_hash( next_pin ) );
 
-                           if( pwd_hash == c_web_session_dunmy_pwd_hash )
+                           if( pwd_hash == c_web_session_dummy_pwd_hash )
                               next_name += '~';
                            else
                            {
