@@ -57,7 +57,7 @@ POS=@strpos:_:$ROOM
 
 ; NOTE: Checks all MESSAGE characters
 ; provided are in the base64 URL set.
-.regex "^([-_0-9a-zA-Z]+)$$" "$MESSAGE"
+.regex "^([-_0-9a-zA-Z]+)$" "$MESSAGE"
 
    @ifneq "$MESSAGE" "$OUTPUT"
    ERROR=Invalid message format (needs to be base64).
@@ -68,9 +68,11 @@ POS=@strpos:_:$ROOM
    ; and (unless is "admin") is disallowing any
    ; non-special messages in the reserved room
    ; (other than a special private "~<name>" for
-   ; one user name - so not "ALL" or "OTHERS" -
-   ; or a private edit which for such a message
-   ; is only permitted to be its sender's delete).
+   ; one user name - so not "ALL" or "OTHERS" and
+   ; not the sender's own name, which would have
+   ; it go to everyone - or a private edit which
+   ; for such a message is only permitted to be
+   ; its sender's delete).
    SPECIAL=
       @ifeq "$PREFIX" "$SYSTEM_PREFIX_ENCODED"
       SPECIAL=1
@@ -82,15 +84,17 @@ POS=@strpos:_:$ROOM
             RESERVED_OKAY=
             RESERVED_PAIRED=@strpos:~:$NAMES
                @ifdef $RESERVED_PAIRED
-               .regex "^(~[-a-z0-9]+)$$" "$NAMES"
+               .regex "^(~[-a-z0-9]+)$" "$NAMES"
                   @ifeq "$OUTPUT" "$NAMES"
-                  RESERVED_OKAY=1
+                     @ifneq "$NAMES" "~$USER_NAME"
+                     RESERVED_OKAY=1
+                     @endif
                   @endif
                @endif
 
                @ifndef $RESERVED_OKAY
                   @ifeq "$PREFIX" "$PRIVATE_PREFIX_ENCODED"
-                  .regex "^([0-9]{13})$$" "$NAMES"
+                  .regex "^([0-9]{13})$" "$NAMES"
                      @ifeq "$OUTPUT" "$NAMES"
                      RESERVED_OKAY=1
                      @endif
@@ -230,7 +234,7 @@ POS=@strpos:_:$NAMES
 
 NAMES_LEN=@strlen:$NAMES
    @ifeq "$NAMES_LEN" "13"
-   .regex "^([0-9]{13})$$" "$NAMES"
+   .regex "^([0-9]{13})$" "$NAMES"
       @ifeq "$OUTPUT" "$NAMES"
       EDIT_MESSAGE=1
       @endif
