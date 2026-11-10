@@ -7870,7 +7870,7 @@ const c_irc_lock_retry_ms = 400;
 // console's requests. The callbacks are otherwise untouched.
 function watch_timeouts( )
 {
-   [ "fetch", "post" ].forEach( function( name )
+   [ "fetch", "post", "fetch_in_body" ].forEach( function( name )
    {
       var original = ciyam[ name ].bind( ciyam );
 

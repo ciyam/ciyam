@@ -245,6 +245,7 @@ ok   caller still gets the response
 ok   request logged
 ok   quiet request not logged
 ok   post logged with body
+ok   a request sent in a POST's body logged as the one it carries
 ok   a request that never answers is still logged
 
 == the node's entropy kept out of the log ======================

@@ -1298,7 +1298,7 @@ function full_query( origin, entry, session )
    return String( origin || "" ) + entry.path + ( ( parts.length > 0 ) ? "?" + parts.join( "&" ) : "" );
 }
 
-// NOTE: Every request goes through "CIYAM.fetch" or "CIYAM.post", so wrapping those two on
+// NOTE: Every request goes through "CIYAM.fetch", "CIYAM.post" or "CIYAM.fetch_in_body", so wrapping those on
 // an instance captures all of its traffic - connect, polling, everything. "is_quiet" is
 // asked at the moment each request starts, which is how polling is kept out: excluded where
 // the entry is made, not filtered afterwards.
@@ -1346,6 +1346,17 @@ function install_log_capture( instance, source, is_quiet, on_entry, p_now )
    {
       return capture( "POST", url, text, function( cb ) { return original_post( url, text, cb ); }, callback );
    };
+
+   // NOTE: A request sent in a POST's body ("CIYAM.fetch_in_body", a user's keys) is logged as the request it carries.
+   if( instance.fetch_in_body )
+   {
+      var original_in_body = instance.fetch_in_body.bind( instance );
+
+      instance.fetch_in_body = function( url, request_type, callback )
+      {
+         return capture( request_type, url, null, function( cb ) { return original_in_body( url, request_type, cb ); }, callback );
+      };
+   }
 }
 
 // NOTE: Exported for Node.js; in the browser these are plain globals.

@@ -529,7 +529,8 @@ heading( "log capture" );
 
    var fake = {
       fetch: async function( url, type, callback ) { callback( "[okay]" ); },
-      post: async function( url, text, callback ) { callback( "posted" ); }
+      post: async function( url, text, callback ) { callback( "posted" ); },
+      fetch_in_body: async function( url, type, callback ) { callback( "kept" ); }
    };
 
    cp.install_log_capture( fake, "chat", function( ) { return quiet; },
@@ -553,6 +554,11 @@ heading( "log capture" );
    await fake.post( "http://h/cws/messages/0000004", "hi", function( r ) { seen = r; } );
 
    check( "post logged with body", [ logged.length, logged[ 1 ].request, seen ], [ 2, "hi", "posted" ] );
+
+   await fake.fetch_in_body( "http://h/cws/user-keys?access=1&payload=UK3%3Aab", "PUT", function( r ) { seen = r; } );
+
+   check( "a request sent in a POST's body logged as the one it carries", [ logged.length, logged[ 2 ].method, logged[ 2 ].endpoint, seen ],
+    [ 3, "PUT", "/cws/user-keys?payload=UK3:ab", "kept" ] );
 
    var silent = { fetch: async function( ) { }, post: async function( ) { } };
 
