@@ -247,7 +247,7 @@ async function keys_send( access, rounds, contents, error_id, what, guard )
 
       response = await request( function( done )
       {
-         return ciyam.fetch( keys_url( "&payload=" + encodeURIComponent( locked ) ), "PUT", done );
+         return ciyam.fetch_in_body( keys_url( "&payload=" + encodeURIComponent( locked ) ), "PUT", done );
       } );
    }
    catch( e )
@@ -1618,7 +1618,7 @@ async function keys_add_guard( entropy )
 
          var response = await request( function( done )
          {
-            return ciyam.fetch( keys_url( "&payload=" + encodeURIComponent( kept ) ), "PUT", done );
+            return ciyam.fetch_in_body( keys_url( "&payload=" + encodeURIComponent( kept ) ), "PUT", done );
          } );
 
          g_keys.node = ( problem_text( response ) === "" ) ? kept : latest;

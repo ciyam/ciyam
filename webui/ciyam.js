@@ -562,6 +562,23 @@ class CIYAM
        .catch( error => console.error( "Error fetching data: ", error ) );
    }
 
+   // NOTE: As "fetch" but with the request in a POST's body ("application/ciyam", which the node takes in place of the request
+   // it came in) - for one that could be longer than an address the node takes (9,987 characters, past it a 500), such as a
+   // user's keys with many contacts.
+   async fetch_in_body( url, request_type, callback )
+   {
+      if( this.debug )
+         console.log( request_type + " (in body) " + url );
+
+      var target = new URL( url );
+
+      await fetch( target.origin + target.pathname, { method: "POST", headers: { "Content-Type": "application/ciyam" },
+       body: "plain\n" + request_type + " " + target.pathname + target.search + " HTTP/1.1" } )
+       .then( response => response.text( ) )
+       .then( data => callback( data ) )
+       .catch( error => console.error( "Error fetching data: ", error ) );
+   }
+
    at_connect( response )
    {
       if( this.debug && ( this.node_crypto == null ) )

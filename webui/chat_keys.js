@@ -1041,7 +1041,7 @@ async function chat_keys_save_now( change, what )
    // NOTE: Lost on the way, it is said as not saved, not taken as saved ("answer_of( )", found by review).
    var answer = String( await serialised( function( )
    {
-      return answer_of( function( take ) { return ciyam.fetch( chat_keys_url( "&payload=" + encodeURIComponent( locked ) ), "PUT", take ); } );
+      return answer_of( function( take ) { return ciyam.fetch_in_body( chat_keys_url( "&payload=" + encodeURIComponent( locked ) ), "PUT", take ); } );
    } ) || "" );
 
    if( is_timeout_response( answer ) )
