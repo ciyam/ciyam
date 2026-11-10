@@ -145,7 +145,7 @@ ciyam.is_locked = false
 [
   {
     "pin": "11111",
-    "name": "test-1!"
+    "name": "test-1?"
   }
 ]
 
@@ -180,7 +180,7 @@ Create a user with access pin '22222' then list users.
 [
   {
     "pin": "11111",
-    "name": "test-1!"
+    "name": "test-1?"
   },
   {
     "pin": "22222",
@@ -207,11 +207,11 @@ Create a user with access pin '33333' then list users.
 [
   {
     "pin": "11111",
-    "name": "test-1!"
+    "name": "test-1?"
   },
   {
     "pin": "22222",
-    "name": "test!"
+    "name": "test?"
   },
   {
     "pin": "33333",
@@ -236,7 +236,7 @@ ciyam.is_locked = false
 [
   {
     "pin": "33333",
-    "name": "testing!"
+    "name": "testing?"
   }
 ]
 
@@ -248,11 +248,11 @@ Delete user with access pin '11111' then list users.
 [
   {
     "pin": "22222",
-    "name": "test!"
+    "name": "test?"
   },
   {
     "pin": "33333",
-    "name": "testing!"
+    "name": "testing?"
   }
 ]
 
@@ -261,11 +261,11 @@ Attempt to delete user with access pin '11111' again then list users.
 [
   {
     "pin": "22222",
-    "name": "test!"
+    "name": "test?"
   },
   {
     "pin": "33333",
-    "name": "testing!"
+    "name": "testing?"
   }
 ]
 
@@ -291,11 +291,11 @@ ciyam.is_locked = false
   },
   {
     "pin": "22222",
-    "name": "test!"
+    "name": "test?"
   },
   {
     "pin": "33333",
-    "name": "testing!"
+    "name": "testing?"
   }
 ]
 
@@ -308,7 +308,7 @@ Delete user with access pin '22222' then list users.
   },
   {
     "pin": "33333",
-    "name": "testing!"
+    "name": "testing?"
   }
 ]
 
