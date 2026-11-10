@@ -3173,7 +3173,7 @@ function render_people( )
          confirm.hidden = false;
 
          row.querySelector( ".account-confirm-text" ).textContent = disabling ? "Disable " + called + "? They can't sign in again until"
-          + " you enable them - a device signed in now stays in until it signs out." : "Remove " + called + "? Nobody can set it up with its PIN.";
+          + " you enable them, and any device they're signed in on will be signed out." : "Remove " + called + "? Nobody can set it up with its PIN.";
 
          var yes = row.querySelector( ".account-confirm-yes" );
 
