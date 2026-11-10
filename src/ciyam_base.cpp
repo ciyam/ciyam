@@ -5199,7 +5199,7 @@ void init_globals( const char* p_sid, int* p_port, int* p_use_udp, int* p_web_po
          has_kept_unlocked = true;
 
       if( !sid.empty( ) && !has_kept_unlocked
-       && ( sid.find( ':' ) == string::npos ) )
+       && ( sid.length( ) < 64 ) && ( sid.find( ':' ) == string::npos ) )
          hash_sid_val( sid );
 
       bool force_secure = false;
@@ -6116,7 +6116,9 @@ void set_identity( const string& info, const char* p_encrypted_sid )
             {
                if( !was_key_unlocked )
                {
-                  if( !is_external_sid )
+                  // NOTE: Only need to hash the system identity if
+                  // it is not external and was not already hashed.
+                  if( !is_external_sid && ( sid.length( ) < 64 ) )
                      hash_sid_val( sid );
                }
                else
