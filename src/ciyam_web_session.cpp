@@ -815,14 +815,49 @@ void remove_session_for_device_if_present( const string& access_token, const str
 
 void remove_all_sessions_for_access( const string& access_token )
 {
-   guard g( g_mutex );
+   vector< string > sessions;
+   vector< string > usernames;
+   vector< string > devices;
 
-   for( auto i = g_session_info.begin( ); i != g_session_info.end( ); )
    {
-      if( i->second->access == access_token )
-         i = g_session_info.erase( i );
-      else
-         i++;
+      guard g( g_mutex );
+
+      for( auto i = g_session_info.begin( ); i != g_session_info.end( ); )
+      {
+         if( i->second->access == access_token )
+         {
+            sessions.push_back( i->first );
+            usernames.push_back( i->second->username );
+            devices.push_back( i->second->device );
+
+            i = g_session_info.erase( i );
+         }
+         else
+            i++;
+      }
+   }
+
+   string var_prefix( get_special_var_name( e_special_var_web ) + '.' );
+
+   // NOTE: Each session is cleaned up as it would be when terminated
+   // (including forcing its "web_session" script to finish).
+   for( size_t i = 0; i < sessions.size( ); i++ )
+   {
+      string name_and_device( var_prefix + usernames[ i ] + '.' + devices[ i ] );
+
+      set_system_variable( name_and_device + c_web_session_suffix, "" );
+      set_system_variable( name_and_device + c_web_started_suffix, "" );
+      set_system_variable( name_and_device + c_web_storage_suffix, "" );
+
+      if( has_system_variable( name_and_device + c_web_message_suffix ) )
+      {
+         set_system_variable( name_and_device + c_web_message_suffix, "" );
+         set_system_variable( name_and_device + c_web_command_suffix, g_web_session_check );
+      }
+
+      file_remove( g_temporary_directory + '/' + sessions[ i ] + c_tmp_file_ext );
+
+      remove_access_device_if_present( access_token, devices[ i ] );
    }
 }
 
