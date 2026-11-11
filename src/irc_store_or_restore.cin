@@ -202,6 +202,7 @@
       system_variable "-p=$PREFIX" @irc_rooms*
 
       system_variable "-p=$PREFIX" @irc_close_*
+      system_variable "-p=$PREFIX" @irc_keyid_*
       system_variable "-p=$PREFIX" -quoted @irc_names_*
       system_variable "-p=$PREFIX" @irc_owner_*
       system_variable "-p=$PREFIX" @irc_posts_*
