@@ -722,6 +722,40 @@ async function steps( module_class, list )
    check( "- through run", [ await new uk( { } ).run( "people " + test_entropy ), await new uk( { } ).run( "person " + test_people + " 12345" ) ],
     [ test_people, sha_hex( "person_entropy:" + test_people + ":12345" ).substr( 0, 32 ) ] );
 
+   // NOTE: The people key kept with admin's keys (Damon, 2026-11-11), sealed - worked out here with Node's own: the lock "harden"'s
+   // rounds of "people_lock:", the salt, the PIN, ":" and the password; the key XORed with the HMAC of "people_pad" under it; the
+   // check the first 16 hex digits of the HMAC of "people_check" and the key.
+   var people_salt = "00112233445566778899aabbccddeeff";
+   var people_lock = "people_lock:" + people_salt + "12345:pässwörd";
+
+   for( var p = 0, people_input = people_lock; p < 1000; p++ )
+      people_lock = node_crypto.createHash( "sha256" ).update( people_lock + people_input, "utf8" ).digest( "hex" );
+
+   var people_pad = node_crypto.createHmac( "sha256", people_lock ).update( "people_pad" ).digest( "hex" );
+   var people_sealed = "PK1:1000:" + people_salt + ":" + test_people.split( "" ).map( function( c, i )
+   {
+      return ( parseInt( c, 16 ) ^ parseInt( people_pad.charAt( i ), 16 ) ).toString( 16 );
+   } ).join( "" ) + ":" + node_crypto.createHmac( "sha256", people_lock ).update( "people_check" + test_people ).digest( "hex" ).substr( 0, 16 );
+
+   check( "the people key sealed under admin's PIN and password", await uk.seal_people_key( test_people, "12345", "pässwörd",
+    { salt: people_salt, rounds: 1000 } ), people_sealed );
+   check( "- opened by them, and by no other password or PIN", [ await uk.open_people_key( people_sealed, "12345", "pässwörd" ),
+    await uk.open_people_key( people_sealed, "12345", "password" ).catch( function( e ) { return e.message; } ),
+    await uk.open_people_key( people_sealed, "12346", "pässwörd" ).catch( function( e ) { return e.message; } ) ],
+    [ test_people, "That password does not open the people key.", "That password does not open the people key." ] );
+   check( "- a new salt each time otherwise; not one sealed, said", [ ( await uk.seal_people_key( test_people, "12345", "pässwörd",
+    { rounds: 1000 } ) ) !== people_sealed,
+    await uk.open_people_key( test_people, "12345", "pässwörd" ).catch( function( e ) { return e.message; } ),
+    await uk.seal_people_key( test_people, "12345", "" ).catch( function( e ) { return e.message; } ) ],
+    [ true, "That is not a sealed people key.", "A password is needed." ] );
+   check( "- kept with the keys only when given, and only sealed", [ JSON.parse( uk.contents_text( { primary: test_people,
+    secondary: test_people, contacts: { }, people: people_sealed } ) ).people, JSON.parse( uk.contents_text( { primary: test_people,
+    secondary: test_people, contacts: { } } ) ).hasOwnProperty( "people" ), ( function( )
+   {
+      try { return uk.contents_text( { primary: test_people, secondary: test_people, contacts: { }, people: test_people } ); }
+      catch( e ) { return e.message; }
+   } )( ) ], [ people_sealed, false, "A people key is kept sealed (\"PK1\")." ] );
+
    // NOTE: Worked out here without the module (Ian, 2026-10-25: a hash of the entropy kept by the browser, the keys on the node
    // locked under it) - the access key "harden"'s rounds of "user_keys" and the entropy (each round the SHA-256 of what there is
    // with that after it); the lock's key the SHA-256 of the salt, "user_keys" and the access key; ChaCha20 under the key's
@@ -755,7 +789,7 @@ async function steps( module_class, list )
    check( "locked under the access key - as worked out without the module, given a salt and rounds", await uk.lock( known_access, known_contents,
     { salt: known_salt, rounds: 1000 } ), known_locked );
    check( "- unlocked, with the rounds they were made with", await uk.unlock( known_access, known_locked ),
-    Object.assign( { }, known_contents, { rooms: { }, rounds: 1000, guard: "" } ) );
+    Object.assign( { }, known_contents, { rooms: { }, people: "", rounds: 1000, guard: "" } ) );
    check( "- the rounds read before opening them, so typed words make the same access key", uk.rounds_of( known_locked ), 1000 );
 
    var locked_afresh = await uk.lock( known_access, known_contents );
@@ -832,6 +866,10 @@ async function steps( module_class, list )
     await not_locked( known_access, Object.assign( { }, known_contents, { rooms: { "0000004": room_key + "00" } } ) ),
     await not_locked( known_access, Object.assign( { }, known_contents, { rooms: { "4": room_key } } ) ) ],
     [ "A room key is 32 or 64 hex digits, kept by its room's number.", "A room key is 32 or 64 hex digits, kept by its room's number." ] );
+   check( "the people key, sealed - locked with admin's keys and unlocked as it is", ( await uk.unlock( known_access,
+    await uk.lock( known_access, Object.assign( { }, known_contents, { people: people_sealed } ) ) ) ).people, people_sealed );
+   check( "- sealed and opened through run - the default rounds", [ ( await new uk( { } ).run( "seal " + test_people + " 12345 pässwörd" ) )
+    .split( ":" )[ 1 ], await new uk( { } ).run( "open " + people_sealed + " 12345 pässwörd" ) ], [ "100000", test_people ] );
 
    var by_run = ( await new uk( { } ).run( "lock " + test_entropy ) ).split( " " );
 

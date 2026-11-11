@@ -29,6 +29,15 @@
 // rounds it has, so it takes keys with fewer rounds - a new access key, which no browser that had the old one can make (a round
 // of "harden" needs the entropy) - only from the words; and only the same guard otherwise, or the same check to erase them.
 //
+// Admin's keys may keep the people key too (Damon, 2026-11-11 - for Give keys in People), sealed under admin's PIN and password so
+// someone at admin's browser cannot give keys without the password:
+//
+//    PK1:<rounds>:<salt>:<sealed>:<check>
+//
+// the key "harden"'s rounds (in decimal) of "people_lock:", the salt (16 random bytes), the PIN, ":" and the password; the people key XORed
+// with the HMAC-SHA256 of "people_pad" under it, and the check the first 16 hex digits of the HMAC of "people_check" and the
+// people key.
+//
 // Needs "ciyam_harden.js", "ciyam_chacha20.js", "ciyam_ed25519.js" and "ciyam_secure_message.js" loaded too, and "bip39.min.js"
 // for the words.
 ciyam_register_module( class extends ciyam_module
@@ -39,7 +48,8 @@ ciyam_register_module( class extends ciyam_module
       version: "3",
       description: "an account's own keys - locked under a hash of its twelve words before they go to the node, and opened again",
       example: "access <entropy> | lock <entropy> | unlock <access key> <locked> | guard <entropy> [<rounds>] | words <entropy>"
-       + " | entropy <twelve words> | people <node entropy> | person <people key> <pin>",
+       + " | entropy <twelve words> | people <node entropy> | person <people key> <pin> | seal <people key> <pin> <password>"
+       + " | open <sealed> <pin> <password>",
       hint: "(i.e. the keys and others' public keys, locked so the node cannot read them, opened by what a browser keeps)",
       needs: [ "sha256", "harden", "chacha20", "ed25519", "secure_message", "bip39" ]
    };
@@ -53,6 +63,11 @@ ciyam_register_module( class extends ciyam_module
 
    static c_people_label = "people_key:";
    static c_person_label = "person_entropy:";
+
+   static c_people_format = "PK1";
+   static c_people_lock_label = "people_lock:";
+   static c_people_pad = "people_pad";
+   static c_people_check = "people_check";
 
    // NOTE: About two thirds of a second in Chrome on a laptop, a few seconds on a phone - only when the words are typed or the
    // keys set up. Keys come back from the node, so it cannot ask for more than ten times as many - or it could keep a page
@@ -141,6 +156,78 @@ ciyam_register_module( class extends ciyam_module
          throw new Error( "A PIN is five digits." );
 
       return ( await ciyam_sha256_hex( this.c_person_label + key + ":" + text ) ).substr( 0, 32 );
+   }
+
+   static is_sealed_people_key( kept )
+   {
+      return /^PK1:[1-9][0-9]{0,8}:[0-9a-f]{32}:[0-9a-f]{64}:[0-9a-f]{16}$/.test( String( kept || "" ) );
+   }
+
+   // NOTE: What the people key is sealed under - hardened as an access key is, so a password is slow to guess at.
+   static async people_lock_key( password, pin, salt, rounds )
+   {
+      var harden = this.module_named( "harden" );
+      var hasher = ( typeof ciyam_sha256_fastest === "function" ) ? await ciyam_sha256_fastest( ) : { native: true, hash: ciyam_sha256_hex };
+
+      if( !/^[0-9]{5}$/.test( String( pin || "" ) ) )
+         throw new Error( "A PIN is five digits." );
+
+      if( String( password || "" ) === "" )
+         throw new Error( "A password is needed." );
+
+      return harden.rounds( hasher, this.checked_rounds( rounds ), this.c_people_lock_label + salt + String( pin ) + ":" + String( password ), null );
+   }
+
+   // NOTE: Two hex strings of the same length XORed, digit by digit.
+   static xor_of_hex( a, b )
+   {
+      var out = "";
+
+      for( var i = 0; i < a.length; i++ )
+         out += ( parseInt( a.charAt( i ), 16 ) ^ parseInt( b.charAt( i ), 16 ) ).toString( 16 );
+
+      return out;
+   }
+
+   // NOTE: The people key sealed under the PIN and password ("PK1") - with "options.rounds" (kept with it). "options" fixes the salt
+   // too, for a known answer; a new one otherwise.
+   static async seal_people_key( people_key, pin, password, options )
+   {
+      var key = String( people_key || "" ).toLowerCase( );
+      var opts = options || { };
+
+      if( !/^[0-9a-f]{64}$/.test( key ) )
+         throw new Error( "A people key is 64 hex digits." );
+
+      var salt = ( opts.salt !== undefined ) ? String( opts.salt )
+       : this.hex_of( crypto.getRandomValues( new Uint8Array( this.c_salt_bytes ) ) );
+
+      if( !/^[0-9a-f]{32}$/.test( salt ) )
+         throw new Error( "A salt is 32 lower-case hex digits." );
+
+      var rounds = this.checked_rounds( ( opts.rounds !== undefined ) ? Number( opts.rounds ) : this.c_default_rounds );
+      var lock = await this.people_lock_key( password, pin, salt, rounds );
+      var sm = this.module_named( "secure_message" );
+
+      return [ this.c_people_format, String( rounds ), salt, this.xor_of_hex( key, await sm.hmac_sha256( lock, this.c_people_pad ) ),
+       ( await sm.hmac_sha256( lock, this.c_people_check + key ) ).substr( 0, 16 ) ].join( ":" );
+   }
+
+   // NOTE: The people key from its seal, or an error - not a sealed one, or not the PIN and password it was sealed under.
+   static async open_people_key( kept, pin, password )
+   {
+      if( !this.is_sealed_people_key( kept ) )
+         throw new Error( "That is not a sealed people key." );
+
+      var parts = String( kept ).split( ":" );
+      var lock = await this.people_lock_key( password, pin, parts[ 2 ], Number( parts[ 1 ] ) );
+      var sm = this.module_named( "secure_message" );
+      var key = this.xor_of_hex( parts[ 3 ], await sm.hmac_sha256( lock, this.c_people_pad ) );
+
+      if( ( await sm.hmac_sha256( lock, this.c_people_check + key ) ).substr( 0, 16 ) !== parts[ 4 ] )
+         throw new Error( "That password does not open the people key." );
+
+      return key;
    }
 
    // NOTE: What a browser keeps - "harden"'s rounds of "user_keys" and the entropy, with the page's faster SHA-256.
@@ -246,11 +333,20 @@ ciyam_register_module( class extends ciyam_module
          rooms[ room ] = key;
       } );
 
+      var people = String( ( contents || { } ).people || "" );
+
+      if( ( people !== "" ) && !this.is_sealed_people_key( people ) )
+         throw new Error( "A people key is kept sealed (\"PK1\")." );
+
       var text = { primary: contents.primary, secondary: contents.secondary, contacts: contacts };
 
       // NOTE: Only when there are some - so keys with none lock to just what they did before room keys.
       if( Object.keys( rooms ).length > 0 )
          text.rooms = rooms;
+
+      // NOTE: Admin's only, and only once Give keys has kept it.
+      if( people !== "" )
+         text.people = people;
 
       return JSON.stringify( text );
    }
@@ -324,7 +420,7 @@ ciyam_register_module( class extends ciyam_module
       var contents = JSON.parse( new TextDecoder( ).decode( await chacha.crypt( key, chacha.bytes_of( parts[ 3 ] ) ) ) );
 
       return { primary: contents.primary, secondary: contents.secondary, contacts: contents.contacts || { }, rooms: contents.rooms || { },
-       rounds: rounds, guard: guard };
+       people: contents.people || "", rounds: rounds, guard: guard };
    }
 
    // NOTE: "access <entropy>", "lock <entropy>" (the keys from it, no one else's yet - the access key shown before them),
@@ -364,6 +460,12 @@ ciyam_register_module( class extends ciyam_module
 
       if( ( what === "person" ) && ( words.length === 2 ) )
          return it.person_entropy( words[ 0 ], words[ 1 ] );
+
+      if( ( what === "seal" ) && ( words.length >= 3 ) )
+         return it.seal_people_key( words[ 0 ], words[ 1 ], words.slice( 2 ).join( " " ) );
+
+      if( ( what === "open" ) && ( words.length >= 3 ) )
+         return it.open_people_key( words[ 0 ], words[ 1 ], words.slice( 2 ).join( " " ) );
 
       throw new Error( "Use one of - " + it.about.example );
    }

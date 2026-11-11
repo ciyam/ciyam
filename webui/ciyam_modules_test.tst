@@ -104,6 +104,10 @@ ok   - a person's entropy from it and their PIN, each PIN its own
 ok   - and makes keys as any entropy does
 ok   - not a people key or a PIN, said
 ok   - through run
+ok   the people key sealed under admin's PIN and password
+ok   - opened by them, and by no other password or PIN
+ok   - a new salt each time otherwise; not one sealed, said
+ok   - kept with the keys only when given, and only sealed
 ok   the access key - rounds of the entropy, as worked out without the module
 ok   the keys from the entropy - their public key and secrets the same as from the entropy itself
 ok   locked under the access key - as worked out without the module, given a salt and rounds
@@ -120,6 +124,8 @@ ok   - not read: a guard of other rounds than the keys', a bad guard, or a line 
 ok   not locked - no access key, no keys, or a public key not one
 ok   room keys - locked with the keys by room, in lower case, and unlocked
 ok   - a room key not 32 hex digits, or a room not a number of 7, refused
+ok   the people key, sealed - locked with admin's keys and unlocked as it is
+ok   - sealed and opened through run - the default rounds
 ok   through run - access, lock, unlock, words and entropy
 ok   - anything else said
 
