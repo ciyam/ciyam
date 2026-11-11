@@ -48,6 +48,10 @@ const c_signin_storage_keys_prefix = "cws.user_keys_";
 // NOTE: One brought by another browser's QR code, held for the tab until the keys are shown ("account_keys.js").
 const c_signin_pending_keys_name = "cws.pending_keys";
 
+// NOTE: Who admin is giving keys to - from People to Your keys ("do_give_keys( )" in "home.js", 2026-11-11), held for the tab until
+// Your keys is shown.
+const c_signin_give_keys_name = "cws.give_keys";
+
 const c_signin_saved_mark = "  ·  saved password";
 
 const c_signin_title = "Sign in";
@@ -740,7 +744,10 @@ function signin_forget_tab_keys( kept_pin )
       }
 
       if( kept_pin === "" )
+      {
          names.push( c_signin_pending_keys_name );
+         names.push( c_signin_give_keys_name );
+      }
 
       names.forEach( function( name ) { sessionStorage.removeItem( name ); } );
    }

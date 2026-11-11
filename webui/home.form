@@ -835,6 +835,7 @@ http://www.opensource.org/licenses/mit-license.php.
                           most) - "toggle_person_menu( )"; each item shown only where it can be done. -->
                      <button type="button" class="chat-btn account-more" aria-haspopup="menu" aria-expanded="false" hidden>&#x22EF;</button>
                      <div class="chat-new-menu account-more-menu" role="menu" hidden>
+                        <button type="button" role="menuitem" class="account-give" hidden>Give keys</button>
                         <button type="button" role="menuitem" class="account-keys" hidden>Back up or restore keys</button>
                         <button type="button" role="menuitem" class="account-reset" hidden>Reset password</button>
                         <button type="button" role="menuitem" class="account-enable" hidden>Enable</button>

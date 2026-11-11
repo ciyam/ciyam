@@ -3159,6 +3159,10 @@ function render_people( )
          button.onclick = function( ) { close_person_menu( false ); act( ); };
       };
 
+      // NOTE: Their keys given, from the node's words and their PIN (Damon, 2026-11-11) - to someone else who has claimed theirs.
+      if( ( person.status === "active" ) && !person.you && ( person.name !== "" ) )
+         item( ".account-give", "Give keys to " + person.name, function( ) { do_give_keys( person ); } );
+
       // NOTE: Backing up and restoring keys - admin's own too; not for one unclaimed, which has none.
       if( ( person.status !== "unclaimed" ) && ( person.name !== "" ) )
          item( ".account-keys", person.you ? "Back up or restore your keys" : "Back up or restore the keys of " + person.name,
@@ -3400,6 +3404,24 @@ async function do_remove( pin )
       people_alert( ( person && person.name ? person.name : "The unclaimed account" ) + " was removed." );
 
    load_people( );
+}
+
+// NOTE: Give keys (Damon, 2026-11-11) - done under Your keys on My account, which has admin's keys and the exchange of two codes
+// with the person's device: who to is held for the tab ("c_signin_give_keys_name"), not put in the address.
+function do_give_keys( person )
+{
+   try
+   {
+      sessionStorage.setItem( c_signin_give_keys_name, JSON.stringify( { pin: person.pin, name: person.name, for: ciyam.access } ) );
+   }
+   catch( e )
+   {
+      people_alert( "This browser keeps nothing for the tab, so Give keys can't be opened here.", true );
+
+      return;
+   }
+
+   open_app_by_key( "account", "#give", null );
 }
 
 // NOTE: A forgotten password (Damon and Ian, 2026-10-29) - the account made again as a nominated one with its own PIN and username,

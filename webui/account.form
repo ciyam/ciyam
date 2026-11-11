@@ -300,6 +300,7 @@ http://www.opensource.org/licenses/mit-license.php.
                         <p class="account-lede" id="keys_none_lede"></p>
                         <div class="account-actions-row">
                            <button type="button" class="chat-btn" id="keys_node">Use the node's twelve words</button>
+                           <button type="button" class="chat-btn" id="keys_admin">Get them from your administrator</button>
                            <button type="button" class="chat-btn" id="keys_restore">I have twelve words of my own</button>
                            <button type="button" class="chat-btn chat-btn--primary" id="keys_start">Set up your keys</button>
                         </div>
@@ -355,6 +356,7 @@ http://www.opensource.org/licenses/mit-license.php.
                            <button type="button" class="chat-btn" id="keys_enter_new">Start again with new words</button>
                            <button type="button" class="chat-btn" id="keys_enter_cancel" hidden>Cancel</button>
                            <button type="button" class="chat-btn" id="keys_ask_start">Get them from another device</button>
+                           <button type="button" class="chat-btn" id="keys_enter_admin" hidden>Get them from your administrator</button>
                            <button type="button" class="chat-btn chat-btn--primary" id="keys_enter_go">Use my keys here</button>
                         </div>
                      </div>
@@ -363,7 +365,7 @@ http://www.opensource.org/licenses/mit-license.php.
                           them, and the code it shows back read here: by its address opened with this device's camera, scanned in the
                           page, or pasted. "keys_ask_start( )". -->
                      <div class="account-keys-part" id="keys_ask" hidden>
-                        <p class="account-lede">On a device that has your keys, open this code with its camera - or open the address
+                        <p class="account-lede" id="keys_ask_lede">On a device that has your keys, open this code with its camera - or open the address
                          there, signed in as you. It shows a code back: open that with this device's camera, scan it here, or paste
                          its address.</p>
                         <div class="account-keys-qr" id="keys_ask_qr" aria-hidden="true"></div>
@@ -371,7 +373,7 @@ http://www.opensource.org/licenses/mit-license.php.
                         <input type="text" class="chat-field account-keys-key" id="keys_ask_link" readonly>
                         <div class="chat-scan-reader" id="ask_scan_reader"></div>
                         <p class="account-lede" id="ask_scan_status" role="status" aria-live="polite"></p>
-                        <label class="chat-label" for="keys_ask_reply">The address it shows back</label>
+                        <label class="chat-label" for="keys_ask_reply" id="keys_ask_reply_label">The address it shows back</label>
                         <input type="text" class="chat-field account-keys-key" id="keys_ask_reply" autocomplete="off" spellcheck="false">
                         <div class="account-actions-row">
                            <button type="button" class="chat-btn" id="keys_ask_cancel">Cancel</button>
@@ -394,6 +396,53 @@ http://www.opensource.org/licenses/mit-license.php.
                </div>
 
                <div class="account-column-side">
+                  <!-- NOTE: Give keys, from People (Damon, 2026-11-11) - admin gives someone their keys, made from the people key
+                       kept with admin's own and the person's PIN, by the exchange of two codes with their device ("keys_give_go( )").
+                       The people key is sealed under admin's password, so the password is asked each time; the node's words only
+                       until it is kept, or after the password has changed. -->
+                  <div class="account-card account-form account-keys-device" id="give_part" hidden>
+                     <div>
+                        <h2 id="give_heading">Give keys</h2>
+                        <p class="account-lede" id="give_lede"></p>
+                     </div>
+                     <div class="account-keys-device-step" id="give_ask_part">
+                        <span class="chat-form-needed" aria-hidden="true"><span class="chat-needed">*</span> needed</span>
+                        <label class="chat-label" for="give_password">Your password <span class="chat-needed" aria-hidden="true">*</span></label>
+                        <input type="password" class="chat-field" id="give_password" autocomplete="current-password">
+                        <div class="chat-field-error" id="give_password_error"></div>
+                        <div id="give_words_part" hidden>
+                           <label class="chat-label" for="give_words">The node's twelve words <span class="chat-needed" aria-hidden="true">*</span></label>
+                           <textarea class="chat-field account-keys-words" id="give_words" rows="3" autocomplete="off" autocapitalize="off"
+                            spellcheck="false"></textarea>
+                           <div class="chat-field-error" id="give_words_error"></div>
+                           <p class="account-lede" id="give_words_note"></p>
+                        </div>
+                        <div class="chat-scan-reader" id="give_scan_reader"></div>
+                        <p class="account-lede" id="give_scan_status" role="status" aria-live="polite"></p>
+                        <label class="chat-label" for="give_ask">Their device's address <span class="chat-needed" aria-hidden="true">*</span></label>
+                        <input type="text" class="chat-field account-keys-key" id="give_ask" autocomplete="off" spellcheck="false">
+                        <div class="chat-field-error" id="give_ask_error"></div>
+                        <div class="recover-warning"><b>Only their own device, in front of you.</b> Their keys go to whichever device
+                         showed the code.</div>
+                        <div class="chat-error-text" id="give_error" role="alert"></div>
+                        <div class="account-actions-row">
+                           <button type="button" class="chat-btn" id="give_cancel">Cancel</button>
+                           <button type="button" class="chat-btn" id="give_scan">Scan their code</button>
+                           <button type="button" class="chat-btn chat-btn--primary" id="give_go">Give keys</button>
+                        </div>
+                     </div>
+                     <div class="account-keys-device-step" id="give_reply_part" hidden>
+                        <p class="account-lede" id="give_reply_lede"></p>
+                        <div class="account-keys-qr" id="give_qr" aria-hidden="true"></div>
+                        <label class="chat-label" for="give_link">The address for it</label>
+                        <input type="text" class="chat-field account-keys-key" id="give_link" readonly>
+                        <div class="account-actions-row">
+                           <button type="button" class="chat-btn chat-btn--primary" id="give_done">Done</button>
+                        </div>
+                     </div>
+                     <div class="chat-signin-busy" id="give_busy" hidden><span class="chat-spinner"></span><span id="give_busy_text" role="status"></span></div>
+                  </div>
+
                   <!-- NOTE: Room keys (2026-10-26) - kept with the keys, by room number; each is made, shared and removed in the chat,
                        under Room Details. Shown once the keys are here. Listed by the rooms' names, each number under its name (Damon,
                        2026-11-04: only the numbers were said) - "keys_draw_rooms( )". -->

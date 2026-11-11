@@ -1031,7 +1031,7 @@ async function chat_keys_save_now( change, what )
    {
       // NOTE: With the guard's line the node has, which only the words could change (Ian, 2026-10-27).
       locked = uk.kept_text( latest.guard, await uk.lock( access, { primary: latest.primary, secondary: latest.secondary, contacts: contacts,
-       rooms: rooms }, { rounds: latest.rounds } ) );
+       rooms: rooms, people: latest.people }, { rounds: latest.rounds } ) );
    }
    catch( e )
    {
