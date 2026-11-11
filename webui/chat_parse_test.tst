@@ -342,6 +342,7 @@ ok   no start point yet - anything of mine counts
 ok   the read point is kept
 ok   the session count is still right
 ok   a line without it has none
+ok   room key ids - after the read point, or alone, in lower case
 ok   each marker under the last message before the read point
 ok   the user's own is left out
 ok   a read point equal to a message's unique has read that message
@@ -590,6 +591,8 @@ ok   - a receipt only from the member, not from the owner
 ok   a member with the key passed it again - a receipt due
 ok   - not once their receipt for it is there, nor for a note with another key, nor from anyone but the owner
 ok   a member's state with the room key, for the owner
+ok   a member's room key id - the room's now, another, or none known
+ok   - this browser's told only when it has one the member line does not show
 ok   exchanging contact codes with someone - neither, theirs here, theirs just added
 ok   - the owner told as someone joins without it
 ok   - several, found together at a sign in, said in one

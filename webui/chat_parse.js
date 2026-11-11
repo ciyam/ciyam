@@ -106,11 +106,25 @@ function parse_members( line )
 
       // NOTE: With "extra=TIME" the count is followed by ".<unique>" - the last message this
       // user's reads have returned, so everything up to and including it has reached them.
+      // With "extra=ENTIRE" (Ian, 2026-11-11) that is followed by "#<keyid>" - the first eight
+      // hex digits of the SHA-256 of "room_key:" and the room key they last read with - or is
+      // ".#<keyid>" alone when there is no read point yet.
       var dot = entry.indexOf( ".", pos );
 
       if( dot > 0 )
       {
          var read = entry.substring( dot + 1 );
+         var hash = read.indexOf( "#" );
+
+         if( hash >= 0 )
+         {
+            var key_id = read.substring( hash + 1 ).toLowerCase( );
+
+            if( /^[0-9a-f]{8}$/.test( key_id ) )
+               member.key_id = key_id;
+
+            read = read.substring( 0, hash );
+         }
 
          if( /^\d+$/.test( read ) )
             member.read = read;
@@ -2443,7 +2457,25 @@ function member_key_state_text( state )
       has: "has the key",
       passed: "passed the key - not yet accepted",
       needs_codes: "needs each other's contact codes",
-      failed: "the key could not be passed - opening the room tries again" }[ state ] || "";
+      failed: "the key could not be passed - opening the room tries again",
+      older: "has an older key - the new one is passed to them" }[ state ] || "";
+}
+
+// NOTE: What a member's room key id says, for the owner (Ian, 2026-11-11 - the mark of 2026-11-09: each member's id shown on the
+// member line, "parse_members( )") - "has" the room's key now, "older" for another, or "" when theirs is not known.
+function member_key_by_id( member_key_id, current_id )
+{
+   if( !member_key_id || !current_id )
+      return "";
+
+   return ( member_key_id === current_id ) ? "has" : "older";
+}
+
+// NOTE: Whether this browser's room key id needs telling the node - it has a key for the room, and the member line does not show
+// it with that one ("me" its own entry there, or null).
+function key_id_due( me, my_id )
+{
+   return ( my_id !== "" ) && ( !me || ( me.key_id !== my_id ) );
 }
 
 // NOTE: What the dialog to exchange contact codes with "person" says (Damon, 2026-11-08: members far apart could not meet to scan
@@ -5178,6 +5210,8 @@ if( typeof module !== "undefined" )
       room_key_receipt: room_key_receipt,
       key_note_text: key_note_text,
       member_key_state_text: member_key_state_text,
+      member_key_by_id: member_key_by_id,
+      key_id_due: key_id_due,
       contact_exchange_text: contact_exchange_text,
       owner_codes_needed_text: owner_codes_needed_text,
       owner_keyless_text: owner_keyless_text,

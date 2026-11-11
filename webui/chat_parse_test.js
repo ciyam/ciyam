@@ -720,6 +720,13 @@ check( "the read point is kept", readers.map( function( m ) { return m.name + ":
 check( "the session count is still right", readers.map( function( m ) { return m.sessions; } ), [ 1, 1, 0, 0 ] );
 check( "a line without it has none", cp.parse_members( "admin+1 verify-a+0" )[ 0 ].read, undefined );
 
+// NOTE: "extra=ENTIRE" (Ian, 2026-11-11) - the read point, then "#" and the room key id they last read with.
+var keyed = cp.parse_members( "admin+1.1790521522001#8e06abbc tester-1+0.#8E06ABBC verify-a+0.1790520461001 verify-e+0 bad+0.1790520461001#xyz" );
+
+check( "room key ids - after the read point, or alone, in lower case", keyed.map( function( m ) { return m.name + ":" + ( m.read || "-" )
+ + ":" + ( m.key_id || "-" ); } ), [ "admin:1790521522001:8e06abbc", "tester-1:-:8e06abbc", "verify-a:1790520461001:-", "verify-e:-:-",
+ "bad:1790520461001:-" ] );
+
 var in_room = [ "1790520461000", "1790520462000", "1790521522000" ];
 
 check( "each marker under the last message before the read point",
@@ -1208,9 +1215,16 @@ check( "- not once their receipt for it is there, nor for a note with another ke
  cp.member_receipt_due( delivered, "damon", "tester-1", "0000124", "d".repeat( 32 ), "0d0d0d0d" ),
  cp.member_receipt_due( delivered, "damon", "tester-1", "0000124", "e".repeat( 32 ), "0e0e0e0e" ),
  cp.member_receipt_due( delivered.slice( 0, 4 ), "maya", "tester-1", "0000124", "d".repeat( 32 ), "0d0d0d0d" ) ], [ false, false, false ] );
-check( "a member's state with the room key, for the owner", [ "has", "passed", "needs_codes", "failed", "other" ].map( cp.member_key_state_text ),
+check( "a member's state with the room key, for the owner", [ "has", "passed", "needs_codes", "failed", "older", "other" ].map( cp.member_key_state_text ),
  [ "has the key", "passed the key - not yet accepted", "needs each other's contact codes",
- "the key could not be passed - opening the room tries again", "" ] );
+ "the key could not be passed - opening the room tries again", "has an older key - the new one is passed to them", "" ] );
+// NOTE: Room key ids (Ian, 2026-11-11) - what a member's says to the owner, and when this browser's is told to the node.
+check( "a member's room key id - the room's now, another, or none known", [ cp.member_key_by_id( "8e06abbc", "8e06abbc" ),
+ cp.member_key_by_id( "0d0d0d0d", "8e06abbc" ), cp.member_key_by_id( undefined, "8e06abbc" ), cp.member_key_by_id( "8e06abbc", "" ) ],
+ [ "has", "older", "", "" ] );
+check( "- this browser's told only when it has one the member line does not show", [ cp.key_id_due( { name: "me", key_id: "8e06abbc" }, "8e06abbc" ),
+ cp.key_id_due( { name: "me", key_id: "0d0d0d0d" }, "8e06abbc" ), cp.key_id_due( { name: "me" }, "8e06abbc" ), cp.key_id_due( null, "8e06abbc" ),
+ cp.key_id_due( { name: "me" }, "" ) ], [ false, true, true, true, false ] );
 // NOTE: Contact codes exchanged in the chat (Damon, 2026-11-08) - sent another way, theirs pasted.
 check( "exchanging contact codes with someone - neither, theirs here, theirs just added", [ cp.contact_exchange_text( "damon", false, false ),
  cp.contact_exchange_text( "damon", true, false ), cp.contact_exchange_text( "damon", false, true ) ], [
