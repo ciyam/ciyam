@@ -284,6 +284,22 @@ check( "- the reply, read back", ap.parse_device_link( ap.device_reply_link( "ht
 check( "- not one: the old address with the access key, a key too short, a reply with no check, nothing", [ ap.parse_device_link( "http://n/account"
  + ".html#keys=" + sealed_key ), ap.parse_device_link( "keys-ask=" + ask_key.substr( 2 ) ), ap.parse_device_link( "keys-reply=" + reply_key + "."
  + sealed_key ), ap.parse_device_link( "" ) ], [ null, null, null, null ] );
+
+// NOTE: Keys from the administrator (Damon, 2026-11-11) - the same exchange, each kind its own, the answer a person's entropy.
+var given_entropy = "d4".repeat( 16 );
+check( "keys from the administrator - the ask and the answer, each its own kind", [ ap.device_give_link( "http://n/account.html", ask_key ),
+ ap.parse_device_link( ap.device_give_link( "http://n/account.html", ask_key ) ), ap.parse_device_link( ap.device_given_link( "http://n/account.html",
+ reply_key, given_entropy, "0123456789abcdef" ) ) ], [ "http://n/account.html#keys-give=" + ask_key, { kind: "give", key: ask_key },
+ { kind: "given", key: reply_key, sealed: given_entropy, check: "0123456789abcdef" } ] );
+check( "- an answer with an access key's length not taken as one, nor another device's with an entropy's", [ ap.parse_device_link( "keys-given="
+ + reply_key + "." + sealed_key + ".0123456789abcdef" ), ap.parse_device_link( "keys-reply=" + reply_key + "." + given_entropy
+ + ".0123456789abcdef" ) ], [ null, null ] );
+check( "Give keys - everything it lacks, by field, at once", [ ap.give_field_problems( "", "", null ), ap.give_field_problems( "", null, null ) ],
+ [ { password: "Type your password.", words: "Type the node's twelve words.", ask: "Scan their device's code, or paste its address." },
+ { password: "Type your password.", words: "", ask: "Scan their device's code, or paste its address." } ] );
+check( "- another device's code not taken for theirs; all there, nothing", [ ap.give_field_problems( "pw", "  ", { kind: "ask", key: ask_key } ),
+ ap.give_field_problems( "pw", "taxi act", { kind: "give", key: ask_key } ) ], [ { password: "", words: "Type the node's twelve words.",
+ ask: "That isn't the code from Get them from your administrator - on their device, under Your keys." }, { password: "", words: "", ask: "" } ] );
 check( "xor of two hex strings - and back", [ ap.xor_hex( "0f0f", "ffff" ), ap.xor_hex( ap.xor_hex( sealed_key, ask_key ), ask_key ) ],
  [ "f0f0", sealed_key ] );
 check( "- not the same length, or not hex", [ ap.xor_hex( "0f", "fff" ), ap.xor_hex( "zz", "00" ) ], [ "", "" ] );

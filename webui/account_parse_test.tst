@@ -101,6 +101,10 @@ ok   another device - the ask, this page with its public key after #
 ok   - read back, whole, after # only, or pasted broken over lines in capitals
 ok   - the reply, read back
 ok   - not one: the old address with the access key, a key too short, a reply with no check, nothing
+ok   keys from the administrator - the ask and the answer, each its own kind
+ok   - an answer with an access key's length not taken as one, nor another device's with an entropy's
+ok   Give keys - everything it lacks, by field, at once
+ok   - another device's code not taken for theirs; all there, nothing
 ok   xor of two hex strings - and back
 ok   - not the same length, or not hex
 

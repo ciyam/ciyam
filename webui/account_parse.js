@@ -540,6 +540,12 @@ function keys_step_text( have )
 const c_device_ask_prefix = "keys-ask=";
 const c_device_reply_prefix = "keys-reply=";
 
+// NOTE: The same exchange for keys from the administrator (Damon, 2026-11-11) - Give keys in People - each kind its own, so a device
+// with the keys never answers one asking the administrator with its own access key, nor takes the administrator's answer for
+// another device's: a "give" asks, and a "given" answers with the person's entropy (32 hex digits) sealed.
+const c_device_give_prefix = "keys-give=";
+const c_device_given_prefix = "keys-given=";
+
 function device_ask_link( page, public_key )
 {
    return page + "#" + c_device_ask_prefix + public_key;
@@ -550,8 +556,18 @@ function device_reply_link( page, public_key, sealed, check )
    return page + "#" + c_device_reply_prefix + public_key + "." + sealed + "." + check;
 }
 
+function device_give_link( page, public_key )
+{
+   return page + "#" + c_device_give_prefix + public_key;
+}
+
+function device_given_link( page, public_key, sealed, check )
+{
+   return page + "#" + c_device_given_prefix + public_key + "." + sealed + "." + check;
+}
+
 // NOTE: An ask or a reply - a whole address, the part after "#", or pasted with spaces or line breaks in it - as { kind: "ask", key }
-// or { kind: "reply", key, sealed, check }, or null for anything else.
+// or { kind: "reply", key, sealed, check } (or "give" and "given", as those are), or null for anything else.
 function parse_device_link( text )
 {
    var value = String( text || "" ).replace( /\s+/g, "" );
@@ -570,7 +586,37 @@ function parse_device_link( text )
    if( reply )
       return { kind: "reply", key: reply[ 1 ].toLowerCase( ), sealed: reply[ 2 ].toLowerCase( ), check: reply[ 3 ].toLowerCase( ) };
 
+   var give = /^keys-give=([0-9a-fA-F]{64})$/.exec( value );
+
+   if( give )
+      return { kind: "give", key: give[ 1 ].toLowerCase( ) };
+
+   var given = /^keys-given=([0-9a-fA-F]{64})\.([0-9a-fA-F]{32})\.([0-9a-fA-F]{16})$/.exec( value );
+
+   if( given )
+      return { kind: "given", key: given[ 1 ].toLowerCase( ), sealed: given[ 2 ].toLowerCase( ), check: given[ 3 ].toLowerCase( ) };
+
    return null;
+}
+
+// NOTE: What Give keys lacks, field by field (Damon, 2026-11-11) - the password always; the node's words only when asked ("words" null
+// when they are not); and their device's code, read ("parse_device_link( )"), as the code from Get them from your administrator.
+function give_field_problems( password, words, device )
+{
+   var problems = { password: "", words: "", ask: "" };
+
+   if( String( password || "" ) === "" )
+      problems.password = "Type your password.";
+
+   if( ( words !== null ) && ( String( words || "" ).trim( ) === "" ) )
+      problems.words = "Type the node's twelve words.";
+
+   if( device === null )
+      problems.ask = "Scan their device's code, or paste its address.";
+   else if( device.kind !== "give" )
+      problems.ask = "That isn't the code from Get them from your administrator - on their device, under Your keys.";
+
+   return problems;
 }
 
 // NOTE: Two hex strings of the same length, XORed digit by digit - "" if they are not.
@@ -597,7 +643,12 @@ if( typeof module !== "undefined" )
       c_device_reply_prefix: c_device_reply_prefix,
       device_ask_link: device_ask_link,
       device_reply_link: device_reply_link,
+      c_device_give_prefix: c_device_give_prefix,
+      c_device_given_prefix: c_device_given_prefix,
+      device_give_link: device_give_link,
+      device_given_link: device_given_link,
       parse_device_link: parse_device_link,
+      give_field_problems: give_field_problems,
       xor_hex: xor_hex,
       account_sections: account_sections,
       keys_step_text: keys_step_text,
