@@ -591,6 +591,7 @@ function chat_keys_forget( )
    g_owner_away_members = { };
    g_owner_codes_told = { };
    g_keyless_deleted = { };
+   g_key_ids_told = { };
 }
 
 // NOTE: The open room's other person, if it is a direct message the console would encrypt too - by its name, whoever else is in
@@ -1170,8 +1171,19 @@ function chat_render_member_key_states( shown )
    if( list === null )
       return;
 
-   var states = shown ? ( g_owner_key_states[ g_room ] || { } ) : { };
-   var names = Object.keys( states ).sort( );
+   var kept = shown ? ( g_owner_key_states[ g_room ] || { } ) : { };
+   var names = Object.keys( kept ).sort( );
+   var current = chat_room_key_id( chat_room_key( g_room ) );
+   var states = { };
+
+   // NOTE: What the member line's room key ids say, as drawn (Ian, 2026-11-11) - over a receipt's "passed" too, which passing a new key
+   // can set after the ids were read.
+   names.forEach( function( name )
+   {
+      var by_id = member_key_by_id( chat_member_key_id( name ), current );
+
+      states[ name ] = ( ( by_id === "has" ) || ( ( by_id === "older" ) && ( kept[ name ] === "passed" ) ) ) ? by_id : kept[ name ];
+   } );
 
    list.replaceChildren( );
    list.hidden = ( names.length === 0 );
@@ -1896,7 +1908,7 @@ async function chat_room_read_quietly( room )
 
    var reading = serialised( function( )
    {
-      return ciyam.fetch_messages( room, "from=0", function( text ) { response = String( text ); } );
+      return ciyam.fetch_messages( room, "from=0;extra=ENTIRE", function( text ) { response = String( text ); } );
    } );
 
    g_in_poll = false;
@@ -2248,6 +2260,74 @@ async function chat_send_key_note( room, person, text )
    return ( ( answer === null ) || is_timeout_response( answer ) || is_error_response( answer ) ) ? "failed" : "sent";
 }
 
+// ---- Room key ids (Ian, 2026-11-11 - the mark of 2026-11-09)
+
+// NOTE: Each member says which room key they hold: the first eight hex digits of the SHA-256 of "room_key:" and the key (as "irc_extra.cin"
+// makes it from the console's), told to the node by a read with that as its "from" - the node joins them to the room again with
+// "#<id>", keeps it as "@irc_keyid_<room>_<user>", and shows it on the member line ("extra=ENTIRE", "parse_members( )"). So the
+// owner sees who has the room's key now, without receipts that could be lost.
+// NOTE: The ids told this sign in, by room - each told once a room and key, unless the member line shows another since.
+var g_key_ids_told = { };
+
+function chat_room_key_id( key )
+{
+   return ( key === "" ) ? "" : hex_sha256( "room_key:" + key ).substr( 0, 8 );
+}
+
+// NOTE: A member's id on the open room's member line, or "".
+function chat_member_key_id( name )
+{
+   var member = g_members.filter( function( m ) { return m.name === name; } )[ 0 ];
+
+   return ( member && member.key_id ) ? member.key_id : "";
+}
+
+// NOTE: After each read of the open room - this browser's id told, if the member line does not show it; and in the owner's room,
+// what the members' ids say put over what the receipts said ("has", or "older" for one with another key).
+function chat_key_ids_read( room )
+{
+   if( ( room !== g_room ) || !g_chat_keys || g_chat_keys_unread )
+      return;
+
+   var key = chat_room_key( room );
+   var id = chat_room_key_id( key );
+   var me = g_members.filter( function( m ) { return m.name === ciyam.username; } )[ 0 ] || null;
+
+   if( key_id_due( me, id ) && ( g_key_ids_told[ room ] !== id + "|" + ( me && me.key_id ? me.key_id : "" ) ) )
+   {
+      // NOTE: Once for what the line shows now - told again only if it shows something else after.
+      g_key_ids_told[ room ] = id + "|" + ( me && me.key_id ? me.key_id : "" );
+
+      serialised( function( )
+      {
+         return ciyam.fetch_messages( room, "from=" + id, function( ) { } );
+      } );
+   }
+
+   if( ( id === "" ) || !chat_is_room_owner( ) )
+      return;
+
+   if( !g_owner_key_states.hasOwnProperty( room ) )
+      g_owner_key_states[ room ] = { };
+
+   var states = g_owner_key_states[ room ];
+   var changed = false;
+
+   g_members.forEach( function( member )
+   {
+      var by_id = member_key_by_id( member.key_id, id );
+
+      if( ( member.name !== ciyam.username ) && ( by_id !== "" ) && ( states[ member.name ] !== by_id ) )
+      {
+         states[ member.name ] = by_id;
+         changed = true;
+      }
+   } );
+
+   if( changed )
+      chat_render_room_key( );
+}
+
 // ---- The owner's side (Damon, 2026-11-03: a key held for a new direct message waited in the owner's page until it was accepted -
 // "keep this page open" - and was lost when the owner signed out first, so those invited had the room unencrypted)
 
@@ -2307,6 +2387,14 @@ async function chat_owner_send_keys( quiet, invited )
       {
          var person = people[ i ];
          var secret = chat_secret_with( person );
+
+         // NOTE: Their room key id the room's - they have it, whatever the receipts say (Ian, 2026-11-11).
+         if( member_key_by_id( chat_member_key_id( person ), chat_room_key_id( key ) ) === "has" )
+         {
+            states[ person ] = "has";
+
+            continue;
+         }
 
          // NOTE: Without their contact code there is nothing to seal it with - said, and tried again as the room changes.
          if( secret === "" )
@@ -2491,6 +2579,7 @@ async function chat_owner_send_keys_in( entry, notes, needed )
    var read = g_chat_keys_read;
    var known = g_owner_away_members[ room ];
    var names = ( known && ( known.total === entry.total ) ) ? known.names : null;
+   var current_id = chat_room_key_id( key );
 
    g_owner_away_checked[ room ] = chat_owner_away_marker( entry );
 
@@ -2507,7 +2596,12 @@ async function chat_owner_send_keys_in( entry, notes, needed )
 
       names = result.members.map( function( member ) { return member.name; } );
 
-      g_owner_away_members[ room ] = { total: entry.total, names: names };
+      var ids = { };
+
+      result.members.forEach( function( member ) { if( member.key_id ) ids[ member.name ] = member.key_id; } );
+
+      known = { total: entry.total, names: names, ids: ids };
+      g_owner_away_members[ room ] = known;
    }
 
    if( ( read !== g_chat_keys_read ) || ( chat_room_key( room ) !== key ) || ( g_room === room ) )
@@ -2524,6 +2618,14 @@ async function chat_owner_send_keys_in( entry, notes, needed )
    {
       var person = people[ i ];
       var secret = chat_secret_with( person );
+
+      // NOTE: Their room key id the room's - they have it, whatever the receipts say (Ian, 2026-11-11).
+      if( member_key_by_id( ( known && known.ids ) ? known.ids[ person ] : "", current_id ) === "has" )
+      {
+         states[ person ] = "has";
+
+         continue;
+      }
 
       if( secret === "" )
       {

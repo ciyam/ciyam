@@ -3706,8 +3706,9 @@ function load_messages( options, replace, again )
    // rather than written into whatever room is now open.
    var asked_for = g_room;
 
-   // NOTE: "extra=TIME" puts each member's read point on the member line - the read markers.
-   var asked = ( options ? options + ";" : "" ) + "extra=TIME";
+   // NOTE: "extra=ENTIRE" puts each member's read point on the member line - the read markers - and the room key id they hold
+   // ("chat_key_ids_read( )", Ian, 2026-11-11).
+   var asked = ( options ? options + ";" : "" ) + "extra=ENTIRE";
 
    return serialised( function( )
    {
@@ -3814,6 +3815,8 @@ function on_messages_response( response, asked_for, replace, again )
       else if( result.messages.some( function( message ) { return ( message.kind === c_kind_system ) && message.event
        && ( message.event.verb === "joined" ); } ) )
          chat_owner_send_keys( );
+
+      chat_key_ids_read( asked_for );
    }
 }
 
