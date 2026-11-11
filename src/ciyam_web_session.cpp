@@ -4139,9 +4139,10 @@ bool process_cws_request( http_request_type request_type, const string& uri_suff
                                     {
                                        string extra_token;
 
-                                       // NOTE: If "from" is either too small or too large to be
-                                       // a time value then treats it as being an "extra token".
-                                       if( ( from.length( ) < 10 ) || ( from.length( ) >= 32 ) )
+                                       // NOTE: If "from" is the length of a room key id (eight) or of
+                                       // a join token (32 or more) then treats it as being an "extra
+                                       // token" (any other short value such as "0" is a time value).
+                                       if( ( from.length( ) == 8 ) || ( from.length( ) >= 32 ) )
                                        {
                                           extra_token = from;
 
