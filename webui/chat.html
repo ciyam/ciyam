@@ -57,6 +57,9 @@ http://www.opensource.org/licenses/mit-license.php.
    "form" content dynamically, matching the
    pattern used by "test_web_session.html".
    -->
+   <!-- NOTE: Said while the chat's scripts arrive - on a slow connection some seconds (Ian, 2026-11-11, over 4G) - and gone once
+        "chat.js" runs. -->
+   <div class="chat-empty" id="chat_page_loading" role="status">Loading the chat…</div>
    <div id="chat_content"></div>
 
    <script>
@@ -184,7 +187,9 @@ http://www.opensource.org/licenses/mit-license.php.
        } );
    }
 
-   function load_main_js( name )
+   // NOTE: Run from the script's own load, however long it takes to arrive (Ian, 2026-11-11: on 4G "chat.js" took longer than the
+   // five seconds the page used to wait for it, and "failed to load"); one that could not be loaded is said.
+   function load_main_js( name, loaded )
    {
       var script = document.createElement( "script" );
 
@@ -192,7 +197,16 @@ http://www.opensource.org/licenses/mit-license.php.
 
       script.setAttribute( "id", name );
 
+      script.onload = loaded;
+      script.onerror = function( ) { load_failed( "(failed to load " + name + ".js - check the connection, then reload)" ); };
+
       document.body.appendChild( script );
+   }
+
+   function load_failed( text )
+   {
+      document.getElementById( "chat_page_loading" ).hidden = true;
+      document.getElementById( "chat_content" ).textContent = text;
    }
 
    // NOTE: Resolves once the script has run, so the next can rely on it.
@@ -214,11 +228,15 @@ http://www.opensource.org/licenses/mit-license.php.
    function call_at_load( )
    {
       if( typeof window[ "chat" ] === "function" )
+      {
+         document.getElementById( "chat_page_loading" ).hidden = true;
+
          chat( );
+      }
       else if( ++g_load_attempts <= c_max_load_attempts )
          window.setTimeout( call_at_load, c_load_delay );
       else
-         document.getElementById( "chat_content" ).textContent = "(failed to load chat.js)";
+         load_failed( "(failed to load chat.js - check the connection, then reload)" );
    }
 
    // NOTE: The scripts are loaded only once the markup is in place. They used to start 100ms
@@ -232,7 +250,7 @@ http://www.opensource.org/licenses/mit-license.php.
        .then( load_main )
        .catch( function( )
        {
-          document.getElementById( "chat_content" ).textContent = "(failed to load chat.form - reload to try again)";
+          load_failed( "(failed to load chat.form - check the connection, then reload)" );
        } );
    }
 
@@ -260,9 +278,7 @@ http://www.opensource.org/licenses/mit-license.php.
       // first.
       load_script( "console_parse.js" ).then( function( )
       {
-         load_main_js( "chat" );
-
-         window.setTimeout( call_at_load, c_load_delay );
+         load_main_js( "chat", call_at_load );
       } );
 
       window.setTimeout( load_complete, 200 );
