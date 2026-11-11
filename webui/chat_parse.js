@@ -2458,7 +2458,7 @@ function member_key_state_text( state )
       passed: "passed the key - not yet accepted",
       needs_codes: "needs each other's contact codes",
       failed: "the key could not be passed - opening the room tries again",
-      older: "has an older key - the new one is passed to them",
+      older: "has an older key",
       none: "doesn't have the key now" }[ state ] || "";
 }
 

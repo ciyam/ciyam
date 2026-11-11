@@ -1177,7 +1177,7 @@ function chat_render_member_key_states( shown )
    var states = { };
 
    // NOTE: What the member line's room key ids say, as drawn (Ian, 2026-11-11) - having it, or none, over what receipts said; an older
-   // one over "passed" too, which passing a new key can set after the ids were read.
+   // one over "passed", which is what passing a new key leaves for a member who has not taken it yet.
    names.forEach( function( name )
    {
       var by_id = member_key_by_id( chat_member_key_id( name ), current );
@@ -2303,31 +2303,18 @@ function chat_key_ids_read( room )
 
       serialised( function( )
       {
-         return ciyam.fetch_messages( room, "from=" + tell, function( ) { } );
+         return ciyam.fetch_messages( room, "from=" + tell, function( response )
+         {
+            // NOTE: Not told after all - tried again at the next read (found by review, 2026-11-12).
+            if( is_error_response( String( response || "" ) ) )
+               delete g_key_ids_told[ room ];
+         } );
       } );
    }
 
-   if( ( id === "" ) || !chat_is_room_owner( ) )
-      return;
-
-   if( !g_owner_key_states.hasOwnProperty( room ) )
-      g_owner_key_states[ room ] = { };
-
-   var states = g_owner_key_states[ room ];
-   var changed = false;
-
-   g_members.forEach( function( member )
-   {
-      var by_id = member_key_by_id( member.key_id, id );
-
-      if( ( member.name !== ciyam.username ) && ( by_id !== "" ) && ( states[ member.name ] !== by_id ) )
-      {
-         states[ member.name ] = by_id;
-         changed = true;
-      }
-   } );
-
-   if( changed )
+   // NOTE: The owner's Room details drawn again from the ids just read - only what is drawn; the states stay as passing the key left
+   // them (found by review, 2026-11-12: written over, "needs codes" and "failed" were lost on every read).
+   if( ( id !== "" ) && chat_is_room_owner( ) )
       chat_render_room_key( );
 }
 
@@ -2391,7 +2378,15 @@ async function chat_owner_send_keys( quiet, invited )
          var person = people[ i ];
          var secret = chat_secret_with( person );
 
-         // NOTE: Without their contact code there is nothing to seal it with - said, and tried again as the room changes.
+         // NOTE: Without their contact code there is nothing to seal it with - said, and tried again as the room changes. Unless
+         // their room key id is the room's: they have it (found by review, 2026-11-12: they were told the room was keyless).
+         if( ( secret === "" ) && ( member_key_by_id( chat_member_key_id( person ), chat_room_key_id( key ) ) === "has" ) )
+         {
+            states[ person ] = "has";
+
+            continue;
+         }
+
          if( secret === "" )
          {
             // NOTE: Looked at again as an invited person joins - the note below is only for those in it.
@@ -2622,6 +2617,14 @@ async function chat_owner_send_keys_in( entry, notes, needed )
    {
       var person = people[ i ];
       var secret = chat_secret_with( person );
+
+      // NOTE: Their room key id the room's - they have it, contact code or not (found by review, 2026-11-12).
+      if( ( secret === "" ) && ( member_key_by_id( ( known && known.ids ) ? known.ids[ person ] : "", current_id ) === "has" ) )
+      {
+         states[ person ] = "has";
+
+         continue;
+      }
 
       if( secret === "" )
       {
