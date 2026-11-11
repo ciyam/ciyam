@@ -2458,24 +2458,37 @@ function member_key_state_text( state )
       passed: "passed the key - not yet accepted",
       needs_codes: "needs each other's contact codes",
       failed: "the key could not be passed - opening the room tries again",
-      older: "has an older key - the new one is passed to them" }[ state ] || "";
+      older: "has an older key - the new one is passed to them",
+      none: "doesn't have the key now" }[ state ] || "";
 }
 
+// NOTE: The id a member tells the node when they have no key for the room - so one lost (keys restored from an older backup, say) is
+// not taken for the one they had, which the node would otherwise go on showing.
+const c_no_room_key_id = "00000000";
+
 // NOTE: What a member's room key id says, for the owner (Ian, 2026-11-11 - the mark of 2026-11-09: each member's id shown on the
-// member line, "parse_members( )") - "has" the room's key now, "older" for another, or "" when theirs is not known.
+// member line, "parse_members( )") - "has" the room's key now, "older" for another, "none" for none, or "" when theirs is not known.
 function member_key_by_id( member_key_id, current_id )
 {
    if( !member_key_id || !current_id )
       return "";
 
+   if( member_key_id === c_no_room_key_id )
+      return "none";
+
    return ( member_key_id === current_id ) ? "has" : "older";
 }
 
-// NOTE: Whether this browser's room key id needs telling the node - it has a key for the room, and the member line does not show
-// it with that one ("me" its own entry there, or null).
-function key_id_due( me, my_id )
+// NOTE: The room key id this browser needs to tell the node, or "" - its key's ("my_id") if the member line does not show it ("me"
+// its own entry there, or null); with no key, that it has none, if the line shows one it had.
+function key_id_to_tell( me, my_id )
 {
-   return ( my_id !== "" ) && ( !me || ( me.key_id !== my_id ) );
+   var shown = ( me && me.key_id ) ? me.key_id : "";
+
+   if( my_id !== "" )
+      return ( shown !== my_id ) ? my_id : "";
+
+   return ( ( shown !== "" ) && ( shown !== c_no_room_key_id ) ) ? c_no_room_key_id : "";
 }
 
 // NOTE: What the dialog to exchange contact codes with "person" says (Damon, 2026-11-08: members far apart could not meet to scan
@@ -5211,7 +5224,8 @@ if( typeof module !== "undefined" )
       key_note_text: key_note_text,
       member_key_state_text: member_key_state_text,
       member_key_by_id: member_key_by_id,
-      key_id_due: key_id_due,
+      c_no_room_key_id: c_no_room_key_id,
+      key_id_to_tell: key_id_to_tell,
       contact_exchange_text: contact_exchange_text,
       owner_codes_needed_text: owner_codes_needed_text,
       owner_keyless_text: owner_keyless_text,

@@ -591,8 +591,8 @@ ok   - a receipt only from the member, not from the owner
 ok   a member with the key passed it again - a receipt due
 ok   - not once their receipt for it is there, nor for a note with another key, nor from anyone but the owner
 ok   a member's state with the room key, for the owner
-ok   a member's room key id - the room's now, another, or none known
-ok   - this browser's told only when it has one the member line does not show
+ok   a member's room key id - the room's now, another, none, or not known
+ok   - this browser's told only when the member line does not show it; having none, said only over one it had
 ok   exchanging contact codes with someone - neither, theirs here, theirs just added
 ok   - the owner told as someone joins without it
 ok   - several, found together at a sign in, said in one

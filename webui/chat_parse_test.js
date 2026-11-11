@@ -1215,16 +1215,18 @@ check( "- not once their receipt for it is there, nor for a note with another ke
  cp.member_receipt_due( delivered, "damon", "tester-1", "0000124", "d".repeat( 32 ), "0d0d0d0d" ),
  cp.member_receipt_due( delivered, "damon", "tester-1", "0000124", "e".repeat( 32 ), "0e0e0e0e" ),
  cp.member_receipt_due( delivered.slice( 0, 4 ), "maya", "tester-1", "0000124", "d".repeat( 32 ), "0d0d0d0d" ) ], [ false, false, false ] );
-check( "a member's state with the room key, for the owner", [ "has", "passed", "needs_codes", "failed", "older", "other" ].map( cp.member_key_state_text ),
- [ "has the key", "passed the key - not yet accepted", "needs each other's contact codes",
- "the key could not be passed - opening the room tries again", "has an older key - the new one is passed to them", "" ] );
+check( "a member's state with the room key, for the owner", [ "has", "passed", "needs_codes", "failed", "older", "none", "other" ]
+ .map( cp.member_key_state_text ), [ "has the key", "passed the key - not yet accepted", "needs each other's contact codes",
+ "the key could not be passed - opening the room tries again", "has an older key - the new one is passed to them", "doesn't have the key now", "" ] );
 // NOTE: Room key ids (Ian, 2026-11-11) - what a member's says to the owner, and when this browser's is told to the node.
-check( "a member's room key id - the room's now, another, or none known", [ cp.member_key_by_id( "8e06abbc", "8e06abbc" ),
- cp.member_key_by_id( "0d0d0d0d", "8e06abbc" ), cp.member_key_by_id( undefined, "8e06abbc" ), cp.member_key_by_id( "8e06abbc", "" ) ],
- [ "has", "older", "", "" ] );
-check( "- this browser's told only when it has one the member line does not show", [ cp.key_id_due( { name: "me", key_id: "8e06abbc" }, "8e06abbc" ),
- cp.key_id_due( { name: "me", key_id: "0d0d0d0d" }, "8e06abbc" ), cp.key_id_due( { name: "me" }, "8e06abbc" ), cp.key_id_due( null, "8e06abbc" ),
- cp.key_id_due( { name: "me" }, "" ) ], [ false, true, true, true, false ] );
+check( "a member's room key id - the room's now, another, none, or not known", [ cp.member_key_by_id( "8e06abbc", "8e06abbc" ),
+ cp.member_key_by_id( "0d0d0d0d", "8e06abbc" ), cp.member_key_by_id( "00000000", "8e06abbc" ), cp.member_key_by_id( undefined, "8e06abbc" ),
+ cp.member_key_by_id( "8e06abbc", "" ) ], [ "has", "older", "none", "", "" ] );
+check( "- this browser's told only when the member line does not show it; having none, said only over one it had",
+ [ cp.key_id_to_tell( { name: "me", key_id: "8e06abbc" }, "8e06abbc" ), cp.key_id_to_tell( { name: "me", key_id: "0d0d0d0d" }, "8e06abbc" ),
+ cp.key_id_to_tell( { name: "me" }, "8e06abbc" ), cp.key_id_to_tell( null, "8e06abbc" ), cp.key_id_to_tell( { name: "me" }, "" ),
+ cp.key_id_to_tell( { name: "me", key_id: "8e06abbc" }, "" ), cp.key_id_to_tell( { name: "me", key_id: "00000000" }, "" ) ],
+ [ "", "8e06abbc", "8e06abbc", "8e06abbc", "", "00000000", "" ] );
 // NOTE: Contact codes exchanged in the chat (Damon, 2026-11-08) - sent another way, theirs pasted.
 check( "exchanging contact codes with someone - neither, theirs here, theirs just added", [ cp.contact_exchange_text( "damon", false, false ),
  cp.contact_exchange_text( "damon", true, false ), cp.contact_exchange_text( "damon", false, true ) ], [

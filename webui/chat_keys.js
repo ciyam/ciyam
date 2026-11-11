@@ -1176,13 +1176,14 @@ function chat_render_member_key_states( shown )
    var current = chat_room_key_id( chat_room_key( g_room ) );
    var states = { };
 
-   // NOTE: What the member line's room key ids say, as drawn (Ian, 2026-11-11) - over a receipt's "passed" too, which passing a new key
-   // can set after the ids were read.
+   // NOTE: What the member line's room key ids say, as drawn (Ian, 2026-11-11) - having it, or none, over what receipts said; an older
+   // one over "passed" too, which passing a new key can set after the ids were read.
    names.forEach( function( name )
    {
       var by_id = member_key_by_id( chat_member_key_id( name ), current );
 
-      states[ name ] = ( ( by_id === "has" ) || ( ( by_id === "older" ) && ( kept[ name ] === "passed" ) ) ) ? by_id : kept[ name ];
+      states[ name ] = ( ( by_id === "has" ) || ( by_id === "none" ) || ( ( by_id === "older" ) && ( kept[ name ] === "passed" ) ) )
+       ? by_id : kept[ name ];
    } );
 
    list.replaceChildren( );
@@ -2292,15 +2293,17 @@ function chat_key_ids_read( room )
    var key = chat_room_key( room );
    var id = chat_room_key_id( key );
    var me = g_members.filter( function( m ) { return m.name === ciyam.username; } )[ 0 ] || null;
+   var tell = key_id_to_tell( me, id );
 
-   if( key_id_due( me, id ) && ( g_key_ids_told[ room ] !== id + "|" + ( me && me.key_id ? me.key_id : "" ) ) )
+   // NOTE: Only rooms that take a key - and none while the keys are not known ("chat_room_key( )" is "" then too).
+   if( ( tell !== "" ) && can_have_room_key( room, g_room_name ) && ( g_key_ids_told[ room ] !== tell + "|" + ( me && me.key_id ? me.key_id : "" ) ) )
    {
       // NOTE: Once for what the line shows now - told again only if it shows something else after.
-      g_key_ids_told[ room ] = id + "|" + ( me && me.key_id ? me.key_id : "" );
+      g_key_ids_told[ room ] = tell + "|" + ( me && me.key_id ? me.key_id : "" );
 
       serialised( function( )
       {
-         return ciyam.fetch_messages( room, "from=" + id, function( ) { } );
+         return ciyam.fetch_messages( room, "from=" + tell, function( ) { } );
       } );
    }
 
@@ -2388,14 +2391,6 @@ async function chat_owner_send_keys( quiet, invited )
          var person = people[ i ];
          var secret = chat_secret_with( person );
 
-         // NOTE: Their room key id the room's - they have it, whatever the receipts say (Ian, 2026-11-11).
-         if( member_key_by_id( chat_member_key_id( person ), chat_room_key_id( key ) ) === "has" )
-         {
-            states[ person ] = "has";
-
-            continue;
-         }
-
          // NOTE: Without their contact code there is nothing to seal it with - said, and tried again as the room changes.
          if( secret === "" )
          {
@@ -2463,6 +2458,15 @@ async function chat_owner_send_keys( quiet, invited )
          if( delivery.state === "sent" )
          {
             states[ person ] = "passed";
+
+            continue;
+         }
+
+         // NOTE: Their room key id the room's - they have it, so it is not passed again whatever the receipts say (Ian, 2026-11-11);
+         // a receipt that did come still clears the notes, above.
+         if( member_key_by_id( chat_member_key_id( person ), chat_room_key_id( key ) ) === "has" )
+         {
+            states[ person ] = "has";
 
             continue;
          }
@@ -2619,14 +2623,6 @@ async function chat_owner_send_keys_in( entry, notes, needed )
       var person = people[ i ];
       var secret = chat_secret_with( person );
 
-      // NOTE: Their room key id the room's - they have it, whatever the receipts say (Ian, 2026-11-11).
-      if( member_key_by_id( ( known && known.ids ) ? known.ids[ person ] : "", current_id ) === "has" )
-      {
-         states[ person ] = "has";
-
-         continue;
-      }
-
       if( secret === "" )
       {
          states[ person ] = "needs_codes";
@@ -2657,6 +2653,9 @@ async function chat_owner_send_keys_in( entry, notes, needed )
       }
       else if( delivery.state === "sent" )
          states[ person ] = "passed";
+      // NOTE: Their room key id the room's - not passed again whatever the receipts say (Ian, 2026-11-11).
+      else if( member_key_by_id( ( known && known.ids ) ? known.ids[ person ] : "", current_id ) === "has" )
+         states[ person ] = "has";
       else
       {
          var how = await chat_send_key_note( c_key_notes_room, person, whole );
