@@ -99,6 +99,11 @@ ok   - anything else said
 == user_keys ===================================================
 ok   the twelve words for entropy and back - BIP39, as a node's
 ok   - words not right, said
+ok   the people key from a node's entropy - not what the node is given
+ok   - a person's entropy from it and their PIN, each PIN its own
+ok   - and makes keys as any entropy does
+ok   - not a people key or a PIN, said
+ok   - through run
 ok   the access key - rounds of the entropy, as worked out without the module
 ok   the keys from the entropy - their public key and secrets the same as from the entropy itself
 ok   locked under the access key - as worked out without the module, given a salt and rounds

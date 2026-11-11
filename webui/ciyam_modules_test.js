@@ -704,6 +704,24 @@ async function steps( module_class, list )
    } ), [ "Those are not the words - check each is spelt right and in its place.", "Those are not the words - check each is spelt right and in its place.",
     "Those are not the words - check each is spelt right and in its place." ] );
 
+   // NOTE: One set of words for a node (Ian, 2026-11-11) - worked out here with Node's own SHA-256: the people key that of
+   // "people_key:" and the node's entropy, which the node is never given (it is given the entropy's own SHA-256); a person's
+   // entropy the first 32 hex digits of that of "person_entropy:", the people key, ":" and their PIN.
+   var sha_hex = function( text ) { return node_crypto.createHash( "sha256" ).update( text ).digest( "hex" ); };
+   var test_people = sha_hex( "people_key:" + test_entropy );
+
+   check( "the people key from a node's entropy - not what the node is given", [ await uk.people_key( test_entropy ),
+    await uk.people_key( test_entropy.toUpperCase( ) ), test_people !== sha_hex( test_entropy ) ], [ test_people, test_people, true ] );
+   check( "- a person's entropy from it and their PIN, each PIN its own", [ await uk.person_entropy( test_people, "12345" ),
+    ( await uk.person_entropy( test_people, "12346" ) ) !== ( await uk.person_entropy( test_people, "12345" ) ) ],
+    [ sha_hex( "person_entropy:" + test_people + ":12345" ).substr( 0, 32 ), true ] );
+   check( "- and makes keys as any entropy does", uk.seeds_of( await uk.person_entropy( test_people, "12345" ) ).primary.length, 64 );
+   check( "- not a people key or a PIN, said", await Promise.all( [ [ test_entropy, "12345" ], [ test_people, "1234" ], [ test_people, "admin" ] ]
+    .map( function( a ) { return uk.person_entropy( a[ 0 ], a[ 1 ] ).catch( function( e ) { return e.message; } ); } ) ),
+    [ "A people key is 64 hex digits.", "A PIN is five digits.", "A PIN is five digits." ] );
+   check( "- through run", [ await new uk( { } ).run( "people " + test_entropy ), await new uk( { } ).run( "person " + test_people + " 12345" ) ],
+    [ test_people, sha_hex( "person_entropy:" + test_people + ":12345" ).substr( 0, 32 ) ] );
+
    // NOTE: Worked out here without the module (Ian, 2026-10-25: a hash of the entropy kept by the browser, the keys on the node
    // locked under it) - the access key "harden"'s rounds of "user_keys" and the entropy (each round the SHA-256 of what there is
    // with that after it); the lock's key the SHA-256 of the salt, "user_keys" and the access key; ChaCha20 under the key's

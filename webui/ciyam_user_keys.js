@@ -39,7 +39,7 @@ ciyam_register_module( class extends ciyam_module
       version: "3",
       description: "an account's own keys - locked under a hash of its twelve words before they go to the node, and opened again",
       example: "access <entropy> | lock <entropy> | unlock <access key> <locked> | guard <entropy> [<rounds>] | words <entropy>"
-       + " | entropy <twelve words>",
+       + " | entropy <twelve words> | people <node entropy> | person <people key> <pin>",
       hint: "(i.e. the keys and others' public keys, locked so the node cannot read them, opened by what a browser keeps)",
       needs: [ "sha256", "harden", "chacha20", "ed25519", "secure_message", "bip39" ]
    };
@@ -50,6 +50,9 @@ ciyam_register_module( class extends ciyam_module
 
    static c_guard_format = "UK#";
    static c_check_label = "user_keys_check";
+
+   static c_people_label = "people_key:";
+   static c_person_label = "person_entropy:";
 
    // NOTE: About two thirds of a second in Chrome on a laptop, a few seconds on a phone - only when the words are typed or the
    // keys set up. Keys come back from the node, so it cannot ask for more than ten times as many - or it could keep a page
@@ -114,6 +117,30 @@ ciyam_register_module( class extends ciyam_module
          throw new Error( "Those are not the words - check each is spelt right and in its place." );
 
       return BIP39.mnemonicToEntropy( text );
+   }
+
+   // NOTE: One set of twelve words for a node and everyone on it (Ian, 2026-11-09 and 2026-11-11) - the "people key", from the
+   // node's entropy by a hash of its own: the node is given the entropy's SHA-256 (the same identity as the entropy, "cdd681cc"),
+   // so it cannot make this.
+   static async people_key( node_entropy )
+   {
+      return ciyam_sha256_hex( this.c_people_label + this.checked_entropy( node_entropy ) );
+   }
+
+   // NOTE: A person's entropy from the people key and their PIN (never given out twice - someone is disabled, not removed) - 32
+   // hex digits, which then make their keys just as twelve words of their own would.
+   static async person_entropy( people_key, pin )
+   {
+      var key = String( people_key || "" ).toLowerCase( );
+      var text = String( pin || "" );
+
+      if( !/^[0-9a-f]{64}$/.test( key ) )
+         throw new Error( "A people key is 64 hex digits." );
+
+      if( !/^[0-9]{5}$/.test( text ) )
+         throw new Error( "A PIN is five digits." );
+
+      return ( await ciyam_sha256_hex( this.c_person_label + key + ":" + text ) ).substr( 0, 32 );
    }
 
    // NOTE: What a browser keeps - "harden"'s rounds of "user_keys" and the entropy, with the page's faster SHA-256.
@@ -301,7 +328,8 @@ ciyam_register_module( class extends ciyam_module
    }
 
    // NOTE: "access <entropy>", "lock <entropy>" (the keys from it, no one else's yet - the access key shown before them),
-   // "unlock <access key> <locked>", "words <entropy>" or "entropy <twelve words>" - what is unlocked shown as its JSON.
+   // "unlock <access key> <locked>", "words <entropy>", "entropy <twelve words>", "people <node entropy>" or "person <people key>
+   // <pin>" - what is unlocked shown as its JSON.
    async run( input )
    {
       var it = this.constructor;
@@ -330,6 +358,12 @@ ciyam_register_module( class extends ciyam_module
 
       if( ( what === "entropy" ) && ( words.length >= 12 ) )
          return it.entropy_of_words( words.join( " " ) );
+
+      if( ( what === "people" ) && ( words.length === 1 ) )
+         return it.people_key( words[ 0 ] );
+
+      if( ( what === "person" ) && ( words.length === 2 ) )
+         return it.person_entropy( words[ 0 ], words[ 1 ] );
 
       throw new Error( "Use one of - " + it.about.example );
    }
