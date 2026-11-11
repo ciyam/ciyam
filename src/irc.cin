@@ -663,6 +663,10 @@ IS_DIRECT=
          TRANSFER=
          EXTRA_PREFIX=
 
+            @ifneq $ROOM $OLD_ROOM
+            ROOM_KEY_ID=
+            @endif
+
          POS=@strpos:=:$ROOM
 
             @ifdef $POS
@@ -703,7 +707,13 @@ IS_DIRECT=
             TRANSFER=
             ROOM=$OLD_ROOM
             @else
-            .run_script !irc_join "@name=$USER,@room=$PREFIX$ROOM"
+               KEY_SUFFIX=
+               @ifndef $PREFIX
+                  @ifdef $ROOM_KEY_ID
+                  KEY_SUFFIX=@strlit:#$ROOM_KEY_ID
+                  @endif
+               @endif
+            .run_script !irc_join "@name=$USER,@room=$PREFIX$ROOM$KEY_SUFFIX"
                @ifdef $PREFIX
                ROOM=$ENTRANCE_ROOM
                @endif
@@ -799,11 +809,12 @@ IS_DIRECT=
                @ifeq "$ROOM" "$ENTRANCE_ROOM"
                FORCE_OUTPUT=1
                MESSAGE=@substr:1:$MESSAGE
+
                ; NOTE: If using "readline"
                ; this saves the message as
                ; the only history line.
-
                :$MESSAGE
+
                MESSAGE=
                SHOW_CHANGED=
                @else
@@ -817,10 +828,10 @@ IS_DIRECT=
                      @endif
                   @endif
 
-               ; NOTE: If the message will
-               ; be encrypted then convert
-               ; it to hex now in order to
-               ; prevent parsing issues.
+                  ; NOTE: If the message will
+                  ; be encrypted then convert
+                  ; it to hex now in order to
+                  ; prevent parsing issues.
                   @ifdef $KEY_FILE_DATA
                   MESSAGE=@aschex:$MESSAGE
                   @endif
@@ -831,7 +842,7 @@ IS_DIRECT=
                   MESSAGE=$PRIVATE_PREFIX_DECODED$MESSAGE
                   @endif
 
-               ; NOTE: If is able to encrypt the message then will now do so.
+                  ; NOTE: If is able to encrypt the message then will now do so.
                   @ifdef $KEY_FILE_DATA
 
                   PREFIX=
@@ -1112,7 +1123,7 @@ IS_DIRECT=
             PREFIX=!
             @endif
 
-         @retain MESSAGE
+         @retain MESSAGE,ROOM_KEY_ID
          <irc_extra.cin %PREFIX%decrypt "_$DECODED_MESSAGE" "$KEY_FILE_DATA" $PKEY $SKEY
 
          DECODED_MESSAGE=$MESSAGE
