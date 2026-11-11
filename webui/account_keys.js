@@ -486,11 +486,14 @@ async function render_keys( )
 
 // NOTE: The words asked for - "elsewhere": on a browser new to the keys; "other": what this browser kept does not open the
 // node's (set up again from another browser, or a new access key, say); "restore": nothing on the node, the keys made again
-// from the words; "change": a new access key (Ian, 2026-10-27: a round fewer each time). Guarded keys (Ian, 2026-10-27) the node
-// replaces only from the words they were set up with, so new words are not offered for them - the admin clears them.
+// from the words; "change": a new access key (Ian, 2026-10-27: a round fewer each time); "node": nothing on the node, the keys made
+// from the node's own twelve words and the PIN (Ian, 2026-11-11). Guarded keys (Ian, 2026-10-27) the node replaces only from the
+// words they were set up with, so new words are not offered for them - the admin clears them. Words typed to open keys or change
+// the access key may be the person's own or the node's - whichever the keys were made from.
 function keys_show_enter( mode )
 {
-   var guarded = ( keys_guard_now( ) !== "" ) && ( mode !== "restore" );
+   var made = ( mode === "restore" ) || ( mode === "node" );
+   var guarded = ( keys_guard_now( ) !== "" ) && !made;
    var lost = guarded ? " Lost them? Ask the administrator to clear your keys, then set up new ones." : "";
 
    g_keys.entering = mode;
@@ -501,11 +504,14 @@ function keys_show_enter( mode )
       other: "The keys on the node were locked by another browser since. Type the twelve words they were set up with." + lost,
       restore: "Type your twelve words, and your keys are made again from them.",
       change: "Type your twelve words for a new access key. Use it if a browser or phone with your keys is lost: any other browser"
-       + " that has them will then need your words, or to get them from this one, again." }[ mode ];
+       + " that has them will then need your words, or to get them from this one, again.",
+      node: "Type the twelve words the node was set up with. Your keys are made from them and your PIN, so whoever has the node's"
+       + " words can make them again for you." }[ mode ];
 
-   document.getElementById( "keys_enter_new" ).hidden = ( mode === "restore" ) || ( mode === "change" ) || guarded;
+   document.getElementById( "keys_enter_label" ).textContent = ( mode === "node" ) ? "The node's twelve words" : "Your twelve words";
+   document.getElementById( "keys_enter_new" ).hidden = made || ( mode === "change" ) || guarded;
    document.getElementById( "keys_ask_start" ).hidden = ( mode !== "elsewhere" ) && ( mode !== "other" );
-   document.getElementById( "keys_enter_cancel" ).hidden = ( mode !== "restore" ) && ( mode !== "change" );
+   document.getElementById( "keys_enter_cancel" ).hidden = !made && ( mode !== "change" );
    document.getElementById( "keys_enter_go" ).textContent = ( mode === "change" ) ? "Change the access key" : "Use my keys here";
    document.getElementById( "keys_enter_words" ).value = "";
 
@@ -1541,23 +1547,42 @@ async function keys_enter_go( )
       return;
    }
 
-   if( g_keys.entering === "change" )
+   // NOTE: The node's words (Ian, 2026-11-11) - this person's keys made from them and their PIN.
+   if( g_keys.entering === "node" )
    {
-      await keys_change_access( entropy );
+      try
+      {
+         entropy = await keys_person_entropy( entropy );
+      }
+      catch( e )
+      {
+         set_error( "keys_error", "Your keys could not be made: " + ( e && e.message ? e.message : "reload the page to try again." ) );
+
+         return;
+      }
+
+      await keys_make_and_save( entropy, "Your keys are made from the node's words, and on this browser." );
 
       return;
    }
 
-   // NOTE: Made with the rounds the node's were locked with, so it is the access key they were locked under.
+   // NOTE: Made with the rounds the node's were locked with, so it is the access key they were locked under - from words of their
+   // own, or from the node's.
    keys_busy( "Securing your keys…" );
 
    await keys_drawn( );
 
-   var access = "";
+   var found = null;
 
    try
    {
-      access = await uk.access_key( entropy, uk.rounds_of( g_keys.node ) );
+      if( g_keys.entering === "change" )
+         found = await keys_entropy_typed( entropy, g_keys.rounds, async function( access ) { return access === g_keys.access; } );
+      else
+         found = await keys_entropy_typed( entropy, uk.rounds_of( g_keys.node ), async function( access )
+         {
+            return uk.unlock( access, g_keys.node ).then( function( ) { return true; }, function( ) { return false; } );
+         } );
    }
    catch( e )
    {
@@ -1569,16 +1594,23 @@ async function keys_enter_go( )
 
    keys_busy( "" );
 
-   try
+   if( g_keys.entering === "change" )
    {
-      await uk.unlock( access, g_keys.node );
+      await keys_change_access( found ? found.entropy : entropy );
+
+      return;
    }
-   catch( e )
+
+   if( found === null )
    {
       set_error( "keys_error", "Those are not the words your keys were set up with." );
 
       return;
    }
+
+   entropy = found.entropy;
+
+   var access = found.access;
 
    // NOTE: Keys from before the guard (2026-10-31) given one, now the words are here to make it.
    if( keys_guard_now( ) === "" )
@@ -1589,6 +1621,35 @@ async function keys_enter_go( )
    document.getElementById( "keys_enter_words" ).value = "";
 
    await keys_show_here( access, "Your keys are on this browser.", false );
+}
+
+// NOTE: This person's entropy from the node's twelve words' (Ian, 2026-11-11 - one set of words for the node and everyone on it):
+// the people key, and from it and their PIN theirs ("ciyam_user_keys.js").
+async function keys_person_entropy( node_entropy )
+{
+   var uk = keys_module( "user_keys" );
+
+   return uk.person_entropy( await uk.people_key( node_entropy ), ciyam.access );
+}
+
+// NOTE: The words typed as their own, then as the node's - { entropy, access } for the first whose access key (with "rounds") "opens"
+// says is the one, or null for neither.
+async function keys_entropy_typed( entropy, rounds, opens )
+{
+   var uk = keys_module( "user_keys" );
+   var access = await uk.access_key( entropy, rounds );
+
+   if( await opens( access ) )
+      return { entropy: entropy, access: access };
+
+   var person = await keys_person_entropy( entropy );
+
+   access = await uk.access_key( person, rounds );
+
+   if( await opens( access ) )
+      return { entropy: person, access: access };
+
+   return null;
 }
 
 // NOTE: The guard's line put before keys without one, as they are - nothing said if the node does not take it, as the keys are
@@ -1742,6 +1803,7 @@ function install_keys( )
 
    document.getElementById( "keys_start" ).addEventListener( "click", keys_start );
    document.getElementById( "keys_restore" ).addEventListener( "click", function( ) { keys_show_enter( "restore" ); } );
+   document.getElementById( "keys_node" ).addEventListener( "click", function( ) { keys_show_enter( "node" ); } );
    document.getElementById( "keys_random_cancel" ).addEventListener( "click", keys_cancel );
    document.getElementById( "keys_random_next" ).addEventListener( "click", keys_make_words );
    document.getElementById( "keys_words_cancel" ).addEventListener( "click", keys_cancel );

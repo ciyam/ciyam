@@ -299,6 +299,7 @@ http://www.opensource.org/licenses/mit-license.php.
                      <div class="account-keys-part" id="keys_none" hidden>
                         <p class="account-lede" id="keys_none_lede"></p>
                         <div class="account-actions-row">
+                           <button type="button" class="chat-btn" id="keys_node">Use the node's twelve words</button>
                            <button type="button" class="chat-btn" id="keys_restore">I have my twelve words</button>
                            <button type="button" class="chat-btn chat-btn--primary" id="keys_start">Set up your keys</button>
                         </div>
@@ -347,7 +348,7 @@ http://www.opensource.org/licenses/mit-license.php.
                      <div class="account-keys-part" id="keys_enter" hidden>
                         <p class="account-lede" id="keys_enter_lede">Your keys are set up. To use them on this browser, type your
                          twelve words.</p>
-                        <label class="chat-label" for="keys_enter_words">Your twelve words</label>
+                        <label class="chat-label" for="keys_enter_words" id="keys_enter_label">Your twelve words</label>
                         <textarea class="chat-field account-keys-words" id="keys_enter_words" rows="3" autocomplete="off" autocapitalize="off"
                          spellcheck="false"></textarea>
                         <div class="account-actions-row">
