@@ -2029,11 +2029,19 @@ bool process_cws_request( http_request_type request_type, const string& uri_suff
    {
       string demo_pin;
 
-      if( access == c_demo_entropy_1 )
+      // NOTE: The entropy can be provided either in its raw form or
+      // already hashed (as is the system identity) so will compare
+      // its hash (which for a hashed value is just the value).
+      string entropy_hash( access );
+
+      if( entropy_hash.length( ) < 64 )
+         entropy_hash = sha256( access ).get_digest_as_string( );
+
+      if( entropy_hash == sha256( c_demo_entropy_1 ).get_digest_as_string( ) )
          demo_pin = c_web_demo_pin_1;
-      else if( access == c_demo_entropy_2 )
+      else if( entropy_hash == sha256( c_demo_entropy_2 ).get_digest_as_string( ) )
          demo_pin = c_web_demo_pin_2;
-      else if( access == c_demo_entropy_3 )
+      else if( entropy_hash == sha256( c_demo_entropy_3 ).get_digest_as_string( ) )
          demo_pin = c_web_demo_pin_3;
 
       if( is_identity_none )
@@ -2048,9 +2056,7 @@ bool process_cws_request( http_request_type request_type, const string& uri_suff
       {
          string sid_chk_data( buffer_file( c_ciyam_server_sid_chk_file ) );
 
-         sha256 hash( access );
-
-         hash.update( hash.get_digest_as_string( ) );
+         sha256 hash( entropy_hash );
 
          if( hash.get_digest_as_string( ) == sid_chk_data )
          {
