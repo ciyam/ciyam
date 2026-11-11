@@ -502,7 +502,9 @@ function keys_show_enter( mode )
       elsewhere: "Your keys are set up. To use them on this browser, type your twelve words - or get them from another device"
        + " that has them." + lost,
       other: "The keys on the node were locked by another browser since. Type the twelve words they were set up with." + lost,
-      restore: "Type your twelve words, and your keys are made again from them.",
+      // NOTE: Not the node's - those typed here would make the same keys for everyone who did so (found by review, 2026-11-11).
+      restore: "Type your own twelve words, and your keys are made again from them. Not the node's - for those, choose Cancel, then"
+       + " Use the node's twelve words.",
       change: "Type your twelve words for a new access key. Use it if a browser or phone with your keys is lost: any other browser"
        + " that has them will then need your words, or to get them from this one, again.",
       node: "Type the twelve words the node was set up with. Your keys are made from them and your PIN, so whoever has the node's"
@@ -1572,12 +1574,28 @@ async function keys_enter_go( )
 
    await keys_drawn( );
 
+   var changing = ( g_keys.entering === "change" );
+
+   // NOTE: No round left to take off - said by "keys_change_access( )".
+   if( changing && ( g_keys.rounds <= 1 ) )
+   {
+      keys_busy( "" );
+
+      await keys_change_access( entropy, "" );
+
+      return;
+   }
+
    var found = null;
 
    try
    {
-      if( g_keys.entering === "change" )
-         found = await keys_entropy_typed( entropy, g_keys.rounds, async function( access ) { return access === g_keys.access; } );
+      // NOTE: For a new access key, the one a round fewer - made once, and passed on (found by review, 2026-11-11).
+      if( changing )
+         found = await keys_entropy_typed( entropy, g_keys.rounds - 1, async function( access, typed )
+         {
+            return ( await uk.next_access_key( typed, access ) ) === g_keys.access;
+         } );
       else
          found = await keys_entropy_typed( entropy, uk.rounds_of( g_keys.node ), async function( access )
          {
@@ -1587,16 +1605,17 @@ async function keys_enter_go( )
    catch( e )
    {
       keys_busy( "" );
-      set_error( "keys_error", "Your keys could not be opened: " + ( e && e.message ? e.message : "reload the page to try again." ) );
+      set_error( "keys_error", ( changing ? "Your access key could not be changed: " : "Your keys could not be opened: " )
+       + ( e && e.message ? e.message : "reload the page to try again." ) );
 
       return;
    }
 
    keys_busy( "" );
 
-   if( g_keys.entering === "change" )
+   if( changing && ( found !== null ) )
    {
-      await keys_change_access( found ? found.entropy : entropy );
+      await keys_change_access( found.entropy, found.access );
 
       return;
    }
@@ -1623,8 +1642,8 @@ async function keys_enter_go( )
    await keys_show_here( access, "Your keys are on this browser.", false );
 }
 
-// NOTE: This person's entropy from the node's twelve words' (Ian, 2026-11-11 - one set of words for the node and everyone on it):
-// the people key, and from it and their PIN theirs ("ciyam_user_keys.js").
+// NOTE: This person's entropy from the entropy of the node's twelve words (Ian, 2026-11-11 - one set of words for the node and
+// everyone on it): the people key, and from it and their PIN theirs ("ciyam_user_keys.js").
 async function keys_person_entropy( node_entropy )
 {
    var uk = keys_module( "user_keys" );
@@ -1633,20 +1652,20 @@ async function keys_person_entropy( node_entropy )
 }
 
 // NOTE: The words typed as their own, then as the node's - { entropy, access } for the first whose access key (with "rounds") "opens"
-// says is the one, or null for neither.
+// says is the one ("opens( access, entropy )"), or null for neither.
 async function keys_entropy_typed( entropy, rounds, opens )
 {
    var uk = keys_module( "user_keys" );
    var access = await uk.access_key( entropy, rounds );
 
-   if( await opens( access ) )
+   if( await opens( access, entropy ) )
       return { entropy: entropy, access: access };
 
    var person = await keys_person_entropy( entropy );
 
    access = await uk.access_key( person, rounds );
 
-   if( await opens( access ) )
+   if( await opens( access, person ) )
       return { entropy: person, access: access };
 
    return null;
@@ -1695,7 +1714,8 @@ async function keys_add_guard( entropy )
 // NOTE: A new access key, a round fewer (Ian, 2026-10-27) - the words seen to be these keys' (the new key a round on is the one
 // this browser has), the keys locked again under it with a guard the node hashes on to its own, and kept here. Any other browser
 // with the old key can no longer open them, and cannot make the new one without the words.
-async function keys_change_access( entropy )
+// NOTE: "made" - the access key a round fewer, if already made from these words ("" to make it here).
+async function keys_change_access( entropy, made )
 {
    var uk = keys_module( "user_keys" );
    var rounds = g_keys.rounds - 1;
@@ -1716,7 +1736,7 @@ async function keys_change_access( entropy )
 
    try
    {
-      access = await uk.access_key( entropy, rounds );
+      access = made || await uk.access_key( entropy, rounds );
 
       if( await uk.next_access_key( entropy, access ) === g_keys.access )
          guard = await uk.guard( entropy, rounds );

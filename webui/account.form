@@ -300,7 +300,7 @@ http://www.opensource.org/licenses/mit-license.php.
                         <p class="account-lede" id="keys_none_lede"></p>
                         <div class="account-actions-row">
                            <button type="button" class="chat-btn" id="keys_node">Use the node's twelve words</button>
-                           <button type="button" class="chat-btn" id="keys_restore">I have my twelve words</button>
+                           <button type="button" class="chat-btn" id="keys_restore">I have twelve words of my own</button>
                            <button type="button" class="chat-btn chat-btn--primary" id="keys_start">Set up your keys</button>
                         </div>
                      </div>
