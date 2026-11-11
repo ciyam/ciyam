@@ -54,7 +54,7 @@ retain webcmdlist
 retain user-keys
 review users
 review devices
-review messages <room> [[from=<unix_time>;]extra={NONE|TIME}]
+review messages <room> [[from=<unix_time>;]extra={NONE|TIME|KEYID|ENTIRE}]
 review storages
 review javascript[s] [<name>]
 review stylesheet[s] [<name>]
@@ -246,7 +246,7 @@ retain user-keys
 review logs [<name> [lines=10]]
 review users
 review devices
-review messages <room> [[from=<unix_time>;]extra={NONE|TIME}]
+review messages <room> [[from=<unix_time>;]extra={NONE|TIME|KEYID|ENTIRE}]
 review storages
 review javascript[s] [<name>]
 review stylesheet[s] [<name>]

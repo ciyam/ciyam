@@ -17,7 +17,7 @@ ERROR=Need user and room number (and an optional join token).
 
 USERNAME=$1
 IRC_ROOM=$2
-JOIN_TOKEN=$3
+EXTRA_TOKEN=$3
 
 ROOM_PREFIX=_
 
@@ -29,13 +29,18 @@ FIRST=@substr:0,1:$IRC_ROOM
    ROOM_PREFIX=
    @else
 
-      @ifdef $JOIN_TOKEN
-      JOIN_TOKEN=-$JOIN_TOKEN
+      @ifdef $EXTRA_TOKEN
+      EXTRA_LEN=@strlen:$EXTRA_TOKEN
+         @ifeq $EXTRA_LEN 8
+         EXTRA_TOKEN=@strlit:#$EXTRA_TOKEN
+         @else
+         EXTRA_TOKEN=@strlit:-$EXTRA_TOKEN
+         @endif
       @endif
 
    @endif
 
-.run_script !irc_join "@name=$USERNAME,@room=$ROOM_PREFIX$IRC_ROOM$JOIN_TOKEN"
+.run_script !irc_join "@name=$USERNAME,@room=$ROOM_PREFIX$IRC_ROOM$EXTRA_TOKEN"
 
    @ifndef $ERROR
    JOIN_LINES=@repstr:|/\n:$OUTPUT

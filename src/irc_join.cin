@@ -52,6 +52,21 @@ FIRST=@substr:0,1:$ROOM_NO
    ROOM_NO=@substr:1:$ROOM_NO
    @endif
 
+KEY_ID=
+POS=@strpos:#:$ROOM_NO
+   @ifdef $POS
+   KPOS=@$POS+1
+   KEY_ID=@substr:$KPOS:$ROOM_NO
+   ROOM_NO=@substr:0,$POS:$ROOM_NO
+
+   .system_variable @irc_keyid_%ROOM_NO%_$USER
+   OLD_KEY_ID=$OUTPUT
+      @ifneq "$KEY_ID" "$OLD_KEY_ID"
+      CHANGED=1
+      .system_variable @irc_keyid_%ROOM_NO%_$USER $KEY_ID
+      @endif
+   @endif
+
 JOIN_TOKEN=
 POS=@strpos:-:$ROOM_NO
 
