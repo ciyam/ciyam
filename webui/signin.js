@@ -1704,7 +1704,8 @@ async function recover_submit( event )
    // NOTE: The words' entropy as "access", and the new password - "connect( )" in "ciyam.js" then does as Ian's curl
    // does: the node checks the entropy, answers with admin's PIN, and takes the password with the entropy, then the
    // session is made as for any sign in. A fresh device is registered, as from the terminal - kept as the browser's own
-   // once it succeeds, the browser started afresh (Ian, 2026-10-14; below).
+   // once it succeeds, the browser started afresh (Ian, 2026-10-14; below). The entropy's hash rather than the entropy, as
+   // at set up ("setup_finish( )" in "home.js") - the node takes either for the same identity.
    var device = ciyam.device;
 
    recover_clear_ciyam( );
@@ -1715,7 +1716,7 @@ async function recover_submit( event )
 
    var issue = function( done )
    {
-      return ciyam.connect( BIP39.mnemonicToEntropy( words.join( " " ) ), "", "", password, done );
+      return ciyam.connect( hex_sha256( BIP39.mnemonicToEntropy( words.join( " " ) ) ), "", "", password, done );
    };
 
    try

@@ -748,12 +748,14 @@ async function setup_finish( )
    // NOTE: Set up with the current hash, so the sign in after uses it at once.
    ciyam.keep_hash_version( g_setup.pin, c_password_hash_version );
 
+   // NOTE: The node is given the hash of the words' entropy, not the entropy - the same identity (Ian, 2026-11-11: "cdd681cc"
+   // takes either), but what the people key is made from never reaches it.
    var send = async function( )
    {
       return String( await request( function( done )
       {
          return ciyam.fetch( ciyam.get_cws_url( ) + "/devices?access=" + g_setup.pin + "&format=text&passwd=" + credentials
-          + "&request=" + g_setup.entropy, "POST", done );
+          + "&request=" + hex_sha256( g_setup.entropy ), "POST", done );
       } ) ).trim( );
    };
 
