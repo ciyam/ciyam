@@ -515,6 +515,12 @@ async function render_keys( )
    if( render !== g_keys_render )
       return;
 
+   // NOTE: Someone's code for Get them from your administrator, opened here by its address (found by review, 2026-11-11: nothing was
+   // said) - answered only from Give keys beside their name in People.
+   if( device && ( device.kind === "give" ) )
+      set_error( "keys_error", ciyam.is_admin ? "That's someone's code asking for their keys - choose Give keys beside their name in"
+       + " People, then scan it there." : "That code is for your administrator to scan - in People, with Give keys." );
+
    // NOTE: Give keys, from People - only admin's, once admin's own keys are here (the people key is kept with them).
    var give = keys_give_taken( );
 
@@ -574,7 +580,7 @@ function keys_show_enter( mode )
    document.getElementById( "keys_enter_label" ).textContent = ( mode === "node" ) ? "The node's twelve words" : "Your twelve words";
    document.getElementById( "keys_enter_new" ).hidden = made || ( mode === "change" ) || guarded || ciyam.is_admin;
    document.getElementById( "keys_ask_start" ).hidden = ( mode !== "elsewhere" ) && ( mode !== "other" );
-   document.getElementById( "keys_enter_admin" ).hidden = ( mode !== "elsewhere" ) || ciyam.is_admin;
+   document.getElementById( "keys_enter_admin" ).hidden = ( ( mode !== "elsewhere" ) && ( mode !== "other" ) ) || ciyam.is_admin;
    document.getElementById( "keys_enter_cancel" ).hidden = !made && ( mode !== "change" );
    document.getElementById( "keys_enter_go" ).textContent = ( mode === "change" ) ? "Change the access key" : "Use my keys here";
    document.getElementById( "keys_enter_words" ).value = "";
@@ -1241,8 +1247,8 @@ async function keys_take_given( entropy )
    if( access === "" )
    {
       keys_show_enter( "elsewhere" );
-      set_error( "keys_error", "Your keys were made from twelve words of your own, so your administrator can't give them - type those"
-       + " words here." );
+      set_error( "keys_error", "Your keys weren't made from the node's words - from twelve words of your own, it seems - so your"
+       + " administrator can't give them. Type your own words here." );
 
       return;
    }
@@ -1357,8 +1363,10 @@ function keys_show_give( give )
 
    // NOTE: The node's words only until the people key is kept with admin's keys - then the password opens it.
    document.getElementById( "give_words_part" ).hidden = ( g_keys.people !== "" );
+   // NOTE: Locked under the password typed - which the page cannot check against the sign in's (found by review, 2026-11-11), so a
+   // mistyped one is only found next time, when the words are asked again.
    document.getElementById( "give_words_note" ).textContent = "Asked only this once. What they make is then kept with your keys,"
-    + " locked under your password.";
+    + " locked under the password typed here - so type the one you sign in with.";
    document.getElementById( "give_part" ).hidden = false;
    document.getElementById( "give_password" ).focus( );
 }
@@ -1401,6 +1409,15 @@ async function keys_give_people_key( password, latest )
             return "";
          }
       }
+   }
+
+   // NOTE: Nothing kept after all (gone since the card was shown, say) - the words asked for, where they can be typed.
+   if( document.getElementById( "give_words" ).value.trim( ) === "" )
+   {
+      words_part.hidden = false;
+      keys_give_problems( { password: "", words: "Type the node's twelve words.", ask: "" } );
+
+      return "";
    }
 
    if( !await recover_load_bip39( ) )
