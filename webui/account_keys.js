@@ -470,13 +470,26 @@ async function render_keys( )
    {
       keys_forget_here( );
 
-      document.getElementById( "keys_none_lede" ).textContent = ( state === "lost" )
-       ? "Your keys are no longer on the node, and this browser can't make them again by itself. Type your twelve words to put"
-        + " them back, or set up new ones."
-       : "Your keys come from twelve words of your own, which you write down. The node never sees them - it keeps your keys"
-        + " locked so that only your browsers can open them.";
+      // NOTE: Admin is the node (Ian, 2026-11-11) - its keys come only from the node's twelve words; anyone wanting words of their
+      // own uses an account of their own.
+      var node_only = ciyam.is_admin;
+
+      if( node_only )
+         document.getElementById( "keys_none_lede" ).textContent = ( state === "lost" )
+          ? "Your keys are no longer on the node. Type the node's twelve words to make them again."
+          : "As admin, your keys come from the node's twelve words - admin is the node. Anyone wanting words of their own uses"
+           + " their own account.";
+      else
+         document.getElementById( "keys_none_lede" ).textContent = ( state === "lost" )
+          ? "Your keys are no longer on the node, and this browser can't make them again by itself. Type your twelve words to put"
+           + " them back, or set up new ones."
+          : "Your keys come from twelve words of your own, which you write down. The node never sees them - it keeps your keys"
+           + " locked so that only your browsers can open them.";
 
       document.getElementById( "keys_admin" ).hidden = ciyam.is_admin;
+      document.getElementById( "keys_restore" ).hidden = node_only;
+      document.getElementById( "keys_start" ).hidden = node_only;
+      document.getElementById( "keys_node" ).classList.toggle( "chat-btn--primary", node_only );
 
       keys_show( "keys_none" );
    }
@@ -559,7 +572,7 @@ function keys_show_enter( mode )
        + " words can make them again for you." }[ mode ];
 
    document.getElementById( "keys_enter_label" ).textContent = ( mode === "node" ) ? "The node's twelve words" : "Your twelve words";
-   document.getElementById( "keys_enter_new" ).hidden = made || ( mode === "change" ) || guarded;
+   document.getElementById( "keys_enter_new" ).hidden = made || ( mode === "change" ) || guarded || ciyam.is_admin;
    document.getElementById( "keys_ask_start" ).hidden = ( mode !== "elsewhere" ) && ( mode !== "other" );
    document.getElementById( "keys_enter_admin" ).hidden = ( mode !== "elsewhere" ) || ciyam.is_admin;
    document.getElementById( "keys_enter_cancel" ).hidden = !made && ( mode !== "change" );
