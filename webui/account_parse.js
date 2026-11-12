@@ -610,7 +610,7 @@ function admin_keys_text( result )
       return "Admin's keys, made from the node's twelve words, are open on this browser.";
 
    if( result === "other" )
-      return "Admin's keys on the node weren't made from these words, so they're left as they are.";
+      return "Admin's keys on the node were made another way, so they're left as they are.";
 
    return "Admin's keys couldn't be made just now - on My account, choose Use the node's twelve words under Your keys.";
 }

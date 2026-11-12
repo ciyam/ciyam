@@ -297,7 +297,7 @@ check( "- an answer with an access key's length not taken as one, nor another de
 check( "admin's keys at set up or recovery - made, opened, left, or not made", [ "made", "opened", "other", "failed" ].map( ap.admin_keys_text ),
  [ "Admin's keys are made from the node's twelve words, and on this browser - Give keys in People is ready.",
  "Admin's keys, made from the node's twelve words, are open on this browser.",
- "Admin's keys on the node weren't made from these words, so they're left as they are.",
+ "Admin's keys on the node were made another way, so they're left as they are.",
  "Admin's keys couldn't be made just now - on My account, choose Use the node's twelve words under Your keys." ] );
 check( "the node's words said plainly under Your keys - admin's, everyone else's", [ ap.keys_words_text( true ), ap.keys_words_text( false ) ],
  [ "Yours come from the node's twelve words - which make everyone's keys here, so keep them like the house keys.",

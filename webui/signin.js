@@ -512,7 +512,14 @@ function signin_apply_retain( mode, hashed )
          localStorage.removeItem( c_signin_storage_hashed_prefix + ciyam.access );
 
       if( parse_access_list( plan.list ).indexOf( ciyam.access ) < 0 )
+      {
+         // NOTE: Kept for the tab, not lost (found by review, 2026-11-12: a stale entry for the PIN had them kept with the account,
+         // and choosing not to remember it took them away while the page said they were here).
+         if( localStorage.getItem( c_signin_storage_keys_prefix + ciyam.access ) !== null )
+            sessionStorage.setItem( c_signin_storage_keys_prefix + ciyam.access, localStorage.getItem( c_signin_storage_keys_prefix + ciyam.access ) );
+
          localStorage.removeItem( c_signin_storage_keys_prefix + ciyam.access );
+      }
       else if( sessionStorage.getItem( c_signin_storage_keys_prefix + ciyam.access ) !== null )
       {
          // NOTE: Keys opened for the tab before the account was remembered - made as setting up or recovering signed in
@@ -1688,20 +1695,37 @@ function signin_load_script( src )
    } );
 }
 
-// NOTE: A request as the page makes them ("g_signin_options.request" - in turn, ISS-005), its answer as text.
+// NOTE: A request as the page makes them ("g_signin_options.request" - in turn, ISS-005), its answer as text - asked twice more, a moment
+// apart, if it timed out: a node that has just taken its identity is busy starting up (as "setup_finish( )" in "home.js" asks its
+// sign in again; found by review, 2026-11-12).
 async function signin_issue( issue )
 {
-   try
-   {
-      if( g_signin_options.request )
-         return String( await g_signin_options.request( issue ) );
+   var answer = "";
 
-      return await new Promise( function( resolve ) { issue( function( response ) { resolve( String( response ) ); } ); } );
-   }
-   catch( e )
+   for( var tries = 0; tries < 3; tries++ )
    {
-      return "Error: " + ( ( e && e.message ) ? e.message : "the request failed." );
+      if( tries > 0 )
+         await new Promise( function( resolve ) { window.setTimeout( resolve, 2000 ); } );
+
+      ciyam.error = "";
+
+      try
+      {
+         if( g_signin_options.request )
+            answer = String( await g_signin_options.request( issue ) );
+         else
+            answer = await new Promise( function( resolve ) { issue( function( response ) { resolve( String( response ) ); } ); } );
+      }
+      catch( e )
+      {
+         answer = "Error: " + ( ( e && e.message ) ? e.message : "the request failed." );
+      }
+
+      if( !/Timed out waiting for web session response/.test( answer + ciyam.error ) )
+         break;
    }
+
+   return answer;
 }
 
 // NOTE: An access key kept on this browser as My account keeps one ("keys_keep_here( )") - for as long as the account is remembered
