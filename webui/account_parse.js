@@ -605,6 +605,10 @@ function written_signin_text( error )
 {
    var why = String( error || "" ).replace( /^Error:\s*/, "" ).trim( );
 
+   // NOTE: The node's own words for a time-out are not for someone just joining (found by review, 2026-11-13).
+   if( /Timed out waiting for web session response/.test( why ) )
+      why = "the node was busy starting up";
+
    return "Your account is ready, but signing you in didn't work just now" + ( why ? " (" + why.replace( /\.$/, "" ) + ")" : "" )
     + " - open the chat and sign in there, then set up your keys on My account.";
 }

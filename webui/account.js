@@ -1463,10 +1463,11 @@ async function do_join( event )
 
       // NOTE: A node that has only just started - after a rebuild, say - can miss the five seconds it gives a sign in ("Timed out
       // waiting for web session response."), and the claim went on not signed in: "Open the chat" where "Next: your keys" was due
-      // (Ian, 2026-11-07). Signing in is safe to ask again, so it is - twice more, a moment apart - as setting up a node does.
+      // (Ian, 2026-11-07). Signing in is safe to ask again, so it is - twice more, past the node's three seconds between sign ins
+      // on a PIN (found by review) - as setting up a node does.
       for( var tries = 0; ( tries < 2 ) && /Timed out waiting for web session response/.test( ciyam.error ); tries++ )
       {
-         await new Promise( function( resolve ) { window.setTimeout( resolve, 2000 ); } );
+         await new Promise( function( resolve ) { window.setTimeout( resolve, 3500 ); } );
 
          await with_progress( "join", function( ) { return connect_as( pin, "", password ); } );
       }

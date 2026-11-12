@@ -3459,6 +3459,10 @@ async function submit_invite( )
 // NOTE: Anything already ticked is kept when the list is drawn again underneath ("people_picker( )").
 function render_invitees( members )
 {
+   // NOTE: Noted as drawn - opening counts too - so the list is drawn again only when someone new is known (found by review,
+   // 2026-11-13: redrawn on every first opening, it wiped the invite's "already invited" marks until they were read again).
+   g_invitees_offered = known_users_key( );
+
    var others = ( members || [ ] ).filter( function( member ) { return member.name !== ciyam.username; } );
 
    invite_picker( ).set_people( others.map( function( member ) { return { name: member.name }; } ),
@@ -3467,6 +3471,11 @@ function render_invitees( members )
 
 // NOTE: The names the dialog's list was last filled from ("offer_invitees_when_known( )").
 var g_invitees_offered = "";
+
+function known_users_key( )
+{
+   return g_known_users.map( function( member ) { return member.name; } ).sort( ).join( " " );
+}
 
 // NOTE: The dialog opened before the first poll had brought anyone - its list offered now they are known (found 2026-10-27:
 // opening New message straight after a reload showed no one, and stayed that way); and filled again when someone new is known
@@ -3477,15 +3486,15 @@ function offer_invitees_when_known( )
    if( ( g_invite_picker === null ) || document.getElementById( "room_dialog" ).hidden )
       return;
 
-   var known = g_known_users.map( function( member ) { return member.name; } ).sort( ).join( " " );
-
-   if( ( g_invite_picker.people > 0 ) && ( known === g_invitees_offered ) )
+   if( ( g_invite_picker.people > 0 ) && ( known_users_key( ) === g_invitees_offered ) )
       return;
-
-   g_invitees_offered = known;
 
    if( g_dialog_mode === "invite" )
    {
+      // NOTE: Everyone offered again only once those already invited are marked (found by review, 2026-11-13: the redrawn rows came
+      // back tickable, and Everyone would have ticked them).
+      invite_picker( ).set_everyone( false );
+
       render_invite_candidates( );
 
       mark_already_invited( g_room );
