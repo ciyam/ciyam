@@ -1461,6 +1461,16 @@ async function do_join( event )
          await with_progress( "join", function( ) { return connect_as( pin, "", password ); } );
       }
 
+      // NOTE: A node that has only just started - after a rebuild, say - can miss the five seconds it gives a sign in ("Timed out
+      // waiting for web session response."), and the claim went on not signed in: "Open the chat" where "Next: your keys" was due
+      // (Ian, 2026-11-07). Signing in is safe to ask again, so it is - twice more, a moment apart - as setting up a node does.
+      for( var tries = 0; ( tries < 2 ) && /Timed out waiting for web session response/.test( ciyam.error ); tries++ )
+      {
+         await new Promise( function( resolve ) { window.setTimeout( resolve, 2000 ); } );
+
+         await with_progress( "join", function( ) { return connect_as( pin, "", password ); } );
+      }
+
       if( ( ciyam.error === "" ) && ( ciyam.sessid !== "" ) )
       {
          remember_device( );
@@ -1474,7 +1484,7 @@ async function do_join( event )
          signin_remember_name( pin, username );
       }
 
-      show_written( pin, username );
+      show_written( pin, username, ciyam.error );
    }
    finally
    {
@@ -1507,8 +1517,12 @@ function remember_pin( pin )
 var g_onboarding = false;
 var g_keys_card_home = null;
 
-function show_written( pin, username )
+function show_written( pin, username, signin_error )
 {
+   // NOTE: Both given by the person who added them - the PIN typed, the name fixed - so nothing new to write down: ticked to begin
+   // with (Ian, 2026-11-07).
+   var given = ( g_join_mode === "pin" ) && document.getElementById( "join_username" ).readOnly;
+
    [ "join_code", "join_pin", "join_username", "join_password", "join_confirm" ].forEach( function( id )
    {
       document.getElementById( id ).value = "";
@@ -1523,10 +1537,14 @@ function show_written( pin, username )
 
    document.getElementById( "written_pin" ).textContent = pin;
    document.getElementById( "written_username" ).textContent = username;
-   document.getElementById( "written_check" ).checked = false;
+   document.getElementById( "written_check" ).checked = given;
 
-   // NOTE: Not signed in by the claim - no keys to set up here, so two steps, and on to the chat's own sign in.
+   // NOTE: Not signed in by the claim - no keys to set up here, so two steps, and on to the chat's own sign in - said why, not left
+   // to the button alone (Ian, 2026-11-07).
    var signed_in = ( ciyam.sessid !== "" );
+
+   document.getElementById( "written_signin_note" ).textContent = signed_in ? "" : written_signin_text( signin_error );
+   document.getElementById( "written_signin_note" ).hidden = signed_in;
 
    document.getElementById( "written_step" ).textContent = signed_in ? "Step 2 of 3" : "Step 2 of 2";
    document.getElementById( "written_open" ).textContent = signed_in ? "Next: your keys" : "Open the chat";

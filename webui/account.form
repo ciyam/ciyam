@@ -137,6 +137,8 @@ http://www.opensource.org/licenses/mit-license.php.
 
       <p class="account-note">Keep a hint for your password with them - never the password itself. If you forget it, ask the person who added you.</p>
 
+      <p class="account-note" id="written_signin_note" role="status" hidden></p>
+
       <label class="account-check">
          <input type="checkbox" id="written_check" onchange="update_written( )">
          I've written my PIN and username down
