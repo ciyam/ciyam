@@ -941,9 +941,38 @@ function install_setup( )
    g_setup = setup_fresh( );
 }
 
-// NOTE: "employ_unlock_key( )" takes an unlock key - or, the server finding no key's shape, the master
-// password ("ciyam_base.cpp"). It answers nothing but an error on failure.
-async function employ( secret, error_id, button_id )
+// NOTE: How long to look for the node to say it is unlocked, after it has taken a key or the master password.
+const c_unlock_check_tries = 3;
+const c_unlock_check_ms = 1000;
+
+// NOTE: "employ_unlock_key( )" takes an unlock key - or, the server finding no key's shape, the master password ("ciyam_base.cpp").
+// It answers the same whether or not what it was given opened the node (found 2026-11-12: Home said "Unlocked" for a master
+// password that had not), so the node's state is read again - "" once it is unlocked, "locked" if it is not, or the node's error.
+async function employ_once( secret )
+{
+   var reply = await request( function( done )
+   {
+      return ciyam.employ_unlock_key( secret, done );
+   } );
+
+   if( is_error_response( reply ) )
+      return error_text( reply );
+
+   for( var i = 0; i < c_unlock_check_tries; i++ )
+   {
+      await read_system( );
+
+      if( g_system.state !== "locked" )
+         return "";
+
+      await new Promise( function( resolve ) { window.setTimeout( resolve, c_unlock_check_ms ); } );
+   }
+
+   return "locked";
+}
+
+// NOTE: Each of "secrets" tried in turn until one opens the node - "refused" said if none does.
+async function employ( secrets, error_id, button_id, refused )
 {
    var button = document.getElementById( button_id );
 
@@ -952,16 +981,16 @@ async function employ( secret, error_id, button_id )
    set_text( error_id, "" );
    set_text( "unlock_done", "" );
 
-   var reply = await request( function( done )
-   {
-      return ciyam.employ_unlock_key( secret, done );
-   } );
+   var problem = "locked";
+
+   for( var i = 0; ( i < secrets.length ) && ( problem === "locked" ); i++ )
+      problem = await employ_once( await secrets[ i ]( ) );
 
    button.disabled = false;
 
-   if( is_error_response( reply ) )
+   if( problem !== "" )
    {
-      set_text( error_id, error_text( reply ) );
+      set_text( error_id, ( problem === "locked" ) ? refused : problem );
 
       return;
    }
@@ -989,7 +1018,8 @@ async function do_unlock( event )
       return;
    }
 
-   await employ( key, "unlock_error", "unlock_submit" );
+   await employ( [ function( ) { return key; } ], "unlock_error", "unlock_submit", "That key didn't unlock the node - check it was typed"
+    + " right, or use another. Each key works once." );
 }
 
 async function do_rescue( event )
@@ -1005,8 +1035,23 @@ async function do_rescue( event )
       return;
    }
 
-   // NOTE: It goes in the request's path, so it is encoded.
-   await employ( encodeURIComponent( password ), "rescue_error", "rescue_submit" );
+   // NOTE: The master password is admin's - a node set up through Home is locked under admin's PIN and it hashed (found 2026-11-12:
+   // sent as it was typed, it never opened one), so admin signs in for it.
+   if( !ciyam.is_admin )
+   {
+      set_text( "rescue_error", "The master password is admin's - sign out, and sign in as admin to use it." );
+
+      return;
+   }
+
+   // NOTE: Each way it may lock the node, newest first ("password_hash( )" in "ciyam.js"): hashed with admin's PIN in rounds (set
+   // up through Home since 2026-10-23), once (before), or as it is (set up from the node's console) - the last in the request's
+   // path, so encoded.
+   var pin = ciyam.access;
+
+   await employ( [ function( ) { return ciyam.hash_combined( password, pin, 1 ); }, function( ) { return ciyam.hash_combined( password, pin, 0 ); },
+    function( ) { return encodeURIComponent( password ); } ], "rescue_error", "rescue_submit", "That isn't the master password - the one"
+    + " you chose when the node was set up." );
 
    document.getElementById( "rescue_password" ).value = "";
 }
