@@ -64,6 +64,10 @@ ciyam_register_module( class extends ciyam_module
    static c_people_label = "people_key:";
    static c_person_label = "person_entropy:";
 
+   // NOTE: Admin's keys from the people key and this in place of a PIN (Ian, 2026-11-12) - admin is the node, and a recovery gives
+   // admin a new PIN, which would make other keys.
+   static c_admin_person = "admin";
+
    static c_people_format = "PK1";
    static c_people_lock_label = "people_lock:";
    static c_people_pad = "people_pad";
@@ -142,8 +146,8 @@ ciyam_register_module( class extends ciyam_module
       return ciyam_sha256_hex( this.c_people_label + this.checked_entropy( node_entropy ) );
    }
 
-   // NOTE: A person's entropy from the people key and their PIN (never given out twice - someone is disabled, not removed) - 32
-   // hex digits, which then make their keys just as twelve words of their own would.
+   // NOTE: A person's entropy from the people key and their PIN (never given out twice - someone is disabled, not removed), or
+   // "admin" for admin ("c_admin_person") - 32 hex digits, which then make their keys just as twelve words of their own would.
    static async person_entropy( people_key, pin )
    {
       var key = String( people_key || "" ).toLowerCase( );
@@ -152,7 +156,7 @@ ciyam_register_module( class extends ciyam_module
       if( !/^[0-9a-f]{64}$/.test( key ) )
          throw new Error( "A people key is 64 hex digits." );
 
-      if( !/^[0-9]{5}$/.test( text ) )
+      if( ( text !== this.c_admin_person ) && !/^[0-9]{5}$/.test( text ) )
          throw new Error( "A PIN is five digits." );
 
       return ( await ciyam_sha256_hex( this.c_person_label + key + ":" + text ) ).substr( 0, 32 );
@@ -262,6 +266,18 @@ ciyam_register_module( class extends ciyam_module
          check = hasher.native ? await hasher.hash( check ) : hasher.hash( check );
 
       return this.c_guard_format + ":" + count + ":" + check;
+   }
+
+   // NOTE: New keys from the entropy, as the node keeps them - with no one else's public keys yet, guarded, locked under the access
+   // key made with "rounds" (the default if not given) - and that access key, for the browser to keep: { access, kept }.
+   static async kept_keys( entropy, rounds )
+   {
+      var count = this.checked_rounds( ( rounds !== undefined ) ? Number( rounds ) : this.c_default_rounds );
+      var access = await this.access_key( entropy, count );
+      var seeds = this.seeds_of( entropy );
+
+      return { access: access, kept: this.kept_text( await this.guard( entropy, count ), await this.lock( access, { primary: seeds.primary,
+       secondary: seeds.secondary, contacts: { } }, { rounds: count } ) ) };
    }
 
    // NOTE: What the node keeps, in its two parts - the guard's line ("" for keys without one) and the locked keys.

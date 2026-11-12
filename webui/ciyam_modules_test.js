@@ -716,11 +716,21 @@ async function steps( module_class, list )
     ( await uk.person_entropy( test_people, "12346" ) ) !== ( await uk.person_entropy( test_people, "12345" ) ) ],
     [ sha_hex( "person_entropy:" + test_people + ":12345" ).substr( 0, 32 ), true ] );
    check( "- and makes keys as any entropy does", uk.seeds_of( await uk.person_entropy( test_people, "12345" ) ).primary.length, 64 );
-   check( "- not a people key or a PIN, said", await Promise.all( [ [ test_entropy, "12345" ], [ test_people, "1234" ], [ test_people, "admin" ] ]
+   check( "- not a people key or a PIN, said", await Promise.all( [ [ test_entropy, "12345" ], [ test_people, "1234" ], [ test_people, "Admin" ] ]
     .map( function( a ) { return uk.person_entropy( a[ 0 ], a[ 1 ] ).catch( function( e ) { return e.message; } ); } ) ),
     [ "A people key is 64 hex digits.", "A PIN is five digits.", "A PIN is five digits." ] );
    check( "- through run", [ await new uk( { } ).run( "people " + test_entropy ), await new uk( { } ).run( "person " + test_people + " 12345" ) ],
     [ test_people, sha_hex( "person_entropy:" + test_people + ":12345" ).substr( 0, 32 ) ] );
+
+   // NOTE: Admin's from the people key and "admin" (Ian, 2026-11-12 - a recovery changes admin's PIN), and new keys made from an
+   // entropy in one call - opened by the access key that comes with them, guarded with the same rounds.
+   check( "admin's entropy from the people key and \"admin\", not a PIN", await uk.person_entropy( test_people, "admin" ),
+    sha_hex( "person_entropy:" + test_people + ":admin" ).substr( 0, 32 ) );
+   var made_keys = await uk.kept_keys( test_entropy, 1000 );
+   var made_opened = await uk.unlock( made_keys.access, made_keys.kept );
+   check( "- new keys made in one call: opened by their access key, the entropy's seeds, guarded", [ made_keys.access === await uk.access_key(
+    test_entropy, 1000 ), made_opened.primary === uk.seeds_of( test_entropy ).primary, made_opened.rounds, /^UK#:1000:/.test( made_opened.guard ),
+    Object.keys( made_opened.contacts ).length ], [ true, true, 1000, true, 0 ] );
 
    // NOTE: The people key kept with admin's keys (Damon, 2026-11-11), sealed - worked out here with Node's own: the lock "harden"'s
    // rounds of "people_lock:", the salt, the PIN, ":" and the password; the key XORed with the HMAC of "people_pad" under it; the
