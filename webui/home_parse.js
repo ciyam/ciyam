@@ -1141,9 +1141,22 @@ function user_keys_problem_text( problem )
    return problem;
 }
 
+// NOTE: Under "This node is already being set up" (Ian, 2026-11-12: "a countdown before you do Check again ... a full five minutes
+// just to be sure") - "seconds" still to wait as minutes and seconds, or "" once there are none.
+function setup_retry_wait_text( seconds )
+{
+   var left = Math.max( 0, Math.ceil( Number( seconds ) || 0 ) );
+
+   if( left === 0 )
+      return "";
+
+   return "You can check again in " + Math.floor( left / 60 ) + ":" + String( left % 60 ).padStart( 2, "0" ) + ".";
+}
+
 if( typeof module !== "undefined" )
 {
    module.exports = {
+      setup_retry_wait_text: setup_retry_wait_text,
       user_keys_problem_text: user_keys_problem_text,
       people_matching: people_matching,
       people_page: people_page,

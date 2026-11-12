@@ -54,6 +54,7 @@ ok   uptime - weeks
 ok   uptime - an error
 ok   the node's line - its version and how long it has been up
 ok   uptime in words - minutes, no seconds (Ian, 2026-10-11)
+ok   the wait before Check again - minutes and seconds, nothing once it is over
 ok   uptime in words - an hour and seconds is the hour
 ok   uptime in words - under a minute, just started
 ok   uptime in words - the two largest, a nothing skipped

@@ -125,6 +125,9 @@ check( "uptime - an error", hp.parse_uptime( "Error: something" ), "" );
 check( "the node's line - its version and how long it has been up", [ hp.node_line( "0.0.0", "11 minutes" ), hp.node_line( "0.0.0", "" ) ],
  [ "Home node · CIYAM 0.0.0 · up 11 minutes", "Home node · CIYAM 0.0.0" ] );
 check( "uptime in words - minutes, no seconds (Ian, 2026-10-11)", hp.uptime_words( "41m 45s" ), "41 minutes" );
+// NOTE: The wait before "Check again" on a node someone else is setting up (Ian, 2026-11-12) - five minutes at first, then none.
+check( "the wait before Check again - minutes and seconds, nothing once it is over", [ 300, 299.2, 61, 9, 0, -3 ].map( hp.setup_retry_wait_text ),
+ [ "You can check again in 5:00.", "You can check again in 5:00.", "You can check again in 1:01.", "You can check again in 0:09.", "", "" ] );
 check( "uptime in words - an hour and seconds is the hour", hp.uptime_words( "1h 0m 5s" ), "1 hour" );
 check( "uptime in words - under a minute, just started", hp.uptime_words( "45s" ), "just started" );
 check( "uptime in words - the two largest, a nothing skipped", hp.uptime_words( "1w 0d 3h 4m 5s" ), "1 week 3 hours" );
