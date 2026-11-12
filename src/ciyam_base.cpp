@@ -5911,6 +5911,11 @@ void set_identity( const string& info, const char* p_encrypted_sid )
       string dbl_hash;
       dbl_hash.reserve( c_key_reserve_size );
 
+      string dbl_hash_check;
+
+      if( file_exists( c_ciyam_server_sid_chk_file ) )
+         dbl_hash_check = buffer_file( c_ciyam_server_sid_chk_file );
+
       // NOTE: Checks for an encrypted identity.
       if( info.length( ) >= ( c_encrypted_length * 3 ) )
       {
@@ -6008,7 +6013,28 @@ void set_identity( const string& info, const char* p_encrypted_sid )
          }
 
          if( !is_external_sid || was_key_unlocked )
-            data_decrypt( sid, sid, key );
+         {
+            bool was_hashed = false;
+
+            // NOTE: If the entropy has been provided (and can
+            // be checked) then will just set the "sid" to it.
+            if( !was_key_unlocked && !dbl_hash_check.empty( ) )
+            {
+               sha256 hash( info );
+
+               hash.update( hash.get_digest_as_string( ) );
+
+               if( dbl_hash_check == hash.get_digest_as_string( ) )
+               {
+                  sid = info;
+
+                  was_hashed = true;
+               }
+            }
+
+            if( !was_hashed )
+               data_decrypt( sid, sid, key );
+         }
          else
          {
             epos = sid.find( ':' );
@@ -6145,10 +6171,8 @@ void set_identity( const string& info, const char* p_encrypted_sid )
 
             dbl_hash = sha256( sid ).get_digest_as_string( );
 
-            if( file_exists( c_ciyam_server_sid_chk_file ) )
+            if( !dbl_hash_check.empty( ) )
             {
-               string dbl_hash_check( buffer_file( c_ciyam_server_sid_chk_file ) );
-
                if( dbl_hash != dbl_hash_check )
                {
                   if( !p_encrypted_sid )
