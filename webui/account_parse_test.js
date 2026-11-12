@@ -294,6 +294,11 @@ check( "keys from the administrator - the ask and the answer, each its own kind"
 check( "- an answer with an access key's length not taken as one, nor another device's with an entropy's", [ ap.parse_device_link( "keys-given="
  + reply_key + "." + sealed_key + ".0123456789abcdef" ), ap.parse_device_link( "keys-reply=" + reply_key + "." + given_entropy
  + ".0123456789abcdef" ) ], [ null, null ] );
+check( "a claim not signed in - said why, with the way on", [ ap.written_signin_text( "Timed out waiting for web session response." ),
+ ap.written_signin_text( "Error: something else" ), ap.written_signin_text( "" ) ], [ "Your account is ready, but signing you in didn't work just"
+ + " now (Timed out waiting for web session response) - open the chat and sign in there, then set up your keys on My account.", "Your account is"
+ + " ready, but signing you in didn't work just now (something else) - open the chat and sign in there, then set up your keys on My account.",
+ "Your account is ready, but signing you in didn't work just now - open the chat and sign in there, then set up your keys on My account." ] );
 check( "admin's keys at set up or recovery - made, opened, left, or not made", [ "made", "opened", "other", "failed" ].map( ap.admin_keys_text ),
  [ "Admin's keys are made from the node's twelve words, and on this browser - Give keys in People is ready.",
  "Admin's keys, made from the node's twelve words, are open on this browser.",

@@ -599,6 +599,16 @@ function parse_device_link( text )
    return null;
 }
 
+// NOTE: Under "Write these down" when the claim's own sign in did not work (Ian, 2026-11-07: "Open the chat" with nothing said) - the
+// account is made all the same; the node's words for why, if it gave any.
+function written_signin_text( error )
+{
+   var why = String( error || "" ).replace( /^Error:\s*/, "" ).trim( );
+
+   return "Your account is ready, but signing you in didn't work just now" + ( why ? " (" + why.replace( /\.$/, "" ) + ")" : "" )
+    + " - open the chat and sign in there, then set up your keys on My account.";
+}
+
 // NOTE: What setting up or recovering the node says of admin's keys, made from its words as it signs in ("signin_admin_keys( )") -
 // "made", "opened", "other" (keys from other words, left as they are) or anything else, not made.
 function admin_keys_text( result )
@@ -676,6 +686,7 @@ if( typeof module !== "undefined" )
       parse_device_link: parse_device_link,
       give_field_problems: give_field_problems,
       admin_keys_text: admin_keys_text,
+      written_signin_text: written_signin_text,
       keys_words_text: keys_words_text,
       xor_hex: xor_hex,
       account_sections: account_sections,
