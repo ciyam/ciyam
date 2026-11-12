@@ -294,6 +294,14 @@ check( "keys from the administrator - the ask and the answer, each its own kind"
 check( "- an answer with an access key's length not taken as one, nor another device's with an entropy's", [ ap.parse_device_link( "keys-given="
  + reply_key + "." + sealed_key + ".0123456789abcdef" ), ap.parse_device_link( "keys-reply=" + reply_key + "." + given_entropy
  + ".0123456789abcdef" ) ], [ null, null ] );
+check( "admin's keys at set up or recovery - made, opened, left, or not made", [ "made", "opened", "other", "failed" ].map( ap.admin_keys_text ),
+ [ "Admin's keys are made from the node's twelve words, and on this browser - Give keys in People is ready.",
+ "Admin's keys, made from the node's twelve words, are open on this browser.",
+ "Admin's keys on the node weren't made from these words, so they're left as they are.",
+ "Admin's keys couldn't be made just now - on My account, choose Use the node's twelve words under Your keys." ] );
+check( "the node's words said plainly under Your keys - admin's, everyone else's", [ ap.keys_words_text( true ), ap.keys_words_text( false ) ],
+ [ "Yours come from the node's twelve words - which make everyone's keys here, so keep them like the house keys.",
+ "Unless you set them up from twelve words of your own, they can be made again from the node's twelve words, which your administrator keeps." ] );
 check( "Give keys - everything it lacks, by field, at once", [ ap.give_field_problems( "", "", null ), ap.give_field_problems( "", null, null ) ],
  [ { password: "Type your password.", words: "Type the node's twelve words.", ask: "Scan their device's code, or paste its address." },
  { password: "Type your password.", words: "", ask: "Scan their device's code, or paste its address." } ] );

@@ -599,6 +599,32 @@ function parse_device_link( text )
    return null;
 }
 
+// NOTE: What setting up or recovering the node says of admin's keys, made from its words as it signs in ("signin_admin_keys( )") -
+// "made", "opened", "other" (keys from other words, left as they are) or anything else, not made.
+function admin_keys_text( result )
+{
+   if( result === "made" )
+      return "Admin's keys are made from the node's twelve words, and on this browser - Give keys in People is ready.";
+
+   if( result === "opened" )
+      return "Admin's keys, made from the node's twelve words, are open on this browser.";
+
+   if( result === "other" )
+      return "Admin's keys on the node weren't made from these words, so they're left as they are.";
+
+   return "Admin's keys couldn't be made just now - on My account, choose Use the node's twelve words under Your keys.";
+}
+
+// NOTE: Said plainly under Your keys (Damon and Ian, 2026-11-11) - the node's twelve words make everyone's keys here.
+function keys_words_text( is_admin )
+{
+   if( is_admin )
+      return "Yours come from the node's twelve words - which make everyone's keys here, so keep them like the house keys.";
+
+   return "Unless you set them up from twelve words of your own, they can be made again from the node's twelve words, which your"
+    + " administrator keeps.";
+}
+
 // NOTE: What Give keys lacks, field by field (Damon, 2026-11-11) - the password always; the node's words only when asked ("words" null
 // when they are not); and their device's code, read ("parse_device_link( )"), as the code from Get them from your administrator.
 function give_field_problems( password, words, device )
@@ -649,6 +675,8 @@ if( typeof module !== "undefined" )
       device_given_link: device_given_link,
       parse_device_link: parse_device_link,
       give_field_problems: give_field_problems,
+      admin_keys_text: admin_keys_text,
+      keys_words_text: keys_words_text,
       xor_hex: xor_hex,
       account_sections: account_sections,
       keys_step_text: keys_step_text,

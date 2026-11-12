@@ -103,6 +103,8 @@ ok   - the reply, read back
 ok   - not one: the old address with the access key, a key too short, a reply with no check, nothing
 ok   keys from the administrator - the ask and the answer, each its own kind
 ok   - an answer with an access key's length not taken as one, nor another device's with an entropy's
+ok   admin's keys at set up or recovery - made, opened, left, or not made
+ok   the node's words said plainly under Your keys - admin's, everyone else's
 ok   Give keys - everything it lacks, by field, at once
 ok   - another device's code not taken for theirs; all there, nothing
 ok   xor of two hex strings - and back
