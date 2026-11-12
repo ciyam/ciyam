@@ -6,6 +6,31 @@
 .system_variable @sid_locked
 @ifdef $OUTPUT
 
+ALL_ARGS=$*
+
+   @ifdef $1
+   ACCESS_XXXXX_FILE=@files::.web_access_xxxxx
+
+      @ifdef $ACCESS_XXXXX_FILE
+      EXTRA=299999
+
+      LENGTH=@strlen:$ALL_ARGS
+
+         @if $LENGTH #> 44
+         EXTRA=0
+         @elif $LENGTH #> 16
+         EXTRA=99999
+         @elif $LENGTH #> 13
+         EXTRA=199999
+         @endif
+
+      .=crypto_hash -x=$EXTRA "$ALL_ARGS"
+      ALL_ARGS=$OUTPUT
+
+      ~rm -f .web_access_xxxxx
+      @endif
+   @endif
+
 .identity
 COMBINED=@repstr:!/\n:$OUTPUT
 IDENT=%COMBINED:1%
@@ -26,7 +51,7 @@ EXT_PUBKEY=$OUTPUT
 ; will only need to be entered a single time). If a password has been
 ; provided which has spaces then need to use "$*" (rather than "$1").
    @ifdef $1
-   ARGS="$*"
+   ARGS="$ALL_ARGS"
    @else
    DATA_AND_PUBKEY=@password:Enter unlock key or password to unlock the system identity:$EXT_PUBKEY
    ARGS=@repstr:\:/ -k=:$DATA_AND_PUBKEY

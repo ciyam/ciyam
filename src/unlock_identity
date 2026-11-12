@@ -27,8 +27,10 @@ if [ "$1" = "" ] && [ -f .web_access_admin ]; then
    prefix=33333
    combined=$(echo "$prefix $password")
   else
+   touch .web_access_xxxxx
+
    prefix=$(<.web_access_admin)
-   combined=$(echo -n "$prefix$password" | sha256sum | head -c 64)
+   combined="$prefix$password"
   fi
 
   has_called_self=1
