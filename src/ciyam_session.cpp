@@ -2674,6 +2674,8 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
             session_shared_decrypt( mnenomics_or_hex_seed, pubkey, mnenomics_or_hex_seed );
          }
 
+         possibly_expected_error = true;
+
          get_mnemonics_or_hex_seed( response, mnenomics_or_hex_seed );
 
          clear_response = true;

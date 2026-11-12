@@ -6,8 +6,13 @@
 
 has_called_self=
 
+tmp_unlock_identity=/tmp/ciyam/.unlock_identity
+
 # NOTE: If the system identity was created using the Web UI then the password
-# needs to be prefixed with the admin access PIN and this combination hashed.
+# is prefixed with the admin access PIN (and hardened in unlock_identity.cin)
+# or if twelve words are provided then it will attempt to determine this seed
+# and if (when double hashed) matches "ciyam_server.sid.chk" will instead use
+# the seed itself to unlock.
 if [ "$1" = "" ] && [ -f .web_access_admin ]; then
 
  need_password=
@@ -27,10 +32,32 @@ if [ "$1" = "" ] && [ -f .web_access_admin ]; then
    prefix=33333
    combined=$(echo "$prefix $password")
   else
-   touch .web_access_xxxxx
+   seed=
 
-   prefix=$(<.web_access_admin)
-   combined="$prefix$password"
+   num_spaces=$(echo -n "$password" | tr -cd ' ' | wc -c)
+
+   if [ "$num_spaces" = "11" ]; then
+    echo "crypto_seed \"$password\"" > $tmp_unlock_identity
+    seed=$(./ciyam_client -quiet -no_prompt -no_stderr <$tmp_unlock_identity)
+   fi
+
+   hashed=$(echo -n "$seed" | sha256sum | head -c 64)
+   dbl_hashed=$(echo -n "$hashed" | sha256sum | head -c 64)
+
+   sid_check=
+
+   if [ -f ciyam_server.sid.chk ]; then
+    sid_check=$(<ciyam_server.sid.chk)
+   fi
+
+   if [ "$sid_check" = "$dbl_hashed" ]; then
+    combined=$seed
+   else
+    touch .web_access_xxxxx
+
+    prefix=$(<.web_access_admin)
+    combined="$prefix$password"
+   fi
   fi
 
   has_called_self=1
@@ -41,4 +68,12 @@ fi
 
 if [ "$has_called_self" = "" ]; then
  ./ciyam_client -tls -quiet -no_prompt -no_stderr -exec="<unlock_identity.cin \"$*\""
+
+ if [ -f $tmp_unlock_identity ]; then
+  rm -f $tmp_unlock_identity
+
+  if [ ! -f .unlock_failed ]; then
+   echo "IMPORANT: Is now unlocked but will still need to reset web access with mnemonics."
+  fi
+ fi
 fi
