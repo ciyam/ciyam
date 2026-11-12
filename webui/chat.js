@@ -2528,6 +2528,8 @@ function do_open_create_room( )
    document.getElementById( "room_dialog_name" ).focus( );
 
    load_invitees( );
+
+   refresh_known_users( );
 }
 
 // NOTE: The people picker in the room dialog (Damon, 2026-10-27) - the list it draws keeps the old id, so what is ticked is
@@ -2591,6 +2593,8 @@ function do_open_new_message( )
    load_invitees( );
 
    mark_new_message( );
+
+   refresh_known_users( );
 
    // NOTE: Choosing who is all there is to it, so the list is open at once, its search ready.
    invite_picker( ).open( );
@@ -3333,6 +3337,16 @@ function do_open_invite( )
    invite_picker( ).open( );
 
    mark_already_invited( g_room );
+
+   refresh_known_users( );
+}
+
+// NOTE: The room dialog drawn at once from the people already known, then the room list read afresh - anyone who signed in since is
+// offered as it comes ("offer_invitees_when_known( )"), those ticked kept (found 2026-11-11: one who signed in just before the dialog
+// opened was not offered). Not waited for, so the list is never held back by it.
+function refresh_known_users( )
+{
+   load_rooms( );
 }
 
 // NOTE: Everyone known but the room's members.
@@ -3451,12 +3465,24 @@ function render_invitees( members )
     ( g_dialog_mode === "dm" ) ? "No one else to message yet." : "No other users to invite." );
 }
 
+// NOTE: The names the dialog's list was last filled from ("offer_invitees_when_known( )").
+var g_invitees_offered = "";
+
 // NOTE: The dialog opened before the first poll had brought anyone - its list offered now they are known (found 2026-10-27:
-// opening New message straight after a reload showed no one, and stayed that way).
+// opening New message straight after a reload showed no one, and stayed that way); and filled again when someone new is known
+// while it is open (found 2026-11-11: one who signed in meanwhile was not offered until it was opened again) - those ticked kept
+// ("set_people( )" in "picker.js").
 function offer_invitees_when_known( )
 {
-   if( ( g_invite_picker === null ) || ( g_invite_picker.people > 0 ) || document.getElementById( "room_dialog" ).hidden )
+   if( ( g_invite_picker === null ) || document.getElementById( "room_dialog" ).hidden )
       return;
+
+   var known = g_known_users.map( function( member ) { return member.name; } ).sort( ).join( " " );
+
+   if( ( g_invite_picker.people > 0 ) && ( known === g_invitees_offered ) )
+      return;
+
+   g_invitees_offered = known;
 
    if( g_dialog_mode === "invite" )
    {
