@@ -255,6 +255,12 @@ const c_setup_entropy_length = 32;
 
 const c_setup_most_bubbles = 16;
 
+// NOTE: How long "Check again" waits on a node someone else is setting up (Ian, 2026-11-12) - the five minutes the node waits after
+// it last heard from them, in full, as when that was is not known here.
+const c_setup_retry_wait_ms = 5 * 60 * 1000;
+
+var g_setup_retry_timer = null;
+
 var g_setup = null;
 
 // NOTE: The node waits five minutes from its last word with this tab, then lets admin's PIN go so setting up can start
@@ -310,7 +316,13 @@ async function setup_keep_alive( )
    if( ( g_setup === null ) || ( g_setup.pin === "" ) )
       return;
 
-   var reply = await fetch_text( "/ip-addr?token=" + setup_alive_token( g_setup.pin, g_setup.suggested, hex_sha256 ) );
+   var token = setup_alive_token( g_setup.pin, g_setup.suggested, hex_sha256 );
+   var reply = await fetch_text( "/ip-addr?token=" + token );
+
+   // NOTE: An answer for a PIN this tab has since let go - setting up started again meanwhile - says nothing of the new one (found
+   // 2026-11-12: "Start again" then the bubbles, and the old PIN's "gone" ended the new setting up).
+   if( ( g_setup === null ) || ( g_setup.pin === "" ) || ( setup_alive_token( g_setup.pin, g_setup.suggested, hex_sha256 ) !== token ) )
+      return;
 
    // NOTE: The node no longer waiting - said now, not at Finish (Ian's answer, 2026-10-13): a tab back after too long, or a
    // node restarted. Only while still being kept alive - not once Finish is under way, when the token is let go.
@@ -378,6 +390,11 @@ function setup_show( view )
    else if( g_setup_bubbles !== null )
       g_setup_bubbles.stop( );
 
+   if( view === "setup_elsewhere" )
+      setup_retry_countdown( );
+   else
+      setup_retry_stop( );
+
    // NOTE: Each step tells the node this tab is still here; done, or let go, it stops.
    if( ( view === "setup_done" ) || ( view === "setup_expired" ) || ( view === "setup_elsewhere" ) )
       setup_alive_stop( );
@@ -416,7 +433,8 @@ function setup_clear_fields( )
 
    document.getElementById( "setup_retain" ).value = c_retain_access;
 
-   [ "setup_password_error", "setup_password_status", "setup_finish_error", "setup_finish_status", "setup_pin" ]
+   [ "setup_random_error", "setup_random_status", "setup_password_error", "setup_password_status", "setup_finish_error", "setup_finish_status",
+    "setup_pin" ]
     .forEach( function( id ) { set_text( id, "" ); } );
 
    [ "setup_word_list", "setup_check_rows" ].forEach( function( id ) { document.getElementById( id ).replaceChildren( ); } );
@@ -454,6 +472,86 @@ function setup_count_pops( )
 
    document.getElementById( "setup_popped_bar" ).style.width = Math.round( pops / c_setup_pops * 100 ) + "%";
    document.getElementById( "setup_random_next" ).disabled = ( pops < c_setup_pops );
+}
+
+// NOTE: "Check again" held back until the node will have let go of someone else's setting up - counted down by the clock, so a tab
+// that slept meanwhile is right when it wakes.
+function setup_retry_countdown( )
+{
+   setup_retry_stop( );
+
+   var until = Date.now( ) + c_setup_retry_wait_ms;
+   var button = document.getElementById( "setup_retry" );
+
+   var tick = function( )
+   {
+      var said = setup_retry_wait_text( ( until - Date.now( ) ) / 1000 );
+
+      set_text( "setup_retry_wait", said );
+
+      button.disabled = ( said !== "" );
+
+      if( said === "" )
+         setup_retry_stop( );
+   };
+
+   tick( );
+
+   g_setup_retry_timer = window.setInterval( tick, 1000 );
+}
+
+function setup_retry_stop( )
+{
+   if( g_setup_retry_timer !== null )
+      window.clearInterval( g_setup_retry_timer );
+
+   g_setup_retry_timer = null;
+}
+
+// NOTE: The node's first request - as soon as the bubbles are done (Ian, 2026-11-12: that it was already being set up was found only
+// after the master password had been typed), so someone setting it up elsewhere is said before anything more is asked. Not again
+// after a reload, which kept what it answered ("setup_kept_write( )"). True once the node is setting up for this tab.
+async function setup_start_node( )
+{
+   if( g_setup.pin !== "" )
+      return true;
+
+   var button = document.getElementById( "setup_random_next" );
+
+   button.disabled = true;
+
+   set_text( "setup_random_error", "" );
+   set_text( "setup_random_status", "Asking the node to start..." );
+
+   var reply = await request( function( done )
+   {
+      return ciyam.fetch( ciyam.get_cws_url( ) + "/devices?access=admin&format=text", "POST", done );
+   } );
+
+   set_text( "setup_random_status", "" );
+
+   button.disabled = false;
+
+   var answer = setup_reply( reply );
+
+   if( answer === null )
+   {
+      if( setup_refused( reply ) )
+         setup_show( "setup_elsewhere" );
+      else
+         set_text( "setup_random_error", "The node did not start setting up: " + error_text( reply ) );
+
+      return false;
+   }
+
+   g_setup.pin = answer.pin;
+   g_setup.suggested = answer.suggested;
+
+   setup_kept_write( );
+
+   setup_alive_start( );
+
+   return true;
 }
 
 // ---- The master password, then the words
@@ -551,37 +649,9 @@ async function setup_make_words( )
          return;
       }
 
-      // NOTE: The node's first request - not again after a reload, which kept what it answered.
-      if( g_setup.pin === "" )
-      {
-         set_text( "setup_password_status", "Asking the node to start..." );
-
-         var reply = await request( function( done )
-         {
-            return ciyam.fetch( ciyam.get_cws_url( ) + "/devices?access=admin&format=text", "POST", done );
-         } );
-
-         set_text( "setup_password_status", "" );
-
-         var answer = setup_reply( reply );
-
-         if( answer === null )
-         {
-            if( setup_refused( reply ) )
-               setup_show( "setup_elsewhere" );
-            else
-               set_text( "setup_password_error", "The node did not start setting up: " + error_text( reply ) );
-
-            return;
-         }
-
-         g_setup.pin = answer.pin;
-         g_setup.suggested = answer.suggested;
-
-         setup_kept_write( );
-
-         setup_alive_start( );
-      }
+      // NOTE: Made after the bubbles ("setup_start_node( )") - asked here only if somehow it was not.
+      if( ( g_setup.pin === "" ) && !await setup_start_node( ) )
+         return;
 
       g_setup.password = password;
 
@@ -890,7 +960,11 @@ function install_setup( )
       setup_show( "setup_random" );
    } );
 
-   document.getElementById( "setup_random_next" ).addEventListener( "click", function( ) { setup_show( "setup_password" ); } );
+   document.getElementById( "setup_random_next" ).addEventListener( "click", async function( )
+   {
+      if( await setup_start_node( ) )
+         setup_show( "setup_password" );
+   } );
 
    document.getElementById( "setup_password_new" ).addEventListener( "input", setup_update_strength );
 

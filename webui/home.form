@@ -105,6 +105,8 @@ http://www.opensource.org/licenses/mit-license.php.
             <span>The browser adds its own randomness too</span>
          </div>
          <div class="home-setup-meter" aria-hidden="true"><span id="setup_popped_bar"></span></div>
+         <div class="chat-error-text signin-error" id="setup_random_error" role="alert"></div>
+         <div class="recover-status" id="setup_random_status" role="status"></div>
          <div class="home-setup-actions">
             <span></span>
             <button type="button" class="chat-btn chat-btn--primary" id="setup_random_next" disabled>Next</button>
@@ -129,8 +131,8 @@ http://www.opensource.org/licenses/mit-license.php.
          <div class="recover-warning" id="setup_http_warning" hidden><b>Over plain HTTP.</b> The connection isn't encrypted. The
           password is hashed in this browser before it's sent, but the randomness your words come from isn't - use your own
           network only.</div>
-         <p class="recover-note" id="setup_password_note">Next, the node makes your words - from here, finish in this tab.
-          Nothing has been sent to the node yet.</p>
+         <p class="recover-note" id="setup_password_note">The node is waiting for you to finish setting it up - in this tab.
+          Next, it makes your words.</p>
          <div class="chat-error-text signin-error" id="setup_password_error" role="alert"></div>
          <div class="recover-status" id="setup_password_status" role="status"></div>
          <div class="home-setup-actions">
@@ -232,6 +234,7 @@ http://www.opensource.org/licenses/mit-license.php.
           for it five minutes after it last heard from it - then <b>Check again</b> starts afresh.</p>
          <div class="chat-signin-actions">
             <button type="button" class="chat-btn" id="setup_retry">Check again</button>
+            <span class="recover-status" id="setup_retry_wait" role="status"></span>
          </div>
       </section>
 
