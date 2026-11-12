@@ -161,31 +161,64 @@ function people_picker( host, options )
          opts.on_change( picker.chosen( ) );
    };
 
-   // NOTE: Everyone to choose from - "people" each { name, note }. Anyone ticked is kept, as the list may be drawn again
-   // underneath (the poll brings the user list). None - "none_text" said instead (the option's, unless given here).
+   // NOTE: Everyone to choose from - "people" each { name, note }. Drawn again underneath (the user list comes again), it is
+   // changed in place (found by review, 2026-11-13: rebuilt, it lost the focus, the ticks' marks and each row's tag and note): a
+   // row still wanted is left as it is - ticked, marked, focused - a new one put in its place, one no longer wanted taken out. None -
+   // "none_text" said instead (the option's, unless given here). The names added are given back.
    picker.set_people = function( people, none_text )
    {
-      var ticked = { };
-
-      picker.chosen( ).forEach( function( name ) { ticked[ name ] = true; } );
-
-      picker.list.textContent = "";
-
       var list = people || [ ];
+      var wanted = { };
+      var rows = { };
+      var added = [ ];
+
+      list.forEach( function( person ) { wanted[ person.name ] = true; } );
+
+      picker.boxes( ).forEach( function( box )
+      {
+         var row = box.closest( ".chat-recipient" );
+
+         if( wanted[ box.value ] )
+            rows[ box.value ] = row;
+         else
+            row.remove( );
+      } );
+
+      var none = picker.list.querySelector( ".chat-picker-none" );
+
+      if( none !== null )
+         none.remove( );
 
       picker.people = list.length;
 
       if( list.length === 0 )
          picker.list.appendChild( picker_element( "p", "chat-picker-none", none_text || opts.none_text || "No one to choose." ) );
 
-      list.forEach( function( person )
+      list.forEach( function( person, index )
       {
+         if( rows.hasOwnProperty( person.name ) )
+         {
+            if( person.note )
+            {
+               var kept = rows[ person.name ].querySelector( ".chat-invitee-note" );
+
+               if( kept === null )
+                  rows[ person.name ].appendChild( picker_element( "span", "chat-invitee-note", person.note ) );
+               else
+                  kept.textContent = person.note;
+            }
+
+            return;
+         }
+
+         added.push( person.name );
+
          var row = picker_element( "label", "chat-recipient chat-picker-row" );
          var box = picker_element( "input", "chat-invitee-check" );
 
          box.type = "checkbox";
          box.value = person.name;
-         box.checked = ( ticked[ person.name ] === true );
+         box.checked = false;
 
          var initial = picker_element( "span", "chat-picker-initial is-tone-" + ( person.name.charCodeAt( 0 ) % 5 ),
           person.name.charAt( 0 ).toUpperCase( ) );
@@ -199,10 +232,23 @@ function people_picker( host, options )
          if( person.note )
             row.appendChild( picker_element( "span", "chat-invitee-note", person.note ) );
 
-         picker.list.appendChild( row );
+         // NOTE: Before the next row already there that comes after it - those there are not moved, so one with the focus keeps it.
+         var before = null;
+
+         for( var i = index + 1; ( i < list.length ) && ( before === null ); i++ )
+         {
+            if( rows.hasOwnProperty( list[ i ].name ) )
+               before = rows[ list[ i ].name ];
+         }
+
+         picker.list.insertBefore( row, before );
+
+         rows[ person.name ] = row;
       } );
 
       picker.refresh( );
+
+      return added;
    };
 
    // NOTE: Someone who cannot be chosen - shown, so the list is honest about who is missing, but greyed and not tickable.

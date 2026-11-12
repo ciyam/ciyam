@@ -2564,7 +2564,7 @@ function load_invitees( )
    if( g_dialog_mode === "dm" )
       people = people.filter( function( person ) { return dm_allowed( dm_me( ), person.name ); } );
 
-   render_invitees( people );
+   return render_invitees( people );
 }
 
 // NOTE: Pick the person; the chat opens the conversation with them, starting it if there is none - see "open_dm( )". One
@@ -3341,12 +3341,36 @@ function do_open_invite( )
    refresh_known_users( );
 }
 
-// NOTE: The room dialog drawn at once from the people already known, then the room list read afresh - anyone who signed in since is
-// offered as it comes ("offer_invitees_when_known( )"), those ticked kept (found 2026-11-11: one who signed in just before the dialog
-// opened was not offered). Not waited for, so the list is never held back by it.
+// NOTE: The room dialog drawn at once from the people already known, then the people read afresh - anyone who signed in since the
+// last poll is then offered, those ticked and marked kept (found 2026-11-11: one who signed in just before the dialog opened was not
+// offered). Once only: the poll stops while a dialog is open. Only the people taken from it - not the room list's other work (found
+// by review, 2026-11-13: passing room keys, invitations and the rest, ahead of what the dialog was opened for) - quietly, as a poll
+// is, and not waited for, so the list is never held back by it.
 function refresh_known_users( )
 {
-   load_rooms( );
+   var asked_for = ciyam.access;
+
+   g_in_poll = true;
+
+   serialised( function( )
+   {
+      return ciyam.fetch_messages( c_lobby_room, "", function( response )
+      {
+         if( ciyam.access !== asked_for )
+            return;
+
+         var result = parse_fetch_response( String( response ) );
+
+         if( ( result.error === "" ) && ( result.members.length > 0 ) )
+         {
+            g_known_users = apply_presence( result.members );
+
+            offer_invitees_when_known( );
+         }
+      } );
+   } );
+
+   g_in_poll = false;
 }
 
 // NOTE: Everyone known but the room's members.
@@ -3359,7 +3383,7 @@ function render_invite_candidates( )
 
    var candidates = ( g_known_users.length > 0 ) ? g_known_users : [ ];
 
-   render_invitees( candidates.filter( function( user ) { return !members[ user.name ]; } ) );
+   return render_invitees( candidates.filter( function( user ) { return !members[ user.name ]; } ) );
 }
 
 // NOTE: The server accepts the same invitation twice without complaint, so the picker
@@ -3457,53 +3481,31 @@ async function submit_invite( )
 }
 
 // NOTE: Anything already ticked is kept when the list is drawn again underneath ("people_picker( )").
+// NOTE: The names added to the list, which is changed in place ("set_people( )" in "picker.js").
 function render_invitees( members )
 {
-   // NOTE: Noted as drawn - opening counts too - so the list is drawn again only when someone new is known (found by review,
-   // 2026-11-13: redrawn on every first opening, it wiped the invite's "already invited" marks until they were read again).
-   g_invitees_offered = known_users_key( );
-
    var others = ( members || [ ] ).filter( function( member ) { return member.name !== ciyam.username; } );
 
-   invite_picker( ).set_people( others.map( function( member ) { return { name: member.name }; } ),
+   return invite_picker( ).set_people( others.map( function( member ) { return { name: member.name }; } ),
     ( g_dialog_mode === "dm" ) ? "No one else to message yet." : "No other users to invite." );
 }
 
-// NOTE: The names the dialog's list was last filled from ("offer_invitees_when_known( )").
-var g_invitees_offered = "";
-
-function known_users_key( )
-{
-   return g_known_users.map( function( member ) { return member.name; } ).sort( ).join( " " );
-}
-
 // NOTE: The dialog opened before the first poll had brought anyone - its list offered now they are known (found 2026-10-27:
-// opening New message straight after a reload showed no one, and stayed that way); and filled again when someone new is known
-// while it is open (found 2026-11-11: one who signed in meanwhile was not offered until it was opened again) - those ticked kept
-// ("set_people( )" in "picker.js").
+// opening New message straight after a reload showed no one, and stayed that way); and anyone newly known added to it, the rows
+// there left as they are - ticked, marked, focused (found by review, 2026-11-13). Only someone new is read for being invited already.
 function offer_invitees_when_known( )
 {
    if( ( g_invite_picker === null ) || document.getElementById( "room_dialog" ).hidden )
       return;
 
-   if( ( g_invite_picker.people > 0 ) && ( known_users_key( ) === g_invitees_offered ) )
-      return;
-
    if( g_dialog_mode === "invite" )
    {
-      // NOTE: Everyone offered again only once those already invited are marked (found by review, 2026-11-13: the redrawn rows came
-      // back tickable, and Everyone would have ticked them).
-      invite_picker( ).set_everyone( false );
-
-      render_invite_candidates( );
-
-      mark_already_invited( g_room );
+      if( render_invite_candidates( ).length > 0 )
+         mark_already_invited( g_room );
    }
    else if( ( g_dialog_mode === "dm" ) || ( g_dialog_mode === "create" ) )
    {
-      load_invitees( );
-
-      if( g_dialog_mode === "dm" )
+      if( ( load_invitees( ).length > 0 ) && ( g_dialog_mode === "dm" ) )
          mark_new_message( );
    }
 }
