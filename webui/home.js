@@ -947,7 +947,8 @@ const c_unlock_check_ms = 1000;
 
 // NOTE: "employ_unlock_key( )" takes an unlock key - or, the server finding no key's shape, the master password ("ciyam_base.cpp").
 // It answers the same whether or not what it was given opened the node (found 2026-11-12: Home said "Unlocked" for a master
-// password that had not), so the node's state is read again - "" once it is unlocked, "locked" if it is not, or the node's error.
+// password that had not), so the node's state is read again - "" once it says it is ready, "locked" if it is not, "unanswered" if
+// it said nothing (found by review: no answer was taken for unlocked), or the node's error.
 async function employ_once( secret )
 {
    var reply = await request( function( done )
@@ -955,42 +956,65 @@ async function employ_once( secret )
       return ciyam.employ_unlock_key( secret, done );
    } );
 
-   if( is_error_response( reply ) )
-      return error_text( reply );
+   var error = is_error_response( reply ) ? error_text( reply ) : "";
+
+   // NOTE: Already unlocked - by a try before whose check came too soon, say - is not a failure (found by review).
+   if( ( error !== "" ) && !/not currently locked/.test( error ) )
+      return error;
 
    for( var i = 0; i < c_unlock_check_tries; i++ )
    {
       await read_system( );
 
-      if( g_system.state !== "locked" )
+      if( g_system.state === "ready" )
          return "";
 
       await new Promise( function( resolve ) { window.setTimeout( resolve, c_unlock_check_ms ); } );
    }
 
-   return "locked";
+   return ( g_system.state === "locked" ) ? "locked" : "unanswered";
 }
 
-// NOTE: Each of "secrets" tried in turn until one opens the node - "refused" said if none does.
-async function employ( secrets, error_id, button_id, refused )
+// NOTE: Each of "secrets" tried in turn until one opens the node - after an error too (found by review: a wrong one can be answered
+// with an error rather than left locked) - "busy" said meanwhile, "refused" if none does. The button given back whatever happens.
+async function employ( secrets, error_id, button_id, busy, refused )
 {
    var button = document.getElementById( button_id );
+   var problems = [ ];
+   var opened = false;
 
    button.disabled = true;
 
    set_text( error_id, "" );
-   set_text( "unlock_done", "" );
+   set_text( "unlock_done", busy );
 
-   var problem = "locked";
+   try
+   {
+      for( var i = 0; ( i < secrets.length ) && !opened; i++ )
+      {
+         var problem = await employ_once( await secrets[ i ]( ) );
 
-   for( var i = 0; ( i < secrets.length ) && ( problem === "locked" ); i++ )
-      problem = await employ_once( await secrets[ i ]( ) );
+         if( problem === "" )
+            opened = true;
+         else
+            problems.push( problem );
+      }
+   }
+   catch( e )
+   {
+      problems.push( e && e.message ? e.message : "it could not be tried" );
+   }
 
    button.disabled = false;
 
-   if( problem !== "" )
+   set_text( "unlock_done", "" );
+
+   if( !opened )
    {
-      set_text( error_id, ( problem === "locked" ) ? refused : problem );
+      // NOTE: Refused - the node's own words for a wrong one say no more - unless it never answered at all.
+      var unanswered = ( problems.length > 0 ) && problems.every( function( problem ) { return problem === "unanswered"; } );
+
+      set_text( error_id, unanswered ? "The node didn't answer - check it is running, then try again." : refused );
 
       return;
    }
@@ -1018,15 +1042,16 @@ async function do_unlock( event )
       return;
    }
 
-   await employ( [ function( ) { return key; } ], "unlock_error", "unlock_submit", "That key didn't unlock the node - check it was typed"
-    + " right, or use another. Each key works once." );
+   await employ( [ function( ) { return key; } ], "unlock_error", "unlock_submit", "Checking the key…", "That key didn't unlock the node -"
+    + " check it was typed right, or use another. Each key works once." );
 }
 
 async function do_rescue( event )
 {
    event.preventDefault( );
 
-   var password = document.getElementById( "rescue_password" ).value;
+   var field = document.getElementById( "rescue_password" );
+   var password = field.value;
 
    if( password === "" )
    {
@@ -1034,6 +1059,9 @@ async function do_rescue( event )
 
       return;
    }
+
+   // NOTE: Not left on the page, whatever happens (found by review).
+   field.value = "";
 
    // NOTE: The master password is admin's - a node set up through Home is locked under admin's PIN and it hashed (found 2026-11-12:
    // sent as it was typed, it never opened one), so admin signs in for it.
@@ -1046,14 +1074,12 @@ async function do_rescue( event )
 
    // NOTE: Each way it may lock the node, newest first ("password_hash( )" in "ciyam.js"): hashed with admin's PIN in rounds (set
    // up through Home since 2026-10-23), once (before), or as it is (set up from the node's console) - the last in the request's
-   // path, so encoded.
+   // path, so encoded. Hashing in rounds takes some seconds, so it is said.
    var pin = ciyam.access;
 
    await employ( [ function( ) { return ciyam.hash_combined( password, pin, 1 ); }, function( ) { return ciyam.hash_combined( password, pin, 0 ); },
-    function( ) { return encodeURIComponent( password ); } ], "rescue_error", "rescue_submit", "That isn't the master password - the one"
-    + " you chose when the node was set up." );
-
-   document.getElementById( "rescue_password" ).value = "";
+    function( ) { return encodeURIComponent( password ); } ], "rescue_error", "rescue_submit", "Checking the password - this takes a few"
+    + " seconds…", "That isn't the master password - the one you chose when the node was set up." );
 }
 
 async function wait_until_ready( )
