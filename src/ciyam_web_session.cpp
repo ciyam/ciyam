@@ -2112,7 +2112,7 @@ bool process_cws_request( http_request_type request_type, const string& uri_suff
 
    if( error.empty( ) && !access.empty( ) )
    {
-      bool had_admin_token = !g_cws_admin_token.empty( );
+      string old_admin_token( g_cws_admin_token );
 
       bool has_access_file = has_web_session_access_token( access, access_file, passwd, pin );
 
@@ -2121,7 +2121,10 @@ bool process_cws_request( http_request_type request_type, const string& uri_suff
       else if( pin.empty( ) )
          add_access_token_if_new( access );
 
-      if( !had_admin_token && !g_cws_admin_token.empty( ) )
+      // NOTE: A new admin token - the first, or another after an abandoned setting up was let go (its access
+      // file removed while the old token stayed here) - so the setting up's "still here" token is then the new
+      // PIN's (otherwise a second setting up would never be kept waiting).
+      if( !g_cws_admin_token.empty( ) && ( g_cws_admin_token != old_admin_token ) )
          admin_token_created = true;
 
       // NOTE: If is "admin locked" or the system identity is "unknown"
