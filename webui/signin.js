@@ -513,6 +513,13 @@ function signin_apply_retain( mode, hashed )
 
       if( parse_access_list( plan.list ).indexOf( ciyam.access ) < 0 )
          localStorage.removeItem( c_signin_storage_keys_prefix + ciyam.access );
+      else if( sessionStorage.getItem( c_signin_storage_keys_prefix + ciyam.access ) !== null )
+      {
+         // NOTE: Keys opened for the tab before the account was remembered - made as setting up or recovering signed in
+         // ("signin_admin_keys( )") - kept with it now, as My account keeps them ("keys_keep_here( )").
+         localStorage.setItem( c_signin_storage_keys_prefix + ciyam.access, sessionStorage.getItem( c_signin_storage_keys_prefix + ciyam.access ) );
+         sessionStorage.removeItem( c_signin_storage_keys_prefix + ciyam.access );
+      }
 
       if( plan.list === null )
          localStorage.removeItem( c_signin_storage_access );
@@ -1026,6 +1033,7 @@ function recover_build( )
    done.appendChild( signin_element( "span", { class: "chat-label" }, "Admin's PIN" ) );
    done.appendChild( signin_element( "span", { class: "recover-mono recover-pin", id: "recover_pin" } ) );
    done.appendChild( signin_element( "p", { class: "recover-note", id: "recover_done_note" }, words.done_note ) );
+   done.appendChild( signin_element( "p", { class: "recover-note", id: "recover_keys_note" } ) );
 
    // NOTE: Admin's PIN, and the password, remembered on this browser as setting up's end offers (2026-10-13) - the browser
    // started afresh by the recovery, with this session's device as its own (Ian, 2026-10-14).
@@ -1364,6 +1372,8 @@ async function recover_show( options )
    document.getElementById( "recover_form" ).hidden = false;
    document.getElementById( "recover_done" ).hidden = true;
    document.getElementById( "recover_step_words" ).hidden = false;
+
+   signin_set_text( "recover_keys_note", "" );
    document.getElementById( "recover_step_password" ).hidden = true;
 
    g_recover_hash = "";
@@ -1653,6 +1663,132 @@ function recover_on_keydown( event )
    }
 }
 
+// NOTE: The scripts admin's keys need ("signin_admin_keys( )") - read in only then, as My account and the chat read theirs.
+const c_signin_keys_scripts = [ "ed25519.min.js", "ciyam_harden.js", "ciyam_chacha20.js", "ciyam_ed25519.js", "ciyam_secure_message.js",
+ "ciyam_user_keys.js" ];
+
+function signin_load_script( src )
+{
+   return new Promise( function( resolve )
+   {
+      if( document.querySelector( "script[src='" + src + "']" ) !== null )
+      {
+         resolve( true );
+
+         return;
+      }
+
+      var script = document.createElement( "script" );
+
+      script.src = src;
+      script.onload = function( ) { resolve( true ); };
+      script.onerror = function( ) { resolve( false ); };
+
+      document.head.appendChild( script );
+   } );
+}
+
+// NOTE: A request as the page makes them ("g_signin_options.request" - in turn, ISS-005), its answer as text.
+async function signin_issue( issue )
+{
+   try
+   {
+      if( g_signin_options.request )
+         return String( await g_signin_options.request( issue ) );
+
+      return await new Promise( function( resolve ) { issue( function( response ) { resolve( String( response ) ); } ); } );
+   }
+   catch( e )
+   {
+      return "Error: " + ( ( e && e.message ) ? e.message : "the request failed." );
+   }
+}
+
+// NOTE: An access key kept on this browser as My account keeps one ("keys_keep_here( )") - for as long as the account is remembered
+// here, otherwise for the tab.
+function signin_keep_keys( access )
+{
+   try
+   {
+      var remembered = ( parse_access_list( localStorage.getItem( c_signin_storage_access ) ).indexOf( ciyam.access ) >= 0 );
+
+      ( remembered ? localStorage : sessionStorage ).setItem( c_signin_storage_keys_prefix + ciyam.access, access );
+      ( remembered ? sessionStorage : localStorage ).removeItem( c_signin_storage_keys_prefix + ciyam.access );
+   }
+   catch( e )
+   {
+   }
+}
+
+// NOTE: Admin's keys from the node's twelve words (Ian, 2026-11-12: admin is the node) - made as setting up or recovering the node
+// signs in, so Give keys in People works at once. From the people key and "admin" ("person_entropy( )" in "ciyam_user_keys.js"), not
+// admin's PIN, which a recovery changes. Keys the node has that the words open are kept as they are - contacts and room keys with
+// them - and only opened here; keys from other words are left alone. "made", "opened", "other" or "failed" ("admin_keys_text( )").
+async function signin_admin_keys( entropy )
+{
+   try
+   {
+      for( var i = 0; i < c_signin_keys_scripts.length; i++ )
+      {
+         if( !await signin_load_script( c_signin_keys_scripts[ i ] ) )
+            return "failed";
+      }
+
+      var uk = ciyam_module_named( "user_keys" );
+
+      if( !uk )
+         return "failed";
+
+      var own = await uk.person_entropy( await uk.people_key( entropy ), uk.c_admin_person );
+      var url = ciyam.get_cws_url( ) + "/user-keys?access=" + ciyam.access + "&device=" + ciyam.device + "&format=text";
+
+      var kept = ( await signin_issue( function( done )
+      {
+         return ciyam.fetch( url + "&session=" + ciyam.sessid, "GET", done );
+      } ) ).trim( );
+
+      if( is_error_response( kept ) )
+         return "failed";
+
+      // NOTE: Keys there already - opened if the words make them, else left as they are.
+      if( ( kept !== "[none]" ) && !/^UK[12]:/.test( kept ) )
+      {
+         var access = await uk.access_key( own, uk.rounds_of( kept ) );
+
+         try
+         {
+            await uk.unlock( access, kept );
+         }
+         catch( e )
+         {
+            return "other";
+         }
+
+         signin_keep_keys( access );
+
+         return "opened";
+      }
+
+      var made = await uk.kept_keys( own );
+
+      var saved = ( await signin_issue( function( done )
+      {
+         return ciyam.fetch_in_body( url + "&payload=" + encodeURIComponent( made.kept ) + "&session=" + ciyam.sessid, "PUT", done );
+      } ) ).trim( );
+
+      if( is_error_response( saved ) )
+         return "failed";
+
+      signin_keep_keys( made.access );
+
+      return "made";
+   }
+   catch( e )
+   {
+      return "failed";
+   }
+}
+
 async function recover_submit( event )
 {
    event.preventDefault( );
@@ -1721,9 +1857,11 @@ async function recover_submit( event )
 
    var reply = "";
 
+   var entropy = BIP39.mnemonicToEntropy( words.join( " " ) );
+
    var issue = function( done )
    {
-      return ciyam.connect( hex_sha256( BIP39.mnemonicToEntropy( words.join( " " ) ) ), "", "", password, done );
+      return ciyam.connect( hex_sha256( entropy ), "", "", password, done );
    };
 
    try
@@ -1787,6 +1925,16 @@ async function recover_submit( event )
    recover_clear_words( );
 
    signin_keep_session( );
+
+   // NOTE: Admin's keys from the words, so Give keys works at once - after the browser was started afresh, above.
+   signin_set_text( "recover_status", "Making admin's keys from the words..." );
+   button.disabled = true;
+
+   signin_set_text( "recover_keys_note", admin_keys_text( await signin_admin_keys( entropy ) ) );
+
+   entropy = "";
+   button.disabled = false;
+   signin_set_text( "recover_status", "" );
 
    signin_set_text( "recover_pin", ciyam.access );
 

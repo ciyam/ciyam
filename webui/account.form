@@ -289,6 +289,7 @@ http://www.opensource.org/licenses/mit-license.php.
             <div>
                <h1 tabindex="-1">Your keys</h1>
                <p class="account-lede" id="keys_lede">For encrypted messages - only the people you write to can read them.</p>
+               <p class="account-lede" id="keys_words_lede"></p>
             </div>
 
             <div class="account-columns">

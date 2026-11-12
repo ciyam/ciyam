@@ -392,6 +392,9 @@ async function render_keys( )
 {
    install_keys( );
    keys_clear( );
+
+   // NOTE: Said plainly (Damon and Ian, 2026-11-11) - the node's twelve words make everyone's keys here.
+   document.getElementById( "keys_words_lede" ).textContent = keys_words_text( ciyam.is_admin );
    keys_show( "keys_loading" );
 
    var render = ++g_keys_render;
@@ -1440,7 +1443,7 @@ async function keys_give_people_key( password, latest )
       return "";
    }
 
-   if( uk.seeds_of( await uk.person_entropy( people, ciyam.access ) ).primary !== latest.primary )
+   if( uk.seeds_of( await uk.person_entropy( people, uk.c_admin_person ) ).primary !== latest.primary )
    {
       keys_give_problems( { password: "", words: "Those aren't the words your own keys were made from. Yours need to come from the"
        + " node's twelve words - Use the node's twelve words, under Your keys.", ask: "" } );
@@ -2152,12 +2155,13 @@ async function keys_enter_go( )
 }
 
 // NOTE: This person's entropy from the entropy of the node's twelve words (Ian, 2026-11-11 - one set of words for the node and
-// everyone on it): the people key, and from it and their PIN theirs ("ciyam_user_keys.js").
+// everyone on it): the people key, and from it and their PIN theirs - admin's from it and "admin", as a recovery changes admin's
+// PIN (Ian, 2026-11-12) ("ciyam_user_keys.js").
 async function keys_person_entropy( node_entropy )
 {
    var uk = keys_module( "user_keys" );
 
-   return uk.person_entropy( await uk.people_key( node_entropy ), ciyam.access );
+   return uk.person_entropy( await uk.people_key( node_entropy ), ciyam.is_admin ? uk.c_admin_person : ciyam.access );
 }
 
 // NOTE: The words typed as their own, then as the node's - { entropy, access } for the first whose access key (with "rounds") "opens"

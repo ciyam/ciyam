@@ -822,11 +822,24 @@ async function setup_finish( )
 
    set_text( "setup_finish_status", "" );
 
+   var keys_made = "";
+
    if( ( ciyam.error === "" ) && ( ciyam.sessid !== "" ) )
    {
       signin_remember_device( );
       signin_keep_session( );
+
+      // NOTE: Admin's keys from the node's words, while they are still here (Damon and Ian, 2026-11-12) - so Give keys in People
+      // works at once ("signin_admin_keys( )").
+      set_text( "setup_finish_status", "Making admin's keys from the words..." );
+
+      keys_made = admin_keys_text( await signin_admin_keys( g_setup.entropy ) );
+
+      set_text( "setup_finish_status", "" );
    }
+
+   set_text( "setup_keys_note", keys_made );
+   document.getElementById( "setup_keys_note" ).hidden = ( keys_made === "" );
 
    set_text( "setup_pin", g_setup.pin );
 

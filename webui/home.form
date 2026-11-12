@@ -141,8 +141,9 @@ http://www.opensource.org/licenses/mit-license.php.
 
       <section id="setup_words" hidden>
          <h2 tabindex="-1">Write down your twelve words</h2>
-         <p class="chat-signin-lede">On paper, in order. They can restore the node if everything else is lost - and anyone who
-          has them can take it over.</p>
+         <p class="chat-signin-lede">On paper, in order. They can restore the node if everything else is lost, and they make the
+          keys of everyone on it - so anyone who has them can take it over and read every account. Keep them like the house
+          keys.</p>
          <ol class="home-setup-words" id="setup_word_list"></ol>
          <div class="recover-warning"><b>Shown only now.</b> Not a screenshot, not a file on this computer, not a photo. The node
           never shows them again, and this page forgets them once the node is set up.</div>
@@ -185,6 +186,7 @@ http://www.opensource.org/licenses/mit-license.php.
             <span class="chat-label">Admin's PIN</span>
             <span class="recover-mono" id="setup_pin"></span>
          </div>
+         <p class="recover-note" id="setup_keys_note"></p>
          <p class="recover-note"><b>Next, in Home:</b> make an unlock key or two, so a restart doesn't need the master password -
           then add the people who'll use the node.</p>
          <!-- NOTE: Saved here as a sign in would, so the next visit needn't type them (Ian, 2026-10-13) - the sign in's own
