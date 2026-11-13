@@ -197,7 +197,7 @@ ok   hashed password shortened
 ok   other values whole
 
 == preferences =================================================
-ok   nothing stored
+ok   nothing stored - the session only, to begin with
 ok   stored value
 ok   not JSON
 ok   wrong type

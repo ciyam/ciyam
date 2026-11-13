@@ -1087,7 +1087,9 @@ function summarise_storage_value( key, value )
 // in the harness - the output is much cleaner without (Ian, 2026-10-07).
 const c_console_prefs_key = "cws.prefs";
 
-const c_console_prefs = { log_session_only: false, log_polling: false, echo_list_lines: false };
+// NOTE: "log_session_only" on to begin with (Damon, 2026-11-13, after a security review) - off, a console linking after one account signed
+// out and another in was given the first account's requests: its rooms, and messages sent where there is no room key.
+const c_console_prefs = { log_session_only: true, log_polling: false, echo_list_lines: false };
 
 // NOTE: Only known names, and only values of the default's type, are taken from what is
 // stored - anything else, including text that is not JSON at all, falls back to the default.

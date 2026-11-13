@@ -8247,7 +8247,7 @@ function log_session_only( )
    }
    catch( e )
    {
-      return false;
+      return c_console_prefs.log_session_only;
    }
 }
 
