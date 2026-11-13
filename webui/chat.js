@@ -1304,7 +1304,26 @@ async function do_disconnect( already_ended )
    {
       // NOTE: After what is already queued, so it cannot cross a request still waiting for its answer and the two swap answers
       // (ISS-005) - but not waiting long behind one: after a few seconds it goes anyway (found by review, 2026-11-01).
-      await Promise.race( [ g_request_chain, new Promise( function( done ) { window.setTimeout( done, c_sign_out_wait_ms ); } ) ] );
+      // NOTE: A poll part way through let reach its next step, where it stops, and what was queued answered - waited on again
+      // while it grows, as a request's answer may queue another (invitations, a held room), which went alongside the sign out
+      // (found by review, 2026-11-13).
+      var wait_until = Date.now( ) + c_sign_out_wait_ms;
+
+      var settled = ( async function( )
+      {
+         await g_poll_running;
+
+         var chain = null;
+
+         while( ( chain !== g_request_chain ) && ( Date.now( ) < wait_until ) )
+         {
+            chain = g_request_chain;
+
+            await chain;
+         }
+      } )( );
+
+      await Promise.race( [ settled, new Promise( function( done ) { window.setTimeout( done, c_sign_out_wait_ms ); } ) ] );
 
       await ciyam.disconnect( function( ) { } );
    }
@@ -7818,6 +7837,9 @@ var g_hidden_polls = 0;
 // 2026-11-13: on a slow node they ran over each other, the queue grew, and what the user did waited behind it).
 var g_poll_busy = false;
 
+// NOTE: The poll going now, for a sign out to wait on ("do_disconnect( )").
+var g_poll_running = Promise.resolve( );
+
 async function poll( )
 {
    if( g_poll_busy )
@@ -7825,9 +7847,11 @@ async function poll( )
 
    g_poll_busy = true;
 
+   g_poll_running = poll_once( ).catch( function( ) { } );
+
    try
    {
-      await poll_once( );
+      await g_poll_running;
    }
    finally
    {
@@ -7835,9 +7859,16 @@ async function poll( )
    }
 }
 
+// NOTE: A poll goes no further once a sign out has begun - its next request went alongside the sign out's, two at once (ISS-005),
+// for a session going (found by review, 2026-11-13; "sign_out_poll" checks it).
+function poll_ended( )
+{
+   return g_signing_out || ( ciyam.sessid === "" );
+}
+
 async function poll_once( )
 {
-   if( ciyam.sessid === "" )
+   if( poll_ended( ) )
       return;
 
    if( document.hidden )
@@ -7872,10 +7903,16 @@ async function poll_once( )
 
    await rooms;
 
+   if( poll_ended( ) )
+      return;
+
    // NOTE: A member in a room without its key looks again once the owner's direct message has something new (Damon, 2026-11-04:
    // the room accepted first, the key came a moment later and waited for the room to be opened again) - "chat_look_for_owner_key(
    // )". Not the owner's side, which sends as the room is opened or joined.
    await chat_look_for_owner_key( true );
+
+   if( poll_ended( ) )
+      return;
 
    if( g_room !== "" )
    {
@@ -7887,6 +7924,9 @@ async function poll_once( )
 
       await messages;
    }
+
+   if( poll_ended( ) )
+      return;
 
    // NOTE: Now and then the room read whole again (Ian's suggestion, 2026-10-29) - a poll brings only new messages, so someone
    // else's reaction, edit or deletion on an older one waits for it ("append_messages( )" draws again only what changed).
@@ -8095,8 +8135,9 @@ function note_response( response )
 function note_timeout( )
 {
    // NOTE: Not while signing in or out - signing out makes a request of its own, and its
-   // time-out must not start the sign out again.
-   if( g_losing_contact || ( ciyam.sessid === "" ) )
+   // time-out must not start the sign out again; nor catch up while it waits, which queued requests to go alongside it (found
+   // by review, 2026-11-13).
+   if( g_losing_contact || g_signing_out || ( ciyam.sessid === "" ) )
       return;
 
    ++g_timeouts_in_row;
@@ -8123,7 +8164,7 @@ function note_timeout( )
 
 function resync_after_timeout( )
 {
-   if( !g_resyncing )
+   if( !g_resyncing || g_signing_out )
       return;
 
    // NOTE: Its answer is thrown away - if a late one is coming, this is where it lands.
@@ -8136,13 +8177,14 @@ function resync_after_timeout( )
 
    g_in_poll = false;
 
+   // NOTE: Each step not taken once a sign out has begun (found by review, 2026-11-13).
    drain
-    .then( function( ) { return load_rooms( ); } )
-    .then( function( ) { if( g_room !== "" ) return load_messages( "from=0", true ); } )
+    .then( function( ) { if( !g_signing_out ) return load_rooms( ); } )
+    .then( function( ) { if( !g_signing_out && ( g_room !== "" ) ) return load_messages( "from=0", true ); } )
     .then( function( )
     {
        // NOTE: The Admin room read whole again, for the invitations and announcements.
-       if( !ciyam.is_admin && ( g_invite_messages.length > 0 ) )
+       if( !g_signing_out && !ciyam.is_admin && ( g_invite_messages.length > 0 ) )
           check_invitations( true );
     } )
     .then( finish_resync, finish_resync );
