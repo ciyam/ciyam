@@ -198,15 +198,19 @@ function people_picker( host, options )
       {
          if( rows.hasOwnProperty( person.name ) )
          {
+            var kept = rows[ person.name ].querySelector( ".chat-invitee-note" );
+
             if( person.note )
             {
-               var kept = rows[ person.name ].querySelector( ".chat-invitee-note" );
-
                if( kept === null )
                   rows[ person.name ].appendChild( picker_element( "span", "chat-invitee-note", person.note ) );
                else
                   kept.textContent = person.note;
             }
+            // NOTE: A note given as empty is taken away (found by review, 2026-11-13: it stayed) - but one not given at all is left,
+            // as the page may write its own there (the chat's New message says "conversation open" there, "mark_new_message( )").
+            else if( person.hasOwnProperty( "note" ) && ( kept !== null ) )
+               kept.remove( );
 
             return;
          }
