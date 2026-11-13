@@ -2515,9 +2515,8 @@ function do_open_create_room( )
    set_error( "room_dialog_error", "" );
    show_room_problems( null );
 
-   // NOTE: Emptied before the list is drawn so ticks from a previous room are not
-   // carried over - render_invitees deliberately preserves whatever is already ticked
-   // when it refreshes underneath the user.
+   // NOTE: Emptied before the list is drawn so ticks and marks from a previous room are not
+   // carried over - the list is otherwise changed in place, keeping them ("set_people( )").
    invite_picker( ).reset( );
    invite_picker( ).set_single( false );
 
@@ -3404,13 +3403,30 @@ function render_invite_candidates( )
 // delays it. Invitations sent by someone else are not visible here - see ISS-017.
 function mark_already_invited( room )
 {
+   var answered = false;
+
+   // NOTE: Everyone given back whatever the answer, or none - held back meanwhile, it could otherwise stay hidden (found by review).
+   var offer_everyone = function( )
+   {
+      if( ( g_dialog_mode === "invite" ) && ( g_room === room ) && !document.getElementById( "room_dialog" ).hidden )
+         invite_picker( ).set_everyone( chat_is_room_owner( ) || ciyam.is_admin );
+   };
+
    serialised( function( )
    {
       return ciyam.fetch_messages( c_reserved_room_no, "from=0", function( response )
       {
+         answered = true;
+
+         if( is_error_response( response ) )
+         {
+            offer_everyone( );
+
+            return;
+         }
+
          // NOTE: The dialog may have been closed or switched to another room meanwhile.
-         if( is_error_response( response ) || ( g_dialog_mode !== "invite" ) || ( g_room !== room )
-          || document.getElementById( "room_dialog" ).hidden )
+         if( ( g_dialog_mode !== "invite" ) || ( g_room !== room ) || document.getElementById( "room_dialog" ).hidden )
             return;
 
          var invited = invited_to_room( parse_fetch_response( response ).messages, room );
@@ -3423,6 +3439,10 @@ function mark_already_invited( room )
 
          invite_picker( ).set_everyone( chat_is_room_owner( ) || ciyam.is_admin );
       } );
+   } ).then( function( )
+   {
+      if( !answered )
+         offer_everyone( );
    } );
 }
 
@@ -3491,8 +3511,7 @@ async function submit_invite( )
    }
 }
 
-// NOTE: Anything already ticked is kept when the list is drawn again underneath ("people_picker( )").
-// NOTE: The names added to the list, which is changed in place ("set_people( )" in "picker.js").
+// NOTE: The names added to the list, which is changed in place - what is ticked and marked kept ("set_people( )" in "picker.js").
 function render_invitees( members )
 {
    var others = ( members || [ ] ).filter( function( member ) { return member.name !== ciyam.username; } );
@@ -3512,7 +3531,12 @@ function offer_invitees_when_known( )
    if( g_dialog_mode === "invite" )
    {
       if( render_invite_candidates( ).length > 0 )
+      {
+         // NOTE: Everyone offered again once those already invited are marked, so it cannot tick them (found by review).
+         invite_picker( ).set_everyone( false );
+
          mark_already_invited( g_room );
+      }
    }
    else if( ( g_dialog_mode === "dm" ) || ( g_dialog_mode === "create" ) )
    {
@@ -7152,6 +7176,13 @@ async function do_send( )
    if( ( input.value.trim( ) === "" ) || ( g_room === "" ) || g_signing_out )
       return;
 
+   // NOTE: The room it is typed in, and who it is for and what it edits, as Send is pressed - not as they are after the waits below
+   // (found by review, 2026-11-13: a room clicked meanwhile was sent it, sealed for the one before).
+   var room = g_room;
+   var recipients = g_recipients.slice( );
+   var editing = g_edit_unique;
+   var editing_private = g_edit_private;
+
    // NOTE: As it is sent - the formatting as escapes, whichever way the box shows it.
    var text = composer_message( );
 
@@ -7226,7 +7257,7 @@ async function do_send( )
    // and 26) - as it is, CRs and all, as nothing in it needs escaping. A message for some only too, as the console seals them (Ian's
    // "d18eb1e2", 2026-10-27: kept as "!X\r..."). An edit too, as "irc.cin" seals one (Ian, 2026-10-29: encrypted messages could not
    // be edited).
-   var sealing = await chat_seal_here( text );
+   var sealing = await chat_seal_with( chat_secret_for_room( room ), text );
 
    if( sealing.sealed && ( sealing.text === "" ) )
    {
@@ -7237,13 +7268,20 @@ async function do_send( )
 
    if( sealing.sealed )
       sent = sealing.text;
+   else if( room !== g_room )
+   {
+      // NOTE: Not to be sent unsealed for a room no longer open, where it cannot be asked about.
+      show_alert( "Not sent - another room was opened while it was being prepared.", "is-error" );
+
+      return;
+   }
    else if( !await chat_may_send_unsealed( ) )
       return;
 
-   if( g_edit_unique !== "" )
-      options = "for=" + edit_for_value( g_edit_unique, g_edit_private ) + ";text=" + sent;
-   else if( g_recipients.length > 0 )
-      options = "for=" + with_sender( g_recipients, ciyam.username ).join( "," ) + ";text=" + sent;
+   if( editing !== "" )
+      options = "for=" + edit_for_value( editing, editing_private ) + ";text=" + sent;
+   else if( recipients.length > 0 )
+      options = "for=" + with_sender( recipients, ciyam.username ).join( "," ) + ";text=" + sent;
    else
       options = "text=" + sent;
 
@@ -7256,18 +7294,14 @@ async function do_send( )
 
    ciyam.error = "";
 
-   var was_edit = ( g_edit_unique !== "" );
+   var was_edit = ( editing !== "" );
 
    var failed = false;
 
    // NOTE: What is needed to tell, after a time-out, whether this arrived after all - see
    // "arrived_after_timeout( )". The start point is the server's, not the browser's clock.
-   // NOTE: The room it was typed and sealed in - not whichever is open when the queue reaches it (found by review, 2026-11-13: a
-   // room clicked meanwhile was sent it, and in the clear if it had no key).
-   var room = g_room;
-
    var pending = { me: ciyam.username, text: ( message_prefix( sent ) === "X" ) ? sent : text, typed: text, after: g_start_point,
-    edit: g_edit_unique, room: room };
+    edit: editing, room: room };
 
    var timed_out = false;
 
@@ -7348,10 +7382,12 @@ async function do_send( )
       show_alert( "Your message wasn't sent - the node didn't answer. Check the connection, then send it again.", "is-error" );
    }
 
-   // NOTE: Not put back in another room's box, to be sent there by mistake - said instead.
+   // NOTE: Not put back in another room's box, to be sent there by mistake - said instead; one that timed out may have arrived, so
+   // it is said to be checked there before being sent again (found by review, 2026-11-13).
    if( failed && ( room !== g_room ) )
    {
-      show_alert( "Your message in the room you left wasn't sent: \u201C" + room_key_masked( text ) + "\u201D", "is-error" );
+      show_alert( ( timed_out ? "Your message in the room you left may not have been sent - check there before sending it again: "
+       : "Your message in the room you left wasn't sent: " ) + "\u201C" + room_key_masked( text ) + "\u201D", "is-error" );
 
       return;
    }
