@@ -568,8 +568,11 @@ function keys_show_enter( mode )
    g_keys.entering = mode;
 
    document.getElementById( "keys_enter_lede" ).textContent = {
-      elsewhere: "Your keys are set up. To use them on this browser, type your twelve words - or get them from another device"
-       + " that has them." + lost,
+      // NOTE: Keys given by the administrator have no words of the person's own - getting them is said first (found by review,
+      // 2026-11-14: they were told to type words they never had).
+      elsewhere: ciyam.is_admin ? "Your keys are set up. To use them on this browser, type your twelve words - or get them from"
+       + " another device that has them." + lost : "Your keys are set up. To use them on this browser, get them from another device"
+       + " that has them, or from your administrator - or type your twelve words, if you set them up with words of your own." + lost,
       other: "The keys on the node were locked by another browser since. Type the twelve words they were set up with." + lost,
       // NOTE: One's own - not offered to admin, whose keys come from the node's (Ian, 2026-11-11); and only admin is offered those
       // (Damon, 2026-11-14).
