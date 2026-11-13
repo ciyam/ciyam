@@ -3472,12 +3472,15 @@ async function submit_invite( )
 
    var room = g_room;
    var invited = "";
+   var answered = false;
 
    // NOTE: Through the queue like every other request (ISS-005).
    await serialised( function( )
    {
       return ciyam.update_message_room( room, "for=" + names.join( "," ), function( response )
       {
+         answered = true;
+
          if( is_error_response( response ) )
          {
             set_error( "room_dialog_error", error_text( response ) );
@@ -3498,8 +3501,12 @@ async function submit_invite( )
       } );
    } );
 
+   // NOTE: No answer at all calls nothing back and sets no error ("fetch( )" in "ciyam.js") - said, not left showing nothing
+   // (found by review, 2026-11-13).
    if( ciyam.error !== "" )
       set_error( "room_dialog_error", ciyam.error );
+   else if( !answered )
+      set_error( "room_dialog_error", "The node didn't answer - check whether they were invited, then try again." );
 
    // NOTE: Those invited to a room with a key are sent it too (Ian, 2026-10-28) - after the invitation, as it queues its own.
    if( invited !== "" )
@@ -3647,11 +3654,15 @@ async function do_submit_room_dialog( )
    {
       ciyam.error = "";
 
+      var answered = false;
+
       // NOTE: Through the queue like every other request (ISS-005).
       await serialised( function( )
       {
          return ciyam.update_message_room( g_room, "name=" + name, function( response )
          {
+            answered = true;
+
             if( is_error_response( response ) )
                set_error( "room_dialog_error", error_text( response ) );
             else
@@ -3669,6 +3680,8 @@ async function do_submit_room_dialog( )
 
       if( ciyam.error !== "" )
          set_error( "room_dialog_error", ciyam.error );
+      else if( !answered )
+         set_error( "room_dialog_error", "The node didn't answer - check whether the room was renamed, then try again." );
 
       return;
    }
