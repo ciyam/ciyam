@@ -2933,6 +2933,11 @@ function watch_held_rooms( )
       if( ( room === g_room ) || ( entry === null ) || ( entry.total === pending.total ) )
          return;
 
+      // NOTE: Kept only once read - a read that failed, or had no answer, is tried again at the next poll (found by review, 2026-11-13:
+      // a join missed that way left what was held for them unsent).
+      var total_before = pending.total;
+      var read = false;
+
       pending.total = entry.total;
 
       g_in_poll = true;
@@ -2943,9 +2948,15 @@ function watch_held_rooms( )
          {
             var result = parse_fetch_response( response );
 
+            read = ( result.error === "" );
+
             if( ( result.error === "" ) && ( result.rooms.length === 0 ) )
                note_dm_joins( room, result.messages, result.members );
          } );
+      } ).then( function( )
+      {
+         if( !read && ( g_dm_pending[ room ] === pending ) )
+            pending.total = total_before;
       } );
 
       g_in_poll = false;
@@ -3658,12 +3669,15 @@ async function do_submit_room_dialog( )
    ciyam.error = "";
 
    var created = null;
+   var answered = false;
 
-   // NOTE: Through the queue like every other request (ISS-005).
+   // NOTE: Through the queue like every other request (ISS-005). Only a create gets here - the other modes are sent above.
    await serialised( function( )
    {
       return ciyam.create_message( c_lobby_room, options, function( response )
       {
+         answered = true;
+
          if( is_error_response( response ) )
          {
             set_error( "room_dialog_error", error_text( response ) );
@@ -3673,21 +3687,14 @@ async function do_submit_room_dialog( )
 
          do_close_room_dialog( );
 
-         if( g_dialog_mode === "create" )
-            created = response;
-         else
-         {
-            g_room_name = name;
-
-            document.getElementById( "thread_name" ).textContent = name;
-
-            load_rooms( );
-         }
+         created = response;
       } );
    } );
 
    if( ciyam.error !== "" )
       set_error( "room_dialog_error", ciyam.error );
+   else if( !answered )
+      set_error( "room_dialog_error", "The node didn't answer - check whether the room was made, then try again." );
 
    // NOTE: Opened once the create has answered - then keyed, the key sent to those invited (Ian, 2026-10-28), which queues its own.
    if( created !== null )
@@ -3771,10 +3778,10 @@ function on_messages_response( response, asked_for, replace, again )
 
       g_last_poll = Date.now( );
 
-      // NOTE: A time-out has its own notice, from 'note_timeout'.
+      // NOTE: A time-out has its own notice, from 'note_timeout'. Not said for a room left meanwhile (found by review, 2026-11-13).
       if( result.error !== "" )
       {
-         if( !is_timeout_response( response ) )
+         if( !is_timeout_response( response ) && ( asked_for === g_room ) )
             show_alert( result.error, "is-error", true );
 
          return;
@@ -4784,10 +4791,14 @@ function do_react( unique, code )
 
    draw_reactions( row, apply_reaction( before, code, reaction_short( ciyam.username ) ), true );
 
+   var answered = false;
+
    serialised( function( )
    {
       return ciyam.create_message( room, reaction_options( unique, code ), function( response )
       {
+         answered = true;
+
          g_react_in_flight = false;
 
          if( is_error_response( response ) )
@@ -4806,6 +4817,18 @@ function do_react( unique, code )
          if( room === g_room )
             on_messages_response( response, room, false );
       } );
+   } ).then( function( )
+   {
+      // NOTE: No answer at all - the flag let go, or every reaction after would do nothing (found by review, 2026-11-13).
+      if( answered )
+         return;
+
+      g_react_in_flight = false;
+
+      if( row.isConnected )
+         draw_reactions( row, before, true );
+
+      show_alert( "The reaction was not sent - the node didn't answer.", "is-error", true );
    } );
 }
 
@@ -7239,10 +7262,18 @@ async function do_send( )
 
    // NOTE: What is needed to tell, after a time-out, whether this arrived after all - see
    // "arrived_after_timeout( )". The start point is the server's, not the browser's clock.
+   // NOTE: The room it was typed and sealed in - not whichever is open when the queue reaches it (found by review, 2026-11-13: a
+   // room clicked meanwhile was sent it, and in the clear if it had no key).
+   var room = g_room;
+
    var pending = { me: ciyam.username, text: ( message_prefix( sent ) === "X" ) ? sent : text, typed: text, after: g_start_point,
-    edit: g_edit_unique, room: g_room };
+    edit: g_edit_unique, room: room };
 
    var timed_out = false;
+
+   // NOTE: No answer at all - the network gone, say - calls nothing back and sets no error ("fetch( )" in "ciyam.js"), so it is told
+   // by this staying false (found by review, 2026-11-13: the message went from the box as if sent).
+   var answered = false;
 
    // NOTE: Through the queue like every other request (ISS-005) - a send outside it could
    // overlap a poll, and "ciyam.js" keeps one callback per instance, so the send's reply
@@ -7251,8 +7282,10 @@ async function do_send( )
    // the one before has answered, so the send goes ahead of it.
    await serialised( function( )
    {
-      return ciyam.create_message( g_room, options, function( response )
+      return ciyam.create_message( room, options, function( response )
       {
+         answered = true;
+
          if( is_timeout_response( response ) )
          {
             failed = true;
@@ -7269,6 +7302,10 @@ async function do_send( )
 
             return;
          }
+
+         // NOTE: The user has gone to another room meanwhile - this one's members and messages not drawn there (found by review).
+         if( room !== g_room )
+            return;
 
          var result = parse_fetch_response( response );
 
@@ -7291,7 +7328,10 @@ async function do_send( )
       } );
    } );
 
+   // NOTE: As the open room allows - which may be another by now, locked or for reactions only (found by review, 2026-11-13).
    input.disabled = false;
+
+   apply_posting_rules( );
 
    settle_composer( input );
 
@@ -7300,6 +7340,20 @@ async function do_send( )
       failed = true;
 
       show_alert( ciyam.error, "is-error" );
+   }
+   else if( !answered )
+   {
+      failed = true;
+
+      show_alert( "Your message wasn't sent - the node didn't answer. Check the connection, then send it again.", "is-error" );
+   }
+
+   // NOTE: Not put back in another room's box, to be sent there by mistake - said instead.
+   if( failed && ( room !== g_room ) )
+   {
+      show_alert( "Your message in the room you left wasn't sent: \u201C" + room_key_masked( text ) + "\u201D", "is-error" );
+
+      return;
    }
 
    // NOTE: A message the server refused goes back into the box - it was cleared on sending,
@@ -7711,7 +7765,28 @@ const c_hidden_poll_every = 4;
 
 var g_hidden_polls = 0;
 
+// NOTE: One poll at a time - one still going when the next is due is let finish rather than joined by another (found by review,
+// 2026-11-13: on a slow node they ran over each other, the queue grew, and what the user did waited behind it).
+var g_poll_busy = false;
+
 async function poll( )
+{
+   if( g_poll_busy )
+      return;
+
+   g_poll_busy = true;
+
+   try
+   {
+      await poll_once( );
+   }
+   finally
+   {
+      g_poll_busy = false;
+   }
+}
+
+async function poll_once( )
 {
    if( ciyam.sessid === "" )
       return;
