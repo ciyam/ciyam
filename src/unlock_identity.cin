@@ -46,18 +46,17 @@ EXT_PUBKEY=$OUTPUT
 
 @label NEXT
 
-; NOTE: The password is an optional argument which is not recommended
-; for typical usage (but is used by "release.sh" so that the password
-; will only need to be entered a single time). If a password has been
-; provided which has spaces then need to use "$*" (rather than "$1").
+   ; NOTE: The password is an optional argument which is not recommended
+   ; for typical usage (but is used by "release.sh" so that the password
+   ; will only need to be entered a single time).
    @ifdef $1
-   ARGS="$ALL_ARGS"
+   ARGS=$ALL_ARGS
    @else
-   DATA_AND_PUBKEY=@password:Enter unlock key or password to unlock the system identity:$EXT_PUBKEY
+   DATA_AND_PUBKEY=@password:Enter unlock key, password or mnemonics to unlock the system identity:$EXT_PUBKEY
    ARGS=@repstr:\:/ -k=:$DATA_AND_PUBKEY
    @endif
 
-.=identity $ARGS
+.=identity "$ARGS"
 COMBINED=@repstr:!/\n:$OUTPUT
 NEW_IDENT=%COMBINED:1%
 
@@ -73,7 +72,7 @@ NEW_IDENT=%COMBINED:1%
    @label DONE
 
    @else
-   #Unlock failed (incorrect password?).
+   #Error: Unlock failed (incorrect key, password or mnemonics).
 
       @ifdef $1
       ~touch .unlock_failed
@@ -100,7 +99,11 @@ NEW_IDENT=%COMBINED:1%
 
    @ifndef $1
       @ifndef $CIYAM_QUIET
-      #Identity is not currently locked.
+      #(identity is not currently locked)
+      @endif
+   @else
+      @ifndef $CIYAM_QUIET
+      ~touch .unlock_skipped
       @endif
    @endif
 
