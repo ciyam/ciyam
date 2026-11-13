@@ -920,6 +920,16 @@ function chat_keys_unknown( )
 // in the clear even where a room key or a contact was kept) - not while they are read, and only once asked if they could not be.
 async function chat_may_send_unsealed( )
 {
+   // NOTE: A room this browser holds a key for, listed now as one that takes none - a node renaming it so messages go in the clear
+   // (found by review, 2026-11-13; Damon: refuse) - is never sent to unencrypted, whatever it is called now.
+   if( g_chat_keys && g_chat_keys.rooms.hasOwnProperty( g_room ) )
+   {
+      show_alert( "Not sent: this room has a key on this browser, but the node now lists it as a room without one - messages here"
+       + " aren't sent unencrypted.", "is-error" );
+
+      return false;
+   }
+
    if( g_chat_keys === null )
    {
       show_alert( "Your keys are still being read - send it again in a moment.", "is-error" );
