@@ -2671,6 +2671,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
          if( !mnenomics_or_hex_seed.empty( ) && !pubkey.empty( ) )
          {
             mnenomics_or_hex_seed.reserve( c_secret_reserve_size );
+
             session_shared_decrypt( mnenomics_or_hex_seed, pubkey, mnenomics_or_hex_seed );
          }
 
@@ -3505,6 +3506,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
          if( !pubkey.empty( ) )
          {
             password.reserve( c_secret_reserve_size );
+
             session_shared_decrypt( password, pubkey, password );
          }
 
@@ -4108,6 +4110,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
          if( !pubkey.empty( ) )
          {
             password.reserve( c_secret_reserve_size );
+
             session_shared_decrypt( password, pubkey, password );
          }
 
@@ -8490,6 +8493,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
          if( !info.empty( ) && !pubkey.empty( ) )
          {
             info.reserve( c_secret_reserve_size );
+
             session_shared_decrypt( info, pubkey, info );
 
             // NOTE: If using the 'init_identity' application protocol script then
@@ -8505,10 +8509,10 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
                if( pos != string::npos )
                   info.erase( pos );
             }
-
-            if( count( info.begin( ), info.end( ), ' ' ) == 11 )
-               get_mnemonics_or_hex_seed( info, info );
          }
+
+         if( count( info.begin( ), info.end( ), ' ' ) == 11 )
+            get_mnemonics_or_hex_seed( info, info );
 
          if( !info.empty( ) )
          {
@@ -9667,6 +9671,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
          if( !data.empty( ) && !pubkey.empty( ) )
          {
             data.reserve( c_secret_reserve_size );
+
             session_shared_decrypt( data, pubkey, data );
          }
 
@@ -9732,6 +9737,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
          if( !data.empty( ) && !pubkey.empty( ) )
          {
             data.reserve( c_secret_reserve_size );
+
             session_shared_decrypt( data, pubkey, data );
          }
 
