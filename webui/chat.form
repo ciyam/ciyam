@@ -152,6 +152,13 @@ http://www.opensource.org/licenses/mit-license.php.
                <h1 id="thread_name">&mdash;</h1>
                <p class="chat-thread-sub" id="thread_sub" hidden></p>
             </div>
+            <!-- NOTE: A call, in an encrypted direct message (Ian, 2026-11-13) - "chat_call.js". -->
+            <button type="button" class="chat-call-start" id="thread_call" aria-label="Call" title="Call" onclick="do_start_call( )" hidden>
+               <svg viewBox="0 0 16 16" width="16" height="16" aria-hidden="true" focusable="false">
+                  <path d="M4.2 1.8l1.9 2.6-1.2 1.6a8.6 8.6 0 0 0 5.1 5.1l1.6-1.2 2.6 1.9-.9 2.2c-.3.6-1 .9-1.7.7A12.4 12.4 0 0 1 1.3 4.6c-.2-.7.1-1.4.7-1.7z"
+                   fill="currentColor"/>
+               </svg>
+            </button>
             <!-- NOTE: Whether the room is encrypted (Damon, 2026-11-02: in the line under the name it was too easily missed) - a
                  padlock shut or open, and what it means in the details it opens ("show_encryption( )"). -->
             <button type="button" class="chat-encryption-badge" id="encryption_badge" onclick="do_show_encryption( )" hidden>
@@ -171,6 +178,25 @@ http://www.opensource.org/licenses/mit-license.php.
                </svg>
             </button>
          </div>
+
+         <!-- NOTE: A call - ringing, being set up, or going (Ian, 2026-11-13; "chat_call.js"). Stays while other rooms are opened. -->
+         <section class="chat-call" id="call_panel" aria-label="Call" aria-live="polite" hidden>
+            <div class="chat-call-videos">
+               <video class="chat-call-remote" id="call_remote" autoplay playsinline></video>
+               <video class="chat-call-local" id="call_local" autoplay playsinline muted></video>
+            </div>
+            <div class="chat-call-bar">
+               <span class="chat-call-status" id="call_status"></span>
+               <span class="chat-call-time" id="call_time"></span>
+               <span class="chat-call-actions">
+                  <button type="button" class="chat-call-btn is-accept" id="call_accept" onclick="do_accept_call( )">Accept</button>
+                  <button type="button" class="chat-call-btn is-end" id="call_decline" onclick="do_decline_call( )">Decline</button>
+                  <button type="button" class="chat-call-btn" id="call_mute" aria-pressed="false" onclick="do_mute_call( )">Mute</button>
+                  <button type="button" class="chat-call-btn" id="call_camera" aria-pressed="false" onclick="do_camera_call( )" hidden>Camera off</button>
+                  <button type="button" class="chat-call-btn is-end" id="call_hang_up" onclick="do_hang_up_call( )">Hang up</button>
+               </span>
+            </div>
+         </section>
 
          <!-- NOTE: Announcements - admin's messages in the Admin room, which only admin sees as
               a room - shown at the top of every room until dismissed. A prototype: see

@@ -666,6 +666,15 @@ function chat_encryption_badge( )
 
 function chat_draw_opened( element, opened )
 {
+   // NOTE: A call's set-up is not shown as messages - it is the call ("chat_call.js").
+   if( opened.ok && is_call_message( opened.text ) )
+   {
+      var call_row = element.closest( ".chat-message" );
+
+      if( call_row !== null )
+         call_row.hidden = true;
+   }
+
    element.classList.toggle( "chat-unreadable", !opened.ok );
    element.classList.toggle( "chat-locked", !opened.ok );
    element.classList.toggle( "chat-encrypted", opened.ok );

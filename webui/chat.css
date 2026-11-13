@@ -4980,3 +4980,144 @@ button.chat-reaction:hover
       animation: none;
    }
 }
+
+/* NOTE: Calls (Ian, 2026-11-13) - the Call button in an encrypted direct message's bar, and the call's panel under it: the other
+   person's video, yours small in its corner, and a bar of what is happening and what can be done. */
+.chat-call-start
+{
+   display: inline-flex;
+   align-items: center;
+   justify-content: center;
+   flex: none;
+   width: 32px;
+   height: 32px;
+   padding: 0;
+   border: 1px solid var(--color-chat-border);
+   border-radius: var(--radius-pill);
+   background: transparent;
+   color: var(--color-chat-online-text);
+   cursor: pointer;
+}
+
+.chat-call-start:hover
+{
+   background: var(--color-chat-bg-selected);
+}
+
+.chat-call-start[hidden],
+.chat-call[hidden],
+.chat-call-btn[hidden]
+{
+   display: none;
+}
+
+.chat-call
+{
+   display: flex;
+   flex-direction: column;
+   gap: 8px;
+   margin: 8px 12px;
+   padding: 8px;
+   border: 1px solid var(--color-chat-border-strong);
+   border-radius: var(--radius-md);
+   background: var(--color-chat-bg-raised);
+}
+
+.chat-call-videos
+{
+   position: relative;
+   display: none;
+}
+
+.chat-call[data-state="in-call"] .chat-call-videos,
+.chat-call[data-state="connecting"] .chat-call-videos
+{
+   display: block;
+}
+
+.chat-call-remote
+{
+   display: block;
+   width: 100%;
+   max-height: 50vh;
+   border-radius: var(--radius-sm);
+   background: var(--color-chat-text-strong);
+}
+
+.chat-call-local
+{
+   position: absolute;
+   right: 8px;
+   bottom: 8px;
+   width: 25%;
+   max-width: 160px;
+   border: 1px solid var(--color-chat-border);
+   border-radius: var(--radius-sm);
+   background: var(--color-chat-text);
+}
+
+.chat-call-bar
+{
+   display: flex;
+   flex-wrap: wrap;
+   align-items: center;
+   gap: 8px;
+}
+
+.chat-call-status
+{
+   color: var(--color-chat-text-strong);
+   font-size: var(--font-size-chat-body);
+}
+
+.chat-call-time
+{
+   color: var(--color-chat-text-secondary);
+   font-family: var(--font-family-chat-mono);
+   font-size: var(--font-size-chat-meta);
+}
+
+.chat-call-actions
+{
+   display: flex;
+   flex-wrap: wrap;
+   gap: 6px;
+   margin-left: auto;
+}
+
+.chat-call-btn
+{
+   min-height: 32px;
+   padding: 0 12px;
+   border: 1px solid var(--color-chat-border-strong);
+   border-radius: var(--radius-pill);
+   background: var(--color-chat-bg);
+   color: var(--color-chat-text-strong);
+   font-size: var(--font-size-chat-meta);
+   cursor: pointer;
+}
+
+.chat-call-btn[aria-pressed="true"]
+{
+   background: var(--color-chat-bg-selected);
+}
+
+.chat-call-btn.is-accept
+{
+   border-color: var(--color-chat-online);
+   background: var(--color-chat-online);
+   color: var(--color-chat-bg);
+}
+
+.chat-call-btn.is-end
+{
+   border-color: var(--color-chat-critical-border);
+   background: var(--color-chat-critical-bg);
+   color: var(--color-chat-critical-text);
+}
+
+/* NOTE: A call's set-up messages are not drawn in the thread ("chat_draw_opened( )"). */
+.chat-message[hidden]
+{
+   display: none;
+}

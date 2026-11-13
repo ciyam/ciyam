@@ -1291,6 +1291,9 @@ async function do_disconnect( already_ended )
 
    stop_polling( );
 
+   // NOTE: A call ends with the session - its camera and microphone let go ("chat_call.js").
+   call_sign_out( );
+
    chat_keys_forget( );
 
    signin_forget_session( );
@@ -2103,6 +2106,9 @@ function show_encryption( )
 {
    var badge = ( g_room === "" ) ? null : chat_encryption_badge( );
    var head = document.getElementById( "thread_head" );
+
+   // NOTE: Calls are in an encrypted direct message - so offered as its encryption is shown ("chat_call.js").
+   call_show_button( );
 
    head.classList.toggle( "is-encrypted", ( badge !== null ) && badge.locked );
    head.classList.toggle( "is-unencrypted", ( badge !== null ) && !badge.locked );
@@ -7910,6 +7916,12 @@ async function poll_once( )
    // the room accepted first, the key came a moment later and waited for the room to be opened again) - "chat_look_for_owner_key(
    // )". Not the owner's side, which sends as the room is opened or joined.
    await chat_look_for_owner_key( true );
+
+   if( poll_ended( ) )
+      return;
+
+   // NOTE: A call rung, answered or ended in a direct message - looked for in each whose counts have changed ("chat_call.js").
+   await call_watch( );
 
    if( poll_ended( ) )
       return;

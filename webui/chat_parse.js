@@ -5045,10 +5045,153 @@ function format_history_redo( history )
    return { history: { states: history.states, at: history.at + 1, kind: "", time: 0 }, state: history.states[ history.at + 1 ] };
 }
 
+// ---- Calls (Ian, 2026-11-13: peer to peer, in a direct message, "the P2P style initially") - set up with sealed messages in the
+// conversation: an offer, its answer, an end or a decline. Each a line "<marker>call <id> <at> <kind> <part>/<parts>[ <data>]": "id"
+// eight hex digits, "at" the Unix seconds it was sent, "data" the call's description compressed and in base64 - split over as many
+// messages as it needs (Ian: compress and split), as a sealed message is at most 1,000 bytes ("c_sealed_most_bytes").
+
+const c_call_prefix = "☎call ";
+const c_call_chunk_chars = 900;
+const c_call_most_parts = 12;
+
+// NOTE: How long a call's messages count - an offer older than this is not rung, nor an answer taken.
+const c_call_fresh_seconds = 90;
+
+const c_call_pattern = /^☎call ([0-9a-f]{8}) ([0-9]{10}) (offer|answer|end|decline) ([0-9]{1,2})\/([0-9]{1,2})(?: ([A-Za-z0-9+\/=]+))?$/;
+
+// NOTE: The texts to seal and send, in order.
+function call_messages( id, at, kind, data )
+{
+   var text = String( data || "" );
+   var chunks = [ ];
+
+   for( var i = 0; i < text.length; i += c_call_chunk_chars )
+      chunks.push( text.substring( i, i + c_call_chunk_chars ) );
+
+   if( chunks.length === 0 )
+      chunks.push( "" );
+
+   return chunks.map( function( chunk, index )
+   {
+      return c_call_prefix + id + " " + at + " " + kind + " " + ( index + 1 ) + "/" + chunks.length + ( ( chunk !== "" ) ? " " + chunk : "" );
+   } );
+}
+
+// NOTE: One of a call's messages, opened - { id, at, kind, part, parts, data } - or null if it is not one.
+function parse_call_message( text )
+{
+   var match = c_call_pattern.exec( String( text || "" ) );
+
+   if( match === null )
+      return null;
+
+   var part = parseInt( match[ 4 ], 10 );
+   var parts = parseInt( match[ 5 ], 10 );
+
+   if( ( part < 1 ) || ( part > parts ) || ( parts > c_call_most_parts ) )
+      return null;
+
+   return { id: match[ 1 ], at: parseInt( match[ 2 ], 10 ), kind: match[ 3 ], part: part, parts: parts, data: match[ 6 ] || "" };
+}
+
+function is_call_message( text )
+{
+   return parse_call_message( text ) !== null;
+}
+
+// NOTE: The calls in "opened" - [ { sender, text } ] opened from the direct message between "me" and "other", oldest first - sent
+// within "c_call_fresh_seconds" of "now" (Unix seconds), as { <id>: { id, caller, at, offer, answer, ended, declined } }. "offer" and
+// "answer" are the data joined once every part is there, else "". Only a call begun by an offer is taken, from either of the two;
+// its answer and decline only from the other of them, its end from either.
+function call_states( opened, me, other, now )
+{
+   var calls = { };
+   var pieces = { };
+
+   ( opened || [ ] ).forEach( function( message )
+   {
+      var call = parse_call_message( message.text );
+
+      if( ( call === null ) || ( ( message.sender !== me ) && ( message.sender !== other ) ) || ( Math.abs( now - call.at ) > c_call_fresh_seconds ) )
+         return;
+
+      var state = calls[ call.id ];
+
+      if( call.kind === "offer" )
+      {
+         if( !state )
+            state = calls[ call.id ] = { id: call.id, caller: message.sender, at: call.at, offer: "", answer: "", ended: false, declined: false };
+         else if( state.caller !== message.sender )
+            return;
+      }
+      else if( !state )
+         return;
+      else if( ( ( call.kind === "answer" ) || ( call.kind === "decline" ) ) && ( message.sender === state.caller ) )
+         return;
+
+      if( call.kind === "end" )
+      {
+         state.ended = true;
+
+         return;
+      }
+
+      if( call.kind === "decline" )
+      {
+         state.declined = true;
+
+         return;
+      }
+
+      var key = call.id + " " + call.kind;
+      var piece = pieces[ key ];
+
+      if( !piece || ( piece.parts !== call.parts ) )
+         piece = pieces[ key ] = { parts: call.parts, got: { }, count: 0 };
+
+      if( !piece.got.hasOwnProperty( call.part ) )
+      {
+         piece.got[ call.part ] = call.data;
+         piece.count++;
+      }
+
+      if( piece.count === piece.parts )
+      {
+         var joined = "";
+
+         for( var i = 1; i <= piece.parts; i++ )
+            joined += piece.got[ i ];
+
+         state[ call.kind ] = joined;
+      }
+   } );
+
+   return calls;
+}
+
+// NOTE: A call's length so far, as "m:ss" - or "h:mm:ss" from an hour.
+function call_elapsed_text( seconds )
+{
+   var total = Math.max( 0, Math.floor( seconds ) );
+   var hours = Math.floor( total / 3600 );
+   var minutes = Math.floor( ( total % 3600 ) / 60 );
+   var rest = total % 60;
+   var two = function( n ) { return ( n < 10 ? "0" : "" ) + n; };
+
+   return ( hours > 0 ) ? ( hours + ":" + two( minutes ) + ":" + two( rest ) ) : ( minutes + ":" + two( rest ) );
+}
+
 // NOTE: Exported for Node.js; in the browser these are plain globals.
 if( typeof module !== "undefined" )
 {
    module.exports = {
+      c_call_chunk_chars: c_call_chunk_chars,
+      c_call_fresh_seconds: c_call_fresh_seconds,
+      call_messages: call_messages,
+      parse_call_message: parse_call_message,
+      is_call_message: is_call_message,
+      call_states: call_states,
+      call_elapsed_text: call_elapsed_text,
       c_format_colours: c_format_colours,
       c_format_codes: c_format_codes,
       shorthand_to_ansi: shorthand_to_ansi,

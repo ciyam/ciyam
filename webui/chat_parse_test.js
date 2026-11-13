@@ -2132,6 +2132,46 @@ check( "- one deleted by its sender (edited to blank)", ( function( )
 } )( ), [ "admin", "verify-a", true, true, "" ] );
 check( "posted to one person as between the two", cp.paired_for( "verify-a" ), "~verify-a" );
 
+// ---- Calls (Ian, 2026-11-13) - set up with sealed messages in a direct message, the description compressed and split
+var call_data = new Array( 2141 ).join( "A" );
+var call_offer = cp.call_messages( "0a1b2c3d", 1794000000, "offer", call_data );
+check( "a call's offer split - each part small enough to seal, and in order", [ call_offer.length,
+ call_offer.every( function( t ) { return new TextEncoder( ).encode( t ).length <= 1000; } ), call_offer[ 0 ].substring( 0, 35 ),
+ call_offer[ 2 ].split( " " ).slice( 3, 5 ).join( " " ) ], [ 3, true, "☎call 0a1b2c3d 1794000000 offer 1/3", "offer 3/3" ] );
+check( "- an end has no data, in one part", cp.call_messages( "0a1b2c3d", 1794000000, "end", "" ), [ "☎call 0a1b2c3d 1794000000 end 1/1" ] );
+check( "- read back", cp.parse_call_message( call_offer[ 1 ] ), { id: "0a1b2c3d", at: 1794000000, kind: "offer", part: 2, parts: 3,
+ data: call_data.substring( 900, 1800 ) } );
+check( "- not a call: ordinary text, a kind not known, a part past the last, too many parts, a short id", [ cp.is_call_message( "call me" ),
+ cp.is_call_message( "☎call 0a1b2c3d 1794000000 ring 1/1" ), cp.is_call_message( "☎call 0a1b2c3d 1794000000 offer 4/3 AA" ),
+ cp.is_call_message( "☎call 0a1b2c3d 1794000000 offer 1/13 AA" ), cp.is_call_message( "☎call 0a1b2c 1794000000 end 1/1" ) ],
+ [ false, false, false, false, false ] );
+
+var call_seen = function( sender, texts ) { return texts.map( function( text ) { return { sender: sender, text: text }; } ); };
+var call_answer = cp.call_messages( "0a1b2c3d", 1794000005, "answer", "BBBB" );
+check( "a call's state - the offer joined once every part is there, then its answer", [
+ cp.call_states( call_seen( "maya", call_offer.slice( 0, 2 ) ), "admin", "maya", 1794000010 )[ "0a1b2c3d" ].offer,
+ cp.call_states( call_seen( "maya", call_offer ), "admin", "maya", 1794000010 )[ "0a1b2c3d" ].offer === call_data,
+ cp.call_states( call_seen( "maya", call_offer ).concat( call_seen( "admin", call_answer ) ), "admin", "maya", 1794000010 )[ "0a1b2c3d" ] ],
+ [ "", true, { id: "0a1b2c3d", caller: "maya", at: 1794000000, offer: call_data, answer: "BBBB", ended: false, declined: false } ] );
+check( "- the parts in any order, and one sent twice counted once", cp.call_states( call_seen( "maya", [ call_offer[ 2 ], call_offer[ 0 ],
+ call_offer[ 0 ], call_offer[ 1 ] ] ), "admin", "maya", 1794000010 )[ "0a1b2c3d" ].offer === call_data, true );
+check( "- an answer, or a decline, from the caller themself is not taken; an end from either is", ( function( )
+{
+   var from_caller = cp.call_states( call_seen( "maya", call_offer.concat( call_answer ).concat( cp.call_messages( "0a1b2c3d", 1794000006,
+    "decline", "" ) ) ), "admin", "maya", 1794000010 )[ "0a1b2c3d" ];
+   var ended = cp.call_states( call_seen( "maya", call_offer ).concat( call_seen( "admin", cp.call_messages( "0a1b2c3d", 1794000007, "end",
+    "" ) ) ), "admin", "maya", 1794000010 )[ "0a1b2c3d" ];
+
+   return [ from_caller.answer, from_caller.declined, ended.ended ];
+} )( ), [ "", false, true ] );
+check( "- an answer or end with no offer seen is not a call; nor anyone's but the two; nor an offer gone stale", [
+ Object.keys( cp.call_states( call_seen( "admin", call_answer ), "admin", "maya", 1794000010 ) ).length,
+ Object.keys( cp.call_states( call_seen( "verify-a", call_offer ), "admin", "maya", 1794000010 ) ).length,
+ Object.keys( cp.call_states( call_seen( "maya", call_offer ), "admin", "maya", 1794000000 + cp.c_call_fresh_seconds + 1 ) ).length ],
+ [ 0, 0, 0 ] );
+check( "a call's length", [ cp.call_elapsed_text( 0 ), cp.call_elapsed_text( 65 ), cp.call_elapsed_text( 3725 ), cp.call_elapsed_text( -4 ) ],
+ [ "0:00", "1:05", "1:02:05", "0:00" ] );
+
 console.log( "" );
 console.log( failures === 0 ? "All checks passed." : ( failures + " check(s) FAILED." ) );
 

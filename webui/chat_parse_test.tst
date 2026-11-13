@@ -977,5 +977,14 @@ ok   a fetched line from one - its sender, who it is between, and private
 ok   - an ordinary line has no pair
 ok   - one deleted by its sender (edited to blank)
 ok   posted to one person as between the two
+ok   a call's offer split - each part small enough to seal, and in order
+ok   - an end has no data, in one part
+ok   - read back
+ok   - not a call: ordinary text, a kind not known, a part past the last, too many parts, a short id
+ok   a call's state - the offer joined once every part is there, then its answer
+ok   - the parts in any order, and one sent twice counted once
+ok   - an answer, or a decline, from the caller themself is not taken; an end from either is
+ok   - an answer or end with no offer seen is not a call; nor anyone's but the two; nor an offer gone stale
+ok   a call's length
 
 All checks passed.
