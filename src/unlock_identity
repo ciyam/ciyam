@@ -24,56 +24,63 @@ if [ "$1" = "" ] && [ -f .web_access_admin ]; then
  fi
 
  if [ "$need_password" = "1" ]; then
-  echo -n "Password: "
+  echo -n "Enter unlock key, password or mnemonics to unlock the system identity: "
   read -s password
   echo ""
 
-  if [ -f .web_extern_admin ]; then
-   prefix=33333
-   combined=$(echo "$prefix $password")
+  if [[ "$password" =~ ^[A-Za-z0-9]{5}-[A-Za-z0-9]{5}-[A-Za-z0-9]{5}$ ]]; then
+   combined=$password
   else
-   seed=
-
-   num_spaces=$(echo -n "$password" | tr -cd ' ' | wc -c)
-
-   if [ "$num_spaces" = "11" ]; then
-    echo "crypto_seed \"$password\"" > $tmp_unlock_identity
-    seed=$(./ciyam_client -quiet -no_prompt -no_stderr <$tmp_unlock_identity)
-   fi
-
-   hashed=$(echo -n "$seed" | sha256sum | head -c 64)
-   dbl_hashed=$(echo -n "$hashed" | sha256sum | head -c 64)
-
-   sid_check=
-
-   if [ -f ciyam_server.sid.chk ]; then
-    sid_check=$(<ciyam_server.sid.chk)
-   fi
-
-   if [ "$sid_check" = "$dbl_hashed" ]; then
-    combined=$seed
+   if [ -f .web_extern_admin ]; then
+    prefix=33333
+    combined=$(echo "$prefix $password")
    else
-    touch .web_access_xxxxx
+    seed=
 
-    prefix=$(<.web_access_admin)
-    combined="$prefix$password"
+    num_spaces=$(echo -n "$password" | tr -cd ' ' | wc -c)
+
+    if [ "$num_spaces" = "11" ]; then
+     echo "crypto_seed \"$password\"" > $tmp_unlock_identity
+     seed=$(./ciyam_client -quiet -no_prompt -no_stderr <$tmp_unlock_identity)
+    fi
+
+    hashed=$(echo -n "$seed" | sha256sum | head -c 64)
+    dbl_hashed=$(echo -n "$hashed" | sha256sum | head -c 64)
+
+    sid_check=
+
+    if [ -f ciyam_server.sid.chk ]; then
+     sid_check=$(<ciyam_server.sid.chk)
+    fi
+
+    if [ "$sid_check" = "$dbl_hashed" ]; then
+     combined=$seed
+    else
+     touch .web_access_xxxxx
+
+     prefix=$(<.web_access_admin)
+     combined=$prefix$password
+    fi
    fi
   fi
 
   has_called_self=1
 
-  ./unlock_identity $combined
+  ./unlock_identity "$combined"
  fi
 fi
 
 if [ "$has_called_self" = "" ]; then
- ./ciyam_client -tls -quiet -no_prompt -no_stderr -exec="<unlock_identity.cin \"$*\""
+ ./ciyam_client -tls -quiet -no_prompt -no_stderr -exec="<unlock_identity.cin \\\"$*\\\""
 
  if [ -f $tmp_unlock_identity ]; then
   rm -f $tmp_unlock_identity
 
-  if [ ! -f .unlock_failed ]; then
-   echo "IMPORANT: Is now unlocked but will still need to reset web access with mnemonics."
+  if [ -f .unlock_skipped ]; then
+   rm .unlock_skipped
+   echo "(identity is not currently locked)"
+  elif [ ! -f .unlock_failed ]; then
+   echo "(unlocked but the web access PIN and password are unchanged)"
   fi
  fi
 fi
