@@ -124,6 +124,9 @@ function call_unread_adjust( entry )
 {
    var kept = g_call_unread[ entry.room ];
 
+   // NOTE: The node's own count kept, for knowing which messages are the new ones ("call_look( )").
+   entry.unread_raw = entry.unread;
+
    if( !kept )
       return;
 
@@ -143,13 +146,20 @@ async function call_send( room, other, id, kind, data )
    if( secret === "" )
       return false;
 
-   var texts = call_messages( id, call_now( ), kind, data );
+   var texts = call_messages( id, call_now( ), ciyam.username, kind, data );
    var sealer = ciyam_module_named( "secure_message" );
 
    for( var i = 0; i < texts.length; i++ )
    {
+      // NOTE: Not once a sign out has begun - a part queued then went alongside it (found by review, 2026-11-14).
+      if( g_signing_out )
+         return false;
+
       var sealed = await sealer.seal( secret, texts[ i ] );
       var taken = false;
+
+      if( g_signing_out )
+         return false;
 
       await serialised( function( )
       {
@@ -166,8 +176,8 @@ async function call_send( room, other, id, kind, data )
    return true;
 }
 
-// NOTE: A room's messages of the last "c_call_fresh_seconds", read quietly - or null if it could not be read.
-async function call_read_recent( room )
+// NOTE: A room's messages since "since" (Unix seconds), read quietly - or null if it could not be read.
+async function call_read_recent( room, since )
 {
    var response = null;
 
@@ -175,8 +185,7 @@ async function call_read_recent( room )
 
    var reading = serialised( function( )
    {
-      return ciyam.fetch_messages( room, "from=" + ( call_now( ) - c_call_fresh_seconds ) + ";extra=ENTIRE",
-       function( text ) { response = String( text ); } );
+      return ciyam.fetch_messages( room, "from=" + since + ";extra=ENTIRE", function( text ) { response = String( text ); } );
    } );
 
    g_in_poll = false;
@@ -227,28 +236,47 @@ async function call_opened( messages, other )
    return opened;
 }
 
-// NOTE: A direct message read for its calls, and what they say acted on.
-async function call_look( room, other )
+// NOTE: A direct message read for its calls, and what they say acted on - false if it could not be read. The last
+// "c_call_fresh_seconds", or since the call going there began, however long ago (found by review, 2026-11-14: a hang up after 90
+// seconds went unseen).
+async function call_look( room, other, unread )
 {
-   var messages = await call_read_recent( room );
+   var going = ( ( g_call !== null ) && ( g_call.room === room ) ) ? g_call : null;
+   var since = call_now( ) - c_call_fresh_seconds;
 
-   if( ( messages === null ) || g_signing_out )
-      return;
+   if( ( going !== null ) && ( going.at > 0 ) )
+      since = Math.min( since, going.at - 5 );
+
+   var messages = await call_read_recent( room, since );
+
+   if( messages === null )
+      return false;
+
+   if( g_signing_out )
+      return true;
 
    var opened = await call_opened( messages, other );
 
-   if( room !== g_room )
+   // NOTE: Only the call messages among those still new to this person - the newest "unread" of what the other said - are taken off
+   // its count (found by review, 2026-11-14: call messages already read, counted again, hid a message sent after them).
+   if( ( room !== g_room ) && ( unread > 0 ) )
    {
       var kept = g_call_unread[ room ] || ( g_call_unread[ room ] = { uniques: { }, raw: 0 } );
+      var said = messages.filter( function( message ) { return ( message.kind === c_kind_chat ) && ( message.sender === other ); } );
+      var fresh = { };
+
+      said.slice( -unread ).forEach( function( message ) { fresh[ message.unique ] = true; } );
 
       opened.forEach( function( message )
       {
-         if( message.sender === other )
+         if( ( message.sender === other ) && fresh[ message.unique ] )
             kept.uniques[ message.unique ] = true;
       } );
    }
 
-   call_apply( room, other, call_states( opened, ciyam.username, other, call_now( ) ) );
+   call_apply( room, other, call_states( opened, ciyam.username, other, call_now( ), ( going !== null ) ? going.id : "" ) );
+
+   return true;
 }
 
 // NOTE: From the poll - each encrypted direct message whose counts have changed is looked at for calls, and the call's own while one
@@ -278,13 +306,17 @@ async function call_watch( )
          if( ( g_call_seen[ entry.room ] === seen ) && !( g_call && ( g_call.room === entry.room ) ) )
             continue;
 
-         g_call_seen[ entry.room ] = seen;
-
          // NOTE: Seen the first time with nothing new - no call can be ringing there (found 2026-11-14: each was read at sign in).
          if( first && ( entry.unread === 0 ) )
-            continue;
+         {
+            g_call_seen[ entry.room ] = seen;
 
-         await call_look( entry.room, other );
+            continue;
+         }
+
+         // NOTE: Taken as seen only once read - one that could not be read is looked at again (found by review, 2026-11-14).
+         if( await call_look( entry.room, other, entry.hasOwnProperty( "unread_raw" ) ? entry.unread_raw : entry.unread ) )
+            g_call_seen[ entry.room ] = seen;
 
          if( g_signing_out )
             return;
@@ -400,9 +432,14 @@ function call_connection( )
          call_connected( );
       else if( pc.connectionState === "failed" )
       {
+         // NOTE: One that never connected is most likely two networks, with no relay as yet; one that had, lost (found by review: the
+         // other closing their page was put down to the network).
+         var connected = g_call.started !== 0;
+
          call_send_quietly( "end" );
 
-         call_end_local( "The call was lost - the two of you may need to be on the same network for now." );
+         call_end_local( connected ? "The call was lost." : "The call couldn't connect - for now, calls only work between people on the"
+          + " same network." );
       }
    } );
 
@@ -462,7 +499,14 @@ async function do_start_call( )
       return;
    }
 
-   if( !window.RTCPeerConnection || !navigator.mediaDevices || !window.CompressionStream )
+   if( !window.RTCPeerConnection || !window.CompressionStream )
+   {
+      show_alert( "This browser can't make calls.", "is-error" );
+
+      return;
+   }
+
+   if( !navigator.mediaDevices )
    {
       show_alert( "This page can't make calls - the camera and microphone need the node over HTTPS (or localhost).", "is-error" );
 
@@ -470,7 +514,7 @@ async function do_start_call( )
    }
 
    var call = g_call = { id: call_new_id( ), room: room, other: other, role: "caller", state: "starting", offer: "", pc: null, local: null,
-    started: 0, answered: false };
+    started: 0, answered: false, at: call_now( ), offered: false };
 
    g_call_handled[ call.id ] = true;
 
@@ -498,6 +542,8 @@ async function do_start_call( )
          return;
 
       var data = await call_pack( call.pc.localDescription.sdp );
+
+      call.offered = true;
 
       if( !await call_send( room, other, call.id, "offer", data ) )
       {
@@ -537,7 +583,7 @@ function call_ring( room, other, call )
    g_call_handled[ call.id ] = true;
 
    g_call = { id: call.id, room: room, other: other, role: "callee", state: "ringing", offer: call.offer, pc: null, local: null, started: 0,
-    answered: false };
+    answered: false, at: call.at, offered: true };
 
    call_show( other + " is calling" );
 
@@ -669,7 +715,9 @@ function do_hang_up_call( )
    if( g_call === null )
       return;
 
-   call_send_quietly( ( g_call.state === "ringing" ) ? "decline" : "end" );
+   // NOTE: Not an end for a call whose offer never went - it was drawn as a call not answered, with no call (found by review).
+   if( g_call.offered )
+      call_send_quietly( ( g_call.state === "ringing" ) ? "decline" : "end" );
 
    call_end_local( "" );
 }
@@ -699,8 +747,12 @@ function call_end_local( said )
 
    call_show_open( );
 
-   [ g_call_ring_timer ].forEach( function( timer ) { if( timer !== null ) window.clearTimeout( timer ); } );
-   g_call_ring_timer = null;
+   if( g_call_ring_timer !== null )
+   {
+      window.clearTimeout( g_call_ring_timer );
+
+      g_call_ring_timer = null;
+   }
 
    if( g_call_clock_timer !== null )
    {

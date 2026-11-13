@@ -979,13 +979,16 @@ ok   - one deleted by its sender (edited to blank)
 ok   posted to one person as between the two
 ok   a call's offer split - each part small enough to seal, and in order
 ok   - an end has no data, in one part
-ok   - read back
-ok   - not a call: ordinary text, a kind not known, a part past the last, too many parts, a short id
+ok   - read back, with who sent it
+ok   - not a call: ordinary text, a kind not known, a part past the last, too many parts, a short id, no sender
 ok   a call's state - the offer joined once every part is there, then its answer
 ok   - busy, from the one called - not from the caller
 ok   - the parts in any order, and one sent twice counted once
 ok   - an answer, or a decline, from the caller themself is not taken; an end from either is
+ok   - not taken when the node names someone else as its sender - the caller's own offer shown as the other's does not ring
 ok   - an answer or end with no offer seen is not a call; nor anyone's but the two; nor an offer gone stale
+ok   - the call going is taken however long ago it began: its end an hour on
+ok   - two answers, from two devices of the one called, not joined into one
 ok   a call's length
 ok   a call's lines in the conversation - the call, a decline, busy, its end with how long; the rest not shown
 

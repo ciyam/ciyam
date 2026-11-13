@@ -2134,50 +2134,60 @@ check( "posted to one person as between the two", cp.paired_for( "verify-a" ), "
 
 // ---- Calls (Ian, 2026-11-13) - set up with sealed messages in a direct message, the description compressed and split
 var call_data = new Array( 2141 ).join( "A" );
-var call_offer = cp.call_messages( "0a1b2c3d", 1794000000, "offer", call_data );
+var call_msg = function( at, from, kind, data ) { return cp.call_messages( "0a1b2c3d", at, from, kind, data ); };
+var call_offer = call_msg( 1794000000, "maya", "offer", call_data );
 check( "a call's offer split - each part small enough to seal, and in order", [ call_offer.length,
- call_offer.every( function( t ) { return new TextEncoder( ).encode( t ).length <= 1000; } ), call_offer[ 0 ].substring( 0, 35 ),
- call_offer[ 2 ].split( " " ).slice( 3, 5 ).join( " " ) ], [ 3, true, "☎call 0a1b2c3d 1794000000 offer 1/3", "offer 3/3" ] );
-check( "- an end has no data, in one part", cp.call_messages( "0a1b2c3d", 1794000000, "end", "" ), [ "☎call 0a1b2c3d 1794000000 end 1/1" ] );
-check( "- read back", cp.parse_call_message( call_offer[ 1 ] ), { id: "0a1b2c3d", at: 1794000000, kind: "offer", part: 2, parts: 3,
- data: call_data.substring( 900, 1800 ) } );
-check( "- not a call: ordinary text, a kind not known, a part past the last, too many parts, a short id", [ cp.is_call_message( "call me" ),
- cp.is_call_message( "☎call 0a1b2c3d 1794000000 ring 1/1" ), cp.is_call_message( "☎call 0a1b2c3d 1794000000 offer 4/3 AA" ),
- cp.is_call_message( "☎call 0a1b2c3d 1794000000 offer 1/13 AA" ), cp.is_call_message( "☎call 0a1b2c 1794000000 end 1/1" ) ],
- [ false, false, false, false, false ] );
+ call_offer.every( function( t ) { return new TextEncoder( ).encode( t ).length <= 1000; } ), call_offer[ 0 ].split( " " ).slice( 0, 6 ).join( " " ),
+ call_offer[ 2 ].split( " " ).slice( 4, 6 ).join( " " ) ], [ 3, true, "☎call 0a1b2c3d 1794000000 maya offer 1/3", "offer 3/3" ] );
+check( "- an end has no data, in one part", call_msg( 1794000000, "admin", "end", "" ), [ "☎call 0a1b2c3d 1794000000 admin end 1/1" ] );
+check( "- read back, with who sent it", cp.parse_call_message( call_offer[ 1 ] ), { id: "0a1b2c3d", at: 1794000000, from: "maya", kind: "offer",
+ part: 2, parts: 3, data: call_data.substring( 900, 1800 ) } );
+check( "- not a call: ordinary text, a kind not known, a part past the last, too many parts, a short id, no sender", [ cp.is_call_message( "call me" ),
+ cp.is_call_message( "☎call 0a1b2c3d 1794000000 maya ring 1/1" ), cp.is_call_message( "☎call 0a1b2c3d 1794000000 maya offer 4/3 AA" ),
+ cp.is_call_message( "☎call 0a1b2c3d 1794000000 maya offer 1/13 AA" ), cp.is_call_message( "☎call 0a1b2c 1794000000 maya end 1/1" ),
+ cp.is_call_message( "☎call 0a1b2c3d 1794000000 end 1/1" ) ], [ false, false, false, false, false, false ] );
 
 var call_seen = function( sender, texts ) { return texts.map( function( text ) { return { sender: sender, text: text }; } ); };
-var call_answer = cp.call_messages( "0a1b2c3d", 1794000005, "answer", "BBBB" );
+var call_answer = call_msg( 1794000005, "admin", "answer", "BBBB" );
 check( "a call's state - the offer joined once every part is there, then its answer", [
  cp.call_states( call_seen( "maya", call_offer.slice( 0, 2 ) ), "admin", "maya", 1794000010 )[ "0a1b2c3d" ].offer,
  cp.call_states( call_seen( "maya", call_offer ), "admin", "maya", 1794000010 )[ "0a1b2c3d" ].offer === call_data,
  cp.call_states( call_seen( "maya", call_offer ).concat( call_seen( "admin", call_answer ) ), "admin", "maya", 1794000010 )[ "0a1b2c3d" ] ],
  [ "", true, { id: "0a1b2c3d", caller: "maya", at: 1794000000, offer: call_data, answer: "BBBB", ended: false, declined: false, busy: false } ] );
 check( "- busy, from the one called - not from the caller", [
- cp.call_states( call_seen( "maya", call_offer ).concat( call_seen( "admin", cp.call_messages( "0a1b2c3d", 1794000002, "busy", "" ) ) ), "admin",
- "maya", 1794000010 )[ "0a1b2c3d" ].busy, cp.call_states( call_seen( "maya", call_offer.concat( cp.call_messages( "0a1b2c3d", 1794000002, "busy",
- "" ) ) ), "admin", "maya", 1794000010 )[ "0a1b2c3d" ].busy ], [ true, false ] );
+ cp.call_states( call_seen( "maya", call_offer ).concat( call_seen( "admin", call_msg( 1794000002, "admin", "busy", "" ) ) ), "admin", "maya",
+ 1794000010 )[ "0a1b2c3d" ].busy, cp.call_states( call_seen( "maya", call_offer.concat( call_msg( 1794000002, "maya", "busy", "" ) ) ), "admin",
+ "maya", 1794000010 )[ "0a1b2c3d" ].busy ], [ true, false ] );
 check( "- the parts in any order, and one sent twice counted once", cp.call_states( call_seen( "maya", [ call_offer[ 2 ], call_offer[ 0 ],
  call_offer[ 0 ], call_offer[ 1 ] ] ), "admin", "maya", 1794000010 )[ "0a1b2c3d" ].offer === call_data, true );
 check( "- an answer, or a decline, from the caller themself is not taken; an end from either is", ( function( )
 {
-   var from_caller = cp.call_states( call_seen( "maya", call_offer.concat( call_answer ).concat( cp.call_messages( "0a1b2c3d", 1794000006,
-    "decline", "" ) ) ), "admin", "maya", 1794000010 )[ "0a1b2c3d" ];
-   var ended = cp.call_states( call_seen( "maya", call_offer ).concat( call_seen( "admin", cp.call_messages( "0a1b2c3d", 1794000007, "end",
-    "" ) ) ), "admin", "maya", 1794000010 )[ "0a1b2c3d" ];
+   var from_caller = cp.call_states( call_seen( "maya", call_offer.concat( call_msg( 1794000005, "maya", "answer", "BBBB" ) )
+    .concat( call_msg( 1794000006, "maya", "decline", "" ) ) ), "admin", "maya", 1794000010 )[ "0a1b2c3d" ];
+   var ended = cp.call_states( call_seen( "maya", call_offer ).concat( call_seen( "admin", call_msg( 1794000007, "admin", "end", "" ) ) ), "admin",
+    "maya", 1794000010 )[ "0a1b2c3d" ];
 
    return [ from_caller.answer, from_caller.declined, ended.ended ];
 } )( ), [ "", false, true ] );
+check( "- not taken when the node names someone else as its sender - the caller's own offer shown as the other's does not ring", [
+ Object.keys( cp.call_states( call_seen( "maya", call_msg( 1794000000, "admin", "offer", "AAAA" ) ), "admin", "maya", 1794000010 ) ).length,
+ cp.call_states( call_seen( "maya", call_offer ).concat( call_seen( "admin", call_msg( 1794000005, "maya", "answer", "BBBB" ) ) ), "admin", "maya",
+ 1794000010 )[ "0a1b2c3d" ].answer ], [ 0, "" ] );
 check( "- an answer or end with no offer seen is not a call; nor anyone's but the two; nor an offer gone stale", [
  Object.keys( cp.call_states( call_seen( "admin", call_answer ), "admin", "maya", 1794000010 ) ).length,
- Object.keys( cp.call_states( call_seen( "verify-a", call_offer ), "admin", "maya", 1794000010 ) ).length,
+ Object.keys( cp.call_states( call_seen( "verify-a", call_msg( 1794000000, "verify-a", "offer", "AAAA" ) ), "admin", "maya", 1794000010 ) ).length,
  Object.keys( cp.call_states( call_seen( "maya", call_offer ), "admin", "maya", 1794000000 + cp.c_call_fresh_seconds + 1 ) ).length ],
  [ 0, 0, 0 ] );
+check( "- the call going is taken however long ago it began: its end an hour on", cp.call_states( call_seen( "maya", call_offer )
+ .concat( call_seen( "admin", call_msg( 1794003600, "admin", "end", "3600" ) ) ), "admin", "maya", 1794003605, "0a1b2c3d" )[ "0a1b2c3d" ].ended, true );
+check( "- two answers, from two devices of the one called, not joined into one", cp.call_states( call_seen( "maya", call_offer ).concat( call_seen(
+ "admin", call_msg( 1794000005, "admin", "answer", call_data ).slice( 0, 1 ).concat( call_msg( 1794000006, "admin", "answer", "CCCC" ) ) ) ),
+ "admin", "maya", 1794000010 )[ "0a1b2c3d" ].answer, "CCCC" );
 check( "a call's length", [ cp.call_elapsed_text( 0 ), cp.call_elapsed_text( 65 ), cp.call_elapsed_text( 3725 ), cp.call_elapsed_text( -4 ) ],
  [ "0:00", "1:05", "1:02:05", "0:00" ] );
 check( "a call's lines in the conversation - the call, a decline, busy, its end with how long; the rest not shown", [ call_offer[ 0 ],
- call_offer[ 1 ], call_answer[ 0 ], "☎call 0a1b2c3d 1794000000 decline 1/1", "☎call 0a1b2c3d 1794000000 busy 1/1",
- "☎call 0a1b2c3d 1794000000 end 1/1 185", "☎call 0a1b2c3d 1794000000 end 1/1", "hello" ].map( function( text )
+ call_offer[ 1 ], call_answer[ 0 ], "☎call 0a1b2c3d 1794000000 admin decline 1/1", "☎call 0a1b2c3d 1794000000 admin busy 1/1",
+ "☎call 0a1b2c3d 1794000000 maya end 1/1 185", "☎call 0a1b2c3d 1794000000 maya end 1/1", "hello" ].map( function( text )
 {
    return cp.call_line_text( cp.parse_call_message( text ) );
 } ), [ "Call", "", "", "Declined the call", "Was on another call", "Call ended · 3:05", "Call not answered", "" ] );

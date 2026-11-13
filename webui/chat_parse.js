@@ -5046,10 +5046,12 @@ function format_history_redo( history )
 }
 
 // ---- Calls (Ian, 2026-11-13: peer to peer, in a direct message, "the P2P style initially") - set up with sealed messages in the
-// conversation: an offer, its answer, an end or a decline. Each a line "<marker>call <id> <at> <kind> <part>/<parts>[ <data>]": "id"
-// eight hex digits, "at" the Unix seconds it was sent, "data" the call's description compressed and in base64 - split over as many
-// messages as it needs (Ian: compress and split), as a sealed message is at most 1,000 bytes ("c_sealed_most_bytes"). "busy" is a
-// decline from someone already in a call; an end's data is how long the call lasted, in seconds - none if it never connected.
+// conversation: an offer, its answer, an end or a decline. Each a line "<marker>call <id> <at> <from> <kind> <part>/<parts>[ <data>]":
+// "id" eight hex digits, "at" the Unix seconds it was sent, "from" who sent it, "data" the call's description compressed and in base64
+// - split over as many messages as it needs (Ian: compress and split), as a sealed message is at most 1,000 bytes ("c_sealed_most_bytes").
+// "busy" is a decline from someone already in a call; an end's data is how long the call lasted, in seconds - none if it never connected.
+// NOTE: "from" is sealed with the rest - either of the two could seal any of it, so the sender the node names is not enough: it could
+// name the one called as sending the caller's own offer, ringing the caller's other devices (found by review, 2026-11-14).
 
 const c_call_prefix = "☎call ";
 const c_call_chunk_chars = 900;
@@ -5058,10 +5060,10 @@ const c_call_most_parts = 12;
 // NOTE: How long a call's messages count - an offer older than this is not rung, nor an answer taken.
 const c_call_fresh_seconds = 90;
 
-const c_call_pattern = /^☎call ([0-9a-f]{8}) ([0-9]{10}) (offer|answer|end|decline|busy) ([0-9]{1,2})\/([0-9]{1,2})(?: ([A-Za-z0-9+\/=]+))?$/;
+const c_call_pattern = /^☎call ([0-9a-f]{8}) ([0-9]{10}) ([-a-z0-9]{3,12}) (offer|answer|end|decline|busy) ([0-9]{1,2})\/([0-9]{1,2})(?: ([A-Za-z0-9+\/=]+))?$/;
 
-// NOTE: The texts to seal and send, in order.
-function call_messages( id, at, kind, data )
+// NOTE: The texts to seal and send, in order - "from" the one sending them.
+function call_messages( id, at, from, kind, data )
 {
    var text = String( data || "" );
    var chunks = [ ];
@@ -5074,11 +5076,11 @@ function call_messages( id, at, kind, data )
 
    return chunks.map( function( chunk, index )
    {
-      return c_call_prefix + id + " " + at + " " + kind + " " + ( index + 1 ) + "/" + chunks.length + ( ( chunk !== "" ) ? " " + chunk : "" );
+      return c_call_prefix + id + " " + at + " " + from + " " + kind + " " + ( index + 1 ) + "/" + chunks.length + ( ( chunk !== "" ) ? " " + chunk : "" );
    } );
 }
 
-// NOTE: One of a call's messages, opened - { id, at, kind, part, parts, data } - or null if it is not one.
+// NOTE: One of a call's messages, opened - { id, at, from, kind, part, parts, data } - or null if it is not one.
 function parse_call_message( text )
 {
    var match = c_call_pattern.exec( String( text || "" ) );
@@ -5086,13 +5088,13 @@ function parse_call_message( text )
    if( match === null )
       return null;
 
-   var part = parseInt( match[ 4 ], 10 );
-   var parts = parseInt( match[ 5 ], 10 );
+   var part = parseInt( match[ 5 ], 10 );
+   var parts = parseInt( match[ 6 ], 10 );
 
    if( ( part < 1 ) || ( part > parts ) || ( parts > c_call_most_parts ) )
       return null;
 
-   return { id: match[ 1 ], at: parseInt( match[ 2 ], 10 ), kind: match[ 3 ], part: part, parts: parts, data: match[ 6 ] || "" };
+   return { id: match[ 1 ], at: parseInt( match[ 2 ], 10 ), from: match[ 3 ], kind: match[ 4 ], part: part, parts: parts, data: match[ 7 ] || "" };
 }
 
 function is_call_message( text )
@@ -5103,8 +5105,9 @@ function is_call_message( text )
 // NOTE: The calls in "opened" - [ { sender, text } ] opened from the direct message between "me" and "other", oldest first - sent
 // within "c_call_fresh_seconds" of "now" (Unix seconds), as { <id>: { id, caller, at, offer, answer, ended, declined, busy } }.
 // "offer" and "answer" are the data joined once every part is there, else "". Only a call begun by an offer is taken, from either of
-// the two; its answer, decline and busy only from the other of them, its end from either.
-function call_states( opened, me, other, now )
+// the two; its answer, decline and busy only from the other of them, its end from either. Each sent by whom it says, sealed. The call
+// "keep" - one going - is taken however long ago it began (found by review, 2026-11-14: a hang up after 90 seconds went unseen).
+function call_states( opened, me, other, now, keep )
 {
    var calls = { };
    var pieces = { };
@@ -5113,10 +5116,13 @@ function call_states( opened, me, other, now )
    {
       var call = parse_call_message( message.text );
 
-      if( ( call === null ) || ( ( message.sender !== me ) && ( message.sender !== other ) ) || ( Math.abs( now - call.at ) > c_call_fresh_seconds ) )
+      if( ( call === null ) || ( call.from !== message.sender ) || ( ( message.sender !== me ) && ( message.sender !== other ) ) )
          return;
 
       var state = calls[ call.id ];
+
+      if( ( call.id !== keep ) && ( Math.abs( now - ( state ? state.at : call.at ) ) > c_call_fresh_seconds ) )
+         return;
 
       if( call.kind === "offer" )
       {
@@ -5145,7 +5151,8 @@ function call_states( opened, me, other, now )
          return;
       }
 
-      var key = call.id + " " + call.kind;
+      // NOTE: Each answer's parts its own - two devices answering together are not joined into one (found by review, 2026-11-14).
+      var key = call.id + " " + call.kind + " " + call.at;
       var piece = pieces[ key ];
 
       if( !piece || ( piece.parts !== call.parts ) )
