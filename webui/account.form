@@ -299,13 +299,27 @@ http://www.opensource.org/licenses/mit-license.php.
                   <div class="account-card account-form" id="mine_keys">
                      <div class="account-keys-part" id="keys_loading" role="status">Looking for your keys…</div>
 
+                     <!-- NOTE: Admin's keys come only from the node's twelve words (Ian, 2026-11-11); everyone else is offered their
+                          administrator's first, then words of their own - never the node's, which make everyone's keys (Damon,
+                          2026-11-14). -->
                      <div class="account-keys-part" id="keys_none" hidden>
                         <p class="account-lede" id="keys_none_lede"></p>
-                        <div class="account-actions-row">
-                           <button type="button" class="chat-btn" id="keys_node">Use the node's twelve words</button>
-                           <button type="button" class="chat-btn" id="keys_admin">Get them from your administrator</button>
-                           <button type="button" class="chat-btn" id="keys_restore">I have twelve words of my own</button>
-                           <button type="button" class="chat-btn chat-btn--primary" id="keys_start">Set up your keys</button>
+                        <div class="account-actions-row" id="keys_none_admin">
+                           <button type="button" class="chat-btn chat-btn--primary" id="keys_node">Use the node's twelve words</button>
+                        </div>
+                        <div class="account-keys-choices" id="keys_none_person">
+                           <div class="account-keys-choice">
+                              <button type="button" class="chat-btn chat-btn--primary" id="keys_admin">Get them from your administrator</button>
+                              <p class="account-note">Your administrator makes them for you, and can make them again if you lose them.</p>
+                           </div>
+                           <div class="account-keys-choice">
+                              <p class="account-note">Or use twelve words of your own. Only you can make your keys again - lose the words
+                               and they're gone for good.</p>
+                              <div class="account-keys-choice-row">
+                                 <button type="button" class="chat-btn" id="keys_start">New words</button>
+                                 <button type="button" class="chat-btn" id="keys_restore">I have my words</button>
+                              </div>
+                           </div>
                         </div>
                      </div>
 

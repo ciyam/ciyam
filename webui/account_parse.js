@@ -635,8 +635,8 @@ function keys_words_text( is_admin )
    if( is_admin )
       return "Yours come from the node's twelve words - which make everyone's keys here, so keep them like the house keys.";
 
-   return "Unless you set them up from twelve words of your own, they can be made again from the node's twelve words, which your"
-    + " administrator keeps.";
+   // NOTE: Not for everyone else (Damon, 2026-11-14) - the choices under it say what each gives up, without the node's words.
+   return "";
 }
 
 // NOTE: What Give keys lacks, field by field (Damon, 2026-11-11) - the password always; the node's words only when asked ("words" null

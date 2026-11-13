@@ -1633,3 +1633,41 @@ button.account-back,
       margin-left: 22px;
    }
 }
+
+/* NOTE: Your keys' choices for everyone but admin (Damon, 2026-11-14) - their administrator's first, each with what it gives up. */
+.account-keys-choices
+{
+   display: flex;
+   flex-direction: column;
+   gap: 20px;
+}
+
+.account-keys-choices[hidden]
+{
+   display: none;
+}
+
+.account-keys-choice
+{
+   display: flex;
+   flex-direction: column;
+   align-items: flex-start;
+   gap: 8px;
+}
+
+.account-keys-choice-row
+{
+   display: flex;
+   flex-wrap: wrap;
+   gap: 10px;
+}
+
+.account-keys-choice .chat-btn
+{
+   display: inline-flex;
+   align-items: center;
+   justify-content: center;
+   height: 44px;
+   padding: 0 20px;
+   font-size: var(--font-size-chat-body);
+}

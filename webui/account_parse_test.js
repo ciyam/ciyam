@@ -304,9 +304,8 @@ check( "admin's keys at set up or recovery - made, opened, left, or not made", [
  "Admin's keys, made from the node's twelve words, are open on this browser.",
  "Admin's keys on the node were made another way, so they're left as they are.",
  "Admin's keys couldn't be made just now - on My account, choose Use the node's twelve words under Your keys." ] );
-check( "the node's words said plainly under Your keys - admin's, everyone else's", [ ap.keys_words_text( true ), ap.keys_words_text( false ) ],
- [ "Yours come from the node's twelve words - which make everyone's keys here, so keep them like the house keys.",
- "Unless you set them up from twelve words of your own, they can be made again from the node's twelve words, which your administrator keeps." ] );
+check( "the node's words said plainly under Your keys - admin's; nothing for everyone else, never offered them", [ ap.keys_words_text( true ),
+ ap.keys_words_text( false ) ], [ "Yours come from the node's twelve words - which make everyone's keys here, so keep them like the house keys.", "" ] );
 check( "Give keys - everything it lacks, by field, at once", [ ap.give_field_problems( "", "", null ), ap.give_field_problems( "", null, null ) ],
  [ { password: "Type your password.", words: "Type the node's twelve words.", ask: "Scan their device's code, or paste its address." },
  { password: "Type your password.", words: "", ask: "Scan their device's code, or paste its address." } ] );

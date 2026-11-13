@@ -395,6 +395,7 @@ async function render_keys( )
 
    // NOTE: Said plainly (Damon and Ian, 2026-11-11) - the node's twelve words make everyone's keys here.
    document.getElementById( "keys_words_lede" ).textContent = keys_words_text( ciyam.is_admin );
+   document.getElementById( "keys_words_lede" ).hidden = ( keys_words_text( ciyam.is_admin ) === "" );
    keys_show( "keys_loading" );
 
    var render = ++g_keys_render;
@@ -484,15 +485,13 @@ async function render_keys( )
            + " their own account.";
       else
          document.getElementById( "keys_none_lede" ).textContent = ( state === "lost" )
-          ? "Your keys are no longer on the node, and this browser can't make them again by itself. Type your twelve words to put"
-           + " them back, or set up new ones."
-          : "Your keys come from twelve words of your own, which you write down. The node never sees them - it keeps your keys"
-           + " locked so that only your browsers can open them.";
+          ? "Your keys are no longer on the node, and this browser can't make them again by itself." : "";
 
-      document.getElementById( "keys_admin" ).hidden = ciyam.is_admin;
-      document.getElementById( "keys_restore" ).hidden = node_only;
-      document.getElementById( "keys_start" ).hidden = node_only;
-      document.getElementById( "keys_node" ).classList.toggle( "chat-btn--primary", node_only );
+      // NOTE: Everyone else - their administrator's, then words of their own; not the node's twelve words, which make everyone's keys
+      // here and are admin's to keep (Damon, 2026-11-14).
+      document.getElementById( "keys_none_admin" ).hidden = !node_only;
+      document.getElementById( "keys_none_person" ).hidden = node_only;
+      document.getElementById( "keys_none_lede" ).hidden = ( document.getElementById( "keys_none_lede" ).textContent === "" );
 
       keys_show( "keys_none" );
    }
@@ -572,9 +571,9 @@ function keys_show_enter( mode )
       elsewhere: "Your keys are set up. To use them on this browser, type your twelve words - or get them from another device"
        + " that has them." + lost,
       other: "The keys on the node were locked by another browser since. Type the twelve words they were set up with." + lost,
-      // NOTE: Not the node's - those typed here would make the same keys for everyone who did so (found by review, 2026-11-11).
-      restore: "Type your own twelve words, and your keys are made again from them. Not the node's - for those, choose Cancel, then"
-       + " Use the node's twelve words.",
+      // NOTE: One's own - not offered to admin, whose keys come from the node's (Ian, 2026-11-11); and only admin is offered those
+      // (Damon, 2026-11-14).
+      restore: "Type the twelve words you set your keys up with, and they're made again from them.",
       change: "Type your twelve words for a new access key. Use it if a browser or phone with your keys is lost: any other browser"
        + " that has them will then need your words, or to get them from this one, again.",
       node: "Type the twelve words the node was set up with. Your keys are made from them and your PIN, so whoever has the node's"
