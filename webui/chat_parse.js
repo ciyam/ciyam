@@ -5048,7 +5048,8 @@ function format_history_redo( history )
 // ---- Calls (Ian, 2026-11-13: peer to peer, in a direct message, "the P2P style initially") - set up with sealed messages in the
 // conversation: an offer, its answer, an end or a decline. Each a line "<marker>call <id> <at> <kind> <part>/<parts>[ <data>]": "id"
 // eight hex digits, "at" the Unix seconds it was sent, "data" the call's description compressed and in base64 - split over as many
-// messages as it needs (Ian: compress and split), as a sealed message is at most 1,000 bytes ("c_sealed_most_bytes").
+// messages as it needs (Ian: compress and split), as a sealed message is at most 1,000 bytes ("c_sealed_most_bytes"). "busy" is a
+// decline from someone already in a call; an end's data is how long the call lasted, in seconds - none if it never connected.
 
 const c_call_prefix = "☎call ";
 const c_call_chunk_chars = 900;
@@ -5057,7 +5058,7 @@ const c_call_most_parts = 12;
 // NOTE: How long a call's messages count - an offer older than this is not rung, nor an answer taken.
 const c_call_fresh_seconds = 90;
 
-const c_call_pattern = /^☎call ([0-9a-f]{8}) ([0-9]{10}) (offer|answer|end|decline) ([0-9]{1,2})\/([0-9]{1,2})(?: ([A-Za-z0-9+\/=]+))?$/;
+const c_call_pattern = /^☎call ([0-9a-f]{8}) ([0-9]{10}) (offer|answer|end|decline|busy) ([0-9]{1,2})\/([0-9]{1,2})(?: ([A-Za-z0-9+\/=]+))?$/;
 
 // NOTE: The texts to seal and send, in order.
 function call_messages( id, at, kind, data )
@@ -5100,9 +5101,9 @@ function is_call_message( text )
 }
 
 // NOTE: The calls in "opened" - [ { sender, text } ] opened from the direct message between "me" and "other", oldest first - sent
-// within "c_call_fresh_seconds" of "now" (Unix seconds), as { <id>: { id, caller, at, offer, answer, ended, declined } }. "offer" and
-// "answer" are the data joined once every part is there, else "". Only a call begun by an offer is taken, from either of the two;
-// its answer and decline only from the other of them, its end from either.
+// within "c_call_fresh_seconds" of "now" (Unix seconds), as { <id>: { id, caller, at, offer, answer, ended, declined, busy } }.
+// "offer" and "answer" are the data joined once every part is there, else "". Only a call begun by an offer is taken, from either of
+// the two; its answer, decline and busy only from the other of them, its end from either.
 function call_states( opened, me, other, now )
 {
    var calls = { };
@@ -5120,13 +5121,14 @@ function call_states( opened, me, other, now )
       if( call.kind === "offer" )
       {
          if( !state )
-            state = calls[ call.id ] = { id: call.id, caller: message.sender, at: call.at, offer: "", answer: "", ended: false, declined: false };
+            state = calls[ call.id ] = { id: call.id, caller: message.sender, at: call.at, offer: "", answer: "", ended: false, declined: false,
+             busy: false };
          else if( state.caller !== message.sender )
             return;
       }
       else if( !state )
          return;
-      else if( ( ( call.kind === "answer" ) || ( call.kind === "decline" ) ) && ( message.sender === state.caller ) )
+      else if( ( call.kind !== "end" ) && ( message.sender === state.caller ) )
          return;
 
       if( call.kind === "end" )
@@ -5136,9 +5138,9 @@ function call_states( opened, me, other, now )
          return;
       }
 
-      if( call.kind === "decline" )
+      if( ( call.kind === "decline" ) || ( call.kind === "busy" ) )
       {
-         state.declined = true;
+         state[ ( call.kind === "busy" ) ? "busy" : "declined" ] = true;
 
          return;
       }
@@ -5169,6 +5171,28 @@ function call_states( opened, me, other, now )
    return calls;
 }
 
+// NOTE: A call's message as a line in the conversation - its offer's first part as the call, a decline, being busy, and its end with
+// how long it lasted; "" for the rest, which are not shown. "call" as "parse_call_message( )" gives it.
+function call_line_text( call )
+{
+   if( call === null )
+      return "";
+
+   if( call.kind === "offer" )
+      return ( call.part === 1 ) ? "Call" : "";
+
+   if( call.kind === "decline" )
+      return "Declined the call";
+
+   if( call.kind === "busy" )
+      return "Was on another call";
+
+   if( call.kind === "end" )
+      return /^[0-9]+$/.test( call.data ) ? "Call ended · " + call_elapsed_text( parseInt( call.data, 10 ) ) : "Call not answered";
+
+   return "";
+}
+
 // NOTE: A call's length so far, as "m:ss" - or "h:mm:ss" from an hour.
 function call_elapsed_text( seconds )
 {
@@ -5191,6 +5215,7 @@ if( typeof module !== "undefined" )
       parse_call_message: parse_call_message,
       is_call_message: is_call_message,
       call_states: call_states,
+      call_line_text: call_line_text,
       call_elapsed_text: call_elapsed_text,
       c_format_colours: c_format_colours,
       c_format_codes: c_format_codes,

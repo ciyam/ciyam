@@ -5121,3 +5121,26 @@ button.chat-reaction:hover
 {
    display: none;
 }
+
+/* NOTE: The call's conversation, offered from another room - and a call's lines in the conversation, quieter than what is said. */
+.chat-call-link
+{
+   padding: 0;
+   border: 0;
+   background: transparent;
+   color: var(--color-chat-accent);
+   font-size: var(--font-size-chat-meta);
+   text-decoration: underline;
+   cursor: pointer;
+}
+
+.chat-call-link[hidden]
+{
+   display: none;
+}
+
+.chat-message-body.chat-call-line
+{
+   color: var(--color-chat-text-secondary);
+   font-style: italic;
+}

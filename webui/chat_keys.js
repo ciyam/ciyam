@@ -666,13 +666,33 @@ function chat_encryption_badge( )
 
 function chat_draw_opened( element, opened )
 {
-   // NOTE: A call's set-up is not shown as messages - it is the call ("chat_call.js").
+   // NOTE: A call's set-up is not shown as messages - its offer as the call, its end with how long it lasted, a decline; the rest not
+   // at all ("call_line_text( )", "chat_call.js"). Not edited, nor reacted to.
    if( opened.ok && is_call_message( opened.text ) )
    {
+      var line = call_line_text( parse_call_message( opened.text ) );
       var call_row = element.closest( ".chat-message" );
 
       if( call_row !== null )
-         call_row.hidden = true;
+      {
+         call_row.hidden = ( line === "" );
+         call_row.classList.add( "is-call" );
+
+         [ ".chat-message-edit", ".chat-message-react", ".chat-message-qr" ].forEach( function( selector )
+         {
+            var button = call_row.querySelector( selector );
+
+            if( button !== null )
+               button.hidden = true;
+         } );
+      }
+
+      element.classList.remove( "chat-unreadable", "chat-locked" );
+      element.classList.add( "chat-encrypted", "chat-call-line" );
+
+      element.textContent = line;
+
+      return;
    }
 
    element.classList.toggle( "chat-unreadable", !opened.ok );

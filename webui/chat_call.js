@@ -33,6 +33,12 @@ var g_call_handled = { };
 // NOTE: Each direct message's "total/unread" when last looked at for calls - looked at again only once it changes.
 var g_call_seen = { };
 
+// NOTE: The other person's call messages in each direct message not opened since - { <room>: { uniques: { <unique>: true }, raw } } -
+// taken off its count of what is new ("call_unread_adjust( )"): a call is not three new messages.
+var g_call_unread = { };
+
+var g_call_ring_sound = null;
+
 var g_call_looking = false;
 var g_call_watch_timer = null;
 var g_call_ring_timer = null;
@@ -93,6 +99,40 @@ function call_show_button( )
 
    if( button !== null )
       button.hidden = ( g_room === "" ) || !call_possible_here( );
+
+   call_show_open( );
+}
+
+// NOTE: The call's conversation offered to open, from anywhere else.
+function call_show_open( )
+{
+   var open = document.getElementById( "call_open" );
+
+   if( open !== null )
+      open.hidden = ( g_call === null ) || ( g_call.room === g_room );
+}
+
+function do_open_call_room( )
+{
+   if( ( g_call !== null ) && ( g_call.room !== g_room ) )
+      select_room( g_call.room, "" );
+}
+
+// NOTE: From each listing of the rooms - a direct message's count of what is new without the other person's call messages, known from
+// looking at it for calls. Once it has been read (its count has gone down, or it is open), they are forgotten.
+function call_unread_adjust( entry )
+{
+   var kept = g_call_unread[ entry.room ];
+
+   if( !kept )
+      return;
+
+   if( ( entry.room === g_room ) || ( entry.unread < kept.raw ) )
+      kept.uniques = { };
+
+   kept.raw = entry.unread;
+
+   entry.unread = Math.max( 0, entry.unread - Object.keys( kept.uniques ).length );
 }
 
 // NOTE: Each of a call's messages sealed and sent in turn - false if one was not taken (or had no answer).
@@ -181,7 +221,7 @@ async function call_opened( messages, other )
       }
 
       if( ( plain !== null ) && is_call_message( plain ) )
-         opened.push( { sender: message.sender, text: plain } );
+         opened.push( { sender: message.sender, text: plain, unique: message.unique } );
    }
 
    return opened;
@@ -196,6 +236,17 @@ async function call_look( room, other )
       return;
 
    var opened = await call_opened( messages, other );
+
+   if( room !== g_room )
+   {
+      var kept = g_call_unread[ room ] || ( g_call_unread[ room ] = { uniques: { }, raw: 0 } );
+
+      opened.forEach( function( message )
+      {
+         if( message.sender === other )
+            kept.uniques[ message.unique ] = true;
+      } );
+   }
 
    call_apply( room, other, call_states( opened, ciyam.username, other, call_now( ) ) );
 }
@@ -222,11 +273,16 @@ async function call_watch( )
             continue;
 
          var seen = entry.total + "/" + entry.unread;
+         var first = !g_call_seen.hasOwnProperty( entry.room );
 
          if( ( g_call_seen[ entry.room ] === seen ) && !( g_call && ( g_call.room === entry.room ) ) )
             continue;
 
          g_call_seen[ entry.room ] = seen;
+
+         // NOTE: Seen the first time with nothing new - no call can be ringing there (found 2026-11-14: each was read at sign in).
+         if( first && ( entry.unread === 0 ) )
+            continue;
 
          await call_look( entry.room, other );
 
@@ -279,6 +335,8 @@ function call_apply( room, other, calls )
       {
          if( call.declined )
             call_end_local( other + " declined the call." );
+         else if( call.busy )
+            call_end_local( other + " is on another call." );
          else if( call.ended )
             call_end_local( ( g_call.state === "ringing" ) ? "Missed call from " + other + "." : "The call ended." );
          else if( ( g_call.role === "caller" ) && ( call.answer !== "" ) && !g_call.answered )
@@ -289,10 +347,20 @@ function call_apply( room, other, calls )
          return;
       }
 
-      // NOTE: Rung once - not if answered or ended already (on another device of this person's too), nor while in another call.
-      if( ( g_call === null ) && ( call.caller === other ) && ( call.offer !== "" ) && !call.ended && !call.declined && ( call.answer === "" )
+      // NOTE: Rung once - not if answered or ended already (on another device of this person's too); while in another call, said
+      // to be busy.
+      if( ( call.caller === other ) && ( call.offer !== "" ) && !call.ended && !call.declined && !call.busy && ( call.answer === "" )
        && !g_call_handled[ call.id ] )
-         call_ring( room, other, call );
+      {
+         if( g_call === null )
+            call_ring( room, other, call );
+         else
+         {
+            g_call_handled[ call.id ] = true;
+
+            call_send( room, other, call.id, "busy", "" );
+         }
+      }
    } );
 }
 
@@ -475,6 +543,11 @@ function call_ring( room, other, call )
 
    call_watch_fast( true );
 
+   call_ring_sound( true );
+
+   if( notify_is_on( ) && !chat_in_front( ) )
+      send_notification( { title: other + " is calling", body: "Open the chat to answer.", tag: room, room: room } );
+
    var ringing = g_call;
 
    g_call_ring_timer = window.setTimeout( function( )
@@ -490,6 +563,8 @@ async function do_accept_call( )
 
    if( ( call === null ) || ( call.state !== "ringing" ) )
       return;
+
+   call_ring_sound( false );
 
    call.state = "connecting";
 
@@ -605,7 +680,10 @@ function call_send_quietly( kind )
    if( ( g_call === null ) || g_signing_out )
       return;
 
-   call_send( g_call.room, g_call.other, g_call.id, kind, "" );
+   // NOTE: An end says how long the call lasted - its line in the conversation ("call_line_text( )").
+   var lasted = ( ( kind === "end" ) && ( g_call.started !== 0 ) ) ? String( Math.round( ( Date.now( ) - g_call.started ) / 1000 ) ) : "";
+
+   call_send( g_call.room, g_call.other, g_call.id, kind, lasted );
 }
 
 // NOTE: The call taken down here - the connection closed, the camera and microphone let go - and "said", if anything, said.
@@ -616,6 +694,10 @@ function call_end_local( said )
    g_call = null;
 
    call_watch_fast( false );
+
+   call_ring_sound( false );
+
+   call_show_open( );
 
    [ g_call_ring_timer ].forEach( function( timer ) { if( timer !== null ) window.clearTimeout( timer ); } );
    g_call_ring_timer = null;
@@ -652,6 +734,60 @@ function call_sign_out( )
 
    g_call_handled = { };
    g_call_seen = { };
+   g_call_unread = { };
+}
+
+// NOTE: Ringing - two short tones every three seconds, made here (no sound file, and nothing fetched). A browser may hold sound back
+// until the page has been used; the panel and the notification still say it.
+function call_ring_sound( on )
+{
+   if( g_call_ring_sound !== null )
+   {
+      window.clearInterval( g_call_ring_sound.timer );
+
+      g_call_ring_sound.context.close( ).catch( function( ) { } );
+
+      g_call_ring_sound = null;
+   }
+
+   if( !on || !window.AudioContext )
+      return;
+
+   var context;
+
+   try
+   {
+      context = new AudioContext( );
+   }
+   catch( e )
+   {
+      return;
+   }
+
+   var ring = function( )
+   {
+      [ 0, 0.5 ].forEach( function( start )
+      {
+         var tone = context.createOscillator( );
+         var level = context.createGain( );
+         var at = context.currentTime + start;
+
+         tone.frequency.value = 440;
+         level.gain.setValueAtTime( 0, at );
+         level.gain.linearRampToValueAtTime( 0.15, at + 0.02 );
+         level.gain.setValueAtTime( 0.15, at + 0.35 );
+         level.gain.linearRampToValueAtTime( 0, at + 0.4 );
+
+         tone.connect( level );
+         level.connect( context.destination );
+         tone.start( at );
+         tone.stop( at + 0.45 );
+      } );
+   };
+
+   ring( );
+
+   g_call_ring_sound = { context: context, timer: window.setInterval( ring, 3000 ) };
 }
 
 function do_mute_call( )
@@ -693,6 +829,8 @@ function call_show( status )
    panel.dataset.state = state;
 
    document.getElementById( "call_status" ).textContent = status;
+
+   call_show_open( );
    document.getElementById( "call_accept" ).hidden = ( state !== "ringing" );
    document.getElementById( "call_decline" ).hidden = ( state !== "ringing" );
    document.getElementById( "call_hang_up" ).hidden = ( state === "ringing" );

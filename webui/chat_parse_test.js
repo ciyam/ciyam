@@ -2152,7 +2152,11 @@ check( "a call's state - the offer joined once every part is there, then its ans
  cp.call_states( call_seen( "maya", call_offer.slice( 0, 2 ) ), "admin", "maya", 1794000010 )[ "0a1b2c3d" ].offer,
  cp.call_states( call_seen( "maya", call_offer ), "admin", "maya", 1794000010 )[ "0a1b2c3d" ].offer === call_data,
  cp.call_states( call_seen( "maya", call_offer ).concat( call_seen( "admin", call_answer ) ), "admin", "maya", 1794000010 )[ "0a1b2c3d" ] ],
- [ "", true, { id: "0a1b2c3d", caller: "maya", at: 1794000000, offer: call_data, answer: "BBBB", ended: false, declined: false } ] );
+ [ "", true, { id: "0a1b2c3d", caller: "maya", at: 1794000000, offer: call_data, answer: "BBBB", ended: false, declined: false, busy: false } ] );
+check( "- busy, from the one called - not from the caller", [
+ cp.call_states( call_seen( "maya", call_offer ).concat( call_seen( "admin", cp.call_messages( "0a1b2c3d", 1794000002, "busy", "" ) ) ), "admin",
+ "maya", 1794000010 )[ "0a1b2c3d" ].busy, cp.call_states( call_seen( "maya", call_offer.concat( cp.call_messages( "0a1b2c3d", 1794000002, "busy",
+ "" ) ) ), "admin", "maya", 1794000010 )[ "0a1b2c3d" ].busy ], [ true, false ] );
 check( "- the parts in any order, and one sent twice counted once", cp.call_states( call_seen( "maya", [ call_offer[ 2 ], call_offer[ 0 ],
  call_offer[ 0 ], call_offer[ 1 ] ] ), "admin", "maya", 1794000010 )[ "0a1b2c3d" ].offer === call_data, true );
 check( "- an answer, or a decline, from the caller themself is not taken; an end from either is", ( function( )
@@ -2171,6 +2175,12 @@ check( "- an answer or end with no offer seen is not a call; nor anyone's but th
  [ 0, 0, 0 ] );
 check( "a call's length", [ cp.call_elapsed_text( 0 ), cp.call_elapsed_text( 65 ), cp.call_elapsed_text( 3725 ), cp.call_elapsed_text( -4 ) ],
  [ "0:00", "1:05", "1:02:05", "0:00" ] );
+check( "a call's lines in the conversation - the call, a decline, busy, its end with how long; the rest not shown", [ call_offer[ 0 ],
+ call_offer[ 1 ], call_answer[ 0 ], "☎call 0a1b2c3d 1794000000 decline 1/1", "☎call 0a1b2c3d 1794000000 busy 1/1",
+ "☎call 0a1b2c3d 1794000000 end 1/1 185", "☎call 0a1b2c3d 1794000000 end 1/1", "hello" ].map( function( text )
+{
+   return cp.call_line_text( cp.parse_call_message( text ) );
+} ), [ "Call", "", "", "Declined the call", "Was on another call", "Call ended · 3:05", "Call not answered", "" ] );
 
 console.log( "" );
 console.log( failures === 0 ? "All checks passed." : ( failures + " check(s) FAILED." ) );

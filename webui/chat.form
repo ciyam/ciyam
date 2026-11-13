@@ -188,6 +188,7 @@ http://www.opensource.org/licenses/mit-license.php.
             <div class="chat-call-bar">
                <span class="chat-call-status" id="call_status"></span>
                <span class="chat-call-time" id="call_time"></span>
+               <button type="button" class="chat-call-link" id="call_open" onclick="do_open_call_room( )" hidden>Open the conversation</button>
                <span class="chat-call-actions">
                   <button type="button" class="chat-call-btn is-accept" id="call_accept" onclick="do_accept_call( )">Accept</button>
                   <button type="button" class="chat-call-btn is-end" id="call_decline" onclick="do_decline_call( )">Decline</button>

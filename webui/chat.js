@@ -1670,6 +1670,9 @@ function on_rooms_response( response )
    {
       g_rooms = derive_room_list( result.rooms );
 
+      // NOTE: A call's messages are not counted as new ("chat_call.js").
+      g_rooms.forEach( call_unread_adjust );
+
       // NOTE: A new invitation arrives as a message in the Admin room, which moves its total
       // in this listing - so it is only read again when that changes, not on every poll.
       var reserved = find_room( c_reserved_room_no );
@@ -7889,6 +7892,10 @@ async function poll_once( )
       g_in_poll = false;
 
       await listing;
+
+      // NOTE: A call rings in a tab out of sight too - said by a notification ("chat_call.js").
+      if( !poll_ended( ) )
+         await call_watch( );
 
       return;
    }
