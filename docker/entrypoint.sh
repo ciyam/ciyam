@@ -165,36 +165,63 @@ fi
 # ("use-auth-secret"): the node is to hand a signed-in person short-lived credentials made with the same secret, so no
 # password is kept for anyone. "CIYAM_TURN_EXTERNAL_IP" - the address phones reach this node by, needed behind NAT (a
 # container always is); "CIYAM_TURN_REALM" - its name. Peers on private networks are refused, so the relay cannot be used
-# to reach anything on the host's own network. Plain TURN on 3478 for now - TLS (5349) once the node has a certificate.
+# to reach anything on the host's own network - though not the node's own address, which is the peer when both use it. Plain
+# TURN on 3478 for now - TLS (5349) once the node has a certificate; the media itself is encrypted end to end (DTLS-SRTP).
+# A few allocations a person and forty in all, as the forty-one ports allow; only UDP relayed, as WebRTC uses; run as its own
+# user. (Reviewed 2026-11-15.)
 if [ -n "${CIYAM_TURN_SECRET:-}" ]; then
-   {
-      echo "listening-port=3478"
-      echo "min-port=49160"
-      echo "max-port=49200"
-      echo "fingerprint"
-      echo "use-auth-secret"
-      echo "static-auth-secret=$CIYAM_TURN_SECRET"
-      echo "realm=${CIYAM_TURN_REALM:-ciyam}"
-      if [ -n "${CIYAM_TURN_EXTERNAL_IP:-}" ]; then
-         echo "external-ip=$CIYAM_TURN_EXTERNAL_IP"
+   # NOTE: Letters and digits only - a line break would add lines to the file, and spaces are trimmed ("openssl rand -hex 32").
+   if ! printf '%s' "$CIYAM_TURN_SECRET" | grep -qE '^[A-Za-z0-9]{16,}$'; then
+      echo "Error: CIYAM_TURN_SECRET is to be at least 16 letters and digits (openssl rand -hex 32) - the call relay is not started."
+   else
+      # NOTE: "public/private" - the address phones reach, and this container's own that it stands for.
+      private_ip=$(hostname -i | awk '{ print $1 }')
+
+      (
+         umask 077
+
+         {
+            echo "listening-port=3478"
+            echo "min-port=49160"
+            echo "max-port=49200"
+            echo "fingerprint"
+            echo "use-auth-secret"
+            echo "static-auth-secret=$CIYAM_TURN_SECRET"
+            echo "realm=${CIYAM_TURN_REALM:-ciyam}"
+            if [ -n "${CIYAM_TURN_EXTERNAL_IP:-}" ]; then
+               echo "external-ip=$CIYAM_TURN_EXTERNAL_IP${private_ip:+/$private_ip}"
+            fi
+            echo "user-quota=4"
+            echo "total-quota=40"
+            echo "stale-nonce=600"
+            echo "no-tcp-relay"
+            echo "no-tls"
+            echo "no-dtls"
+            echo "no-cli"
+            echo "no-software-attribute"
+            echo "no-multicast-peers"
+            for range in 0.0.0.0-0.255.255.255 10.0.0.0-10.255.255.255 100.64.0.0-100.127.255.255 127.0.0.0-127.255.255.255 \
+             169.254.0.0-169.254.255.255 172.16.0.0-172.31.255.255 192.0.0.0-192.0.0.255 192.168.0.0-192.168.255.255 \
+             198.18.0.0-198.19.255.255 240.0.0.0-255.255.255.255 ::1 ::ffff:0.0.0.0-::ffff:255.255.255.255 \
+             64:ff9b::-64:ff9b::ffff:ffff fc00::-fdff:ffff:ffff:ffff:ffff:ffff:ffff:ffff fe80::-febf:ffff:ffff:ffff:ffff:ffff:ffff:ffff; do
+               echo "denied-peer-ip=$range"
+            done
+            echo "proc-user=turnserver"
+            echo "proc-group=turnserver"
+            echo "simple-log"
+            echo "log-file=/var/log/turnserver.log"
+         } > /etc/turnserver.conf
+      )
+
+      touch /var/log/turnserver.log
+      chown turnserver:turnserver /var/log/turnserver.log
+
+      if turnserver -c /etc/turnserver.conf --daemon; then
+         echo "(call relay: coturn on 3478${CIYAM_TURN_EXTERNAL_IP:+, reached at $CIYAM_TURN_EXTERNAL_IP})"
+      else
+         echo "Error: the call relay (coturn) did not start - see /var/log/turnserver.log."
       fi
-      echo "no-tls"
-      echo "no-dtls"
-      echo "no-cli"
-      echo "no-multicast-peers"
-      for range in 0.0.0.0-0.255.255.255 10.0.0.0-10.255.255.255 100.64.0.0-100.127.255.255 127.0.0.0-127.255.255.255 \
-       169.254.0.0-169.254.255.255 172.16.0.0-172.31.255.255 192.168.0.0-192.168.255.255; do
-         echo "denied-peer-ip=$range"
-      done
-      echo "simple-log"
-      echo "log-file=/var/log/turnserver.log"
-   } > /etc/turnserver.conf
-
-   chmod 600 /etc/turnserver.conf
-
-   turnserver -c /etc/turnserver.conf --daemon
-
-   echo "(call relay: coturn on 3478${CIYAM_TURN_EXTERNAL_IP:+, reached at $CIYAM_TURN_EXTERNAL_IP})"
+   fi
 fi
 
 # NOTE: A crash leaves a core dump where the host keeps them - Docker Desktop's WSL saves them under Windows'
