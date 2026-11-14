@@ -1596,7 +1596,15 @@ function load_rooms( )
    {
       if( resumed !== null )
       {
-         on_rooms_response( resumed );
+         // NOTE: Caught and logged, as a request's answer is ("watch_timeouts( )") - found by review.
+         try
+         {
+            on_rooms_response( resumed );
+         }
+         catch( e )
+         {
+            console.error( "Error fetching data: ", e );
+         }
 
          return Promise.resolve( );
       }

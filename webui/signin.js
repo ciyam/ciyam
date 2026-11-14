@@ -729,6 +729,8 @@ function signin_keep_session( )
 
 function signin_forget_session( )
 {
+   g_signin_resumed = null;
+
    try
    {
       sessionStorage.removeItem( c_tab_session_key );
