@@ -208,6 +208,9 @@ check( "- guarded keys read as keys; a bad guard unreadable", [ ap.keys_state( f
 
 check( "the last step of joining - what keys are for, then set up", [ ap.keys_step_text( false ).title, ap.keys_step_text( true ).title ],
  [ "Last step: your keys", "Your keys are set up" ] );
+check( "- set up from the administrator: no words to keep, the administrator can make them again", [ /twelve words/.test(
+ ap.keys_step_text( true, true ).text ), /administrator can make them again/.test( ap.keys_step_text( true, true ).text ),
+ /twelve words/.test( ap.keys_step_text( true, false ).text ) ], [ false, true, true ] );
 
 var draws = [ 0.99, 0, 0.5 ];
 

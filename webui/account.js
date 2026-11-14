@@ -1629,7 +1629,7 @@ function onboard_draw( part )
       return;
 
    var here = ( part === "keys_here" );
-   var said = keys_step_text( here );
+   var said = keys_step_text( here, here && g_keys.given );
 
    document.getElementById( "keys_step_title" ).textContent = said.title;
    document.getElementById( "keys_step_lede" ).textContent = said.text;

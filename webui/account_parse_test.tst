@@ -83,6 +83,7 @@ ok   - keys in an older form, as none - set up again
 ok   - an error, or not locked keys, unreadable
 ok   - guarded keys read as keys; a bad guard unreadable
 ok   the last step of joining - what keys are for, then set up
+ok   - set up from the administrator: no words to keep, the administrator can make them again
 ok   words to check back - three different, in order
 ok   a public key as pasted - capitals, spaces, broken over lines
 ok   a contact code - the name as hex, an "I", padded to 25, then the key

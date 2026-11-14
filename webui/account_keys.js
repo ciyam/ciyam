@@ -60,7 +60,7 @@ var g_keys_render = 0;
 function fresh_keys( )
 {
    return { samples: [ ], pops: 0, entropy: "", words: [ ], checking: [ ], right: 0, node: "", access: "", rounds: 0,
-    primary: "", secondary: "", contacts: { }, rooms: { }, people: "", own: "", entering: "", asked_from: "" };
+    primary: "", secondary: "", contacts: { }, rooms: { }, people: "", own: "", entering: "", asked_from: "", given: false };
 }
 
 function keys_load_script( src )
@@ -1259,6 +1259,9 @@ async function keys_take_given( entropy )
    }
 
    keys_keep_here( access );
+
+   // NOTE: From the administrator - the last step of joining says so ("keys_step_text( )").
+   g_keys.given = true;
 
    await keys_show_here( access, lede, false );
 }

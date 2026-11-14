@@ -521,9 +521,14 @@ function room_key_rows( rooms, names )
 }
 
 // NOTE: Keys as the last step of joining (Damon, 2026-10-28) - after "Write these down", in the same card: what they are for, then
-// Create keys or Skip; once set up ("have"), on to Home. Skipped, My account and Home say they need setting up until they are.
-function keys_step_text( have )
+// Your keys' own choices or Skip (2026-11-15); once set up ("have"), on to Home - "given", by the administrator, who has no words to
+// keep (found by review). Skipped, My account and Home say they need setting up until they are.
+function keys_step_text( have, given )
 {
+   if( have && given )
+      return { title: "Your keys are set up", text: "People can now send you encrypted messages and room keys. If you lose them, your"
+       + " administrator can make them again." };
+
    if( have )
       return { title: "Your keys are set up", text: "People can now send you encrypted messages and room keys. Keep your twelve words"
        + " safe - they are the only way to get your keys back." };
