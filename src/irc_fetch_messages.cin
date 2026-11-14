@@ -31,6 +31,7 @@ SESSION=$3
 ENTRANCE_ROOM=0000000
 RESERVED_ROOM=0000001
 
+IS_PEEK=
 SKIP_EDITS=
 IS_WEB_SESSION=
 
@@ -45,10 +46,19 @@ FIRST=@substr:0,1:$ROOM
 
 ; NOTE: Prefix "ROOM"
 ; with a "~" in order
-; skip any "edits".
+; to skip "edits".
 FIRST=@substr:0,1:$ROOM
    @ifeq "$FIRST" "~"
    SKIP_EDITS=1
+   ROOM=@substr:1:$ROOM
+   @endif
+
+; NOTE: Prefix "ROOM"
+; with a "?" in order
+; to "peek".
+FIRST=@substr:0,1:$ROOM
+   @ifeq "$FIRST" "?"
+   IS_PEEK=1
    ROOM=@substr:1:$ROOM
    @endif
 
@@ -371,7 +381,9 @@ LAST_UNIQUE=
          MSG_AUTHOR=!$MSG_AUTHOR
          NEXT_MESSAGE=$MSG_UNIQUE $MSG_AUTHOR $MSG_BASE64
          @else
-         LAST_UNIQUE=@strlit:$MSG_UNIQUE
+            @ifndef $IS_PEEK
+            LAST_UNIQUE=@strlit:$MSG_UNIQUE
+            @endif
          @endif
 
       MSG_PREFIX=@substr:0,$PREFIX_LENGTH_ENCODED:$MSG_BASE64
