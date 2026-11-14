@@ -1668,7 +1668,8 @@ async function load_member_home( )
    if( ciyam.access !== asked_for )
       return;
 
-   g_lobby = { at: Date.now( ), access: asked_for, answer: answer };
+   // NOTE: Not one that failed - the Overview asks again for itself (found by review).
+   g_lobby = is_error_response( answer ) ? null : { at: Date.now( ), access: asked_for, answer: answer };
 
    // NOTE: The chat not turned on - the Chat tile says so, rather than "Nothing new" (Ian, 2026-10-13).
    g_chat_off = irc_unavailable( answer );
@@ -1902,17 +1903,17 @@ function open_app_by_key( key, hash, event )
    apps_go( key, hash || "", event );
 }
 
-// NOTE: "Home node · CIYAM 0.0.0 · up 11 minutes" - kept up to date with the minute, as Uptime is (Ian, 2026-10-13: it stayed
-// as it was at sign in).
-// NOTE: "/uptime" - one read for the node's line and the Overview when they ask together.
-function read_uptime( )
+// NOTE: "/uptime" - one read for the node's line and the Overview when they ask together; "fresh" - asked again whatever.
+function read_uptime( fresh )
 {
-   if( ( g_uptime.read === null ) || ( Date.now( ) - g_uptime.at > c_recent_ms ) )
+   if( fresh || ( g_uptime.read === null ) || ( Date.now( ) - g_uptime.at > c_recent_ms ) )
       g_uptime = { at: Date.now( ), read: fetch_text( "/uptime" ) };
 
    return g_uptime.read;
 }
 
+// NOTE: "Home node · CIYAM 0.0.0 · up 11 minutes" - kept up to date with the minute, as Uptime is (Ian, 2026-10-13: it stayed
+// as it was at sign in).
 async function refresh_node_line( )
 {
    var line = node_line( g_system.version, uptime_words( await read_uptime( ) ) );
@@ -2122,16 +2123,17 @@ function draw_log( element, lines )
    } );
 }
 
-async function load_overview( )
+// NOTE: "fresh" - Refresh: everything asked again, nothing of the last few seconds used (found by review).
+async function load_overview( fresh )
 {
    if( !ciyam.is_admin )
       return;
 
    var asked_for = ciyam.access;
 
-   await read_system( true );
+   await read_system( !fresh );
 
-   var uptime = uptime_words( await read_uptime( ) ) || "-";
+   var uptime = uptime_words( await read_uptime( fresh ) ) || "-";
 
    show_connection( );
 
@@ -2192,7 +2194,7 @@ async function load_overview( )
 
    var lobby = g_lobby;
 
-   var listing = ( ( lobby !== null ) && ( lobby.access === asked_for ) && ( Date.now( ) - lobby.at < c_lobby_reuse_ms ) )
+   var listing = ( !fresh && ( lobby !== null ) && ( lobby.access === asked_for ) && ( Date.now( ) - lobby.at < c_lobby_reuse_ms ) )
     ? lobby.answer : await request( function( done ) { return ciyam.fetch_messages( c_lobby_room, "", done ); } );
 
    if( ciyam.access !== asked_for )
@@ -2994,8 +2996,8 @@ function install_admin( )
    document.getElementById( "problems_show" ).addEventListener( "click", show_problems_in_logs );
    document.getElementById( "log_problems_clear" ).addEventListener( "click", function( ) { g_log_problems_only = false; show_log( ); } );
 
-   document.getElementById( "overview_refresh" ).addEventListener( "click", load_overview );
-   document.getElementById( "health_refresh" ).addEventListener( "click", load_overview );
+   document.getElementById( "overview_refresh" ).addEventListener( "click", function( ) { load_overview( true ); } );
+   document.getElementById( "health_refresh" ).addEventListener( "click", function( ) { load_overview( true ); } );
 
    document.getElementById( "alerts_server_form" ).addEventListener( "submit", save_alerts_server );
    document.getElementById( "alerts_test" ).addEventListener( "click", send_test_alert );
@@ -4037,6 +4039,16 @@ function install_people( )
 function forget_admin( )
 {
    forget_people( );
+
+   g_lobby = null;
+
+   try
+   {
+      sessionStorage.removeItem( c_node_flags_key );
+   }
+   catch( e )
+   {
+   }
 
    forget_title( );
 
