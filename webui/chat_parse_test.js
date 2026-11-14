@@ -2187,10 +2187,11 @@ check( "a call's length", [ cp.call_elapsed_text( 0 ), cp.call_elapsed_text( 65 
  [ "0:00", "1:05", "1:02:05", "0:00" ] );
 check( "a call's lines in the conversation - the call, a decline, busy, its end with how long; the rest not shown", [ call_offer[ 0 ],
  call_offer[ 1 ], call_answer[ 0 ], "☎call 0a1b2c3d 1794000000 admin decline 1/1", "☎call 0a1b2c3d 1794000000 admin busy 1/1",
- "☎call 0a1b2c3d 1794000000 maya end 1/1 185", "☎call 0a1b2c3d 1794000000 maya end 1/1", "hello" ].map( function( text )
+ "☎call 0a1b2c3d 1794000000 maya end 1/1 185", "☎call 0a1b2c3d 1794000000 maya end 1/1", "☎call 0a1b2c3d 1794000000 maya end 1/1 failed",
+ "hello" ].map( function( text )
 {
    return cp.call_line_text( cp.parse_call_message( text ) );
-} ), [ "Call", "", "", "Declined the call", "Was on another call", "Call ended · 3:05", "Call not answered", "" ] );
+} ), [ "Call", "", "", "Declined the call", "Was on another call", "Call ended · 3:05", "Call not answered", "Call couldn't connect", "" ] );
 
 console.log( "" );
 console.log( failures === 0 ? "All checks passed." : ( failures + " check(s) FAILED." ) );

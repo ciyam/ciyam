@@ -392,7 +392,7 @@ function call_apply( room, other, calls )
          {
             g_call_handled[ call.id ] = true;
 
-            call_send( room, other, call.id, "busy", "" );
+            call_send( room, other, call.id, "busy", "" ).catch( function( ) { } );
          }
       }
    } );
@@ -438,7 +438,9 @@ function call_connection( )
          // other closing their page was put down to the network).
          var connected = g_call.started !== 0;
 
-         call_send_quietly( "end" );
+         // NOTE: Both sides see it fail - the caller alone says so, so the conversation has one line for it, not two (found by review).
+         if( g_call.role === "caller" )
+            call_send_quietly( "end", true );
 
          call_end_local( connected ? "The call was lost." : "The call couldn't connect - for now, calls only work between people on the"
           + " same network." );
@@ -647,7 +649,7 @@ async function do_accept_call( )
    {
       if( g_call === call )
       {
-         call_send_quietly( "end" );
+         call_send_quietly( "end", true );
 
          call_end_local( "The call couldn't be answered: " + ( e && e.message ? e.message : "the camera or microphone was refused" ) + "." );
       }
@@ -671,7 +673,7 @@ async function call_take_answer( answer )
    {
       if( g_call === call )
       {
-         call_send_quietly( "end" );
+         call_send_quietly( "end", true );
 
          call_end_local( "The call couldn't connect: " + ( e && e.message ? e.message : "its answer could not be read" ) + "." );
       }
@@ -725,7 +727,8 @@ function do_hang_up_call( )
 }
 
 // NOTE: Sent for the call as it is now, nothing waited for - the other side ends its own if it never arrives, when the connection fails.
-function call_send_quietly( kind )
+// "failed" - an end for a call that never connected ("c_call_end_failed").
+function call_send_quietly( kind, failed )
 {
    if( ( g_call === null ) || g_signing_out )
       return;
@@ -733,7 +736,10 @@ function call_send_quietly( kind )
    // NOTE: An end says how long the call lasted - its line in the conversation ("call_line_text( )").
    var lasted = ( ( kind === "end" ) && ( g_call.started !== 0 ) ) ? String( Math.round( ( Date.now( ) - g_call.started ) / 1000 ) ) : "";
 
-   call_send( g_call.room, g_call.other, g_call.id, kind, lasted );
+   if( ( kind === "end" ) && ( lasted === "" ) && failed )
+      lasted = c_call_end_failed;
+
+   call_send( g_call.room, g_call.other, g_call.id, kind, lasted ).catch( function( ) { } );
 }
 
 // NOTE: The call taken down here - the connection closed, the camera and microphone let go - and "said", if anything, said.
@@ -775,6 +781,9 @@ function call_end_local( said )
    document.getElementById( "call_remote" ).srcObject = null;
    document.getElementById( "call_local" ).srcObject = null;
    document.getElementById( "call_panel" ).hidden = true;
+
+   // NOTE: The next call starts with its microphone and camera on - so do the buttons (found by review: a caller's stayed "Unmute").
+   call_reset_controls( );
 
    if( said )
       show_alert( said, "is-info" );
@@ -894,16 +903,19 @@ function call_show( status )
       document.getElementById( "call_time" ).textContent = "";
 
    if( state === "ringing" )
-   {
-      var mute = document.getElementById( "call_mute" );
-      var camera = document.getElementById( "call_camera" );
+      call_reset_controls( );
+}
 
-      mute.setAttribute( "aria-pressed", "false" );
-      mute.textContent = "Mute";
-      camera.setAttribute( "aria-pressed", "false" );
-      camera.textContent = "Camera off";
-      camera.hidden = true;
-   }
+function call_reset_controls( )
+{
+   var mute = document.getElementById( "call_mute" );
+   var camera = document.getElementById( "call_camera" );
+
+   mute.setAttribute( "aria-pressed", "false" );
+   mute.textContent = "Mute";
+   camera.setAttribute( "aria-pressed", "false" );
+   camera.textContent = "Camera off";
+   camera.hidden = true;
 }
 
 function call_show_time( )

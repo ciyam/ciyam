@@ -5060,6 +5060,9 @@ const c_call_most_parts = 12;
 // NOTE: How long a call's messages count - an offer older than this is not rung, nor an answer taken.
 const c_call_fresh_seconds = 90;
 
+// NOTE: An end's data for a call that never connected - drawn as such, not as a call not answered (found by review, 2026-11-14).
+const c_call_end_failed = "failed";
+
 const c_call_pattern = /^☎call ([0-9a-f]{8}) ([0-9]{10}) ([-a-z0-9]{3,12}) (offer|answer|end|decline|busy) ([0-9]{1,2})\/([0-9]{1,2})(?: ([A-Za-z0-9+\/=]+))?$/;
 
 // NOTE: The texts to seal and send, in order - "from" the one sending them.
@@ -5195,7 +5198,12 @@ function call_line_text( call )
       return "Was on another call";
 
    if( call.kind === "end" )
+   {
+      if( call.data === c_call_end_failed )
+         return "Call couldn't connect";
+
       return /^[0-9]+$/.test( call.data ) ? "Call ended · " + call_elapsed_text( parseInt( call.data, 10 ) ) : "Call not answered";
+   }
 
    return "";
 }
@@ -5218,6 +5226,7 @@ if( typeof module !== "undefined" )
    module.exports = {
       c_call_chunk_chars: c_call_chunk_chars,
       c_call_fresh_seconds: c_call_fresh_seconds,
+      c_call_end_failed: c_call_end_failed,
       call_messages: call_messages,
       parse_call_message: parse_call_message,
       is_call_message: is_call_message,
