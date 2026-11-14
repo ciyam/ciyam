@@ -1933,15 +1933,16 @@ var g_owner_key_unopened = { };
 // later). Not the room's own messages, sealed with its key, which the two's secret never opens (found by review, 2026-11-06).
 async function chat_dm_opened( dm_room, sender, secret )
 {
-   var result = await chat_room_read_quietly( dm_room, true );
+   var result = await chat_room_read_quietly( dm_room );
 
    return ( result === null ) ? null : await chat_sealed_opened( result.messages, sender, secret );
 }
 
-// NOTE: A room read quietly from the start, as "parse_fetch_response( )" gives it - or null if it could not be read. "peek" - read
-// without moving this person's read point (Ian's "extra=PEEK", 2026-11-14), when its members' read points and key ids ("ENTIRE")
-// are not wanted: a read for a room key's notes had marked a conversation read before the person saw it (found 2026-11-13).
-async function chat_room_read_quietly( room, peek )
+// NOTE: A room read quietly from the start, as "parse_fetch_response( )" gives it - or null if it could not be read. Read without
+// moving this person's read point - "from=1", Ian's peek that goes with any "extra" (2026-11-14) - and with its members' read points
+// and key ids ("ENTIRE"): a read for a room key's notes had marked a conversation read before the person saw it (found 2026-11-13),
+// and so had the owner's look at who holds a room's key.
+async function chat_room_read_quietly( room )
 {
    var response = null;
 
@@ -1950,7 +1951,7 @@ async function chat_room_read_quietly( room, peek )
 
    var reading = serialised( function( )
    {
-      return ciyam.fetch_messages( room, "from=0;extra=" + ( peek ? "PEEK" : "ENTIRE" ), function( text ) { response = String( text ); } );
+      return ciyam.fetch_messages( room, "from=1;extra=ENTIRE", function( text ) { response = String( text ); } );
    } );
 
    g_in_poll = false;
@@ -2466,7 +2467,7 @@ async function chat_owner_send_keys( quiet, invited )
 
          // NOTE: The reserved room read for the notes to them and their receipt - once for everyone ("c_key_notes_room").
          if( notes === null )
-            notes = await chat_room_read_quietly( c_key_notes_room, true );
+            notes = await chat_room_read_quietly( c_key_notes_room );
 
          if( ( read !== g_chat_keys_read ) || ( g_room !== room ) || ( chat_room_key( room ) !== key ) )
             return "";
@@ -2583,7 +2584,7 @@ async function chat_owner_send_keys_away( )
    try
    {
       // NOTE: The notes and receipts for all of them in one read.
-      var notes = await chat_room_read_quietly( c_key_notes_room, true );
+      var notes = await chat_room_read_quietly( c_key_notes_room );
 
       if( notes === null )
          return;
