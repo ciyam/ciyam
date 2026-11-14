@@ -402,7 +402,8 @@ h2[tabindex="-1"]:focus
 }
 
 /* NOTE: Your keys' card in the last step of joining - its parts, without a card of its own inside the step's, and without its
-   first part (Create keys and Skip are the step's) or its last (the step says they are set up). */
+   last part (the step says they are set up). Its first, the choices, is shown (2026-11-15) - the step had offered only words of
+   their own. */
 .account-keys-step .account-card
 {
    padding: 0;
@@ -411,7 +412,6 @@ h2[tabindex="-1"]:focus
    box-shadow: none;
 }
 
-.account-keys-step #keys_none,
 .account-keys-step #keys_here
 {
    display: none;

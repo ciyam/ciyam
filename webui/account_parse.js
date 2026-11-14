@@ -529,7 +529,7 @@ function keys_step_text( have )
        + " safe - they are the only way to get your keys back." };
 
    return { title: "Last step: your keys", text: "Your keys let people send you encrypted messages and room keys that only you can"
-    + " read. They come from twelve words you write down, and take a minute. You can skip this and set them up later on My account." };
+    + " read. You can skip this and set them up later on My account." };
 }
 
 // NOTE: Your keys to another device by Ian's exchange (2026-10-26; Damon, 2026-11-05 - in place of an address that carried the

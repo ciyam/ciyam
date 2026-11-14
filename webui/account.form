@@ -152,8 +152,8 @@ http://www.opensource.org/licenses/mit-license.php.
 
 <!-- ================================================================ your keys, the last step -->
 <!-- NOTE: Keys as the last step of joining (Damon, 2026-10-28: in the same card as making the account, not My account) - Your keys'
-     card is brought in to "keys_step_host" for it ("do_written_next( )"), its own first part and last left out for Create keys and
-     Skip, then Go to Home. -->
+     card is brought in to "keys_step_host" for it ("do_written_next( )"), with its own choices - the administrator's first, then
+     words of their own, as on My account (Damon, 2026-11-15) - and Skip; its last part left out for Go to Home. -->
 <div class="chat-signin" id="keys_step_view" hidden>
    <div class="chat-signin-form">
       <div class="chat-brand">
@@ -169,7 +169,6 @@ http://www.opensource.org/licenses/mit-license.php.
       <div class="account-keys-step" id="keys_step_host"></div>
 
       <div class="chat-signin-actions" id="keys_step_choose">
-         <button type="button" class="chat-btn chat-btn--primary" id="keys_step_create" onclick="keys_start( )" disabled>Create keys</button>
          <button type="button" class="chat-btn chat-signin-setup" id="keys_step_skip" onclick="do_keys_step_end( )">Skip</button>
       </div>
       <div class="chat-signin-actions" id="keys_step_done" hidden>

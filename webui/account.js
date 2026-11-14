@@ -1634,9 +1634,8 @@ function onboard_draw( part )
    document.getElementById( "keys_step_title" ).textContent = said.title;
    document.getElementById( "keys_step_lede" ).textContent = said.text;
 
-   // NOTE: Create keys and Skip until the words are being made - the card's own buttons then - and Go to Home once saved.
+   // NOTE: Skip beside the card's choices, until one is taken - the card's own buttons then - and Go to Home once saved.
    document.getElementById( "keys_step_choose" ).hidden = !none && ( part !== "keys_loading" );
-   document.getElementById( "keys_step_create" ).disabled = !none;
    document.getElementById( "keys_step_done" ).hidden = !here;
 }
 
