@@ -176,7 +176,9 @@ async function call_send( room, other, id, kind, data )
    return true;
 }
 
-// NOTE: A room's messages since "since" (Unix seconds), read quietly - or null if it could not be read.
+// NOTE: A room's messages since "since" (Unix seconds), read quietly - or null if it could not be read. Read without moving the
+// person's read point (Ian's "extra=PEEK", 2026-11-14): otherwise looking for a call marked the conversation read before they saw it
+// (found by review, 2026-11-14).
 async function call_read_recent( room, since )
 {
    var response = null;
@@ -185,7 +187,7 @@ async function call_read_recent( room, since )
 
    var reading = serialised( function( )
    {
-      return ciyam.fetch_messages( room, "from=" + since + ";extra=ENTIRE", function( text ) { response = String( text ); } );
+      return ciyam.fetch_messages( room, "from=" + since + ";extra=PEEK", function( text ) { response = String( text ); } );
    } );
 
    g_in_poll = false;
