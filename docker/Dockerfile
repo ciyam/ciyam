@@ -163,6 +163,14 @@ RUN set -e; \
 # 12021 CIYAM peer protocol, 13031 web session (CWS) and static files
 EXPOSE 12021 13031
 
+# NOTE: coturn, the relay for calls between networks (2026-11-15) - a call's media goes through it when the two browsers
+# cannot reach each other directly. Started only when "CIYAM_TURN_SECRET" is given ("entrypoint.sh"). Its own layer, here,
+# so adding it kept the cached build of everything above.
+RUN apt-get update && apt-get install -y --no-install-recommends coturn && rm -rf /var/lib/apt/lists/*
+
+# 3478 TURN (UDP and TCP), and the UDP ports it relays a call's media through
+EXPOSE 3478/udp 3478/tcp 49160-49200/udp
+
 # NOTE: No VOLUME is declared deliberately. A "docker restart" keeps the container's
 # filesystem and therefore the accounts; a "docker rm" followed by "docker run" starts
 # clean and bootstraps a new PIN. Persisting only ".files" would leave server state

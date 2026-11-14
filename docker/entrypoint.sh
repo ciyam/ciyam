@@ -161,6 +161,42 @@ else
    ) &
 fi
 
+# NOTE: The relay for calls between networks (coturn, 2026-11-15) - only with "CIYAM_TURN_SECRET". Its shared secret
+# ("use-auth-secret"): the node is to hand a signed-in person short-lived credentials made with the same secret, so no
+# password is kept for anyone. "CIYAM_TURN_EXTERNAL_IP" - the address phones reach this node by, needed behind NAT (a
+# container always is); "CIYAM_TURN_REALM" - its name. Peers on private networks are refused, so the relay cannot be used
+# to reach anything on the host's own network. Plain TURN on 3478 for now - TLS (5349) once the node has a certificate.
+if [ -n "${CIYAM_TURN_SECRET:-}" ]; then
+   {
+      echo "listening-port=3478"
+      echo "min-port=49160"
+      echo "max-port=49200"
+      echo "fingerprint"
+      echo "use-auth-secret"
+      echo "static-auth-secret=$CIYAM_TURN_SECRET"
+      echo "realm=${CIYAM_TURN_REALM:-ciyam}"
+      if [ -n "${CIYAM_TURN_EXTERNAL_IP:-}" ]; then
+         echo "external-ip=$CIYAM_TURN_EXTERNAL_IP"
+      fi
+      echo "no-tls"
+      echo "no-dtls"
+      echo "no-cli"
+      echo "no-multicast-peers"
+      for range in 0.0.0.0-0.255.255.255 10.0.0.0-10.255.255.255 100.64.0.0-100.127.255.255 127.0.0.0-127.255.255.255 \
+       169.254.0.0-169.254.255.255 172.16.0.0-172.31.255.255 192.168.0.0-192.168.255.255; do
+         echo "denied-peer-ip=$range"
+      done
+      echo "simple-log"
+      echo "log-file=/var/log/turnserver.log"
+   } > /etc/turnserver.conf
+
+   chmod 600 /etc/turnserver.conf
+
+   turnserver -c /etc/turnserver.conf --daemon
+
+   echo "(call relay: coturn on 3478${CIYAM_TURN_EXTERNAL_IP:+, reached at $CIYAM_TURN_EXTERNAL_IP})"
+fi
+
 # NOTE: A crash leaves a core dump where the host keeps them - Docker Desktop's WSL saves them under Windows'
 # "%TEMP%\wsl-crashes"; a Linux host by its "core_pattern". Read one with gdb in a "CIYAM_CPP_OPTS=-g" build.
 ulimit -c unlimited 2>/dev/null || true

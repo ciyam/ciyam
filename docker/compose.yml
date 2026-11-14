@@ -16,4 +16,12 @@ services:
     ports:
       - "13031:13031"
       - "12021:12021"
+      # NOTE: The relay for calls between networks - used only with CIYAM_TURN_SECRET below.
+      - "3478:3478/udp"
+      - "3478:3478/tcp"
+      - "49160-49200:49160-49200/udp"
+    # NOTE: Uncomment, with a long random secret, to start coturn; the external address is this node's as phones reach it.
+    # environment:
+    #   CIYAM_TURN_SECRET: "<a long random secret>"
+    #   CIYAM_TURN_EXTERNAL_IP: "<this node's public address>"
     stop_grace_period: 20s
