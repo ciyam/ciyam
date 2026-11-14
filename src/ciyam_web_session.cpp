@@ -4104,9 +4104,10 @@ bool process_cws_request( http_request_type request_type, const string& uri_suff
                                     if( option_parameters.count( c_cws_request_messages_review_options_extra ) )
                                        extra = option_parameters[ c_cws_request_messages_review_options_extra ];
 
-                                    // NOTE: Adds a "?" to the "fetch_room_prefix" if
-                                    // needing the "last read point" to be unchanged.
-                                    if( extra == c_web_session_messages_extra_peek )
+                                    // NOTE: Will add a "?" to the "fetch_room_prefix" if a request flags that
+                                    // the "last read point" should remain unchanged (which can be done either
+                                    // using "from=1" or "extra=PEEK").
+                                    if( ( from == "1" ) || ( extra == c_web_session_messages_extra_peek ) )
                                        fetch_room_prefix += string( 1, c_peek_status );
 
                                     string prefixed_join_room( room );

@@ -141,8 +141,6 @@ constexpr const char* c_request_query_prefix = "&request=";
 
 constexpr const char* c_req_param_host = "Host:";
 
-constexpr const char* c_req_param_if_modified = "If-Modified-Since:";
-
 constexpr const char* c_http_1_1 = "HTTP/1.1";
 
 constexpr const char* c_http_200_OK = "200 OK";
@@ -176,6 +174,8 @@ constexpr const char* c_http_content_disposition_header = "content-disposition";
 
 constexpr const char* c_http_x_request_id_header = "x-request-id";
 constexpr const char* c_http_x_forwarded_for_header = "x-forwarded-for";
+
+constexpr const char* c_http_if_modified_since_header = "if-modified-since";
 
 constexpr const char* c_http_connection_header_info = "Connection: keep-alive";
 
@@ -1550,9 +1550,9 @@ void http_request_handler::on_start( )
 
                   date_time doc_modified( last_modification_time( path + http_document ) );
 
-                  if( header_info.count( c_req_param_if_modified ) )
+                  if( header_info.count( c_http_if_modified_since_header ) )
                   {
-                     string gmt_date_time( header_info[ c_req_param_if_modified ] );
+                     string gmt_date_time( header_info[ c_http_if_modified_since_header ] );
 
                      try
                      {
