@@ -56,6 +56,7 @@ namespace
 #include "ciyam_constants.h"
 
 const char c_omit_edits = '~';
+const char c_peek_status = '?';
 
 const char c_block_prefix = '~';
 
@@ -200,8 +201,8 @@ constexpr const char* c_cws_help_request_output = "quit\n"
  "attach storage <name>\ncreate message <room> [for=<name,>;]text=<text>\ndelete device <ident>\ndelete message <room>\n"
  "delete javascript\ndelete stylesheet\ndelete webcmdlist\ndelete user-keys\nemploy unlock-key <key>\nretain javascript\n"
  "retain stylesheet\nretain webcmdlist\nretain user-keys\nreview users\nreview devices\n"
- "review messages <room> [[from=<unix_time>;]extra={NONE|TIME|KEYID|ENTIRE}]\nreview storages\nreview javascript[s] [<name>]\nreview stylesheet[s] [<name>]\n"
- "review webcmdlist[s] [<name>]\nreview user-keys\nreview storage-modules [<id>/enums|lists|views[/<item_id>]]\n"
+ "review messages <room> [[from=<unix_time>;]extra={NONE|PEEK|TIME|KEYID|ENTIRE}]\nreview storages\nreview javascript[s] [<name>]\n"
+ "review stylesheet[s] [<name>]\nreview webcmdlist[s] [<name>]\nreview user-keys\nreview storage-modules [<id>/enums|lists|views[/<item_id>]]\n"
  "review storage-instances <id>/<cid>[/<key>] [[key=<key>;][num=[-|+]<num>;][path=<path>;][query=<query>;][fields=<fields>]]\n"
  "update user *** password=<password>\nupdate message <room> name=<name>|owner=<user>|posts={ANY|OWN|NONE|REACT}|closes=<unix_time>\n"
  "update storage-instance <id>/<cid>/<key> assigns=<names_and_values>";
@@ -210,7 +211,7 @@ constexpr const char* c_cws_help_request_admin_output = "quit\n"
  "attach storage <name>\ncreate user [secret|nominated=[[!]<pin>:][<username>]]\ncreate message <room> [for=<name,>;]text=<text>\n"
  "create unlock-key [encrypted=<prefix>-<xor_hash>]\ndelete user <pin>\ndelete device <ident>\ndelete message <room>\ndelete javascript\ndelete stylesheet\n"
  "delete webcmdlist\ndelete user-keys\nemploy unlock-key <key>\nretain javascript\nretain stylesheet\nretain webcmdlist\nretain user-keys\nreview logs [<name> [lines=10]]\n"
- "review users\nreview devices\nreview messages <room> [[from=<unix_time>;]extra={NONE|TIME|KEYID|ENTIRE}]\nreview storages\nreview javascript[s] [<name>]\n"
+ "review users\nreview devices\nreview messages <room> [[from=<unix_time>;]extra={NONE|PEEK|TIME|KEYID|ENTIRE}]\nreview storages\nreview javascript[s] [<name>]\n"
  "review stylesheet[s] [<name>]\nreview webcmdlist[s] [<name>]\nreview user-keys\nreview storage-modules [<id>/enums|lists|views[/<item_id>]]\n"
  "review storage-instances <id>/<cid>[/<key>] [[key=<key>;][num=[-|+]<num>;][path=<path>;][query=<query>;][fields=<fields>]]\n"
  "update user <pin> keys={REPLACE|RESTORE}|password=<password>\nupdate message <room> name=<name>|owner=<user>|posts={ANY|OWN|NONE|REACT}|closes=<unix_time>\n"
@@ -230,6 +231,7 @@ constexpr const char* c_web_session_default_message_for = "ALL";
 constexpr const char* c_web_session_special_message_for = "IRC";
 
 constexpr const char* c_web_session_messages_extra_none = "NONE";
+constexpr const char* c_web_session_messages_extra_peek = "PEEK";
 constexpr const char* c_web_session_messages_extra_time = "TIME";
 constexpr const char* c_web_session_messages_extra_keyid = "KEYID";
 constexpr const char* c_web_session_messages_extra_entire = "ENTIRE";
@@ -4081,8 +4083,6 @@ bool process_cws_request( http_request_type request_type, const string& uri_suff
 
                                     string from;
 
-                                    string extra;
-
                                     if( option_parameters.count( c_cws_request_messages_review_options_from ) )
                                        from = option_parameters[ c_cws_request_messages_review_options_from ];
 
@@ -4098,6 +4098,16 @@ bool process_cws_request( http_request_type request_type, const string& uri_suff
 
                                        fetch_room_prefix += string( 1, c_omit_edits );
                                     }
+
+                                    string extra;
+
+                                    if( option_parameters.count( c_cws_request_messages_review_options_extra ) )
+                                       extra = option_parameters[ c_cws_request_messages_review_options_extra ];
+
+                                    // NOTE: Adds a "?" to the "fetch_room_prefix" if
+                                    // needing the "last read point" to be unchanged.
+                                    if( extra == c_web_session_messages_extra_peek )
+                                       fetch_room_prefix += string( 1, c_peek_status );
 
                                     string prefixed_join_room( room );
 

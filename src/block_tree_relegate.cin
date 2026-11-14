@@ -34,6 +34,7 @@ TREE_TAG=$2
    .file_info -recurse -d=-2 $TREE_HASH
    .session_variable @deque "~$OUTPUT"
    @:LOOP
+
    @label NEXT
    .session_variable @deque front
       @ifndef $OUTPUT
@@ -45,17 +46,24 @@ TREE_TAG=$2
    @:NEXT
    NEXT=$OUTPUT
 
-   .regex " ([a-f0-9]{64}) $" "$NEXT"
+   .regex " ([a-f0-9]{64}) " "$NEXT"
+
    .file_relegate $OUTPUT $IDENT
 
-   .session_variable @deque pop_front
+      @ifdef $ERROR
+      .session_variable @deque ""
+      @else
+      .session_variable @deque pop_front
+      @endif
 
    !!@:LOOP
 
    @:END_LOOP
 
-   .file_tag -remove $TREE_TAG
-   .file_relegate $TREE_HASH $IDENT
+      @ifndef $ERROR
+      .file_tag -remove $TREE_TAG
+      .file_relegate $TREE_HASH $IDENT
+      @endif
 
    .session_variable @deque complete
 

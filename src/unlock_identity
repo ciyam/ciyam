@@ -70,6 +70,8 @@ if [ "$1" = "" ] && [ -f .web_access_admin ]; then
  fi
 fi
 
+unlock_skipped=
+
 if [ "$has_called_self" = "" ]; then
  ./ciyam_client -tls -quiet -no_prompt -no_stderr -exec="<unlock_identity.cin \\\"$*\\\""
 
@@ -77,10 +79,19 @@ if [ "$has_called_self" = "" ]; then
   rm -f $tmp_unlock_identity
 
   if [ -f .unlock_skipped ]; then
-   rm .unlock_skipped
+   unlock_skipped=2
    echo "(identity is not currently locked)"
   elif [ ! -f .unlock_failed ]; then
    echo "(unlocked but the web access PIN and password are unchanged)"
   fi
+ elif [ -f .unlock_skipped ]; then
+   unlock_skipped=1
+ fi
+fi
+
+if [ ! "$unlock_skipped" = "" ]; then
+ rm .unlock_skipped
+ if [ ! "$unlock_skipped" = "2" ]; then
+  echo "(identity is not currently locked)"
  fi
 fi
