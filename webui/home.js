@@ -136,9 +136,24 @@ async function fetch_text( path )
    }
 }
 
-async function read_system( )
+// NOTE: How long a read of "/system" or "/uptime" is used again rather than asked anew - Home's opening had read "/system" three
+// times and "/uptime" twice within seconds, each a round trip on a phone (Ian, 2026-11-14, over 4G).
+const c_recent_ms = 5000;
+
+var g_system_at = 0;
+
+var g_uptime = { at: 0, read: null };
+
+// NOTE: "recent" - the last read is used if it is that recent (and was answered).
+async function read_system( recent )
 {
-   g_system = parse_system( await fetch_text( "/system" ) );
+   if( !recent || ( Date.now( ) - g_system_at > c_recent_ms ) )
+   {
+      var text = await fetch_text( "/system" );
+
+      g_system = parse_system( text );
+      g_system_at = ( text !== "" ) ? Date.now( ) : 0;
+   }
 
    var security = security_text( g_system.security );
 
@@ -210,7 +225,8 @@ function clear_ciyam( )
 
 async function after_sign_in( )
 {
-   await read_system( );
+   // NOTE: A session kept for the tab is resumed a moment after "check_node( )" read the node; a sign in typed is not.
+   await read_system( true );
 
    if( g_system.state === "locked" )
    {
@@ -1550,7 +1566,8 @@ async function enter_app( )
 
    set_text( "app_greeting", "Hello, " + name );
 
-   await refresh_node_line( );
+   // NOTE: Not waited for - the line fills in when the node answers.
+   refresh_node_line( );
 
    go( home_section( ciyam.is_admin, window.location.hash ) );
 
@@ -1585,6 +1602,11 @@ var g_starting_messages = [ ];
 var g_starting_total = -1;
 var g_devices = [ ];
 var g_refresh_timer = null;
+
+// NOTE: The lobby's last listing - the Overview's filling is drawn from it, rather than asking again, while it is this recent.
+const c_lobby_reuse_ms = 30000;
+
+var g_lobby = null;
 
 // NOTE: Whether the account's keys are not set up - asked at each look until they are (Damon, 2026-10-28: a reminder in Needs
 // you, keys being skippable as the last step of joining).
@@ -1645,6 +1667,8 @@ async function load_member_home( )
 
    if( ciyam.access !== asked_for )
       return;
+
+   g_lobby = { at: Date.now( ), access: asked_for, answer: answer };
 
    // NOTE: The chat not turned on - the Chat tile says so, rather than "Nothing new" (Ian, 2026-10-13).
    g_chat_off = irc_unavailable( answer );
@@ -1880,9 +1904,18 @@ function open_app_by_key( key, hash, event )
 
 // NOTE: "Home node · CIYAM 0.0.0 · up 11 minutes" - kept up to date with the minute, as Uptime is (Ian, 2026-10-13: it stayed
 // as it was at sign in).
+// NOTE: "/uptime" - one read for the node's line and the Overview when they ask together.
+function read_uptime( )
+{
+   if( ( g_uptime.read === null ) || ( Date.now( ) - g_uptime.at > c_recent_ms ) )
+      g_uptime = { at: Date.now( ), read: fetch_text( "/uptime" ) };
+
+   return g_uptime.read;
+}
+
 async function refresh_node_line( )
 {
-   var line = node_line( g_system.version, uptime_words( await fetch_text( "/uptime" ) ) );
+   var line = node_line( g_system.version, uptime_words( await read_uptime( ) ) );
 
    set_text( "app_node", line );
    set_text( "overview_node", line );
@@ -2000,6 +2033,40 @@ async function ask_node( text )
    return ( is_error_response( response ) || ( String( response ).trim( ) === "[bad]" ) ) ? null : response;
 }
 
+// NOTE: Whether the node is for development, or a demonstration - read only, set as the node starts, so asked once a session and
+// kept for the tab: Home is loaded afresh at each switch from another app (2026-11-14, over 4G). Kept only when both were answered.
+const c_node_flags_key = "home.node_flags";
+
+async function read_node_flags( )
+{
+   try
+   {
+      var kept = JSON.parse( sessionStorage.getItem( c_node_flags_key ) || "null" );
+
+      if( ( kept !== null ) && ( kept.sessid === ciyam.sessid ) )
+         return kept;
+   }
+   catch( e )
+   {
+   }
+
+   var flags = { sessid: ciyam.sessid, devt: parse_flag( await ask_node( c_home_devt_request ) ),
+    demo: parse_flag( await ask_node( c_home_demo_request ) ) };
+
+   if( ( flags.devt !== null ) && ( flags.demo !== null ) )
+   {
+      try
+      {
+         sessionStorage.setItem( c_node_flags_key, JSON.stringify( flags ) );
+      }
+      catch( e )
+      {
+      }
+   }
+
+   return flags;
+}
+
 // NOTE: Whether the node's identity is held encrypted - without it, no unlock keys (Ian, 2026-10-12).
 async function read_secure( )
 {
@@ -2062,16 +2129,17 @@ async function load_overview( )
 
    var asked_for = ciyam.access;
 
-   await read_system( );
+   await read_system( true );
 
-   var uptime = uptime_words( await fetch_text( "/uptime" ) ) || "-";
+   var uptime = uptime_words( await read_uptime( ) ) || "-";
 
    show_connection( );
 
    var secure = await read_secure( );
    var key_count = await read_key_count( );
-   var devt = parse_flag( await ask_node( c_home_devt_request ) );
-   var demo = parse_flag( await ask_node( c_home_demo_request ) );
+   var flags = await read_node_flags( );
+   var devt = flags.devt;
+   var demo = flags.demo;
 
    var users = await request( function( done ) { return ciyam.fetch_users( done ); } );
 
@@ -2103,19 +2171,29 @@ async function load_overview( )
 
    show_key_unlock( server ? last_key_unlock( server ) : null );
 
-   // NOTE: Who is connected, what runs by itself, and where the node listens - allowed admin on any node (Ian, "136d4815").
+   // NOTE: Who is connected, what runs by itself, and where the node listens - allowed admin on any node (Ian, "136d4815"). The
+   // schedule and the ports are Health's alone, so not asked while the Overview is shown (Health asks again when it is opened).
+   var health = ( g_section === "health" );
+
    var sessions = await ask_node( c_home_sessions_request );
-   var schedule = await ask_node( c_home_schedule_request );
-   var listeners = await ask_node( c_home_listeners_request );
+   var schedule = health ? await ask_node( c_home_schedule_request ) : null;
+   var listeners = health ? await ask_node( c_home_listeners_request ) : null;
 
    if( ciyam.access !== asked_for )
       return;
 
    show_sessions( sessions );
-   show_schedule( schedule );
-   show_listening( listeners );
 
-   var listing = await request( function( done ) { return ciyam.fetch_messages( c_lobby_room, "", done ); } );
+   if( health )
+   {
+      show_schedule( schedule );
+      show_listening( listeners );
+   }
+
+   var lobby = g_lobby;
+
+   var listing = ( ( lobby !== null ) && ( lobby.access === asked_for ) && ( Date.now( ) - lobby.at < c_lobby_reuse_ms ) )
+    ? lobby.answer : await request( function( done ) { return ciyam.fetch_messages( c_lobby_room, "", done ); } );
 
    if( ciyam.access !== asked_for )
       return;
