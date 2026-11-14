@@ -841,7 +841,28 @@ async function signin_resume( )
       return false;
    }
 
+   g_signin_resumed = is_error_response( reply ) ? null : { at: Date.now( ), sessid: ciyam.sessid, reply: reply };
+
    return true;
+}
+
+// NOTE: The listing a resume was answered with - for the app's own first look at the lobby, which had asked again at once: a round
+// trip at every switch, on a phone (2026-11-15). Taken once, and only a moment after, for this session.
+const c_signin_resumed_ms = 5000;
+
+var g_signin_resumed = null;
+
+// NOTE: The resume's listing, or null - the app asks the node itself.
+function signin_resumed_listing( )
+{
+   var resumed = g_signin_resumed;
+
+   g_signin_resumed = null;
+
+   if( ( resumed === null ) || ( resumed.sessid !== ciyam.sessid ) || ( Date.now( ) - resumed.at > c_signin_resumed_ms ) )
+      return null;
+
+   return resumed.reply;
 }
 
 // ====================================================================

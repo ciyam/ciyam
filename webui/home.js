@@ -1658,10 +1658,16 @@ async function load_member_home( )
 {
    var asked_for = ciyam.access;
 
-   var answer = await request( function( done )
+   // NOTE: The first, after a resume, is the resume's own listing.
+   var answer = signin_resumed_listing( );
+
+   if( answer === null )
    {
-      return ciyam.fetch_messages( c_lobby_room, "", done );
-   } );
+      answer = await request( function( done )
+      {
+         return ciyam.fetch_messages( c_lobby_room, "", done );
+      } );
+   }
 
    var listing = parse_fetch_response( answer );
 

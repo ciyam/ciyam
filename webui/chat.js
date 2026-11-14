@@ -1587,10 +1587,20 @@ function answer_of( request )
 // Rooms
 // ====================================================================
 
+// NOTE: The first, after a resume, is the resume's own listing ("signin_resumed_listing( )") - in its turn, as a request would be.
 function load_rooms( )
 {
+   var resumed = signin_resumed_listing( );
+
    return serialised( function( )
    {
+      if( resumed !== null )
+      {
+         on_rooms_response( resumed );
+
+         return Promise.resolve( );
+      }
+
       return ciyam.fetch_messages( c_lobby_room, "", on_rooms_response );
    } );
 }
