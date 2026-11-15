@@ -9,6 +9,8 @@
 #pragma hdrstop
 
 #ifndef HAS_PRECOMPILED_STD_HEADERS
+#  include <cctype>
+#  include <cstdlib>
 #  include <cstring>
 #  include <map>
 #  include <set>
@@ -24,6 +26,7 @@
 
 #include "sio.h"
 #include "base64.h"
+#include "sha1.h"
 #include "sha256.h"
 #include "threads.h"
 #include "date_time.h"
@@ -77,6 +80,13 @@ const size_t c_cws_session_length = 20;
 
 const size_t c_cws_max_sessions_default = 100;
 const size_t c_cws_max_sessions_allowed = 1000;
+
+// NOTE: How long a call relay's credentials last - asked for before each call, so a call outlasts them only if it goes on
+// for longer than this (coturn checks them again as an allocation is refreshed).
+const int64_t c_cws_relay_seconds = 43200;
+
+const size_t c_cws_relay_secret_min = 16;
+const size_t c_cws_relay_secret_max = 64;
 
 const size_t c_save_data_delay = 250;
 
@@ -138,6 +148,7 @@ constexpr const char* c_cws_artifacts_link = ".ciyam";
 
 constexpr const char* c_cws_uri_suffix_help = "help";
 constexpr const char* c_cws_uri_suffix_logs = "logs";
+constexpr const char* c_cws_uri_suffix_relay = "relay";
 constexpr const char* c_cws_uri_suffix_users = "users";
 constexpr const char* c_cws_uri_suffix_status = "status";
 constexpr const char* c_cws_uri_suffix_devices = "devices";
@@ -218,6 +229,9 @@ constexpr const char* c_cws_help_request_admin_output = "quit\n"
  "update storage-instance <id>/<cid>/<key> assigns=<names_and_values>";
 
 constexpr const char* c_web_session_script = "web_session.cin";
+
+constexpr const char* c_web_session_relay_secret_env = "CIYAM_TURN_SECRET";
+constexpr const char* c_web_session_relay_address_env = "CIYAM_TURN_EXTERNAL_IP";
 
 constexpr const char* c_web_session_none_response = "[none]";
 constexpr const char* c_web_session_okay_response = "[okay]";
@@ -895,6 +909,49 @@ struct cws_active_command
       --g_cws_active_commands;
    }
 };
+
+// NOTE: The call relay's shared secret (coturn's "use-auth-secret") - from the same "CIYAM_TURN_SECRET" the container starts
+// coturn with. Only letters and digits, and no more than 64 of them, as "hmac_sha1" hashes a longer key first and then reads
+// past the hash. Empty if there is none (or it isn't usable), so there is no relay.
+string get_relay_secret( )
+{
+   const char* p_secret = getenv( c_web_session_relay_secret_env );
+
+   string secret( p_secret ? p_secret : "" );
+
+   if( ( secret.length( ) < c_cws_relay_secret_min ) || ( secret.length( ) > c_cws_relay_secret_max ) )
+      return string( );
+
+   for( size_t i = 0; i < secret.length( ); i++ )
+   {
+      if( !isalnum( ( unsigned char )secret[ i ] ) )
+         return string( );
+   }
+
+   return secret;
+}
+
+// NOTE: Where the call relay is reached - the "CIYAM_TURN_EXTERNAL_IP" coturn was told to give out (an IP address, as coturn
+// takes) - or empty, and the page's own host is used. Not the page's host always: a page may come through a proxy that passes
+// no UDP, and a page opened at "localhost" can't reach a relay there once the camera is allowed (each network adapter is then
+// used for itself, found 2026-11-15).
+string get_relay_address( )
+{
+   const char* p_address = getenv( c_web_session_relay_address_env );
+
+   string address( p_address ? p_address : "" );
+
+   if( address.length( ) > 45 )
+      return string( );
+
+   for( size_t i = 0; i < address.length( ); i++ )
+   {
+      if( !isxdigit( ( unsigned char )address[ i ] ) && ( address[ i ] != '.' ) && ( address[ i ] != ':' ) )
+         return string( );
+   }
+
+   return address;
+}
 
 bool is_pin_token( const string& token )
 {
@@ -3086,6 +3143,37 @@ bool process_cws_request( http_request_type request_type, const string& uri_suff
                      else
                         // FUTURE: This message should be handled as a server string message.
                         error = "Commands list could not be erased (contact the administrator).";
+                  }
+               }
+               // NOTE: Credentials for the call relay, for calls between networks - coturn's "TURN REST" ones: the
+               // username is when they expire and whose they are, and the password a hash of it keyed by the secret
+               // the relay was given, so nothing is kept for anyone and they stop working by themselves. Then where
+               // the relay is, if it was told. "[none]" if this node has no relay.
+               else if( is_get_request && ( uri_suffix == c_cws_uri_suffix_relay ) )
+               {
+                  found = true;
+
+                  string secret( get_relay_secret( ) );
+
+                  if( secret.empty( ) )
+                     use_none_response = true;
+                  else
+                  {
+                     string relay_username( to_string( now + c_cws_relay_seconds ) + ':' + username );
+
+                     unsigned char buffer[ c_sha1_digest_size ];
+
+                     hmac_sha1( secret, relay_username, buffer );
+
+                     string relay_password( base64::encode( buffer, c_sha1_digest_size ) );
+
+                     string relay_address( get_relay_address( ) );
+
+                     if( !is_json_output )
+                        response = relay_username + '\n' + relay_password + ( relay_address.empty( ) ? "" : '\n' + relay_address );
+                     else
+                        response = "{\"username\":\"" + escaped_json( relay_username ) + "\",\"credential\":\""
+                         + relay_password + "\",\"address\":\"" + relay_address + "\"}";
                   }
                }
                // NOTE: A user's own keys (encrypted before they get here) which are only
