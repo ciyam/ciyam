@@ -82,8 +82,11 @@ const size_t c_cws_max_sessions_default = 100;
 const size_t c_cws_max_sessions_allowed = 1000;
 
 // NOTE: How long a call relay's credentials last - asked for before each call, so a call outlasts them only if it goes on
-// for longer than this (coturn checks them again as an allocation is refreshed).
+// for longer than this (coturn checks them again as an allocation is refreshed). They end on the hour after it, so all of a
+// person's credentials asked for within an hour are the same - and coturn's allocations to one set of credentials ("user-quota")
+// are a limit on each person, not on each request (found by review, 2026-11-15).
 const int64_t c_cws_relay_seconds = 43200;
+const int64_t c_cws_relay_rounding = 3600;
 
 const size_t c_cws_relay_secret_min = 16;
 const size_t c_cws_relay_secret_max = 64;
@@ -941,7 +944,8 @@ string get_relay_address( )
 
    string address( p_address ? p_address : "" );
 
-   if( address.length( ) > 45 )
+   // NOTE: A "." or a ":" as well, so a name all of hex letters ("cafe") isn't taken for one (found by review, 2026-11-15).
+   if( ( address.length( ) > 45 ) || ( address.find_first_of( ".:" ) == string::npos ) )
       return string( );
 
    for( size_t i = 0; i < address.length( ); i++ )
@@ -3159,7 +3163,9 @@ bool process_cws_request( http_request_type request_type, const string& uri_suff
                      use_none_response = true;
                   else
                   {
-                     string relay_username( to_string( now + c_cws_relay_seconds ) + ':' + username );
+                     int64_t expires = ( ( ( now + c_cws_relay_seconds ) / c_cws_relay_rounding ) + 1 ) * c_cws_relay_rounding;
+
+                     string relay_username( to_string( expires ) + ':' + username );
 
                      unsigned char buffer[ c_sha1_digest_size ];
 
