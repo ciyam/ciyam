@@ -1243,6 +1243,10 @@ function make_log_entry( source, method, url, body, response, started, finished 
    if( /^\/cws\/devices\/?$/.test( endpoint.split( "?" )[ 0 ] ) )
       text = mask_device_sessions( text );
 
+   // NOTE: The call relay's credentials ("relay") - its password is one, for as long as they last (found by review, 2026-11-15).
+   if( /^\/cws\/relay\/?$/.test( endpoint.split( "?" )[ 0 ] ) )
+      text = text.replace( /^([^\n]*\n)[A-Za-z0-9+\/=]+/, "$1(the relay's password)" ).replace( /("credential":")[^"]*/, "$1(hidden)" );
+
    var failed = ( response === null ) || is_error_output( text );
 
    if( text.length > c_console_max_response_chars )

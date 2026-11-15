@@ -461,6 +461,13 @@ check( "a password's hash never kept - hidden in the request and the query", [ p
  password_change.sent, /6c6d112c/.test( JSON.stringify( password_change ) ) ],
  [ "password=(hidden)", [ "format=text", "options=password%3D(hidden)" ], false ] );
 
+check( "the call relay's password never kept - as text or JSON", [ cp.make_log_entry( "chat", "GET",
+ "http://h/cws/relay?access=20401&device=c5588b&format=text&session=ddd52e", null, "1794043200:verify-a\nAbCdEfGhIjKlMnOpQrStUvWx+/0=\n192.168.0.12",
+ t0, t1 ).response, cp.make_log_entry( "chat", "GET", "http://h/cws/relay?access=20401&device=c5588b&session=ddd52e", null,
+ "{\"username\":\"1794043200:verify-a\",\"credential\":\"AbCdEfGhIjKlMnOpQrStUvWx+/0=\",\"address\":\"\"}", t0, t1 ).response ],
+ [ "1794043200:verify-a\n(the relay's password)\n192.168.0.12",
+ "{\"username\":\"1794043200:verify-a\",\"credential\":\"(hidden)\",\"address\":\"\"}" ] );
+
 check( "error marked", cp.make_log_entry( "console", "GET", "http://h/cws?request=x", null, "[bad]", t0, t1 ).ok, false );
 
 var failed = cp.make_log_entry( "console", "GET", "http://h/cws/status", null, null, t0, t1 );
