@@ -167,13 +167,22 @@ fi
 # container always is); "CIYAM_TURN_REALM" - its name. Peers on private networks are refused, so the relay cannot be used
 # to reach anything on the host's own network - though not the node's own address, which is the peer when both use it. Plain
 # TURN on 3478 for now - TLS (5349) once the node has a certificate; the media itself is encrypted end to end (DTLS-SRTP).
-# A few allocations a person and forty in all, as the forty-one ports allow; only UDP relayed, as WebRTC uses; run as its own
-# user. (Reviewed 2026-11-15.)
+# Eight allocations to one set of credentials - a browser makes one for each of its network adapters, and the node hands out
+# new credentials for each call - and forty in all, as the forty-one ports allow (a closed call's are counted until they lapse);
+# only UDP relayed, as WebRTC uses; run as its own user. (Reviewed 2026-11-15.)
 if [ -n "${CIYAM_TURN_SECRET:-}" ]; then
    # NOTE: Letters and digits only - a line break would add lines to the file, and spaces are trimmed ("openssl rand -hex 32").
-   if ! printf '%s' "$CIYAM_TURN_SECRET" | grep -qE '^[A-Za-z0-9]{16,}$'; then
-      echo "Error: CIYAM_TURN_SECRET is to be at least 16 letters and digits (openssl rand -hex 32) - the call relay is not started."
+   # No more than 64, as the node hands out credentials made with it ("ciyam_web_session.cpp") and refuses a longer one.
+   if ! printf '%s' "$CIYAM_TURN_SECRET" | grep -qE '^[A-Za-z0-9]{16,64}$'; then
+      echo "Error: CIYAM_TURN_SECRET is to be 16 to 64 letters and digits (openssl rand -hex 32) - the call relay is not started."
    else
+      # NOTE: An address, not a name (coturn takes only an address here) - anything else is left out rather than written in.
+      case "${CIYAM_TURN_EXTERNAL_IP:-}" in
+         *[!0-9A-Fa-f.:]*)
+            echo "(call relay address '$CIYAM_TURN_EXTERNAL_IP' ignored - an IP address, not a name)"
+            CIYAM_TURN_EXTERNAL_IP= ;;
+      esac
+
       # NOTE: "public/private" - the address phones reach, and this container's own that it stands for.
       private_ip=$(hostname -i | awk '{ print $1 }')
 
@@ -191,7 +200,7 @@ if [ -n "${CIYAM_TURN_SECRET:-}" ]; then
             if [ -n "${CIYAM_TURN_EXTERNAL_IP:-}" ]; then
                echo "external-ip=$CIYAM_TURN_EXTERNAL_IP${private_ip:+/$private_ip}"
             fi
-            echo "user-quota=4"
+            echo "user-quota=8"
             echo "total-quota=40"
             echo "stale-nonce=600"
             echo "no-tcp-relay"
@@ -206,6 +215,11 @@ if [ -n "${CIYAM_TURN_SECRET:-}" ]; then
              64:ff9b::-64:ff9b::ffff:ffff fc00::-fdff:ffff:ffff:ffff:ffff:ffff:ffff:ffff fe80::-febf:ffff:ffff:ffff:ffff:ffff:ffff:ffff; do
                echo "denied-peer-ip=$range"
             done
+            # NOTE: Except the relay's own address - the peer when both people are relayed - should it be in one of those ranges (a
+            # test node reached at its LAN address).
+            if [ -n "${CIYAM_TURN_EXTERNAL_IP:-}" ]; then
+               echo "allowed-peer-ip=$CIYAM_TURN_EXTERNAL_IP"
+            fi
             echo "proc-user=turnserver"
             echo "proc-group=turnserver"
             echo "simple-log"
