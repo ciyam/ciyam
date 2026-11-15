@@ -47,7 +47,7 @@ const size_t c_secret_truncate_length = 9;
 
 const size_t c_default_max_deque_item_size = 3000;
 
-const size_t c_default_max_deque_size_limit = 9000;
+const size_t c_default_max_deque_size_limit = 3000;
 
 constexpr const char* c_double_asterisk = "**";
 constexpr const char* c_triple_asterisk = "***";
