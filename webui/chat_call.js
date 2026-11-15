@@ -462,8 +462,10 @@ function call_connection( servers )
          if( g_call.role === "caller" )
             call_send_quietly( "end", true );
 
+         // NOTE: Without a relay - the node has none, or didn't answer for it - only on the same network (found by review: "this node has
+         // no relay" was untrue when the request failed).
          call_end_local( connected ? "The call was lost." : ( g_call.relayed ? "The call couldn't connect." : "The call couldn't connect -"
-          + " this node has no relay, so calls only work between people on the same network." ) );
+          + " without a relay, calls only work between people on the same network." ) );
       }
    } );
 
