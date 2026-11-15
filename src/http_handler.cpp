@@ -1856,69 +1856,65 @@ void http_request_handler::on_start( )
 
          if( !large_file_name.empty( ) )
          {
-            size_t file_length = file_size( large_file_name );
-
             unsigned char buffer[ c_large_file_buffer_size ];
 
-            size_t chunk = min( c_large_file_buffer_size, file_length );
+            size_t file_length = file_size( large_file_name );
 
-            ifstream inpf( large_file_name.c_str( ) );
+            ifstream inpf( large_file_name.c_str( ), ios::in | ios::binary );
 
             if( !inpf )
                throw runtime_error( "unexpected error opening '" + large_file_name + "' for reading" );
 
-            inpf.read( ( char* )buffer, chunk );
+            bool had_error = false;
 
-            int sent = up_socket->send_n( ( unsigned char* )buffer, chunk, c_subsequent_timeout );
+            size_t empty_chunks = 0;
+            size_t chunk_remaining = 0;
 
-            if( sent < 0 )
-               error = "unexpected error occurred sending file data";
-            else
+            size_t total_sent = 0;
+            size_t total_remaining = file_length;
+
+            while( total_remaining )
             {
-               if( sent < file_length )
+#ifdef DEBUG
+               cerr << "total_sent = " << total_sent << endl;
+               cerr << "total_remaining = " << total_remaining << endl;
+#endif
+
+               if( !chunk_remaining )
                {
-                  size_t remaining = ( file_length - sent );
+                  chunk_remaining = min( c_large_file_buffer_size, total_remaining );
 
-                  bool had_error = false;
+                  if( !inpf.read( ( char* )buffer, chunk_remaining ) )
+                     throw runtime_error( "unexpected error reading from '" + large_file_name + "'" );
+               }
 
-                  size_t empty_chunks = 0;
+               int next_chunk = up_socket->send_n(
+                buffer, chunk_remaining, c_subsequent_timeout );
 
-                  while( remaining )
+#ifdef DEBUG
+               cerr << "next_chunk = " << next_chunk << '\n' << endl;
+#endif
+               if( next_chunk < 0 )
+                  had_error = true;
+               else
+               {
+                  chunk_remaining -= next_chunk;
+
+                  total_sent += next_chunk;
+                  total_remaining -= next_chunk;
+
+                  if( next_chunk == 0 )
                   {
-#ifdef DEBUG
-                     cerr << "sent = " << sent << endl;
-                     cerr << "remaining = " << remaining << endl;
-#endif
-
-                     chunk = min( c_large_file_buffer_size, remaining );
-
-                     inpf.read( ( char* )buffer, chunk );
-
-                     int next_chunk = up_socket->send_n(
-                      buffer, chunk, c_subsequent_timeout );
-#ifdef DEBUG
-                     cerr << "next_chunk = " << next_chunk << '\n' << endl;
-#endif
-                     if( next_chunk < 0 )
+                     if( ++empty_chunks > c_max_empty_chunks )
                         had_error = true;
-                     else if( next_chunk == 0 )
-                     {
-                        if( ++empty_chunks > c_max_empty_chunks )
-                           had_error = true;
-                     }
-                     else
-                     {
-                        sent += next_chunk;
-                        remaining -= next_chunk;
-                     }
-
-                     if( had_error )
-                     {
-                        error = "unexpected error occurred sending get data";
-
-                        break;
-                     }
                   }
+               }
+
+               if( had_error )
+               {
+                  error = "unexpected error occurred sending data for '" + large_file_name + "'";
+
+                  break;
                }
             }
          }
