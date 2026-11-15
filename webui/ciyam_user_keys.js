@@ -269,15 +269,16 @@ ciyam_register_module( class extends ciyam_module
    }
 
    // NOTE: New keys from the entropy, as the node keeps them - with no one else's public keys yet, guarded, locked under the access
-   // key made with "rounds" (the default if not given) - and that access key, for the browser to keep: { access, kept }.
-   static async kept_keys( entropy, rounds )
+   // key made with "rounds" (the default if not given) - and that access key, for the browser to keep: { access, kept }. "people",
+   // admin's alone, is the people key sealed ("seal_people_key( )") to keep with them.
+   static async kept_keys( entropy, rounds, people )
    {
       var count = this.checked_rounds( ( rounds !== undefined ) ? Number( rounds ) : this.c_default_rounds );
       var access = await this.access_key( entropy, count );
       var seeds = this.seeds_of( entropy );
 
       return { access: access, kept: this.kept_text( await this.guard( entropy, count ), await this.lock( access, { primary: seeds.primary,
-       secondary: seeds.secondary, contacts: { } }, { rounds: count } ) ) };
+       secondary: seeds.secondary, contacts: { }, people: people || "" }, { rounds: count } ) ) };
    }
 
    // NOTE: What the node keeps, in its two parts - the guard's line ("" for keys without one) and the locked keys.

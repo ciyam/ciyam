@@ -828,12 +828,10 @@ async function signin_resume( )
       reply = "";
    }
 
-   // NOTE: The chat not turned on refuses the lobby, though the session is good (Ian, 2026-10-13) - so it is kept, and
-   // the part says why it cannot go on.
-   if( ( reply.trim( ) === "" ) || ( is_error_response( reply ) && !irc_unavailable( reply ) ) )
-   {
-      ciyam.sessid = "";
-      ciyam.unique = "";
+   // NOTE: Left while the node was being asked - a reload, or another app opened, before a slow connection answered - and the request
+   // was cut off: the session is kept for the next page, not forgotten as refused (found 2026-11-16 - a reload during a reload's
+   // resume signed the tab out).
+   if( g= "";
       ciyam.hashed = "";
       ciyam.username = "";
       ciyam.is_admin = false;
@@ -1771,7 +1769,9 @@ function signin_keep_keys( access )
 // signs in, so Give keys in People works at once. From the people key and "admin" ("person_entropy( )" in "ciyam_user_keys.js"), not
 // admin's PIN, which a recovery changes. Keys the node has that the words open are kept as they are - contacts and room keys with
 // them - and only opened here; keys from other words are left alone. "made", "opened", "other" or "failed" ("admin_keys_text( )").
-async function signin_admin_keys( entropy )
+// NOTE: With "password", the people key is kept with them too, sealed under admin's PIN and that password as Give keys keeps it - so
+// Give keys never asks for the words, which are here now (Damon, 2026-11-16: "this has to be a smooth and simple process").
+async function signin_admin_keys( entropy, password )
 {
    try
    {
@@ -1786,7 +1786,24 @@ async function signin_admin_keys( entropy )
       if( !uk )
          return "failed";
 
-      var own = await uk.person_entropy( await uk.people_key( entropy ), uk.c_admin_person );
+      var people = await uk.people_key( entropy );
+      var own = await uk.person_entropy( people, uk.c_admin_person );
+      var sealed = "";
+
+      if( password )
+      {
+         try
+         {
+            sealed = await uk.seal_people_key( people, ciyam.access, password );
+         }
+         catch( e )
+         {
+            sealed = "";
+         }
+      }
+
+      people = "";
+
       var url = ciyam.get_cws_url( ) + "/user-keys?access=" + ciyam.access + "&device=" + ciyam.device + "&format=text";
 
       var kept = ( await signin_issue( function( done )
@@ -1801,10 +1818,11 @@ async function signin_admin_keys( entropy )
       if( ( kept !== "[none]" ) && !/^UK[12]:/.test( kept ) )
       {
          var access = await uk.access_key( own, uk.rounds_of( kept ) );
+         var opened = null;
 
          try
          {
-            await uk.unlock( access, kept );
+            opened = await uk.unlock( access, kept );
          }
          catch( e )
          {
@@ -1813,10 +1831,23 @@ async function signin_admin_keys( entropy )
 
          signin_keep_keys( access );
 
+         // NOTE: The people key kept with them - in place of one sealed under the PIN before a recovery, which no longer opens. If the
+         // node doesn't take it, Give keys asks for the words once, as before.
+         if( ( sealed !== "" ) && ( opened.people !== sealed ) )
+         {
+            var relocked = uk.kept_text( opened.guard, await uk.lock( access, { primary: opened.primary, secondary: opened.secondary,
+             contacts: opened.contacts, rooms: opened.rooms, people: sealed }, { rounds: opened.rounds } ) );
+
+            await signin_issue( function( done )
+            {
+               return ciyam.fetch_in_body( url + "&payload=" + encodeURIComponent( relocked ) + "&session=" + ciyam.sessid, "PUT", done );
+            } );
+         }
+
          return "opened";
       }
 
-      var made = await uk.kept_keys( own );
+      var made = await uk.kept_keys( own, undefined, sealed );
 
       var saved = ( await signin_issue( function( done )
       {
@@ -1977,7 +2008,7 @@ async function recover_submit( event )
    signin_set_text( "recover_status", "Making admin's keys from the words..." );
    button.disabled = true;
 
-   signin_set_text( "recover_keys_note", admin_keys_text( await signin_admin_keys( entropy ) ) );
+   signin_set_text( "recover_keys_note", admin_keys_text( await signin_admin_keys( entropy, password ) ) );
 
    entropy = "";
    button.disabled = false;

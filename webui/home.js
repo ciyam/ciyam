@@ -919,7 +919,7 @@ async function setup_finish( )
       // works at once ("signin_admin_keys( )").
       set_text( "setup_finish_status", "Making admin's keys from the words..." );
 
-      keys_made = admin_keys_text( await signin_admin_keys( g_setup.entropy ) );
+      keys_made = admin_keys_text( await signin_admin_keys( g_setup.entropy, g_setup.password ) );
 
       set_text( "setup_finish_status", "" );
    }
