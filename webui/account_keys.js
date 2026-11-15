@@ -1488,7 +1488,7 @@ async function keys_give_go( )
    {
       // NOTE: Their code scanned before the rest was filled in - said where the camera was, not only under the fields above it (Damon,
       // 2026-11-16: scanning seemed to do nothing).
-      if( device )
+      if( device && ( device.kind === "give" ) )
          document.getElementById( "give_scan_status" ).textContent = "Got " + give.name + "'s code. Fill in what's marked, then press Give keys.";
 
       return;
