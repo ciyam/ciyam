@@ -176,11 +176,25 @@ if [ -n "${CIYAM_TURN_SECRET:-}" ]; then
    if ! printf '%s' "$CIYAM_TURN_SECRET" | grep -qE '^[A-Za-z0-9]{16,64}$'; then
       echo "Error: CIYAM_TURN_SECRET is to be 16 to 64 letters and digits (openssl rand -hex 32) - the call relay is not started."
    else
-      # NOTE: An address, not a name (coturn takes only an address here) - anything else is left out rather than written in.
+      # NOTE: An address, not a name (coturn takes only an address here) - anything else is left out rather than written in. A "."
+      # or a ":" too, so a name all of hex letters isn't taken for one; the realm a name (found by review, 2026-11-15).
+      bad=0
       case "${CIYAM_TURN_EXTERNAL_IP:-}" in
-         *[!0-9A-Fa-f.:]*)
-            echo "(call relay address '$CIYAM_TURN_EXTERNAL_IP' ignored - an IP address, not a name)"
-            CIYAM_TURN_EXTERNAL_IP= ;;
+         *[!0-9A-Fa-f.:]*) bad=1 ;;
+      esac
+      case "${CIYAM_TURN_EXTERNAL_IP:-}" in
+         *[.:]*) ;;
+         *) bad=1 ;;
+      esac
+      if [ -n "${CIYAM_TURN_EXTERNAL_IP:-}" ] && [ "$bad" = "1" ]; then
+         echo "(call relay address '$CIYAM_TURN_EXTERNAL_IP' ignored - an IP address, not a name)"
+         CIYAM_TURN_EXTERNAL_IP=
+      fi
+
+      case "${CIYAM_TURN_REALM:-}" in
+         *[!A-Za-z0-9.-]*)
+            echo "(call relay realm '$CIYAM_TURN_REALM' ignored - letters, digits, dots and dashes)"
+            CIYAM_TURN_REALM= ;;
       esac
 
       # NOTE: "public/private" - the address phones reach, and this container's own that it stands for.
