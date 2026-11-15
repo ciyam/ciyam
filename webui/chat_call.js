@@ -8,11 +8,10 @@
 // an end or a decline ("call_messages( )" in "chat_parse.js"). Sealed, the node can neither read them nor change the fingerprints of
 // the call's own encryption (DTLS-SRTP) in them, so it cannot sit in the middle of the call either.
 //
-// No STUN or TURN server - nothing is asked of any host but the node (no external requests, ever). So for now a call connects only on
-// the same machine or network; between networks it waits for the node's own TURN (LiveKit's - Ian, 2026-10-30). The camera and the
-// microphone need a secure page: "localhost", or the node over HTTPS.
-
-const c_call_ice_servers = [ ];
+// Nothing is asked of any host but the node (no external requests, ever): its own relay (coturn, started with "CIYAM_TURN_SECRET") with
+// credentials it hands out before each call ("relay") - STUN and TURN on its own host ("call_relay_servers( )"). A node without one,
+// and a call connects only on the same machine or network. The camera and the microphone need a secure page: "localhost", or the node
+// over HTTPS.
 
 // NOTE: How often the call's conversation is read while it is being set up - the poll's four seconds would be slow to ring and answer.
 const c_call_watch_ms = 1000;
@@ -413,9 +412,30 @@ async function call_media( )
    }
 }
 
-function call_connection( )
+// NOTE: The node's relay for this call - none if it has none, or the request failed (the call is then tried directly).
+async function call_relay( )
 {
-   var pc = new RTCPeerConnection( { iceServers: c_call_ice_servers } );
+   var text = "";
+
+   try
+   {
+      await serialised( function( )
+      {
+         return ciyam.fetch( ciyam.get_cws_url( ) + "/relay?access=" + ciyam.access + "&device=" + ciyam.device + "&format=text&session="
+          + ciyam.sessid, "GET", function( r ) { text = String( r || "" ); } );
+      } );
+   }
+   catch( e )
+   {
+      text = "";
+   }
+
+   return call_relay_servers( text, window.location.hostname );
+}
+
+function call_connection( servers )
+{
+   var pc = new RTCPeerConnection( { iceServers: servers } );
 
    pc.addEventListener( "track", function( event )
    {
@@ -434,16 +454,16 @@ function call_connection( )
          call_connected( );
       else if( pc.connectionState === "failed" )
       {
-         // NOTE: One that never connected is most likely two networks, with no relay as yet; one that had, lost (found by review: the
-         // other closing their page was put down to the network).
+         // NOTE: One that never connected is most likely two networks with no relay between them; one that had, lost (found by review:
+         // the other closing their page was put down to the network).
          var connected = g_call.started !== 0;
 
          // NOTE: Both sides see it fail - the caller alone says so, so the conversation has one line for it, not two (found by review).
          if( g_call.role === "caller" )
             call_send_quietly( "end", true );
 
-         call_end_local( connected ? "The call was lost." : "The call couldn't connect - for now, calls only work between people on the"
-          + " same network." );
+         call_end_local( connected ? "The call was lost." : ( g_call.relayed ? "The call couldn't connect." : "The call couldn't connect -"
+          + " this node has no relay, so calls only work between people on the same network." ) );
       }
    } );
 
@@ -526,7 +546,9 @@ async function do_start_call( )
 
    try
    {
+      var relay = call_relay( );
       var media = await call_media( );
+      var servers = await relay;
 
       if( g_call !== call )
       {
@@ -535,7 +557,8 @@ async function do_start_call( )
          return;
       }
 
-      call.pc = call_connection( );
+      call.relayed = servers.length > 0;
+      call.pc = call_connection( servers );
 
       call_add_local( call, media );
 
@@ -622,7 +645,9 @@ async function do_accept_call( )
 
    try
    {
+      var relay = call_relay( );
       var media = await call_media( );
+      var servers = await relay;
 
       if( g_call !== call )
       {
@@ -631,7 +656,8 @@ async function do_accept_call( )
          return;
       }
 
-      call.pc = call_connection( );
+      call.relayed = servers.length > 0;
+      call.pc = call_connection( servers );
 
       call_add_local( call, media );
 

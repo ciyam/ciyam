@@ -5220,11 +5220,45 @@ function call_elapsed_text( seconds )
    return ( hours > 0 ) ? ( hours + ":" + two( minutes ) + ":" + two( rest ) ) : ( minutes + ":" + two( rest ) );
 }
 
+// NOTE: The node's own call relay (coturn, in the container) as a call's "iceServers", from the node's "relay" answer - its credentials,
+// "<expiry>:<username>" then the password, then the relay's address if the node was told it - so nothing is asked of anyone else:
+// STUN for each device's address as the world sees it, and TURN to relay the call when the two can't reach each other. With no
+// address, the page's own host ("host"). None ("[none]" - the node has no relay - or anything that isn't credentials) and the call is
+// tried directly, as before.
+const c_call_relay_port = 3478;
+
+function call_relay_servers( text, host )
+{
+   var lines = String( text || "" ).trim( ).split( /\r?\n/ );
+
+   if( ( lines.length < 2 ) || ( lines.length > 3 ) || !/^[0-9]{10}:[-a-z0-9]{3,30}$/.test( lines[ 0 ] )
+    || !/^[A-Za-z0-9+\/]{27}=$/.test( lines[ 1 ] ) )
+      return [ ];
+
+   if( lines.length === 3 )
+   {
+      if( /^[0-9]{1,3}(\.[0-9]{1,3}){3}$/.test( lines[ 2 ] ) )
+         host = lines[ 2 ];
+      else if( /^[0-9A-Fa-f:.]*:[0-9A-Fa-f:.]*$/.test( lines[ 2 ] ) )
+         host = "[" + lines[ 2 ] + "]";
+      else
+         return [ ];
+   }
+
+   if( !/^(\[[0-9A-Fa-f:.]+\]|[A-Za-z0-9.-]+)$/.test( String( host || "" ) ) )
+      return [ ];
+
+   var where = host + ":" + c_call_relay_port;
+
+   return [ { urls: "stun:" + where }, { urls: "turn:" + where + "?transport=udp", username: lines[ 0 ], credential: lines[ 1 ] } ];
+}
+
 // NOTE: Exported for Node.js; in the browser these are plain globals.
 if( typeof module !== "undefined" )
 {
    module.exports = {
       c_call_chunk_chars: c_call_chunk_chars,
+      call_relay_servers: call_relay_servers,
       c_call_fresh_seconds: c_call_fresh_seconds,
       c_call_end_failed: c_call_end_failed,
       call_messages: call_messages,

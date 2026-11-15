@@ -2192,6 +2192,23 @@ check( "a call's lines in the conversation - the call, a decline, busy, its end 
 {
    return cp.call_line_text( cp.parse_call_message( text ) );
 } ), [ "Call", "", "", "Declined the call", "Was on another call", "Call ended · 3:05", "Call not answered", "Call couldn't connect", "" ] );
+check( "the node's call relay - STUN and TURN on its own host, with its credentials", JSON.stringify( cp.call_relay_servers(
+ "1794043200:maya\nAbCdEfGhIjKlMnOpQrStUvWx+/0=\n", "api.ciyam.org" ) ), JSON.stringify( [ { urls: "stun:api.ciyam.org:3478" },
+ { urls: "turn:api.ciyam.org:3478?transport=udp", username: "1794043200:maya", credential: "AbCdEfGhIjKlMnOpQrStUvWx+/0=" } ] ) );
+check( "- an address as the page has it, IPv6 in its brackets", [ cp.call_relay_servers( "1794043200:maya\nAbCdEfGhIjKlMnOpQrStUvWx+/0=",
+ "192.168.1.20" )[ 1 ].urls, cp.call_relay_servers( "1794043200:maya\r\nAbCdEfGhIjKlMnOpQrStUvWx+/0=", "[fd00::1]" )[ 0 ].urls ],
+ [ "turn:192.168.1.20:3478?transport=udp", "stun:[fd00::1]:3478" ] );
+check( "- at the relay's own address when the node gives one - not the page's host", [ cp.call_relay_servers(
+ "1794043200:maya\nAbCdEfGhIjKlMnOpQrStUvWx+/0=\n203.0.113.7", "api.ciyam.org" )[ 1 ].urls, cp.call_relay_servers(
+ "1794043200:maya\nAbCdEfGhIjKlMnOpQrStUvWx+/0=\n2001:db8::7", "localhost" )[ 0 ].urls, cp.call_relay_servers(
+ "1794043200:maya\nAbCdEfGhIjKlMnOpQrStUvWx+/0=\nrelay.example.org", "localhost" ).length ],
+ [ "turn:203.0.113.7:3478?transport=udp", "stun:[2001:db8::7]:3478", 0 ] );
+check( "- none when the node has no relay, or answers otherwise, or the host is odd", [ "[none]", "", "Error: This web session is not valid.",
+ "1794043200:maya", "1794043200:maya\nnot-base64", "1794043200:maya\nAbCdEfGhIjKlMnOpQrStUvWx+/0=\n1.2.3.4\nextra" ].map( function( text )
+{
+   return cp.call_relay_servers( text, "api.ciyam.org" ).length;
+} ).concat( [ cp.call_relay_servers( "1794043200:maya\nAbCdEfGhIjKlMnOpQrStUvWx+/0=", "a b" ).length,
+ cp.call_relay_servers( "1794043200:maya\nAbCdEfGhIjKlMnOpQrStUvWx+/0=", "" ).length ] ), [ 0, 0, 0, 0, 0, 0, 0, 0 ] );
 
 console.log( "" );
 console.log( failures === 0 ? "All checks passed." : ( failures + " check(s) FAILED." ) );

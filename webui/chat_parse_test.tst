@@ -991,5 +991,9 @@ ok   - the call going is taken however long ago it began: its end an hour on
 ok   - two answers, from two devices of the one called, not joined into one
 ok   a call's length
 ok   a call's lines in the conversation - the call, a decline, busy, its end with how long; the rest not shown
+ok   the node's call relay - STUN and TURN on its own host, with its credentials
+ok   - an address as the page has it, IPv6 in its brackets
+ok   - at the relay's own address when the node gives one - not the page's host
+ok   - none when the node has no relay, or answers otherwise, or the host is odd
 
 All checks passed.
