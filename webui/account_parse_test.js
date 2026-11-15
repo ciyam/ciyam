@@ -294,6 +294,15 @@ check( "keys from the administrator - the ask and the answer, each its own kind"
  ap.parse_device_link( ap.device_give_link( "http://n/account.html", ask_key ) ), ap.parse_device_link( ap.device_given_link( "http://n/account.html",
  reply_key, given_entropy, "0123456789abcdef" ) ) ], [ "http://n/account.html#keys-give=" + ask_key, { kind: "give", key: ask_key },
  { kind: "given", key: reply_key, sealed: given_entropy, check: "0123456789abcdef" } ] );
+check( "- the answer opens where their code was made - the page at their address, else this page", [
+ ap.device_page_of( "http://192.168.0.12:13031/account.html#keys-give=" + ask_key, "http://localhost:13031/account.html" ),
+ ap.device_page_of( "https://[fd00::1]/account.html?x=1#keys-give=" + ask_key, "http://localhost:13031/account.html" ),
+ ap.device_page_of( "keys-give=" + ask_key, "http://localhost:13031/account.html" ),
+ ap.device_page_of( "http://elsewhere.example/other.html#keys-give=" + ask_key, "http://localhost:13031/account.html" ),
+ ap.device_page_of( "javascript:alert(1)//account.html#keys-give=" + ask_key, "http://localhost:13031/account.html" ),
+ ap.device_page_of( "http://a_b@c/account.html#keys-give=" + ask_key, "http://localhost:13031/account.html" ) ],
+ [ "http://192.168.0.12:13031/account.html", "https://[fd00::1]/account.html", "http://localhost:13031/account.html",
+ "http://localhost:13031/account.html", "http://localhost:13031/account.html", "http://localhost:13031/account.html" ] );
 check( "- an answer with an access key's length not taken as one, nor another device's with an entropy's", [ ap.parse_device_link( "keys-given="
  + reply_key + "." + sealed_key + ".0123456789abcdef" ), ap.parse_device_link( "keys-reply=" + reply_key + "." + given_entropy
  + ".0123456789abcdef" ) ], [ null, null ] );

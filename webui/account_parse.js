@@ -571,6 +571,22 @@ function device_given_link( page, public_key, sealed, check )
    return page + "#" + c_device_given_prefix + public_key + "." + sealed + "." + check;
 }
 
+// NOTE: The page an answer is to open at - the address the other device's own code was made on ("text", scanned or pasted), so it
+// opens there with that device's camera, the same page reached by another address (Damon, 2026-11-16: admin's "localhost" opened
+// nothing on a phone that reaches the node by its LAN address). "own" - this page - for a code without one, or another page or
+// scheme.
+function device_page_of( text, own )
+{
+   var value = String( text || "" ).replace( /\s+/g, "" );
+   var match = /^(https?:\/\/[A-Za-z0-9.:\[\]-]+)(\/[^#?]*)(\?[^#]*)?#/.exec( value );
+   var mine = /^https?:\/\/[^\/]+(\/[^#?]*)$/.exec( String( own || "" ) );
+
+   if( !match || !mine || ( match[ 2 ] !== mine[ 1 ] ) )
+      return String( own || "" );
+
+   return match[ 1 ] + match[ 2 ];
+}
+
 // NOTE: An ask or a reply - a whole address, the part after "#", or pasted with spaces or line breaks in it - as { kind: "ask", key }
 // or { kind: "reply", key, sealed, check } (or "give" and "given", as those are), or null for anything else.
 function parse_device_link( text )
@@ -692,6 +708,7 @@ if( typeof module !== "undefined" )
       c_device_given_prefix: c_device_given_prefix,
       device_give_link: device_give_link,
       device_given_link: device_given_link,
+      device_page_of: device_page_of,
       parse_device_link: parse_device_link,
       give_field_problems: give_field_problems,
       admin_keys_text: admin_keys_text,

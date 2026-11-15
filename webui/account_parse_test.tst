@@ -103,6 +103,7 @@ ok   - read back, whole, after # only, or pasted broken over lines in capitals
 ok   - the reply, read back
 ok   - not one: the old address with the access key, a key too short, a reply with no check, nothing
 ok   keys from the administrator - the ask and the answer, each its own kind
+ok   - the answer opens where their code was made - the page at their address, else this page
 ok   - an answer with an access key's length not taken as one, nor another device's with an entropy's
 ok   a claim not signed in - said why, with the way on
 ok   admin's keys at set up or recovery - made, opened, left, or not made

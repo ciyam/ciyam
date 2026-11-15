@@ -1485,7 +1485,14 @@ async function keys_give_go( )
    var device = parse_device_link( document.getElementById( "give_ask" ).value );
 
    if( !keys_give_problems( give_field_problems( password, asking_words ? document.getElementById( "give_words" ).value : null, device ) ) )
+   {
+      // NOTE: Their code scanned before the rest was filled in - said where the camera was, not only under the fields above it (Damon,
+      // 2026-11-16: scanning seemed to do nothing).
+      if( device )
+         document.getElementById( "give_scan_status" ).textContent = "Got " + give.name + "'s code. Fill in what's marked, then press Give keys.";
+
       return;
+   }
 
    keys_give_busy( "Opening what gives keys…" );
 
@@ -1516,7 +1523,8 @@ async function keys_give_go( )
       var secret = sm.shared_secret_of_seed( seed, device.key );
       var sealing = await keys_give_seal( secret, await uk.person_entropy( people, give.pin ), give.name );
 
-      link = device_given_link( location.origin + location.pathname, sm.public_key_of_seed( seed ), sealing.sealed, sealing.check );
+      link = device_given_link( device_page_of( document.getElementById( "give_ask" ).value, location.origin + location.pathname ),
+       sm.public_key_of_seed( seed ), sealing.sealed, sealing.check );
    }
    catch( e )
    {
