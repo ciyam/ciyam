@@ -792,6 +792,12 @@ function signin_kept_session( )
 // someone in no rooms gets one (seen 2026-10-12 - tester-2, out of every room it could leave). The hashed password is
 // not kept for the tab, but where the person chose to save it on this browser it is here already - the accounts page
 // needs it to check a password change.
+// NOTE: The page going away - its requests are cut off, which is no answer from the node ("signin_resume( )").
+var g_signin_leaving = false;
+
+window.addEventListener( "pagehide", function( ) { g_signin_leaving = true; } );
+window.addEventListener( "pageshow", function( ) { g_signin_leaving = false; } );
+
 async function signin_resume( )
 {
    var kept = signin_kept_session( );
@@ -831,7 +837,15 @@ async function signin_resume( )
    // NOTE: Left while the node was being asked - a reload, or another app opened, before a slow connection answered - and the request
    // was cut off: the session is kept for the next page, not forgotten as refused (found 2026-11-16 - a reload during a reload's
    // resume signed the tab out).
-   if( g= "";
+   if( g_signin_leaving )
+      return false;
+
+   // NOTE: The chat not turned on refuses the lobby, though the session is good (Ian, 2026-10-13) - so it is kept, and
+   // the part says why it cannot go on.
+   if( ( reply.trim( ) === "" ) || ( is_error_response( reply ) && !irc_unavailable( reply ) ) )
+   {
+      ciyam.sessid = "";
+      ciyam.unique = "";
       ciyam.hashed = "";
       ciyam.username = "";
       ciyam.is_admin = false;
