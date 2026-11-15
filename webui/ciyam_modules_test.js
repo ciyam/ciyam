@@ -732,6 +732,12 @@ async function steps( module_class, list )
     test_entropy, 1000 ), made_opened.primary === uk.seeds_of( test_entropy ).primary, made_opened.rounds, /^UK#:1000:/.test( made_opened.guard ),
     Object.keys( made_opened.contacts ).length ], [ true, true, 1000, true, 0 ] );
 
+   // NOTE: New keys with the people key kept in them, sealed (Damon, 2026-11-16 - as setting up or recovering makes admin's).
+   var made_sealed = await uk.seal_people_key( test_people, "12345", "pässwörd", { rounds: 1000 } );
+   var made_with = await uk.kept_keys( test_entropy, 1000, made_sealed );
+   var made_people = await uk.unlock( made_with.access, made_with.kept ).catch( function( e ) { return { people: e.message }; } );
+   check( "- with the people key, sealed, kept in them; none without", [ made_people.people === made_sealed, made_opened.people ], [ true, "" ] );
+
    // NOTE: The people key kept with admin's keys (Damon, 2026-11-11), sealed - worked out here with Node's own: the lock "harden"'s
    // rounds of "people_lock:", the salt, the PIN, ":" and the password; the key XORed with the HMAC of "people_pad" under it; the
    // check the first 16 hex digits of the HMAC of "people_check" and the key.

@@ -106,6 +106,7 @@ ok   - not a people key or a PIN, said
 ok   - through run
 ok   admin's entropy from the people key and "admin", not a PIN
 ok   - new keys made in one call: opened by their access key, the entropy's seeds, guarded
+ok   - with the people key, sealed, kept in them; none without
 ok   the people key sealed under admin's PIN and password
 ok   - opened by them, and by no other password or PIN
 ok   - a new salt each time otherwise; not one sealed, said

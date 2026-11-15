@@ -784,6 +784,12 @@ function signin_kept_session( )
    }
 }
 
+// NOTE: The page going away - its requests are cut off, which is no answer from the node ("signin_resume( )").
+var g_signin_leaving = false;
+
+window.addEventListener( "pagehide", function( ) { g_signin_leaving = true; } );
+window.addEventListener( "pageshow", function( ) { g_signin_leaving = false; } );
+
 // NOTE: Takes up the session kept for this tab - an app switched to in it, or a reload - if the node still knows it,
 // tried with one request: the lobby listing, which moves nothing the session has read. Refused - it timed out, or
 // the node was set up again - it is forgotten, and the page signs in as usual. A session the node does not know is
@@ -792,12 +798,6 @@ function signin_kept_session( )
 // someone in no rooms gets one (seen 2026-10-12 - tester-2, out of every room it could leave). The hashed password is
 // not kept for the tab, but where the person chose to save it on this browser it is here already - the accounts page
 // needs it to check a password change.
-// NOTE: The page going away - its requests are cut off, which is no answer from the node ("signin_resume( )").
-var g_signin_leaving = false;
-
-window.addEventListener( "pagehide", function( ) { g_signin_leaving = true; } );
-window.addEventListener( "pageshow", function( ) { g_signin_leaving = false; } );
-
 async function signin_resume( )
 {
    var kept = signin_kept_session( );
@@ -1802,21 +1802,19 @@ async function signin_admin_keys( entropy, password )
 
       var people = await uk.people_key( entropy );
       var own = await uk.person_entropy( people, uk.c_admin_person );
-      var sealed = "";
 
-      if( password )
+      // NOTE: The people key sealed under admin's PIN and the password - "" without a password, or if it can't be.
+      var seal = async function( )
       {
          try
          {
-            sealed = await uk.seal_people_key( people, ciyam.access, password );
+            return password ? await uk.seal_people_key( people, ciyam.access, password ) : "";
          }
          catch( e )
          {
-            sealed = "";
+            return "";
          }
-      }
-
-      people = "";
+      };
 
       var url = ciyam.get_cws_url( ) + "/user-keys?access=" + ciyam.access + "&device=" + ciyam.device + "&format=text";
 
@@ -1845,23 +1843,48 @@ async function signin_admin_keys( entropy, password )
 
          signin_keep_keys( access );
 
-         // NOTE: The people key kept with them - in place of one sealed under the PIN before a recovery, which no longer opens. If the
-         // node doesn't take it, Give keys asks for the words once, as before.
-         if( ( sealed !== "" ) && ( opened.people !== sealed ) )
-         {
-            var relocked = uk.kept_text( opened.guard, await uk.lock( access, { primary: opened.primary, secondary: opened.secondary,
-             contacts: opened.contacts, rooms: opened.rooms, people: sealed }, { rounds: opened.rounds } ) );
+         // NOTE: The people key kept with them, unless the one there opens with this PIN and password already - one sealed under the
+         // PIN before a recovery no longer does. Only then are the keys sent again (as "keys_send( )" sends them, whole), so the gap in
+         // which another device's change could be lost is only when needed (found by review, 2026-11-16). Not taken - the lock or the
+         // node refused - and they are still opened: Give keys asks for the words once, as before.
+         var opens = "";
 
-            await signin_issue( function( done )
+         try
+         {
+            opens = ( password && opened.people ) ? await uk.open_people_key( opened.people, ciyam.access, password ) : "";
+         }
+         catch( e )
+         {
+            opens = "";
+         }
+
+         var sealed = ( password && ( opens !== people ) ) ? await seal( ) : "";
+
+         people = "";
+
+         if( sealed !== "" )
+         {
+            try
             {
-               return ciyam.fetch_in_body( url + "&payload=" + encodeURIComponent( relocked ) + "&session=" + ciyam.sessid, "PUT", done );
-            } );
+               var relocked = uk.kept_text( opened.guard, await uk.lock( access, { primary: opened.primary, secondary: opened.secondary,
+                contacts: opened.contacts, rooms: opened.rooms, people: sealed }, { rounds: opened.rounds } ) );
+
+               await signin_issue( function( done )
+               {
+                  return ciyam.fetch_in_body( url + "&payload=" + encodeURIComponent( relocked ) + "&session=" + ciyam.sessid, "PUT", done );
+               } );
+            }
+            catch( e )
+            {
+            }
          }
 
          return "opened";
       }
 
-      var made = await uk.kept_keys( own, undefined, sealed );
+      var made = await uk.kept_keys( own, undefined, await seal( ) );
+
+      people = "";
 
       var saved = ( await signin_issue( function( done )
       {
