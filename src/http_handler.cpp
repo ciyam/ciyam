@@ -68,6 +68,8 @@ const size_t c_max_line_length = 10000;
 
 const size_t c_max_request_lines = 100;
 
+const size_t c_large_file_buffer_size = 8194;
+
 const size_t c_admin_access_check_cycles = 20;
 
 const size_t c_admin_identity_expiry_seconds = 300;
@@ -789,7 +791,7 @@ void http_request_handler::on_start( )
 
          ostringstream osstr;
 
-         string data, error, header, access, device, response, session, request_id, moved_document;
+         string data, error, header, access, device, response, session, request_id, moved_document, large_file_name;
 
          // NOTE: If document ends in '/' then will
          // automatically append "index.html".
@@ -1620,9 +1622,7 @@ void http_request_handler::on_start( )
                      else if( ( extension == c_ext_htm ) || ( extension == c_ext_html ) )
                         osstr << c_http_content_type_text_html_utf8;
                      else
-                     {
                         osstr << c_http_content_type_text_plain_utf8;
-                     }
 
                      osstr << c_crlf;
 
@@ -1636,7 +1636,13 @@ void http_request_handler::on_start( )
                         head_size = file_size( path + http_document );
                      }
                      else
-                        response = buffer_file( path + http_document );
+                     {
+                        // NOTE: Large files are sent in chunks while small ones are fully buffered.
+                        if( file_size( path + http_document ) >= ( c_large_file_buffer_size * 10 ) )
+                           large_file_name = path + http_document;
+                        else
+                           response = buffer_file( path + http_document );
+                     }
                   }
                }
                else
@@ -1749,10 +1755,13 @@ void http_request_handler::on_start( )
                osstr << c_crlf;
             }
 
-            if( empty_but_not_unchanged )
-               response = c_html_test_response;
-            else if( was_endpoint && !response.empty( ) && !has_format_parameter )
+            if( large_file_name.empty( ) )
+            {
+               if( empty_but_not_unchanged )
+                  response = c_html_test_response;
+               else if( was_endpoint && !response.empty( ) && !has_format_parameter )
                   response += '\n';
+            }
 
             if( !response.empty( ) )
             {
@@ -1769,6 +1778,14 @@ void http_request_handler::on_start( )
                // output the headers but no response content.
                if( request_type != e_http_request_type_head )
                   osstr << response;
+            }
+            else if( !large_file_name.empty( ) )
+            {
+               osstr << c_http_content_length_prefix;
+
+               osstr << file_size( large_file_name );
+
+               osstr << c_crlf << c_crlf;
             }
          }
          else if( !error.empty( ) )
@@ -1836,6 +1853,75 @@ void http_request_handler::on_start( )
           + " - (responding with " + to_string( response.length( ) ) + " bytes)" );
 
          up_socket->send_n( ( unsigned char* )response.data( ), response.length( ), c_response_timeout );
+
+         if( !large_file_name.empty( ) )
+         {
+            size_t file_length = file_size( large_file_name );
+
+            unsigned char buffer[ c_large_file_buffer_size ];
+
+            size_t chunk = min( c_large_file_buffer_size, file_length );
+
+            ifstream inpf( large_file_name.c_str( ) );
+
+            if( !inpf )
+               throw runtime_error( "unexpected error opening '" + large_file_name + "' for reading" );
+
+            inpf.read( ( char* )buffer, chunk );
+
+            int sent = up_socket->send_n( ( unsigned char* )buffer, chunk, c_subsequent_timeout );
+
+            if( sent < 0 )
+               error = "unexpected error occurred sending file data";
+            else
+            {
+               if( sent < file_length )
+               {
+                  size_t remaining = ( file_length - sent );
+
+                  bool had_error = false;
+
+                  size_t empty_chunks = 0;
+
+                  while( remaining )
+                  {
+#ifdef DEBUG
+                     cerr << "sent = " << sent << endl;
+                     cerr << "remaining = " << remaining << endl;
+#endif
+
+                     chunk = min( c_large_file_buffer_size, remaining );
+
+                     inpf.read( ( char* )buffer, chunk );
+
+                     int next_chunk = up_socket->send_n(
+                      buffer, chunk, c_subsequent_timeout );
+#ifdef DEBUG
+                     cerr << "next_chunk = " << next_chunk << '\n' << endl;
+#endif
+                     if( next_chunk < 0 )
+                        had_error = true;
+                     else if( next_chunk == 0 )
+                     {
+                        if( ++empty_chunks > c_max_empty_chunks )
+                           had_error = true;
+                     }
+                     else
+                     {
+                        sent += next_chunk;
+                        remaining -= next_chunk;
+                     }
+
+                     if( had_error )
+                     {
+                        error = "unexpected error occurred sending get data";
+
+                        break;
+                     }
+                  }
+               }
+            }
+         }
 
          if( was_endpoint )
             break;
