@@ -272,7 +272,7 @@ int get_web_port( );
 
 std::string get_web_root( );
 
-std::string get_ntfy_server( );
+std::string get_ntfy_server( bool from_setting_variable = true );
 
 bool get_is_rpc_approved_ip_addr( const std::string& ip_addr );
 
