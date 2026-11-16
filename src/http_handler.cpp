@@ -1868,6 +1868,8 @@ void http_request_handler::on_start( )
             bool had_error = false;
 
             size_t empty_chunks = 0;
+
+            size_t chunk_size = 0;
             size_t chunk_remaining = 0;
 
             size_t total_sent = 0;
@@ -1882,14 +1884,14 @@ void http_request_handler::on_start( )
 
                if( !chunk_remaining )
                {
-                  chunk_remaining = min( c_large_file_buffer_size, total_remaining );
+                  chunk_size = chunk_remaining = min( c_large_file_buffer_size, total_remaining );
 
                   if( !inpf.read( ( char* )buffer, chunk_remaining ) )
                      throw runtime_error( "unexpected error reading from '" + large_file_name + "'" );
                }
 
                int next_chunk = up_socket->send_n(
-                buffer, chunk_remaining, c_subsequent_timeout );
+                buffer + ( chunk_size - chunk_remaining ), chunk_remaining, c_subsequent_timeout );
 
 #ifdef DEBUG
                cerr << "next_chunk = " << next_chunk << '\n' << endl;
@@ -1908,6 +1910,8 @@ void http_request_handler::on_start( )
                      if( ++empty_chunks > c_max_empty_chunks )
                         had_error = true;
                   }
+                  else
+                     empty_chunks = 0;
                }
 
                if( had_error )
