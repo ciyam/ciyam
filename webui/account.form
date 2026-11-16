@@ -557,6 +557,9 @@ http://www.opensource.org/licenses/mit-license.php.
                         <button type="button" class="chat-btn chat-btn--primary" id="keys_public_show">Add a new contact</button>
                      </div>
                      <div class="account-contact-add" id="keys_public_part" hidden>
+                        <!-- NOTE: The same two steps as the keys' exchanges, in either order (Damon, 2026-11-17) - yours, which this
+                             page can't see read, and theirs, ticked once added ("keys_contact_steps( )"). -->
+                        <ol class="account-exchange-steps" id="contacts_steps" aria-label="Steps"></ol>
                         <div class="account-contact-own">
                            <div class="chat-label">Your contact code</div>
                            <div class="account-keys-qr" id="keys_qr" aria-hidden="true"></div>

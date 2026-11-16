@@ -335,6 +335,8 @@ check( "- the person's first step says to show their code, then Next; the admini
  /^Show this code to your administrator.*press Next\.$/.test( ap.exchange_steps( "give", "asking" ).ledes[ 0 ] ),
  /^Now Ellie presses Next/.test( ap.exchange_steps( "give", "giving", "Ellie" ).ledes[ 1 ] ),
  /press Next\.$/.test( ap.exchange_steps( "device", "asking" ).ledes[ 0 ] ) ], [ true, true, true ] );
+check( "- contact codes: the same two, in either order, with nothing more said", ap.exchange_steps( "contact" ),
+ { labels: [ "They scan your code", "You scan theirs" ], ledes: [ ] } );
 check( "xor of two hex strings - and back", [ ap.xor_hex( "0f0f", "ffff" ), ap.xor_hex( ap.xor_hex( sealed_key, ask_key ), ask_key ) ],
  [ "f0f0", sealed_key ] );
 check( "- not the same length, or not hex", [ ap.xor_hex( "0f", "fff" ), ap.xor_hex( "zz", "00" ) ], [ "", "" ] );

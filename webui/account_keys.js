@@ -918,9 +918,9 @@ function keys_draw_qr( id, text )
    box.querySelectorAll( "[title]" ).forEach( function( node ) { node.removeAttribute( "title" ); } );
 }
 
-// NOTE: The exchange's two steps ("exchange_steps( )"), "step" (1 or 2) the one now - those before it marked done. Their labels may
-// carry a name, so as text. Returns the steps' ledes.
-function keys_draw_steps( id, flow, side, step, name )
+// NOTE: The exchange's two steps ("exchange_steps( )"), "step" (1 or 2) the one now - those before it marked done, or those in
+// "ticked" if given (a contact's, in either order, with none now). Their labels may carry a name, so as text. Returns the ledes.
+function keys_draw_steps( id, flow, side, step, name, ticked )
 {
    var steps = exchange_steps( flow, side, name );
    var list = document.getElementById( id );
@@ -933,8 +933,10 @@ function keys_draw_steps( id, flow, side, step, name )
       var mark = document.createElement( "span" );
       var text = document.createElement( "span" );
 
+      var done = ticked ? ( ticked.indexOf( index + 1 ) >= 0 ) : ( index + 1 < step );
+
       mark.className = "account-exchange-mark";
-      mark.textContent = ( index + 1 < step ) ? "✓" : String( index + 1 );
+      mark.textContent = done ? "✓" : String( index + 1 );
       mark.setAttribute( "aria-hidden", "true" );
 
       text.textContent = label;
@@ -944,7 +946,7 @@ function keys_draw_steps( id, flow, side, step, name )
          item.className = "is-current";
          item.setAttribute( "aria-current", "step" );
       }
-      else if( index + 1 < step )
+      else if( done )
          item.className = "is-done";
 
       item.append( mark, text );
@@ -1811,10 +1813,17 @@ function keys_show_public( )
 
    set_error( "keys_add_error", "" );
    keys_scan_status( "" );
+   keys_contact_steps( false );
 
    document.getElementById( "keys_public_part" ).hidden = false;
    document.getElementById( "contacts_start_row" ).hidden = true;
    document.getElementById( "keys_add_key" ).focus( );
+}
+
+// NOTE: Add a contact's two steps - neither now, as they come in either order; theirs ticked once added ("added").
+function keys_contact_steps( added )
+{
+   keys_draw_steps( "contacts_steps", "contact", "", 0, "", added ? [ 2 ] : [ ] );
 }
 
 function keys_hide_public( )
@@ -2207,6 +2216,7 @@ async function keys_add_contact( )
    var problem = contact_problem( contact, g_keys.contacts, g_keys.own, own_name );
 
    keys_scan_status( "" );
+   keys_contact_steps( false );
 
    if( problem !== "" )
    {
@@ -2229,6 +2239,7 @@ async function keys_add_contact( )
    {
       document.getElementById( "keys_add_key" ).value = "";
 
+      keys_contact_steps( true );
       keys_scan_status( contact.name + " added - once they have added you too, your direct messages are encrypted." );
    }
 }
@@ -2608,6 +2619,8 @@ function install_keys( )
    document.getElementById( "keys_ask_use" ).addEventListener( "click", function( ) { keys_ask_use( ); } );
    document.getElementById( "ask_scan" ).addEventListener( "click", function( ) { keys_scan_start( "ask" ); } );
    document.getElementById( "keys_add" ).addEventListener( "click", keys_add_contact );
+   // NOTE: Another code begun - theirs no longer ticked, as it is for the next person.
+   document.getElementById( "keys_add_key" ).addEventListener( "input", function( ) { keys_contact_steps( false ); } );
    document.getElementById( "give_go" ).addEventListener( "click", keys_give_go );
    document.getElementById( "give_cancel" ).addEventListener( "click", keys_give_close );
    document.getElementById( "give_done" ).addEventListener( "click", keys_give_close );

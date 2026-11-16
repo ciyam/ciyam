@@ -591,9 +591,15 @@ function device_page_of( text, own )
 // it wasn't clear a second code was to come) - "give", keys from the administrator, or "device", from another of one's own; "asking",
 // the device getting them, which shows its code then scans the answer, or "giving", which scans then shows. "name" - who is given
 // them, for the administrator's side. { labels, ledes }, one of each per step.
+//
+// "contact" - contact codes, each a public key that never changes, so the two are swapped in either order and nothing is said as
+// now; the labels only, the card itself saying the rest (Damon, 2026-11-17).
 function exchange_steps( flow, side, name )
 {
    var who = String( name || "" ) || "they";
+
+   if( flow === "contact" )
+      return { labels: [ "They scan your code", "You scan theirs" ], ledes: [ ] };
 
    if( flow === "give" )
    {
