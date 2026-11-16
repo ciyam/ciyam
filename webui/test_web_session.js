@@ -63,6 +63,9 @@ const messages_delete_cmd = "messages|delete";
 const messages_review_cmd = "messages|review";
 const messages_update_cmd = "messages|update";
 
+const settings_review_cmd = "settings|review";
+const settings_update_cmd = "settings|update";
+
 const storages_attach_cmd = "storages|attach";
 const storages_review_cmd = "storages|review";
 
@@ -1074,8 +1077,8 @@ async function do_fetch( )
 
          var request_type = "GET";
 
-         if( ( cmd == users_update_cmd )
-          || ( cmd == messages_update_cmd ) || ( cmd == user_keys_retain_cmd )
+         if( ( cmd == users_update_cmd ) || ( cmd == messages_update_cmd )
+          || ( cmd == settings_update_cmd ) || ( cmd == user_keys_retain_cmd )
           || ( cmd == javascripts_retain_cmd ) || ( cmd == stylesheets_retain_cmd )
           || ( cmd == webcmdlists_retain_cmd ) || ( cmd == storage_instances_update_cmd ) )
             request_type = "PUT";
@@ -1118,6 +1121,7 @@ async function do_fetch( )
           || ( cmd == users_update_cmd ) || ( cmd == devices_delete_cmd )
           || ( cmd == messages_create_cmd ) || ( cmd == messages_delete_cmd )
           || ( cmd == messages_review_cmd ) || ( cmd == messages_update_cmd )
+          || ( cmd == settings_review_cmd ) || ( cmd == settings_update_cmd )
           || ( cmd == storages_attach_cmd ) || ( cmd == storages_review_cmd )
           || ( cmd == unlock_keys_create_cmd ) || ( cmd == unlock_keys_employ_cmd )
           || ( cmd == javascripts_review_cmd ) || ( cmd == stylesheets_review_cmd )
@@ -1132,7 +1136,7 @@ async function do_fetch( )
 
                if( ( cmd == logs_review_cmd ) || ( cmd == users_update_cmd )
                 || ( cmd == messages_create_cmd ) || ( cmd == messages_review_cmd ) || ( cmd == messages_update_cmd )
-                || ( cmd == storage_instances_review_cmd ) || ( cmd == storage_instances_update_cmd ) )
+                || ( cmd == settings_update_cmd ) || ( cmd == storage_instances_review_cmd ) || ( cmd == storage_instances_update_cmd ) )
                   has_cmd_options = true;
             }
 
