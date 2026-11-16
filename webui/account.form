@@ -362,18 +362,25 @@ http://www.opensource.org/licenses/mit-license.php.
                         </div>
                      </div>
 
+                     <!-- NOTE: On a browser new to them, getting them comes first - most here have them from their administrator, with
+                          no words of their own - and the words only on "I have my words" (Damon, 2026-11-16) ("keys_show_enter( )"). -->
                      <div class="account-keys-part" id="keys_enter" hidden>
                         <p class="account-lede" id="keys_enter_lede">Your keys are set up. To use them on this browser, type your
                          twelve words.</p>
-                        <label class="chat-label" for="keys_enter_words" id="keys_enter_label">Your twelve words</label>
-                        <textarea class="chat-field account-keys-words" id="keys_enter_words" rows="3" autocomplete="off" autocapitalize="off"
-                         spellcheck="false"></textarea>
-                        <div class="account-actions-row">
-                           <button type="button" class="chat-btn" id="keys_enter_new">Start again with new words</button>
-                           <button type="button" class="chat-btn" id="keys_enter_cancel" hidden>Cancel</button>
-                           <button type="button" class="chat-btn" id="keys_ask_start">Get them from another device</button>
+                        <div class="account-actions-row" id="keys_enter_choices">
+                           <button type="button" class="chat-btn chat-btn--primary" id="keys_ask_start">Get them from another device</button>
                            <button type="button" class="chat-btn" id="keys_enter_admin" hidden>Get them from your administrator</button>
-                           <button type="button" class="chat-btn chat-btn--primary" id="keys_enter_go">Use my keys here</button>
+                           <button type="button" class="chat-btn" id="keys_enter_have" hidden>I have my words</button>
+                        </div>
+                        <div class="account-keys-enter-words" id="keys_enter_words_part">
+                           <label class="chat-label" for="keys_enter_words" id="keys_enter_label">Your twelve words</label>
+                           <textarea class="chat-field account-keys-words" id="keys_enter_words" rows="3" autocomplete="off" autocapitalize="off"
+                            spellcheck="false"></textarea>
+                           <div class="account-actions-row">
+                              <button type="button" class="chat-btn" id="keys_enter_new">Start again with new words</button>
+                              <button type="button" class="chat-btn" id="keys_enter_cancel" hidden>Cancel</button>
+                              <button type="button" class="chat-btn chat-btn--primary" id="keys_enter_go">Use my keys here</button>
+                           </div>
                         </div>
                      </div>
 
@@ -385,16 +392,25 @@ http://www.opensource.org/licenses/mit-license.php.
                          there, signed in as you. It shows a code back: open that with this device's camera, scan it here, or paste
                          its address.</p>
                         <div class="account-keys-qr" id="keys_ask_qr" aria-hidden="true"></div>
-                        <label class="chat-label" for="keys_ask_link">This device's address</label>
-                        <input type="text" class="chat-field account-keys-key" id="keys_ask_link" readonly>
                         <div class="chat-scan-reader" id="ask_scan_reader"></div>
                         <p class="account-lede" id="ask_scan_status" role="status" aria-live="polite"></p>
-                        <label class="chat-label" for="keys_ask_reply" id="keys_ask_reply_label">The address it shows back</label>
-                        <input type="text" class="chat-field account-keys-key" id="keys_ask_reply" autocomplete="off" spellcheck="false">
+                        <!-- NOTE: The addresses only for when a camera can't be used (Damon, 2026-11-16: they read as something that
+                             should have appeared) - opened by itself when this device's can't ("keys_scan_start( )"). -->
+                        <details class="account-keys-manual" id="keys_ask_manual">
+                           <summary>Can't use the camera?</summary>
+                           <div class="account-keys-manual-fields">
+                              <label class="chat-label" for="keys_ask_link">This device's address</label>
+                              <input type="text" class="chat-field account-keys-key" id="keys_ask_link" readonly>
+                              <label class="chat-label" for="keys_ask_reply" id="keys_ask_reply_label">The address it shows back</label>
+                              <input type="text" class="chat-field account-keys-key" id="keys_ask_reply" autocomplete="off" spellcheck="false">
+                              <div class="account-actions-row">
+                                 <button type="button" class="chat-btn chat-btn--primary" id="keys_ask_use">Use it</button>
+                              </div>
+                           </div>
+                        </details>
                         <div class="account-actions-row">
                            <button type="button" class="chat-btn" id="keys_ask_cancel">Cancel</button>
-                           <button type="button" class="chat-btn" id="ask_scan">Scan its code</button>
-                           <button type="button" class="chat-btn chat-btn--primary" id="keys_ask_use">Use it</button>
+                           <button type="button" class="chat-btn chat-btn--primary" id="ask_scan">Scan its code</button>
                         </div>
                      </div>
 
@@ -438,9 +454,16 @@ http://www.opensource.org/licenses/mit-license.php.
                         </div>
                         <div class="chat-scan-reader" id="give_scan_reader"></div>
                         <p class="account-lede" id="give_scan_status" role="status" aria-live="polite"></p>
-                        <label class="chat-label" for="give_ask">Their device's address <span class="chat-needed" aria-hidden="true">*</span></label>
-                        <input type="text" class="chat-field account-keys-key" id="give_ask" autocomplete="off" spellcheck="false">
-                        <div class="chat-field-error" id="give_ask_error"></div>
+                        <!-- NOTE: The address only for when the camera can't be used - opened by itself then, or when what was read is
+                             said to be wrong. Give keys shown only with something to type, or this open ("keys_give_asking( )"). -->
+                        <details class="account-keys-manual" id="give_manual">
+                           <summary>Can't use the camera?</summary>
+                           <div class="account-keys-manual-fields">
+                              <label class="chat-label" for="give_ask">Their device's address <span class="chat-needed" aria-hidden="true">*</span></label>
+                              <input type="text" class="chat-field account-keys-key" id="give_ask" autocomplete="off" spellcheck="false">
+                              <div class="chat-field-error" id="give_ask_error"></div>
+                           </div>
+                        </details>
                         <div class="recover-warning"><b>Only their own device, in front of you.</b> Their keys go to whichever device
                          showed the code.</div>
                         <div class="chat-error-text" id="give_error" role="alert"></div>
@@ -453,8 +476,13 @@ http://www.opensource.org/licenses/mit-license.php.
                      <div class="account-keys-device-step" id="give_reply_part" hidden>
                         <p class="account-lede" id="give_reply_lede"></p>
                         <div class="account-keys-qr" id="give_qr" aria-hidden="true"></div>
-                        <label class="chat-label" for="give_link">The address for it</label>
-                        <input type="text" class="chat-field account-keys-key" id="give_link" readonly>
+                        <details class="account-keys-manual" id="give_link_manual">
+                           <summary>Can't use the camera?</summary>
+                           <div class="account-keys-manual-fields">
+                              <label class="chat-label" for="give_link">The address for it</label>
+                              <input type="text" class="chat-field account-keys-key" id="give_link" readonly>
+                           </div>
+                        </details>
                         <div class="account-actions-row">
                            <button type="button" class="chat-btn chat-btn--primary" id="give_done">Done</button>
                         </div>

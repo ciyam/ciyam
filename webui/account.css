@@ -1184,6 +1184,35 @@ button.account-back,
    gap: 12px;
 }
 
+.account-keys-enter-words
+{
+   display: flex;
+   flex-direction: column;
+   gap: 12px;
+}
+
+.account-keys-enter-words[hidden],
+#keys_enter_choices[hidden]
+{
+   display: none;
+}
+
+/* NOTE: The addresses for when a camera can't be used, folded away (Damon, 2026-11-16). */
+.account-keys-manual summary
+{
+   cursor: pointer;
+   color: var(--color-chat-text-secondary);
+   font-size: var(--font-size-chat-meta);
+}
+
+.account-keys-manual-fields
+{
+   display: flex;
+   flex-direction: column;
+   gap: 12px;
+   margin-top: 12px;
+}
+
 .account-keys-device-step[hidden],
 #device_error:empty,
 .account-keys-device-show[hidden],

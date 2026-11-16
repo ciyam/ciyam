@@ -553,6 +553,25 @@ async function render_keys( )
    }
 }
 
+// NOTE: "I have my words" - offered while the words are folded away; getting them stays the first choice until they are shown.
+function keys_enter_have_shown( offered )
+{
+   document.getElementById( "keys_enter_have" ).hidden = !offered;
+   document.getElementById( "keys_ask_start" ).classList.toggle( "chat-btn--primary", offered );
+}
+
+function keys_enter_have( )
+{
+   document.getElementById( "keys_enter_words_part" ).hidden = false;
+
+   keys_enter_have_shown( false );
+
+   if( g_keys_words_entry )
+      g_keys_words_entry.draw( );
+
+   document.getElementById( "keys_enter_words" ).focus( );
+}
+
 // NOTE: The words asked for - "elsewhere": on a browser new to the keys; "other": what this browser kept does not open the
 // node's (set up again from another browser, or a new access key, say); "restore": nothing on the node, the keys made again
 // from the words; "change": a new access key (Ian, 2026-10-27: a round fewer each time); "node": nothing on the node, the keys made
@@ -572,8 +591,10 @@ function keys_show_enter( mode )
       // 2026-11-14: they were told to type words they never had).
       elsewhere: ciyam.is_admin ? "Your keys are set up. To use them on this browser, type your twelve words - or get them from"
        + " another device that has them." + lost : "Your keys are set up. To use them on this browser, get them from another device"
-       + " that has them, or from your administrator - or type your twelve words, if you set them up with words of your own." + lost,
-      other: "The keys on the node were locked by another browser since. Type the twelve words they were set up with." + lost,
+       + " that has them, or from your administrator." + lost,
+      other: ciyam.is_admin ? "The keys on the node were locked by another browser since. Type the twelve words they were set up with."
+       + lost : "The keys on the node were locked by another browser since. Get them again from a device that has them, or from your"
+       + " administrator." + lost,
       // NOTE: One's own - not offered to admin, whose keys come from the node's (Ian, 2026-11-11); and only admin is offered those
       // (Damon, 2026-11-14).
       restore: "Type the twelve words you set your keys up with, and they're made again from them.",
@@ -582,10 +603,18 @@ function keys_show_enter( mode )
       node: "Type the twelve words the node was set up with. Your keys are made from them and your PIN, so whoever has the node's"
        + " words can make them again for you." }[ mode ];
 
+   // NOTE: Getting them offered first, for anyone but admin (whose come from the node's words); their own words on asking.
+   var getting = ( mode === "elsewhere" ) || ( mode === "other" );
+   var choosing = getting && !ciyam.is_admin;
+
    document.getElementById( "keys_enter_label" ).textContent = ( mode === "node" ) ? "The node's twelve words" : "Your twelve words";
    document.getElementById( "keys_enter_new" ).hidden = made || ( mode === "change" ) || guarded || ciyam.is_admin;
-   document.getElementById( "keys_ask_start" ).hidden = ( mode !== "elsewhere" ) && ( mode !== "other" );
-   document.getElementById( "keys_enter_admin" ).hidden = ( ( mode !== "elsewhere" ) && ( mode !== "other" ) ) || ciyam.is_admin;
+   document.getElementById( "keys_enter_choices" ).hidden = !getting;
+   document.getElementById( "keys_ask_start" ).hidden = !getting;
+   document.getElementById( "keys_enter_admin" ).hidden = !choosing;
+   document.getElementById( "keys_enter_words_part" ).hidden = choosing;
+
+   keys_enter_have_shown( choosing );
    document.getElementById( "keys_enter_cancel" ).hidden = !made && ( mode !== "change" );
    document.getElementById( "keys_enter_go" ).textContent = ( mode === "change" ) ? "Change the access key" : "Use my keys here";
    document.getElementById( "keys_enter_words" ).value = "";
@@ -813,7 +842,7 @@ function keys_pick( row, note, button, is_right, index )
 
 // NOTE: The keys made from "entropy", locked under its access key and sent - kept here once the node has them. No one else's
 // public keys yet: new keys, or made again when the node had lost them.
-async function keys_make_and_save( entropy, lede )
+async function keys_make_and_save( entropy, lede, people )
 {
    set_error( "keys_error", "" );
    keys_busy( "Securing your keys…" );
@@ -842,8 +871,8 @@ async function keys_make_and_save( entropy, lede )
 
    keys_busy( "Saving your keys…" );
 
-   var saved = await keys_send( access, rounds, { primary: seeds.primary, secondary: seeds.secondary, contacts: { } }, "keys_error", "Your keys",
-    guard );
+   var saved = await keys_send( access, rounds, { primary: seeds.primary, secondary: seeds.secondary, contacts: { }, people: people || "" },
+    "keys_error", "Your keys", guard );
 
    keys_busy( "" );
 
@@ -1037,15 +1066,17 @@ function keys_ask_start( kind )
 
    keys_draw_qr( "keys_ask_qr", link );
 
+   // NOTE: Said as the two steps it is - the addresses, for when a camera can't be used, are folded away (Damon, 2026-11-16).
    document.getElementById( "keys_ask_lede" ).textContent = giving ? "Show this code to your administrator. In People, they choose Give"
-    + " keys beside your name and scan it. They show a code back: open that with this device's camera, scan it here, or paste its"
-    + " address." : "On a device that has your keys, open this code with its camera - or open the address there, signed in as you. It"
-    + " shows a code back: open that with this device's camera, scan it here, or paste its address.";
+    + " keys beside your name and scan it. Then they show you a code - press Scan its code and hold this device up to it."
+    : "On a device that has your keys, signed in as you, open this code with its camera. It shows a code back - press Scan its code"
+    + " and hold this device up to it.";
    document.getElementById( "keys_ask_reply_label" ).textContent = giving ? "The address your administrator shows back" : "The address it shows back";
 
    document.getElementById( "keys_ask_link" ).value = link;
    document.getElementById( "keys_ask_reply" ).value = "";
    document.getElementById( "ask_scan_status" ).textContent = "";
+   document.getElementById( "keys_ask_manual" ).open = false;
 
    set_error( "keys_error", "" );
    keys_show( "keys_ask" );
@@ -1301,6 +1332,10 @@ function keys_give_problem( key, said )
 
       document.getElementById( part.error ).textContent = said;
 
+      // NOTE: Their address is folded away with the camera working - opened to show what is wrong with what was read.
+      if( said && ( part.key === "ask" ) )
+         keys_manual_open( "give" );
+
       if( said )
          document.getElementById( part.field ).setAttribute( "aria-invalid", "true" );
       else
@@ -1350,6 +1385,8 @@ function keys_give_reset( )
 
    document.getElementById( "give_qr" ).replaceChildren( );
    document.getElementById( "give_scan_status" ).textContent = "";
+   document.getElementById( "give_manual" ).open = false;
+   document.getElementById( "give_link_manual" ).open = false;
    document.getElementById( "give_ask_part" ).hidden = false;
    document.getElementById( "give_reply_part" ).hidden = true;
 
@@ -1374,13 +1411,18 @@ function keys_show_give( give )
    document.getElementById( "give_words_note" ).textContent = "Asked only this once. What they make is then kept with your keys.";
    document.getElementById( "give_part" ).hidden = false;
 
-   // NOTE: The first thing to do - with nothing to type, scanning their code.
+   // NOTE: The first thing to do - with nothing to type, scanning their code: the camera started at once (Damon, 2026-11-16), and
+   // without one, or without https, the address to paste said ("keys_scan_start( )").
    if( !document.getElementById( "give_password_part" ).hidden )
       document.getElementById( "give_password" ).focus( );
    else if( !document.getElementById( "give_words_part" ).hidden )
       document.getElementById( "give_words" ).focus( );
    else
+   {
       document.getElementById( "give_scan" ).focus( );
+
+      keys_scan_start( "give" );
+   }
 }
 
 // NOTE: Back to People, where Give keys was chosen.
@@ -1470,14 +1512,27 @@ async function keys_give_people_key( password, latest )
    return keys_give_keep_people( people, latest );
 }
 
-// NOTE: The people key kept with admin's keys, as it is - and returned, or "" if the node didn't take it (said).
-async function keys_give_keep_people( people, latest )
+// NOTE: The people key kept with admin's keys, as it is, unless it is there already - false if the node didn't take it (said under
+// "error_id").
+async function keys_keep_people( people, latest, error_id )
 {
+   if( latest.people === people )
+      return true;
+
    if( !await keys_send( g_keys.access, g_keys.rounds, { primary: latest.primary, secondary: latest.secondary, contacts: latest.contacts,
-    rooms: latest.rooms, people: people }, "give_error", "What the node's words make", latest.guard ) )
-      return "";
+    rooms: latest.rooms, people: people }, error_id, "What the node's words make", latest.guard ) )
+      return false;
 
    g_keys.people = people;
+
+   return true;
+}
+
+// NOTE: The people key kept for Give keys - and returned, or "" if the node didn't take it (said).
+async function keys_give_keep_people( people, latest )
+{
+   if( !await keys_keep_people( people, latest, "give_error" ) )
+      return "";
 
    keys_give_asking( );
 
@@ -1491,6 +1546,8 @@ function keys_give_asking( )
 
    document.getElementById( "give_words_part" ).hidden = ( g_keys.people !== "" );
    document.getElementById( "give_password_part" ).hidden = !uk.is_sealed_people_key( g_keys.people );
+   document.getElementById( "give_go" ).hidden = document.getElementById( "give_words_part" ).hidden
+    && document.getElementById( "give_password_part" ).hidden && !document.getElementById( "give_manual" ).open;
 }
 
 // NOTE: Their device's code read - the people key opened, their entropy made from it and their PIN, and sealed for that device alone
@@ -1696,6 +1753,20 @@ function keys_scan_status( text )
    document.getElementById( c_keys_scan_targets[ g_keys_scan_target ].status ).textContent = text;
 }
 
+// NOTE: The addresses folded away under "Can't use the camera?" opened - when it can't be, or what was read is wrong.
+function keys_manual_open( target )
+{
+   var id = { ask: "keys_ask_manual", give: "give_manual" }[ target ];
+
+   if( id && !document.getElementById( id ).open )
+   {
+      document.getElementById( id ).open = true;
+
+      if( target === "give" )
+         keys_give_asking( );
+   }
+}
+
 function keys_scan_stop( )
 {
    var scanner = g_keys_scanner;
@@ -1742,6 +1813,8 @@ async function keys_scan_start( which )
 
    if( !qr_scan_can_use_camera( ) )
    {
+      keys_manual_open( g_keys_scan_target );
+
       keys_scan_status( ( g_keys_scan_target === "contacts" ) ? "The camera needs this page opened as https - choose a picture of their"
        + " code instead." : "The camera needs this page opened as https - paste the address instead." );
 
@@ -1763,6 +1836,8 @@ async function keys_scan_start( which )
       {
          g_keys_scanner = null;
          document.getElementById( target.button ).disabled = false;
+
+         keys_manual_open( g_keys_scan_target );
 
          keys_scan_status( ( g_keys_scan_target === "contacts" ) ? "No camera could be used - choose a picture of their code instead."
           : "No camera could be used - paste the address instead." );
@@ -2103,8 +2178,11 @@ async function keys_enter_go( )
    // NOTE: The node's words (Ian, 2026-11-11) - this person's keys made from them and their PIN.
    if( g_keys.entering === "node" )
    {
+      var people = "";
+
       try
       {
+         people = ciyam.is_admin ? await uk.people_key( entropy ) : "";
          entropy = await keys_person_entropy( entropy );
       }
       catch( e )
@@ -2114,7 +2192,9 @@ async function keys_enter_go( )
          return;
       }
 
-      await keys_make_and_save( entropy, "Your keys are made from the node's words, and on this browser." );
+      // NOTE: Admin's with the people key kept in them, as setting up the node keeps it - so Give keys doesn't ask for the words
+      // again (Damon, 2026-11-16).
+      await keys_make_and_save( entropy, "Your keys are made from the node's words, and on this browser.", people );
 
       return;
    }
@@ -2178,6 +2258,9 @@ async function keys_enter_go( )
       return;
    }
 
+   // NOTE: The node's words typed, not admin's own - the people key from them, to keep with admin's keys.
+   var people = ( ciyam.is_admin && ( found.entropy !== entropy ) ) ? await uk.people_key( entropy ) : "";
+
    entropy = found.entropy;
 
    var access = found.access;
@@ -2191,6 +2274,16 @@ async function keys_enter_go( )
    document.getElementById( "keys_enter_words" ).value = "";
 
    await keys_show_here( access, "Your keys are on this browser.", false );
+
+   // NOTE: Kept with them unless it is there already, so Give keys doesn't ask for the words again (Damon, 2026-11-16) - not kept,
+   // and it asks for them once, as before.
+   if( people !== "" )
+   {
+      var latest = await keys_latest( );
+
+      if( latest !== null )
+         await keys_keep_people( people, latest, "keys_error" );
+   }
 }
 
 // NOTE: This person's entropy from the entropy of the node's twelve words (Ian, 2026-11-11 - one set of words for the node and
@@ -2389,6 +2482,7 @@ function install_keys( )
    } );
    document.getElementById( "keys_enter_go" ).addEventListener( "click", keys_enter_go );
    document.getElementById( "keys_enter_new" ).addEventListener( "click", keys_start_again );
+   document.getElementById( "keys_enter_have" ).addEventListener( "click", keys_enter_have );
    document.getElementById( "keys_change" ).addEventListener( "click", function( ) { keys_show_enter( "change" ); } );
    document.getElementById( "keys_enter_cancel" ).addEventListener( "click", keys_cancel );
    document.getElementById( "keys_forget" ).addEventListener( "click", keys_forget );
@@ -2408,6 +2502,7 @@ function install_keys( )
    document.getElementById( "give_cancel" ).addEventListener( "click", keys_give_close );
    document.getElementById( "give_done" ).addEventListener( "click", keys_give_close );
    document.getElementById( "give_scan" ).addEventListener( "click", function( ) { keys_scan_start( "give" ); } );
+   document.getElementById( "give_manual" ).addEventListener( "toggle", function( ) { if( g_keys.access !== "" ) keys_give_asking( ); } );
 
    // NOTE: A field's problem cleared as it is changed.
    c_keys_give_parts.forEach( function( part )
