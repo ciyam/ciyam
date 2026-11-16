@@ -334,6 +334,7 @@ enum special_var
    e_special_var_blockchain_shared_identity,
    e_special_var_use_insecure_peer_protocol,
    e_special_var_blockchain_waiting_for_hub,
+   e_special_var_system_setting_ntfy_server,
    e_special_var_blockchain_block_processing,
    e_special_var_blockchain_zenith_tree_hash,
    e_special_var_totals_exclude_hidden_blobs,
