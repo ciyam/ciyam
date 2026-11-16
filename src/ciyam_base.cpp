@@ -4058,6 +4058,11 @@ void read_server_configuration( )
 
       g_ntfy_server = reader.read_opt_attribute( c_attribute_ntfy_server );
 
+      if( g_ntfy_server.empty( ) )
+         set_system_variable( e_special_var_system_setting_ntfy_server, g_none_name );
+      else
+         set_system_variable( e_special_var_system_setting_ntfy_server, g_ntfy_server );
+
       string trace_flags( reader.read_opt_attribute( c_attribute_trace_flags, c_default_trace_flags ) );
 
       // NOTE: Only set the trace flags if they
@@ -6444,9 +6449,20 @@ string get_web_root( )
    return g_web_root;
 }
 
-string get_ntfy_server( )
+string get_ntfy_server( bool from_setting_variable )
 {
-   return g_ntfy_server;
+   string value( g_ntfy_server );
+
+   if( from_setting_variable
+    && has_system_variable( e_special_var_system_setting_ntfy_server ) )
+   {
+      value = get_system_variable( e_special_var_system_setting_ntfy_server );
+
+      if( value == g_none_name )
+         value.erase( );
+   }
+
+   return value;
 }
 
 bool get_is_rpc_approved_ip_addr( const string& ip_addr )

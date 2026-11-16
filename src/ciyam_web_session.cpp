@@ -157,6 +157,7 @@ constexpr const char* c_cws_uri_suffix_status = "status";
 constexpr const char* c_cws_uri_suffix_devices = "devices";
 constexpr const char* c_cws_uri_suffix_messages = "messages";
 constexpr const char* c_cws_uri_suffix_sessions = "sessions";
+constexpr const char* c_cws_uri_suffix_settings = "settings";
 constexpr const char* c_cws_uri_suffix_storages = "storages";
 constexpr const char* c_cws_uri_suffix_javascripts = "javascripts";
 constexpr const char* c_cws_uri_suffix_stylesheets = "stylesheets";
@@ -170,6 +171,7 @@ constexpr const char* c_cws_uri_suffix_users_prefix = "users/";
 constexpr const char* c_cws_uri_suffix_devices_prefix = "devices/";
 constexpr const char* c_cws_uri_suffix_messages_prefix = "messages/";
 constexpr const char* c_cws_uri_suffix_sessions_prefix = "sessions/";
+constexpr const char* c_cws_uri_suffix_settings_prefix = "settings/";
 constexpr const char* c_cws_uri_suffix_storages_prefix = "storages/";
 constexpr const char* c_cws_uri_suffix_javascripts_prefix = "javascripts/";
 constexpr const char* c_cws_uri_suffix_stylesheets_prefix = "stylesheets/";
@@ -208,6 +210,8 @@ constexpr const char* c_cws_request_messages_update_options_owner = "owner";
 constexpr const char* c_cws_request_messages_update_options_posts = "posts";
 constexpr const char* c_cws_request_messages_update_options_closes = "closes";
 
+constexpr const char* c_cws_request_settings_update_options_value = "value";
+
 constexpr const char* c_cws_request_unlock_keys_create_options_encrypted = "encrypted";
 
 // NOTE: This help is only intended for the "test_web_session.html" page which translates this more "user friendly" syntax to HTTP requests.
@@ -225,11 +229,11 @@ constexpr const char* c_cws_help_request_admin_output = "quit\n"
  "attach storage <name>\ncreate user [secret|nominated=[[!]<pin>:][<username>]]\ncreate message <room> [for=<name,>;]text=<text>\n"
  "create unlock-key [encrypted=<prefix>-<xor_hash>]\ndelete user <pin>\ndelete device <ident>\ndelete message <room>\ndelete javascript\ndelete stylesheet\n"
  "delete webcmdlist\ndelete user-keys\nemploy unlock-key <key>\nretain javascript\nretain stylesheet\nretain webcmdlist\nretain user-keys\nreview logs [<name> [lines=10]]\n"
- "review users\nreview devices\nreview messages <room> [[from=<unix_time>;]extra={NONE|PEEK|TIME|KEYID|ENTIRE}]\nreview storages\nreview javascript[s] [<name>]\n"
+ "review users\nreview devices\nreview messages <room> [[from=<unix_time>;]extra={NONE|PEEK|TIME|KEYID|ENTIRE}]\nreview settings\nreview storages\nreview javascript[s] [<name>]\n"
  "review stylesheet[s] [<name>]\nreview webcmdlist[s] [<name>]\nreview user-keys\nreview storage-modules [<id>/enums|lists|views[/<item_id>]]\n"
  "review storage-instances <id>/<cid>[/<key>] [[key=<key>;][num=[-|+]<num>;][path=<path>;][query=<query>;][fields=<fields>]]\n"
  "update user <pin> keys={REPLACE|RESTORE}|password=<password>\nupdate message <room> name=<name>|owner=<user>|posts={ANY|OWN|NONE|REACT}|closes=<unix_time>\n"
- "update storage-instance <id>/<cid>/<key> assigns=<names_and_values>";
+ "update setting <name> value=<value>\nupdate storage-instance <id>/<cid>/<key> assigns=<names_and_values>";
 
 constexpr const char* c_web_session_script = "web_session.cin";
 
@@ -3661,6 +3665,25 @@ bool process_cws_request( http_request_type request_type, const string& uri_suff
                         response = "{\n \"all_users\":\n  [\n" + all_user_info + "\n ]\n}";
                   }
                }
+               else if( uri_suffix == c_cws_uri_suffix_settings )
+               {
+                  found = true;
+
+                  string settings( get_system_variable( string( c_special_variable_system_setting_prefix ) + "*" ) );
+
+                  replace( settings, c_special_variable_system_setting_prefix, "" );
+
+                  if( !is_json_output )
+                     response = settings;
+                  else
+                  {
+                     vector< string > all_settings;
+
+                     split( settings, all_settings, '\n' );
+
+                     response = as_json_array( "all_settings", all_settings );
+                  }
+               }
                else if( uri_suffix == c_cws_uri_suffix_storages )
                {
                   found = true;
@@ -3687,6 +3710,68 @@ bool process_cws_request( http_request_type request_type, const string& uri_suff
                      split( storages, all_storages, '\n' );
 
                      response = as_json_array( "all_storages", all_storages );
+                  }
+               }
+               else if( ( is_get_request || is_put_request )
+                && HAS_CONST_CHAR_PREFIX( uri_suffix, c_cws_uri_suffix_settings_prefix ) )
+               {
+                  string setting( uri_suffix.substr( CONST_LENGTH( c_cws_uri_suffix_settings_prefix ) ) );
+
+                  string var_name( string( c_special_variable_system_setting_prefix ) + setting );
+
+                  string value( get_system_variable( var_name ) );
+
+                  if( value.empty( ) )
+                     // FUTURE: This message should be handled as a server string message.
+                     error = "Unknown setting name '" + setting + "'";
+                  else
+                  {
+                     found = true;
+
+                     if( is_put_request )
+                     {
+                        size_t valid_options = 0;
+
+                        string value;
+
+                        if( option_parameters.count( c_cws_request_settings_update_options_value ) )
+                        {
+                           ++valid_options;
+
+                           value = option_parameters[ c_cws_request_settings_update_options_value ];
+
+                           if( value == g_none_var )
+                              value.erase( );
+                        }
+
+                        if( option_parameters.size( ) > valid_options )
+                           // FUTURE: This message should be handled as a server string message.
+                           error = "Invalid options '" + options + "' for setting update.";
+                        else
+                        {
+                           set_system_variable( ">" + var_name, value );
+
+                           // NOTE: An empty value first clears the persistent system variable
+                           // then restores the "ciyam_server.sio" value (if it is not empty).
+                           if( value.empty( ) )
+                           {
+                              if( var_name == get_special_var_name( e_special_var_system_setting_ntfy_server ) )
+                                 value = get_ntfy_server( false );
+
+                              if( value.empty( ) )
+                                 value = g_none_var;
+
+                              set_system_variable( var_name, value );
+                           }
+                        }
+                     }
+                     else
+                     {
+                        if( !is_json_output )
+                           response = value;
+                        else
+                           response = "{\"name\":\"" + setting + "\", \"value\":\"" + value + "\"}";
+                     }
                   }
                }
                else

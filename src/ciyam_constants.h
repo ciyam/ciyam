@@ -441,4 +441,6 @@ constexpr const char* c_response_message_prefix = "(message)";
 constexpr const char* c_special_variable_keyed_prefix = "@keyed_";
 constexpr const char* c_special_variable_queue_prefix = "@queue_";
 
+constexpr const char* c_special_variable_system_setting_prefix = "@system_setting_";
+
 #endif
