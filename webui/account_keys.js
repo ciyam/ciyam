@@ -1504,9 +1504,10 @@ async function keys_give_go( )
    if( ( give === null ) || ( g_keys.access === "" ) )
       return;
 
-   // NOTE: The password only for a people key sealed under it before; the words only while nothing is kept, or if it doesn't open.
+   // NOTE: The password only for a people key sealed under it before. The words needed only while nothing is kept - offered too once
+   // the password doesn't open it, but the right password still does without them (found by "give_keys", 2026-11-16).
    var password = document.getElementById( "give_password_part" ).hidden ? null : document.getElementById( "give_password" ).value;
-   var asking_words = !document.getElementById( "give_words_part" ).hidden;
+   var asking_words = ( g_keys.people === "" );
    var device = parse_device_link( document.getElementById( "give_ask" ).value );
 
    if( !keys_give_problems( give_field_problems( password, asking_words ? document.getElementById( "give_words" ).value : null, device ) ) )
