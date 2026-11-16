@@ -420,8 +420,8 @@ check( "a flag - '1' or nothing", [ hp.parse_flag( "1" ), hp.parse_flag( "" ), h
 // --------------------------------------------------------------------
 heading( "alerts" );
 
-check( "the ntfy server's example - this page's machine, ntfy's port", hp.ntfy_server_example( "antares.local" ), "http://antares.local:8090" );
-check( "- with no machine, a placeholder", hp.ntfy_server_example( "" ), "http://<address>:8090" );
+check( "the ntfy server's example - this page's machine, ntfy's https port", hp.ntfy_server_example( "antares.local" ), "https://antares.local:8443" );
+check( "- with no machine, a placeholder", hp.ntfy_server_example( "" ), "https://<address>:8443" );
 check( "the test - its title quoted whole", hp.c_home_ntfy_test_request.indexOf( '"-title=Test alert"' ) > 0, true );
 
 // --------------------------------------------------------------------

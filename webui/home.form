@@ -897,11 +897,14 @@ http://www.opensource.org/licenses/mit-license.php.
 
             <section class="home-card" aria-labelledby="alerts_server_heading">
                <h2 id="alerts_server_heading">ntfy server</h2>
-               <p class="home-note home-empty">Where the phones reach ntfy - kept in this browser.</p>
+               <!-- NOTE: The node's own setting (Ian, 2026-11-16 - "ntfy_server"): where it sends its alerts, and the phones
+                    subscribe - so the same address for both, over https. Emptied, back to the node's configuration. -->
+               <p class="home-note home-empty">Where the node sends its alerts, and the phones subscribe - kept on the node. Empty
+                it to go back to the node's own configuration.</p>
                <form class="home-alerts-server" id="alerts_server_form" novalidate>
                   <label class="home-visually-hidden" for="alerts_server">ntfy server address</label>
                   <input type="url" class="chat-field chat-field--mono" id="alerts_server" autocomplete="off" spellcheck="false">
-                  <button type="submit" class="chat-btn">Save</button>
+                  <button type="submit" class="chat-btn" id="alerts_server_save">Save</button>
                </form>
                <div class="chat-error-text" id="alerts_server_error" role="alert"></div>
             </section>

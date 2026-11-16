@@ -234,7 +234,11 @@ ok   a topic, by ntfy's rule
 ok   the apps' subscribe link - plain HTTP says so
 ok   and HTTPS does not
 ok   no link without a server or a topic
-ok   ntfy server <url>
+ok   the node's ntfy setting - a host, a port if need be, https:// taken off
+ok   - not one: plain http, a path, a shell's characters, nothing
+ok   - as the phones reach it, none for the node's @none
+ok   ntfy server <host>
+ok   ntfy server none - back to the node's configuration
 ok   ntfy server, to show it
 ok   ntfy qr <topic>, and the node's own
 ok   ntfy qr ... web - the web page instead, the node's own or a named one

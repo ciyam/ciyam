@@ -199,7 +199,7 @@ ok   the node's kind
 ok   a flag - '1' or nothing
 
 == alerts ======================================================
-ok   the ntfy server's example - this page's machine, ntfy's port
+ok   the ntfy server's example - this page's machine, ntfy's https port
 ok   - with no machine, a placeholder
 ok   the test - its title quoted whole
 

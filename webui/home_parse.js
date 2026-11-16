@@ -917,7 +917,7 @@ function parse_listeners( text )
 // port beside it. Only an example: where ntfy runs is the owner's to say.
 function ntfy_server_example( hostname )
 {
-   return "http://" + ( String( hostname || "" ).trim( ) || "<address>" ) + ":8090";
+   return "https://" + ( String( hostname || "" ).trim( ) || "<address>" ) + ":8443";
 }
 
 // ====================================================================

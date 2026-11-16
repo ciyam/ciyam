@@ -2725,29 +2725,66 @@ var g_alerts_topic = "";
 // second ("No usable data" for the first, 2026-10-06); the page shows the topic, to copy into the app.
 var g_alerts_web = false;
 
+// NOTE: The node's ntfy server as the phones reach it - its "ntfy_server" setting (Ian, 2026-11-16), which its alerts go to
+// too - "" for none.
+var g_alerts_server = "";
+
 function alerts_saved_server( )
 {
-   try
+   return g_alerts_server;
+}
+
+function alerts_setting_url( options )
+{
+   return admin_url( "/settings/ntfy_server" ) + ( options ? "&options=" + encodeURIComponent( options ) : "" );
+}
+
+// NOTE: The setting read - true if the node said it, with its problem said under the field if not.
+async function read_alerts_server( )
+{
+   var response = await request( function( done ) { return ciyam.fetch( alerts_setting_url( "" ), "GET", done ); } );
+
+   if( ( typeof response !== "string" ) || is_error_response( response ) )
    {
-      return localStorage.getItem( c_ntfy_server_key ) || "";
+      g_alerts_server = "";
+
+      set_text( "alerts_server_error", "The node didn't say its ntfy server: " + ( error_text( response ) || "no answer." ) );
+
+      return false;
    }
-   catch( e )
-   {
-      return "";
-   }
+
+   g_alerts_server = ntfy_server_of_setting( String( response ).trim( ) );
+
+   document.getElementById( "alerts_server" ).value = g_alerts_server;
+
+   return true;
 }
 
 async function show_alerts( )
 {
    var field = document.getElementById( "alerts_server" );
 
-   field.value = alerts_saved_server( );
+   field.value = "";
    field.placeholder = ntfy_server_example( window.location.hostname );
 
    set_text( "alerts_server_error", "" );
    set_text( "alerts_test_status", "" );
 
+   // NOTE: Kept in this browser until it was the node's - let go.
+   try
+   {
+      localStorage.removeItem( c_ntfy_server_key );
+   }
+   catch( e )
+   {
+   }
+
    var asked_for = ciyam.access;
+
+   await read_alerts_server( );
+
+   if( ciyam.access !== asked_for )
+      return;
 
    var reply = await ask_node( c_home_ntfy_topic_request );
 
@@ -2823,35 +2860,49 @@ function draw_alerts( )
    box.hidden = false;
 }
 
-function save_alerts_server( event )
+// NOTE: Saved on the node - emptied, it goes back to the node's own configuration ("@none").
+async function save_alerts_server( event )
 {
    event.preventDefault( );
 
-   var server = normalise_ntfy_server( document.getElementById( "alerts_server" ).value );
+   var typed = document.getElementById( "alerts_server" ).value.trim( );
+   var setting = ntfy_setting_of( typed );
 
-   if( server === "" )
+   if( ( typed !== "" ) && ( setting === "" ) )
    {
-      set_text( "alerts_server_error", "Not a server address - like " + ntfy_server_example( window.location.hostname ) + "." );
+      set_text( "alerts_server_error", /^http:/i.test( typed ) ? "The node sends its alerts over https only - an https address, like "
+       + ntfy_server_example( window.location.hostname ) + "." : "Not a server address - like " + ntfy_server_example( window.location.hostname )
+       + "." );
 
       return;
    }
 
-   try
+   var button = document.getElementById( "alerts_server_save" );
+   var asked_for = ciyam.access;
+
+   button.disabled = true;
+
+   var response = await request( function( done )
    {
-      localStorage.setItem( c_ntfy_server_key, server );
-   }
-   catch( e )
+      return ciyam.fetch( alerts_setting_url( "value=" + ( setting || "@none" ) ), "PUT", done );
+   } );
+
+   button.disabled = false;
+
+   if( ciyam.access !== asked_for )
+      return;
+
+   if( ( typeof response !== "string" ) || is_error_response( response ) )
    {
-      set_text( "alerts_server_error", "This browser would not keep it." );
+      set_text( "alerts_server_error", "It wasn't saved: " + ( error_text( response ) || "no answer." ) );
 
       return;
    }
-
-   document.getElementById( "alerts_server" ).value = server;
 
    set_text( "alerts_server_error", "" );
 
-   draw_alerts( );
+   if( await read_alerts_server( ) && ( ciyam.access === asked_for ) )
+      draw_alerts( );
 }
 
 async function send_test_alert( )

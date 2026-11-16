@@ -64,7 +64,8 @@ const c_console_nouns =
    style: "stylesheets", styles: "stylesheets", stylesheet: "stylesheets", stylesheets: "stylesheets",
    list: "webcmdlists", lists: "webcmdlists", webcmdlist: "webcmdlists", webcmdlists: "webcmdlists",
    "user-key": "user-keys", "user-keys": "user-keys",
-   log: "logs", logs: "logs"
+   log: "logs", logs: "logs",
+   setting: "settings", settings: "settings"
 };
 
 // NOTE: The CWS routes, as "do_fetch( )" in "test_web_session.js" maps them. "name" is a
@@ -116,13 +117,18 @@ const c_console_routes =
    "storage-instances|review": { method: "GET", name: true, options: true },
 
    // NOTE: Ian's "348b4803" (2026-11-04) - fields of one record changed: "update storage-instance <id>/<cid>/<key> assigns=..."
-   "storage-instances|update": { method: "PUT", name: true, options: true }
+   "storage-instances|update": { method: "PUT", name: true, options: true },
+
+   // NOTE: Ian's "3b9f0923" (2026-11-16) - the node's settings: "review settings", one by name, "update setting <name> value=..."
+   // (admin only).
+   "settings|review": { method: "GET", name: "optional", options: false },
+   "settings|update": { method: "PUT", name: true, options: true }
 };
 
 const c_console_local_commands = [ "help", "clear", "vars", "var", "unset", "echo", "seed", "history", "wait", "run", "exec", "ntfy" ];
 
-// NOTE: The ntfy server as the phones reach it - kept in this browser, as only the person setting up
-// knows it: the node sends to its own name for ntfy (https://ntfy in the container), which no phone can use.
+// NOTE: Where the ntfy server was kept in the browser until it was the node's own setting (Ian, 2026-11-16 - "ntfy_server",
+// one value for the node and the phones) - only removed now.
 const c_ntfy_server_key = "cws.ntfy_server";
 
 const c_console_quit_names = [ "quit", "exit", "finish", "term" ];
@@ -883,6 +889,24 @@ function normalise_ntfy_server( text )
    return ( match === null ) ? "" : match[ 1 ].toLowerCase( ) + "://" + match[ 2 ];
 }
 
+// NOTE: The ntfy server as the node keeps it (Ian's "ntfy_server" setting, 2026-11-16) - a host, with a port if need be: the
+// node sends to "https://<it>/<topic>", and the phones subscribe to the same. Typed with "https://" or without; "" if it is not
+// one - plain "http://" included, as the node sends only over https.
+function ntfy_setting_of( text )
+{
+   var match = /^(?:https:\/\/)?([A-Za-z0-9][A-Za-z0-9.-]*(?::\d{1,5})?)\/?$/i.exec( String( text || "" ).trim( ) );
+
+   return ( match === null ) ? "" : match[ 1 ].toLowerCase( );
+}
+
+// NOTE: The setting as the phones reach it - "" for none (the node's "@none").
+function ntfy_server_of_setting( value )
+{
+   var setting = ntfy_setting_of( value );
+
+   return ( setting === "" ) ? "" : "https://" + setting;
+}
+
 // NOTE: ntfy's own rule for a topic - letters, digits, "-" and "_", at most 64.
 function is_ntfy_topic( text )
 {
@@ -914,7 +938,7 @@ function ntfy_web_link( server, topic )
    return ( ( normal === "" ) || !is_ntfy_topic( topic ) ) ? "" : normal + "/" + topic;
 }
 
-// NOTE: "ntfy server [<url>]" - set, or show, the server the phones use; "ntfy qr [<topic>] [web]" - a topic
+// NOTE: "ntfy server [<host>[:<port>]|none]" - set, or show, the node's ntfy server; "ntfy qr [<topic>] [web]" - a topic
 // as a QR code, the node's own when none is named: the apps' "ntfy://" link, or with "web" ntfy's web page
 // for it. Returns { verb, server, topic, web } or { verb: "error", message }.
 function parse_ntfy_command( args )
@@ -923,17 +947,21 @@ function parse_ntfy_command( args )
 
    var verb = ( words[ 0 ] || "" ).toLowerCase( );
 
-   var usage = "Usage is ntfy server [<url>], or ntfy qr [<topic>] [web]";
+   var usage = "Usage is ntfy server [<host>[:<port>]|none], or ntfy qr [<topic>] [web]";
 
+   // NOTE: The node's setting - "none" goes back to the node's own configuration ("@none").
    if( ( verb === "server" ) && ( words.length <= 2 ) )
    {
       if( words.length === 1 )
          return { verb: "server", server: "", topic: "", web: false };
 
-      var server = normalise_ntfy_server( words[ 1 ] );
+      if( words[ 1 ].toLowerCase( ) === "none" )
+         return { verb: "server", server: "@none", topic: "", web: false };
 
-      return ( server === "" ) ? { verb: "error", message: "Not a server address - http://<address>:<port>, say http://192.168.0.15:8090" }
-       : { verb: "server", server: server, topic: "", web: false };
+      var server = ntfy_setting_of( words[ 1 ] );
+
+      return ( server === "" ) ? { verb: "error", message: "Not an ntfy server - a host, with a port if need be: ntfy.example.org or"
+       + " https://antares.local:8443 (the node sends over https only)" } : { verb: "server", server: server, topic: "", web: false };
    }
 
    // NOTE: "web" last - "ntfy qr web" is the node's own topic as a web page, not a topic called "web".
@@ -1393,6 +1421,8 @@ if( typeof module !== "undefined" )
       full_query: full_query,
       mask_device_sessions: mask_device_sessions,
       normalise_ntfy_server: normalise_ntfy_server,
+      ntfy_setting_of: ntfy_setting_of,
+      ntfy_server_of_setting: ntfy_server_of_setting,
       is_ntfy_topic: is_ntfy_topic,
       ntfy_subscribe_link: ntfy_subscribe_link,
       ntfy_web_link: ntfy_web_link,

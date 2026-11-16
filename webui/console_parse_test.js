@@ -513,14 +513,23 @@ check( "the apps' subscribe link - plain HTTP says so", cp.ntfy_subscribe_link( 
  "ntfy://192.168.0.15:8090/ciyam-alerts-779y5x7gy6?secure=false" );
 check( "and HTTPS does not", cp.ntfy_subscribe_link( "https://ntfy.example.org", "up2XW5ELSOW5GQ" ), "ntfy://ntfy.example.org/up2XW5ELSOW5GQ" );
 check( "no link without a server or a topic", [ cp.ntfy_subscribe_link( "", "abc" ), cp.ntfy_subscribe_link( "http://h:1", "a b" ) ], [ "", "" ] );
-check( "ntfy server <url>", cp.parse_ntfy_command( "server http://192.168.0.15:8090" ), { verb: "server", server: "http://192.168.0.15:8090", topic: "", web: false } );
+// NOTE: The node's own setting (Ian, 2026-11-16) - a host with a port if need be, sent to over https by the node and the phones.
+check( "the node's ntfy setting - a host, a port if need be, https:// taken off", [ cp.ntfy_setting_of( "https://Antares.local:8443/" ),
+ cp.ntfy_setting_of( "ntfy.example.org" ), cp.ntfy_setting_of( " 192.168.0.12:8443 " ) ], [ "antares.local:8443", "ntfy.example.org", "192.168.0.12:8443" ] );
+check( "- not one: plain http, a path, a shell's characters, nothing", [ cp.ntfy_setting_of( "http://h:8090" ), cp.ntfy_setting_of( "h/topic" ),
+ cp.ntfy_setting_of( "h;rm -rf" ), cp.ntfy_setting_of( "h$(x)" ), cp.ntfy_setting_of( "" ), cp.ntfy_setting_of( "@none" ) ], [ "", "", "", "", "", "" ] );
+check( "- as the phones reach it, none for the node's @none", [ cp.ntfy_server_of_setting( "antares.local:8443" ), cp.ntfy_server_of_setting( "@none" ),
+ cp.ntfy_server_of_setting( "" ) ], [ "https://antares.local:8443", "", "" ] );
+check( "ntfy server <host>", [ cp.parse_ntfy_command( "server antares.local:8443" ), cp.parse_ntfy_command( "server https://ntfy.example.org" ) ],
+ [ { verb: "server", server: "antares.local:8443", topic: "", web: false }, { verb: "server", server: "ntfy.example.org", topic: "", web: false } ] );
+check( "ntfy server none - back to the node's configuration", cp.parse_ntfy_command( "server none" ), { verb: "server", server: "@none", topic: "", web: false } );
 check( "ntfy server, to show it", cp.parse_ntfy_command( "server" ), { verb: "server", server: "", topic: "", web: false } );
 check( "ntfy qr <topic>, and the node's own", [ cp.parse_ntfy_command( "qr abc-1" ), cp.parse_ntfy_command( "qr" ) ],
  [ { verb: "qr", server: "", topic: "abc-1", web: false }, { verb: "qr", server: "", topic: "", web: false } ] );
 check( "ntfy qr ... web - the web page instead, the node's own or a named one", [ cp.parse_ntfy_command( "qr web" ), cp.parse_ntfy_command( "qr abc-1 web" ) ],
  [ { verb: "qr", server: "", topic: "", web: true }, { verb: "qr", server: "", topic: "abc-1", web: true } ] );
 check( "the web page for a topic", [ cp.ntfy_web_link( "http://192.168.0.15:8090/", "abc-1" ), cp.ntfy_web_link( "h", "abc" ) ], [ "http://192.168.0.15:8090/abc-1", "" ] );
-check( "ntfy refusals", [ cp.parse_ntfy_command( "server 192.168.0.15" ).verb, cp.parse_ntfy_command( "qr a/b" ).verb, cp.parse_ntfy_command( "" ).verb,
+check( "ntfy refusals", [ cp.parse_ntfy_command( "server http://192.168.0.15:8090" ).verb, cp.parse_ntfy_command( "qr a/b" ).verb, cp.parse_ntfy_command( "" ).verb,
  cp.parse_ntfy_command( "send hi" ).verb ], [ "error", "error", "error", "error" ] );
 
 // --------------------------------------------------------------------

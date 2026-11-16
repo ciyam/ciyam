@@ -91,7 +91,7 @@ const c_palette_commands = [
    { command: "~wait -no_progress <ms> @<word>", description: "the server answers <word> after <ms> - over 5000 times out (admin, dev)", raw: true },
    // NOTE: ntfy (the proof of concept, 2026-10-06) - a topic as a QR code to subscribe a phone, and the server's
    // own commands. "~ntfy_send" takes the message as one value, so it is quoted.
-   { command: "ntfy server <url>", description: "the ntfy server as the phones reach it - kept in this browser" },
+   { command: "ntfy server <host>[:<port>]", description: "the node's ntfy server, for its alerts and the phones (admin)" },
    { command: "ntfy qr <topic>", description: "a topic as a QR code, to subscribe a phone - the app's link" },
    { command: "ntfy qr <topic> web", description: "a topic as a QR code of ntfy's web page - every phone camera opens it" },
    { command: "ntfy qr", description: "the node's own topic as a QR code (admin, dev)", raw: true },
@@ -1581,21 +1581,27 @@ async function load_qr_library( )
    return loaded;
 }
 
-function saved_ntfy_server( )
+// NOTE: The node's "ntfy_server" setting (Ian, 2026-11-16) - "options" to change it (admin only).
+function ntfy_setting_url( options )
 {
-   try
-   {
-      return localStorage.getItem( c_ntfy_server_key ) || "";
-   }
-   catch( e )
-   {
-      return "";
-   }
+   return build_cws_url( ciyam.get_cws_url( ), { path: "/settings/ntfy_server", options: options }, session_info( ) );
 }
 
-// NOTE: "ntfy server [<url>]" and "ntfy qr [<topic>]" ("parse_ntfy_command( )"). The QR code is the apps'
-// own subscribe link, drawn here - the console sends nothing to ntfy. With no topic, the node's own, which
-// only raw protocol can ask the server for ("~ntfy_topic").
+// NOTE: The ntfy server as the phones reach it - "" for none, or { error } if the node didn't say.
+async function read_ntfy_server( )
+{
+   var response = await send_request( "GET", ntfy_setting_url( "" ), true );
+
+   if( ( response === null ) || is_error_output( response ) )
+      return { error: ( response === null ) ? "The server did not answer." : response.trim( ).replace( /^Error:\s*/, "" ) };
+
+   return ntfy_server_of_setting( response.trim( ) );
+}
+
+// NOTE: "ntfy server [<host>[:<port>]|none]" and "ntfy qr [<topic>]" ("parse_ntfy_command( )"). The server is the
+// node's own setting, for its alerts and the phones alike. The QR code is the apps' own subscribe link, drawn here - the
+// console sends nothing to ntfy. With no topic, the node's own, which only raw protocol can ask the server for
+// ("~ntfy_topic").
 async function run_ntfy( args )
 {
    var command = parse_ntfy_command( args );
@@ -1607,42 +1613,65 @@ async function run_ntfy( args )
       return { ok: false };
    }
 
+   if( !g_connected )
+   {
+      print_line( "Error: Sign in first - the ntfy server is the node's setting.", "is-err" );
+
+      return { ok: false };
+   }
+
+   try
+   {
+      localStorage.removeItem( c_ntfy_server_key );
+   }
+   catch( e )
+   {
+   }
+
    if( command.verb === "server" )
    {
-      if( command.server === "" )
+      if( command.server !== "" )
       {
-         var current = saved_ntfy_server( );
+         var saved = await send_request( "PUT", ntfy_setting_url( "value=" + command.server ), false );
 
-         print_line( current ? "The phones reach ntfy at " + current + "." : "No ntfy server set - ntfy server http://<address>:<port>", "is-dim" );
+         if( ( saved === null ) || is_error_output( saved ) )
+         {
+            print_line( "Error: " + ( ( saved === null ) ? "The server did not answer - nothing was saved." : saved.trim( ).replace( /^Error:\s*/, "" ) ),
+             "is-err" );
 
-         g_output = current;
-
-         return { ok: true };
+            return { ok: false };
+         }
       }
 
-      try
+      var current = await read_ntfy_server( );
+
+      if( typeof current !== "string" )
       {
-         localStorage.setItem( c_ntfy_server_key, command.server );
-      }
-      catch( e )
-      {
-         print_line( "Error: This browser would not keep it.", "is-err" );
+         print_line( "Error: " + current.error, "is-err" );
 
          return { ok: false };
       }
 
-      print_line( "The phones reach ntfy at " + command.server + " - kept in this browser.", "is-dim" );
+      print_line( current ? "The node and the phones reach ntfy at " + current + "." : "No ntfy server set - ntfy server <host>[:<port>]",
+       "is-dim" );
 
-      g_output = command.server;
+      g_output = current;
 
       return { ok: true };
    }
 
-   var server = saved_ntfy_server( );
+   var server = await read_ntfy_server( );
+
+   if( typeof server !== "string" )
+   {
+      print_line( "Error: " + server.error, "is-err" );
+
+      return { ok: false };
+   }
 
    if( server === "" )
    {
-      print_line( "Error: Set the server the phones use first - ntfy server http://<address>:<port>", "is-err" );
+      print_line( "Error: Set the node's ntfy server first - ntfy server <host>[:<port>]", "is-err" );
 
       return { ok: false };
    }
@@ -2371,7 +2400,7 @@ function print_help( )
     "  run <script>                 run a saved script",
     "  exec                         run the output as a list - after view list <name>",
     "  history                      commands entered this session",
-    "  ntfy server [<url>]          the ntfy server as the phones reach it - kept in this browser",
+    "  ntfy server [<host>|none]    the node's ntfy server, for its alerts and the phones - none: its configuration's",
     "  ntfy qr [<topic>] [web]      a topic as a QR code, to subscribe a phone - the node's own if none; web: ntfy's page",
     "  clear                        empty the output and the scrollback",
     "  clear storage                forget everything this browser keeps for the node, and reload - signed out",
