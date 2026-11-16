@@ -1841,18 +1841,24 @@ async function password_hash( access, password, version, node_crypto, on_fractio
       throw new Error( "There is no password hash version " + version + "." );
 
    var rounds = password_hash_rounds( password );
-   var s = sha( text );
+
+   // NOTE: In a page, the browser's own SHA-256 where it is the faster ("ciyam_sha256_fastest( )") - without a JIT, the library
+   // took 76 seconds for 300000 rounds on a PC, the browser's own 4 (Damon, 2026-11-17: minutes on a Pixel, in Vanadium). Each
+   // round awaited, so the page redraws as it goes. The same hash either way - each is SHA-256 of the same UTF-8.
+   var native = ( !node_crypto && ( rounds > 1 ) ) ? ( await ciyam_sha256_fastest( ) ).native : false;
+   var s = native ? await ciyam_sha256_hex( input ) : sha( text );
 
    for( var i = 1; i < rounds; i++ )
    {
-      s = sha( s + text );
+      s = native ? await ciyam_sha256_hex( s + input ) : sha( s + text );
 
       if( !node_crypto && ( ( i % c_password_hash_pause ) === ( c_password_hash_pause - 1 ) ) )
       {
          if( on_fraction )
             on_fraction( i / rounds );
 
-         await new Promise( function( resolve ) { setTimeout( resolve, 0 ); } );
+         if( !native )
+            await new Promise( function( resolve ) { setTimeout( resolve, 0 ); } );
       }
    }
 
@@ -1890,10 +1896,26 @@ async function ciyam_sha256_hex( text )
 // "module_speed_probe.js"; in Chrome on localhost the library is the faster).
 var ciyam_sha256_choice = null;
 
+// NOTE: How many times slower the library must be, warming up, to be passed over without timing it further.
+const c_sha256_library_far_slower = 5;
+
+// NOTE: Whether the library was the choice - timed again if it has gone since (the module tests take it away once a password's
+// hardening has chosen, 2026-11-17).
+var ciyam_sha256_chose_library = false;
+
 function ciyam_sha256_fastest( )
 {
-   if( ciyam_sha256_choice === null )
-      ciyam_sha256_choice = ciyam_sha256_time( );
+   if( ( ciyam_sha256_choice === null ) || ( ciyam_sha256_chose_library && ( typeof hex_sha256 !== "function" ) ) )
+   {
+      ciyam_sha256_chose_library = false;
+
+      ciyam_sha256_choice = ciyam_sha256_time( ).then( function( choice )
+      {
+         ciyam_sha256_chose_library = !choice.native;
+
+         return choice;
+      } );
+   }
 
    return ciyam_sha256_choice;
 }
@@ -1910,12 +1932,28 @@ async function ciyam_sha256_time( )
 
    var now = ( typeof performance !== "undefined" ) ? function( ) { return performance.now( ); } : Date.now;
    var s = "test";
+   var library_warm = 0;
+   var native_warm = 0;
 
    for( var w = 0; w < 1000; w++ )
    {
+      var at = now( );
+
       s = in_step( s + "test" );
+
+      library_warm += now( ) - at;
+      at = now( );
+
       s = await ciyam_sha256_hex( s + "test" );
+
+      native_warm += now( ) - at;
    }
+
+   // NOTE: The library many times slower even cold - a browser running scripts without a JIT, as Vanadium on GrapheneOS does
+   // by default, where it is some twenty times the slower (Damon, 2026-11-17: a password took minutes to harden on a Pixel) -
+   // the browser's own taken at once, rather than spending seconds more timing the library.
+   if( library_warm > ( native_warm * c_sha256_library_far_slower ) )
+      return { native: true, hash: ciyam_sha256_hex };
 
    var start = now( );
 
