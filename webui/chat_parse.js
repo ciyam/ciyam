@@ -5250,7 +5250,10 @@ function call_relay_servers( text, host )
 
    var where = host + ":" + c_call_relay_port;
 
-   return [ { urls: "stun:" + where }, { urls: "turn:" + where + "?transport=udp", username: lines[ 0 ], credential: lines[ 1 ] } ];
+   // NOTE: TURN over TCP too (Damon, 2026-11-17: a call to a Pixel never connected) - Vanadium, GrapheneOS's browser, allows WebRTC
+   // no UDP but through a proxy by default ("Disable non-proxied UDP"), so it reaches the relay over TCP or not at all.
+   return [ { urls: "stun:" + where }, { urls: "turn:" + where + "?transport=udp", username: lines[ 0 ], credential: lines[ 1 ] },
+    { urls: "turn:" + where + "?transport=tcp", username: lines[ 0 ], credential: lines[ 1 ] } ];
 }
 
 // NOTE: Exported for Node.js; in the browser these are plain globals.

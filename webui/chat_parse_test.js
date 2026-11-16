@@ -2194,7 +2194,8 @@ check( "a call's lines in the conversation - the call, a decline, busy, its end 
 } ), [ "Call", "", "", "Declined the call", "Was on another call", "Call ended · 3:05", "Call not answered", "Call couldn't connect", "" ] );
 check( "the node's call relay - STUN and TURN on its own host, with its credentials", JSON.stringify( cp.call_relay_servers(
  "1794043200:maya\nAbCdEfGhIjKlMnOpQrStUvWx+/0=\n", "api.ciyam.org" ) ), JSON.stringify( [ { urls: "stun:api.ciyam.org:3478" },
- { urls: "turn:api.ciyam.org:3478?transport=udp", username: "1794043200:maya", credential: "AbCdEfGhIjKlMnOpQrStUvWx+/0=" } ] ) );
+ { urls: "turn:api.ciyam.org:3478?transport=udp", username: "1794043200:maya", credential: "AbCdEfGhIjKlMnOpQrStUvWx+/0=" },
+ { urls: "turn:api.ciyam.org:3478?transport=tcp", username: "1794043200:maya", credential: "AbCdEfGhIjKlMnOpQrStUvWx+/0=" } ] ) );
 check( "- an address as the page has it, IPv6 in its brackets", [ cp.call_relay_servers( "1794043200:maya\nAbCdEfGhIjKlMnOpQrStUvWx+/0=",
  "192.168.1.20" )[ 1 ].urls, cp.call_relay_servers( "1794043200:maya\r\nAbCdEfGhIjKlMnOpQrStUvWx+/0=", "[fd00::1]" )[ 0 ].urls ],
  [ "turn:192.168.1.20:3478?transport=udp", "stun:[fd00::1]:3478" ] );
