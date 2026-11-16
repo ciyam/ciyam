@@ -327,6 +327,14 @@ check( "- another device's code not taken for theirs; all there, nothing", [ ap.
 check( "- with the people key kept, only their code (Ian, 2026-11-16: no password)", [ ap.give_field_problems( null, null, null ),
  ap.give_field_problems( null, null, { kind: "give", key: ask_key } ) ], [ { password: "", words: "", ask: "Scan their device's code, or"
  + " paste its address." }, { password: "", words: "", ask: "" } ] );
+check( "the exchange in two steps - the same steps on both devices, each said for whoever holds it", [ ap.exchange_steps( "give",
+ "asking" ).labels, ap.exchange_steps( "give", "giving", "Ellie" ).labels, ap.exchange_steps( "device", "asking" ).labels,
+ ap.exchange_steps( "device", "giving" ).labels ], [ [ "Your administrator scans this code", "You scan theirs" ], [ "Scan Ellie's code",
+ "Ellie scans yours" ], [ "Your other device scans this code", "You scan its code" ], [ "Scan the new device's code", "It scans yours" ] ] );
+check( "- the person's first step says to show their code, then Next; the administrator's second says the person presses it", [
+ /^Show this code to your administrator.*press Next\.$/.test( ap.exchange_steps( "give", "asking" ).ledes[ 0 ] ),
+ /^Now Ellie presses Next/.test( ap.exchange_steps( "give", "giving", "Ellie" ).ledes[ 1 ] ),
+ /press Next\.$/.test( ap.exchange_steps( "device", "asking" ).ledes[ 0 ] ) ], [ true, true, true ] );
 check( "xor of two hex strings - and back", [ ap.xor_hex( "0f0f", "ffff" ), ap.xor_hex( ap.xor_hex( sealed_key, ask_key ), ask_key ) ],
  [ "f0f0", sealed_key ] );
 check( "- not the same length, or not hex", [ ap.xor_hex( "0f", "fff" ), ap.xor_hex( "zz", "00" ) ], [ "", "" ] );

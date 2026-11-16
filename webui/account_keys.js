@@ -918,6 +918,42 @@ function keys_draw_qr( id, text )
    box.querySelectorAll( "[title]" ).forEach( function( node ) { node.removeAttribute( "title" ); } );
 }
 
+// NOTE: The exchange's two steps ("exchange_steps( )"), "step" (1 or 2) the one now - those before it marked done. Their labels may
+// carry a name, so as text. Returns the steps' ledes.
+function keys_draw_steps( id, flow, side, step, name )
+{
+   var steps = exchange_steps( flow, side, name );
+   var list = document.getElementById( id );
+
+   list.replaceChildren( );
+
+   steps.labels.forEach( function( label, index )
+   {
+      var item = document.createElement( "li" );
+      var mark = document.createElement( "span" );
+      var text = document.createElement( "span" );
+
+      mark.className = "account-exchange-mark";
+      mark.textContent = ( index + 1 < step ) ? "✓" : String( index + 1 );
+      mark.setAttribute( "aria-hidden", "true" );
+
+      text.textContent = label;
+
+      if( index + 1 === step )
+      {
+         item.className = "is-current";
+         item.setAttribute( "aria-current", "step" );
+      }
+      else if( index + 1 < step )
+         item.className = "is-done";
+
+      item.append( mark, text );
+      list.appendChild( item );
+   } );
+
+   return steps.ledes;
+}
+
 // NOTE: 32 random bytes as hex - a one-off private key's seed.
 function keys_random_seed( )
 {
@@ -942,6 +978,7 @@ function keys_show_device( )
 {
    keys_hide_device( );
 
+   document.getElementById( "keys_device_lede" ).textContent = keys_draw_steps( "keys_device_steps", "device", "giving", 1 )[ 0 ];
    document.getElementById( "keys_device_part" ).hidden = false;
    document.getElementById( "keys_device_row" ).hidden = true;
    document.getElementById( "keys_device_ask" ).focus( );
@@ -1002,6 +1039,7 @@ async function keys_device_answer( device )
 
    keys_draw_qr( "keys_device_qr", link );
 
+   document.getElementById( "keys_device_reply_lede" ).textContent = keys_draw_steps( "keys_device_steps", "device", "giving", 2 )[ 1 ];
    document.getElementById( "keys_device_link" ).value = link;
    document.getElementById( "keys_device_ask_part" ).hidden = true;
    document.getElementById( "keys_device_reply_part" ).hidden = false;
@@ -1071,20 +1109,41 @@ function keys_ask_start( kind )
 
    keys_draw_qr( "keys_ask_qr", link );
 
-   // NOTE: Said as the two steps it is - the addresses, for when a camera can't be used, are folded away (Damon, 2026-11-16).
-   document.getElementById( "keys_ask_lede" ).textContent = giving ? "Show this code to your administrator. In People, they choose Give"
-    + " keys beside your name and scan it. Then they show you a code - press Scan its code and hold this device up to it."
-    : "On a device that has your keys, signed in as you, open this code with its camera. It shows a code back - press Scan its code"
-    + " and hold this device up to it.";
    document.getElementById( "keys_ask_reply_label" ).textContent = giving ? "The address your administrator shows back" : "The address it shows back";
 
    document.getElementById( "keys_ask_link" ).value = link;
    document.getElementById( "keys_ask_reply" ).value = "";
-   document.getElementById( "ask_scan_status" ).textContent = "";
-   document.getElementById( "keys_ask_manual" ).open = false;
+   document.getElementById( "keys_ask_link_manual" ).open = false;
 
    set_error( "keys_error", "" );
+   keys_ask_step( 1 );
    keys_show( "keys_ask" );
+}
+
+// NOTE: Step 1, this device's code shown for the other to scan; step 2, the other's answer scanned - the camera started at once, as
+// Next is the press a browser asks for before it will (Damon, 2026-11-17). The code stays as it was, for Back.
+function keys_ask_step( step )
+{
+   var ledes = keys_draw_steps( "keys_ask_steps", ( g_keys_ask && ( g_keys_ask.kind === "give" ) ) ? "give" : "device", "asking", step );
+
+   if( step === 1 )
+      keys_scan_stop( );
+
+   document.getElementById( "keys_ask_lede" ).textContent = ledes[ 0 ];
+   document.getElementById( "keys_ask_scan_lede" ).textContent = ledes[ 1 ];
+   document.getElementById( "ask_scan_status" ).textContent = "";
+   document.getElementById( "keys_ask_manual" ).open = false;
+   document.getElementById( "keys_ask_show_part" ).hidden = ( step !== 1 );
+   document.getElementById( "keys_ask_scan_part" ).hidden = ( step === 1 );
+
+   set_error( "keys_error", "" );
+
+   if( step !== 1 )
+   {
+      document.getElementById( "keys_ask_back" ).focus( );
+
+      keys_scan_start( "ask" );
+   }
 }
 
 function keys_ask_cancel( )
@@ -1439,9 +1498,7 @@ function keys_show_give( give )
    g_keys_give = give;
 
    document.getElementById( "give_heading" ).textContent = "Give " + give.name + " their keys";
-   document.getElementById( "give_lede" ).textContent = "On " + give.name + "'s device, signed in as them, they choose Get them from your"
-    + " administrator under Your keys. Scan the code it shows, or paste its address. Their keys are made from the node's twelve words"
-    + " and their PIN.";
+   document.getElementById( "give_lede" ).textContent = keys_draw_steps( "give_steps", "give", "giving", 1, give.name )[ 0 ];
 
    keys_give_asking( );
 
@@ -1678,8 +1735,7 @@ async function keys_give_go( )
    keys_draw_qr( "give_qr", link );
 
    document.getElementById( "give_link" ).value = link;
-   document.getElementById( "give_reply_lede" ).textContent = "Now open this with " + give.name + "'s camera, or scan or paste it there."
-    + " It works only on that device, for " + give.name + ", and only once.";
+   document.getElementById( "give_reply_lede" ).textContent = keys_draw_steps( "give_steps", "give", "giving", 2, give.name )[ 1 ];
    document.getElementById( "give_ask_part" ).hidden = true;
    document.getElementById( "give_reply_part" ).hidden = false;
    document.getElementById( "give_done" ).focus( );
@@ -2542,16 +2598,21 @@ function install_keys( )
    document.getElementById( "keys_device" ).addEventListener( "click", keys_show_device );
    document.getElementById( "keys_device_hide" ).addEventListener( "click", keys_hide_device );
    document.getElementById( "keys_device_done" ).addEventListener( "click", keys_hide_device );
+   document.getElementById( "keys_device_back" ).addEventListener( "click", keys_show_device );
    document.getElementById( "keys_device_use" ).addEventListener( "click", keys_device_use );
    document.getElementById( "device_scan" ).addEventListener( "click", function( ) { keys_scan_start( "device" ); } );
    document.getElementById( "keys_ask_start" ).addEventListener( "click", function( ) { g_keys.asked_from = ""; keys_ask_start( ); } );
    document.getElementById( "keys_ask_cancel" ).addEventListener( "click", keys_ask_cancel );
+   document.getElementById( "keys_ask_next" ).addEventListener( "click", function( ) { keys_ask_step( 2 ); } );
+   document.getElementById( "keys_ask_back" ).addEventListener( "click", function( ) { keys_ask_step( 1 ); } );
    document.getElementById( "keys_ask_use" ).addEventListener( "click", function( ) { keys_ask_use( ); } );
    document.getElementById( "ask_scan" ).addEventListener( "click", function( ) { keys_scan_start( "ask" ); } );
    document.getElementById( "keys_add" ).addEventListener( "click", keys_add_contact );
    document.getElementById( "give_go" ).addEventListener( "click", keys_give_go );
    document.getElementById( "give_cancel" ).addEventListener( "click", keys_give_close );
    document.getElementById( "give_done" ).addEventListener( "click", keys_give_close );
+   // NOTE: Their code made again (Cancel and start over on their device, say) - scanned again, from the first step.
+   document.getElementById( "give_back" ).addEventListener( "click", function( ) { if( g_keys_give !== null ) keys_show_give( g_keys_give ); } );
    document.getElementById( "give_scan" ).addEventListener( "click", function( ) { keys_scan_start( "give" ); } );
    document.getElementById( "give_manual" ).addEventListener( "toggle", function( ) { if( g_keys.access !== "" ) keys_give_asking( ); } );
 

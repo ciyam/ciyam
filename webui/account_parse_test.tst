@@ -111,6 +111,8 @@ ok   the node's words said plainly under Your keys - admin's; nothing for everyo
 ok   Give keys - everything it lacks, by field, at once
 ok   - another device's code not taken for theirs; all there, nothing
 ok   - with the people key kept, only their code (Ian, 2026-11-16: no password)
+ok   the exchange in two steps - the same steps on both devices, each said for whoever holds it
+ok   - the person's first step says to show their code, then Next; the administrator's second says the person presses it
 ok   xor of two hex strings - and back
 ok   - not the same length, or not hex
 

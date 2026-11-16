@@ -587,6 +587,39 @@ function device_page_of( text, own )
    return match[ 1 ] + match[ 2 ];
 }
 
+// NOTE: The exchange as the two steps it is, said the same on both devices, each for whoever holds it (Damon, 2026-11-17: said as one,
+// it wasn't clear a second code was to come) - "give", keys from the administrator, or "device", from another of one's own; "asking",
+// the device getting them, which shows its code then scans the answer, or "giving", which scans then shows. "name" - who is given
+// them, for the administrator's side. { labels, ledes }, one of each per step.
+function exchange_steps( flow, side, name )
+{
+   var who = String( name || "" ) || "they";
+
+   if( flow === "give" )
+   {
+      if( side === "giving" )
+         return { labels: [ "Scan " + who + "'s code", who + " scans yours" ],
+          ledes: [ "On " + who + "'s device, signed in as them, they choose Get them from your administrator under Your keys. Scan the"
+          + " code it shows. Their keys are made from the node's twelve words and their PIN.", "Now " + who + " presses Next and holds"
+          + " their device up to this code. It works only on that device, for " + who + ", and only once." ] };
+
+      return { labels: [ "Your administrator scans this code", "You scan theirs" ],
+       ledes: [ "Show this code to your administrator. In People, they choose Give keys beside your name and scan it. Once they show"
+       + " you a code of their own, press Next.", "Hold this device up to the code your administrator is showing. It works only on this"
+       + " device, and only once." ] };
+   }
+
+   if( side === "giving" )
+      return { labels: [ "Scan the new device's code", "It scans yours" ],
+       ledes: [ "On the other device, sign in as you and choose Get them from another device under Your keys. Scan the code it shows.",
+       "Now the other device presses Next and holds its camera up to this code. It works only on that device, and only once." ] };
+
+   return { labels: [ "Your other device scans this code", "You scan its code" ],
+    ledes: [ "On a device that has your keys, signed in as you, choose Add another device under Devices and scan this code - or open it"
+    + " with that device's camera. Once it shows a code back, press Next.", "Hold this device up to the code your other device is"
+    + " showing. It works only on this device, and only once." ] };
+}
+
 // NOTE: An ask or a reply - a whole address, the part after "#", or pasted with spaces or line breaks in it - as { kind: "ask", key }
 // or { kind: "reply", key, sealed, check } (or "give" and "given", as those are), or null for anything else.
 function parse_device_link( text )
@@ -709,6 +742,7 @@ if( typeof module !== "undefined" )
       device_give_link: device_give_link,
       device_given_link: device_given_link,
       device_page_of: device_page_of,
+      exchange_steps: exchange_steps,
       parse_device_link: parse_device_link,
       give_field_problems: give_field_problems,
       admin_keys_text: admin_keys_text,
