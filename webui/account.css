@@ -1218,6 +1218,12 @@ button.account-back,
    font-weight: 600;
 }
 
+/* NOTE: A contact's two steps come in either order, so neither is ever the one now - shown as plainly as one would be. */
+#contacts_steps li
+{
+   color: var(--color-chat-text-strong);
+}
+
 .account-exchange-mark
 {
    display: inline-flex;
