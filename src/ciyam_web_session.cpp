@@ -363,6 +363,27 @@ struct session_request
    string session;
 };
 
+// NOTE: A host name (or IPv4 address) with an optional ":<port>" - nothing that a shell would treat specially.
+inline bool is_host_and_port( const string& s )
+{
+   string::size_type colon = s.find( ':' );
+
+   string host( s.substr( 0, colon ) );
+
+   if( host.empty( ) || ( host.length( ) > 253 )
+    || ( host.find_first_not_of( "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789.-" ) != string::npos )
+    || ( host[ 0 ] == '-' ) || ( host[ 0 ] == '.' ) )
+      return false;
+
+   if( colon == string::npos )
+      return true;
+
+   string port( s.substr( colon + 1 ) );
+
+   return !port.empty( ) && ( port.length( ) <= 5 )
+    && ( port.find_first_not_of( "0123456789" ) == string::npos ) && ( atoi( port.c_str( ) ) <= 65535 );
+}
+
 inline string escaped_json( const string& s )
 {
    string str( escaped( s, "/\"", '\\', c_json_escape_specials ) );
@@ -3719,9 +3740,14 @@ bool process_cws_request( http_request_type request_type, const string& uri_suff
 
                   string var_name( string( c_special_variable_system_setting_prefix ) + setting );
 
-                  string value( get_system_variable( var_name ) );
+                  // NOTE: Only a plain name - a wildcard ("*") would otherwise read or set every setting at once.
+                  string value( ( setting.find_first_not_of( "abcdefghijklmnopqrstuvwxyz_" ) == string::npos )
+                   ? get_system_variable( var_name ) : string( ) );
 
-                  if( value.empty( ) )
+                  if( is_put_request && ( access != g_cws_admin_token ) )
+                     // FUTURE: This message should be handled as a server string message.
+                     error = "Settings can only be changed by the administrator.";
+                  else if( value.empty( ) )
                      // FUTURE: This message should be handled as a server string message.
                      error = "Unknown setting name '" + setting + "'";
                   else
@@ -3747,6 +3773,11 @@ bool process_cws_request( http_request_type request_type, const string& uri_suff
                         if( option_parameters.size( ) > valid_options )
                            // FUTURE: This message should be handled as a server string message.
                            error = "Invalid options '" + options + "' for setting update.";
+                        // NOTE: The ntfy server goes into the "curl" command line that "send_ntfy_message" runs as
+                        // "https://<server>/<topic>" so only a host name and an optional port are accepted.
+                        else if( !value.empty( ) && ( setting == "ntfy_server" ) && !is_host_and_port( value ) )
+                           // FUTURE: This message should be handled as a server string message.
+                           error = "Invalid ntfy server '" + value + "' (expecting a host name with an optional port).";
                         else
                         {
                            set_system_variable( ">" + var_name, value );
@@ -3770,7 +3801,7 @@ bool process_cws_request( http_request_type request_type, const string& uri_suff
                         if( !is_json_output )
                            response = value;
                         else
-                           response = "{\"name\":\"" + setting + "\", \"value\":\"" + value + "\"}";
+                           response = "{\"name\":\"" + setting + "\", \"value\":\"" + escaped_json( value ) + "\"}";
                      }
                   }
                }
