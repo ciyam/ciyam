@@ -732,11 +732,11 @@ async function steps( module_class, list )
     test_entropy, 1000 ), made_opened.primary === uk.seeds_of( test_entropy ).primary, made_opened.rounds, /^UK#:1000:/.test( made_opened.guard ),
     Object.keys( made_opened.contacts ).length ], [ true, true, 1000, true, 0 ] );
 
-   // NOTE: New keys with the people key kept in them, sealed (Damon, 2026-11-16 - as setting up or recovering makes admin's).
-   var made_sealed = await uk.seal_people_key( test_people, "12345", "pässwörd", { rounds: 1000 } );
-   var made_with = await uk.kept_keys( test_entropy, 1000, made_sealed );
+   // NOTE: New keys with the people key kept in them (Damon, 2026-11-16 - as setting up or recovering makes admin's), as it is - their
+   // lock alone guards it (Ian, 2026-11-16: Give keys without the password).
+   var made_with = await uk.kept_keys( test_entropy, 1000, test_people );
    var made_people = await uk.unlock( made_with.access, made_with.kept ).catch( function( e ) { return { people: e.message }; } );
-   check( "- with the people key, sealed, kept in them; none without", [ made_people.people === made_sealed, made_opened.people ], [ true, "" ] );
+   check( "- with the people key kept in them; none without", [ made_people.people === test_people, made_opened.people ], [ true, "" ] );
 
    // NOTE: The people key kept with admin's keys (Damon, 2026-11-11), sealed - worked out here with Node's own: the lock "harden"'s
    // rounds of "people_lock:", the salt, the PIN, ":" and the password; the key XORed with the HMAC of "people_pad" under it; the
@@ -764,13 +764,15 @@ async function steps( module_class, list )
     await uk.open_people_key( test_people, "12345", "pässwörd" ).catch( function( e ) { return e.message; } ),
     await uk.seal_people_key( test_people, "12345", "" ).catch( function( e ) { return e.message; } ) ],
     [ true, "That is not a sealed people key.", "A password is needed." ] );
-   check( "- kept with the keys only when given, and only sealed", [ JSON.parse( uk.contents_text( { primary: test_people,
-    secondary: test_people, contacts: { }, people: people_sealed } ) ).people, JSON.parse( uk.contents_text( { primary: test_people,
-    secondary: test_people, contacts: { } } ) ).hasOwnProperty( "people" ), ( function( )
+   check( "- kept with the keys only when given - as it is, or sealed from before; nothing else", [ JSON.parse( uk.contents_text( {
+    primary: test_people, secondary: test_people, contacts: { }, people: people_sealed } ) ).people, JSON.parse( uk.contents_text( {
+    primary: test_people, secondary: test_people, contacts: { }, people: test_people } ) ).people, JSON.parse( uk.contents_text( {
+    primary: test_people, secondary: test_people, contacts: { } } ) ).hasOwnProperty( "people" ), ( function( )
    {
-      try { return uk.contents_text( { primary: test_people, secondary: test_people, contacts: { }, people: test_people } ); }
+      try { return uk.contents_text( { primary: test_people, secondary: test_people, contacts: { }, people: test_people.substr( 1 ) } ); }
       catch( e ) { return e.message; }
-   } )( ) ], [ people_sealed, false, "A people key is kept sealed (\"PK1\")." ] );
+   } )( ), [ uk.is_people_key( test_people ), uk.is_people_key( people_sealed ), uk.is_people_key( test_people.toUpperCase( ) ) ] ],
+    [ people_sealed, test_people, false, "A people key is 64 hex digits, or one sealed (\"PK1\").", [ true, false, false ] ] );
 
    // NOTE: Worked out here without the module (Ian, 2026-10-25: a hash of the entropy kept by the browser, the keys on the node
    // locked under it) - the access key "harden"'s rounds of "user_keys" and the entropy (each round the SHA-256 of what there is

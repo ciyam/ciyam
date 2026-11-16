@@ -110,6 +110,7 @@ ok   admin's keys at set up or recovery - made, opened, left, or not made
 ok   the node's words said plainly under Your keys - admin's; nothing for everyone else, never offered them
 ok   Give keys - everything it lacks, by field, at once
 ok   - another device's code not taken for theirs; all there, nothing
+ok   - with the people key kept, only their code (Ian, 2026-11-16: no password)
 ok   xor of two hex strings - and back
 ok   - not the same length, or not hex
 

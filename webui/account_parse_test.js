@@ -324,6 +324,9 @@ check( "Give keys - everything it lacks, by field, at once", [ ap.give_field_pro
 check( "- another device's code not taken for theirs; all there, nothing", [ ap.give_field_problems( "pw", "  ", { kind: "ask", key: ask_key } ),
  ap.give_field_problems( "pw", "taxi act", { kind: "give", key: ask_key } ) ], [ { password: "", words: "Type the node's twelve words.",
  ask: "That isn't the code from Get them from your administrator - on their device, under Your keys." }, { password: "", words: "", ask: "" } ] );
+check( "- with the people key kept, only their code (Ian, 2026-11-16: no password)", [ ap.give_field_problems( null, null, null ),
+ ap.give_field_problems( null, null, { kind: "give", key: ask_key } ) ], [ { password: "", words: "", ask: "Scan their device's code, or"
+ + " paste its address." }, { password: "", words: "", ask: "" } ] );
 check( "xor of two hex strings - and back", [ ap.xor_hex( "0f0f", "ffff" ), ap.xor_hex( ap.xor_hex( sealed_key, ask_key ), ask_key ) ],
  [ "f0f0", sealed_key ] );
 check( "- not the same length, or not hex", [ ap.xor_hex( "0f", "fff" ), ap.xor_hex( "zz", "00" ) ], [ "", "" ] );

@@ -666,7 +666,7 @@ function give_field_problems( password, words, device )
 {
    var problems = { password: "", words: "", ask: "" };
 
-   if( String( password || "" ) === "" )
+   if( ( password !== null ) && ( String( password || "" ) === "" ) )
       problems.password = "Type your password.";
 
    if( ( words !== null ) && ( String( words || "" ).trim( ) === "" ) )

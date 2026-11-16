@@ -414,8 +414,9 @@ http://www.opensource.org/licenses/mit-license.php.
                <div class="account-column-side">
                   <!-- NOTE: Give keys, from People (Damon, 2026-11-11) - admin gives someone their keys, made from the people key
                        kept with admin's own and the person's PIN, by the exchange of two codes with their device ("keys_give_go( )").
-                       The people key is sealed under admin's password, so the password is asked each time; the node's words only
-                       until it is kept, or after the password has changed. -->
+                       The people key is kept with admin's keys, under their lock alone (Ian, 2026-11-16: not the password, which
+                       he hasn't with him when out) - so only their code is needed; the node's words only until it is kept, and the
+                       password only to open one sealed under it before, once. -->
                   <div class="account-card account-form account-keys-device" id="give_part" hidden>
                      <div>
                         <h2 id="give_heading">Give keys</h2>
@@ -423,9 +424,11 @@ http://www.opensource.org/licenses/mit-license.php.
                      </div>
                      <div class="account-keys-device-step" id="give_ask_part">
                         <span class="chat-form-needed" aria-hidden="true"><span class="chat-needed">*</span> needed</span>
-                        <label class="chat-label" for="give_password">Your password <span class="chat-needed" aria-hidden="true">*</span></label>
-                        <input type="password" class="chat-field" id="give_password" autocomplete="current-password">
-                        <div class="chat-field-error" id="give_password_error"></div>
+                        <div id="give_password_part" hidden>
+                           <label class="chat-label" for="give_password">Your password <span class="chat-needed" aria-hidden="true">*</span></label>
+                           <input type="password" class="chat-field" id="give_password" autocomplete="current-password">
+                           <div class="chat-field-error" id="give_password_error"></div>
+                        </div>
                         <div id="give_words_part" hidden>
                            <label class="chat-label" for="give_words">The node's twelve words <span class="chat-needed" aria-hidden="true">*</span></label>
                            <textarea class="chat-field account-keys-words" id="give_words" rows="3" autocomplete="off" autocapitalize="off"

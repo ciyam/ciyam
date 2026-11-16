@@ -162,6 +162,13 @@ ciyam_register_module( class extends ciyam_module
       return ( await ciyam_sha256_hex( this.c_person_label + key + ":" + text ) ).substr( 0, 32 );
    }
 
+   // NOTE: The people key as admin's keys keep it - as it is, under their lock alone, so Give keys asks for nothing (Ian, 2026-11-16:
+   // his password comes from a password manager he hasn't with him when out). One sealed ("PK1") is from before, opened once.
+   static is_people_key( kept )
+   {
+      return /^[0-9a-f]{64}$/.test( String( kept || "" ) );
+   }
+
    static is_sealed_people_key( kept )
    {
       return /^PK1:[1-9][0-9]{0,8}:[0-9a-f]{32}:[0-9a-f]{64}:[0-9a-f]{16}$/.test( String( kept || "" ) );
@@ -270,7 +277,7 @@ ciyam_register_module( class extends ciyam_module
 
    // NOTE: New keys from the entropy, as the node keeps them - with no one else's public keys yet, guarded, locked under the access
    // key made with "rounds" (the default if not given) - and that access key, for the browser to keep: { access, kept }. "people",
-   // admin's alone, is the people key sealed ("seal_people_key( )") to keep with them.
+   // admin's alone, is the people key to keep with them.
    static async kept_keys( entropy, rounds, people )
    {
       var count = this.checked_rounds( ( rounds !== undefined ) ? Number( rounds ) : this.c_default_rounds );
@@ -352,8 +359,8 @@ ciyam_register_module( class extends ciyam_module
 
       var people = String( ( contents || { } ).people || "" );
 
-      if( ( people !== "" ) && !this.is_sealed_people_key( people ) )
-         throw new Error( "A people key is kept sealed (\"PK1\")." );
+      if( ( people !== "" ) && !this.is_people_key( people ) && !this.is_sealed_people_key( people ) )
+         throw new Error( "A people key is 64 hex digits, or one sealed (\"PK1\")." );
 
       var text = { primary: contents.primary, secondary: contents.secondary, contacts: contacts };
 

@@ -1783,9 +1783,9 @@ function signin_keep_keys( access )
 // signs in, so Give keys in People works at once. From the people key and "admin" ("person_entropy( )" in "ciyam_user_keys.js"), not
 // admin's PIN, which a recovery changes. Keys the node has that the words open are kept as they are - contacts and room keys with
 // them - and only opened here; keys from other words are left alone. "made", "opened", "other" or "failed" ("admin_keys_text( )").
-// NOTE: With "password", the people key is kept with them too, sealed under admin's PIN and that password as Give keys keeps it - so
-// Give keys never asks for the words, which are here now (Damon, 2026-11-16: "this has to be a smooth and simple process").
-async function signin_admin_keys( entropy, password )
+// NOTE: The people key is kept with them too, as Give keys keeps it - so Give keys asks for nothing, as the words are here now (Damon,
+// 2026-11-16: "this has to be a smooth and simple process"; Ian, 2026-11-16: not the password either).
+async function signin_admin_keys( entropy )
 {
    try
    {
@@ -1802,19 +1802,6 @@ async function signin_admin_keys( entropy, password )
 
       var people = await uk.people_key( entropy );
       var own = await uk.person_entropy( people, uk.c_admin_person );
-
-      // NOTE: The people key sealed under admin's PIN and the password - "" without a password, or if it can't be.
-      var seal = async function( )
-      {
-         try
-         {
-            return password ? await uk.seal_people_key( people, ciyam.access, password ) : "";
-         }
-         catch( e )
-         {
-            return "";
-         }
-      };
 
       var url = ciyam.get_cws_url( ) + "/user-keys?access=" + ciyam.access + "&device=" + ciyam.device + "&format=text";
 
@@ -1843,31 +1830,22 @@ async function signin_admin_keys( entropy, password )
 
          signin_keep_keys( access );
 
-         // NOTE: The people key kept with them, unless the one there opens with this PIN and password already - one sealed under the
-         // PIN before a recovery no longer does. Only then are the keys sent again (as "keys_send( )" sends them, whole), so the gap in
-         // which another device's change could be lost is only when needed (found by review, 2026-11-16). Not taken - the lock or the
-         // node refused - and they are still opened: Give keys asks for the words once, as before.
-         var opens = "";
-
-         try
-         {
-            opens = ( password && opened.people ) ? await uk.open_people_key( opened.people, ciyam.access, password ) : "";
-         }
-         catch( e )
-         {
-            opens = "";
-         }
-
-         var sealed = ( password && ( opens !== people ) ) ? await seal( ) : "";
+         // NOTE: The people key kept with them, unless it is there already - not when none is, or one sealed under a password from
+         // before. Only then are the keys sent again (as "keys_send( )" sends them, whole), so the gap in which another device's change
+         // could be lost is only when needed (found by review, 2026-11-16). Not taken - the lock or the node refused - and they are
+         // still opened: Give keys asks for the words once, as before.
+         var keeping = ( opened.people !== people ) ? people : "";
 
          people = "";
 
-         if( sealed !== "" )
+         if( keeping !== "" )
          {
             try
             {
                var relocked = uk.kept_text( opened.guard, await uk.lock( access, { primary: opened.primary, secondary: opened.secondary,
-                contacts: opened.contacts, rooms: opened.rooms, people: sealed }, { rounds: opened.rounds } ) );
+                contacts: opened.contacts, rooms: opened.rooms, people: keeping }, { rounds: opened.rounds } ) );
+
+               keeping = "";
 
                await signin_issue( function( done )
                {
@@ -1882,7 +1860,7 @@ async function signin_admin_keys( entropy, password )
          return "opened";
       }
 
-      var made = await uk.kept_keys( own, undefined, await seal( ) );
+      var made = await uk.kept_keys( own, undefined, people );
 
       people = "";
 
@@ -2045,7 +2023,7 @@ async function recover_submit( event )
    signin_set_text( "recover_status", "Making admin's keys from the words..." );
    button.disabled = true;
 
-   signin_set_text( "recover_keys_note", admin_keys_text( await signin_admin_keys( entropy, password ) ) );
+   signin_set_text( "recover_keys_note", admin_keys_text( await signin_admin_keys( entropy ) ) );
 
    entropy = "";
    button.disabled = false;

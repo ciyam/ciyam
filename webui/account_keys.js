@@ -1369,14 +1369,18 @@ function keys_show_give( give )
     + " administrator under Your keys. Scan the code it shows, or paste its address. Their keys are made from the node's twelve words"
     + " and their PIN.";
 
-   // NOTE: The node's words only until the people key is kept with admin's keys - then the password opens it.
-   document.getElementById( "give_words_part" ).hidden = ( g_keys.people !== "" );
-   // NOTE: Locked under the password typed - which the page cannot check against the sign in's (found by review, 2026-11-11), so a
-   // mistyped one is only found next time, when the words are asked again.
-   document.getElementById( "give_words_note" ).textContent = "Asked only this once. What they make is then kept with your keys,"
-    + " locked under the password typed here - so type the one you sign in with.";
+   keys_give_asking( );
+
+   document.getElementById( "give_words_note" ).textContent = "Asked only this once. What they make is then kept with your keys.";
    document.getElementById( "give_part" ).hidden = false;
-   document.getElementById( "give_password" ).focus( );
+
+   // NOTE: The first thing to do - with nothing to type, scanning their code.
+   if( !document.getElementById( "give_password_part" ).hidden )
+      document.getElementById( "give_password" ).focus( );
+   else if( !document.getElementById( "give_words_part" ).hidden )
+      document.getElementById( "give_words" ).focus( );
+   else
+      document.getElementById( "give_scan" ).focus( );
 }
 
 // NOTE: Back to People, where Give keys was chosen.
@@ -1391,23 +1395,29 @@ function keys_give_close( )
       apps_go( "home", "#people", null );
 }
 
-// NOTE: The people key - opened with the password from admin's keys, or made from the node's words typed (and then kept, sealed
-// under the password) - or "" with the problem said. The words are taken as the node's only if they make admin's own keys, so
-// wrong ones are said rather than used to make keys no one else could make (admin's keys come from "Use the node's twelve words").
+// NOTE: The people key - kept with admin's keys, or one sealed there before opened with the password, or made from the node's words
+// typed - or "" with the problem said. Either of the last two is then kept as it is, so nothing is asked again (Ian, 2026-11-16).
+// The words are taken as the node's only if they make admin's own keys, so wrong ones are said rather than used to make keys no
+// one else could make (admin's keys come from "Use the node's twelve words").
 async function keys_give_people_key( password, latest )
 {
    var uk = keys_module( "user_keys" );
    var words_part = document.getElementById( "give_words_part" );
 
+   if( uk.is_people_key( latest.people ) )
+      return latest.people;
+
+   var people = "";
+
    if( latest.people !== "" )
    {
       try
       {
-         return await uk.open_people_key( latest.people, ciyam.access, password );
+         people = await uk.open_people_key( latest.people, ciyam.access, password );
       }
       catch( e )
       {
-         // NOTE: A password changed since, say - the words make it again, and it is kept under the new password.
+         // NOTE: A password changed since, say - the words make it again.
          if( document.getElementById( "give_words" ).value.trim( ) === "" )
          {
             words_part.hidden = false;
@@ -1418,6 +1428,9 @@ async function keys_give_people_key( password, latest )
          }
       }
    }
+
+   if( people !== "" )
+      return keys_give_keep_people( people, latest );
 
    // NOTE: Nothing kept after all (gone since the card was shown, say) - the words asked for, where they can be typed.
    if( document.getElementById( "give_words" ).value.trim( ) === "" )
@@ -1434,8 +1447,6 @@ async function keys_give_people_key( password, latest )
 
       return "";
    }
-
-   var people = "";
 
    try
    {
@@ -1456,16 +1467,30 @@ async function keys_give_people_key( password, latest )
       return "";
    }
 
-   var sealed = await uk.seal_people_key( people, ciyam.access, password );
+   return keys_give_keep_people( people, latest );
+}
 
+// NOTE: The people key kept with admin's keys, as it is - and returned, or "" if the node didn't take it (said).
+async function keys_give_keep_people( people, latest )
+{
    if( !await keys_send( g_keys.access, g_keys.rounds, { primary: latest.primary, secondary: latest.secondary, contacts: latest.contacts,
-    rooms: latest.rooms, people: sealed }, "give_error", "What the node's words make", latest.guard ) )
+    rooms: latest.rooms, people: people }, "give_error", "What the node's words make", latest.guard ) )
       return "";
 
-   g_keys.people = sealed;
-   words_part.hidden = true;
+   g_keys.people = people;
+
+   keys_give_asking( );
 
    return people;
+}
+
+// NOTE: Only what is needed shown - the node's words while nothing is kept, the password only for one sealed under it before.
+function keys_give_asking( )
+{
+   var uk = keys_module( "user_keys" );
+
+   document.getElementById( "give_words_part" ).hidden = ( g_keys.people !== "" );
+   document.getElementById( "give_password_part" ).hidden = !uk.is_sealed_people_key( g_keys.people );
 }
 
 // NOTE: Their device's code read - the people key opened, their entropy made from it and their PIN, and sealed for that device alone
@@ -1479,9 +1504,9 @@ async function keys_give_go( )
    if( ( give === null ) || ( g_keys.access === "" ) )
       return;
 
-   var password = document.getElementById( "give_password" ).value;
-   // NOTE: The words needed only while nothing is kept - with it kept, only if the password does not open it.
-   var asking_words = ( g_keys.people === "" );
+   // NOTE: The password only for a people key sealed under it before; the words only while nothing is kept, or if it doesn't open.
+   var password = document.getElementById( "give_password_part" ).hidden ? null : document.getElementById( "give_password" ).value;
+   var asking_words = !document.getElementById( "give_words_part" ).hidden;
    var device = parse_device_link( document.getElementById( "give_ask" ).value );
 
    if( !keys_give_problems( give_field_problems( password, asking_words ? document.getElementById( "give_words" ).value : null, device ) ) )

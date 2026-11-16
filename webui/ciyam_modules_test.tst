@@ -106,11 +106,11 @@ ok   - not a people key or a PIN, said
 ok   - through run
 ok   admin's entropy from the people key and "admin", not a PIN
 ok   - new keys made in one call: opened by their access key, the entropy's seeds, guarded
-ok   - with the people key, sealed, kept in them; none without
+ok   - with the people key kept in them; none without
 ok   the people key sealed under admin's PIN and password
 ok   - opened by them, and by no other password or PIN
 ok   - a new salt each time otherwise; not one sealed, said
-ok   - kept with the keys only when given, and only sealed
+ok   - kept with the keys only when given - as it is, or sealed from before; nothing else
 ok   the access key - rounds of the entropy, as worked out without the module
 ok   the keys from the entropy - their public key and secrets the same as from the entropy itself
 ok   locked under the access key - as worked out without the module, given a salt and rounds
