@@ -17,6 +17,7 @@
 #  include <iostream>
 #  include <stdexcept>
 #  ifdef __GNUG__
+#     include <poll.h>
 #     include <fcntl.h>
 #     include <netdb.h>
 #     include <stdarg.h>
@@ -315,17 +316,12 @@ bool socket_base::connect( const ip_address& addr, size_t timeout )
 
          socklen_t peer_addr_len;
 
-         fd_set fdset;
-         struct timeval tv;
+         struct pollfd fds;
 
-         tv.tv_sec = timeout / 1000;
-         tv.tv_usec = ( timeout % 1000 ) * 1000;
+         fds.fd = socket;
+         fds.events = POLLOUT;
 
-         FD_ZERO( &fdset );
-
-         FD_SET( socket, &fdset );
-
-         if( ::select( socket + 1, 0, &fdset, 0, &tv ) == 1 )
+         if( ::poll( &fds, 1, timeout ) )
          {
             // NOTE: The "getpeername" call is used to detect connection when non-blocking.
             if( ::getpeername( socket, ( struct sockaddr* )&peer_addr, &peer_addr_len ) == 0 )
@@ -412,22 +408,12 @@ bool socket_base::has_input( size_t timeout ) const
 
    if( socket != INVALID_SOCKET )
    {
-      fd_set rfds;
+      struct pollfd fds;
 
-      struct timeval tv;
+      fds.fd = socket;
+      fds.events = POLLIN;
 
-      tv.tv_sec = timeout / 1000;
-      tv.tv_usec = ( timeout % 1000 ) * 1000;
-
-      FD_ZERO( &rfds );
-
-      FD_SET( socket, &rfds );
-
-      // NOTE: This function will indicate success even if the "select" return code has
-      // an error as it is expected that the error will occur during the receive itself.
-      okay = ::select( socket + 1, &rfds, 0, 0, &tv ) != 0;
-
-      FD_CLR( socket, &rfds );
+      okay = ::poll( &fds, 1, timeout );
    }
 
    return okay;
@@ -439,22 +425,12 @@ bool socket_base::can_output( size_t timeout ) const
 
    if( socket != INVALID_SOCKET )
    {
-      fd_set wfds;
+      struct pollfd fds;
 
-      struct timeval tv;
+      fds.fd = socket;
+      fds.events = POLLOUT;
 
-      tv.tv_sec = timeout / 1000;
-      tv.tv_usec = ( timeout % 1000 ) * 1000;
-
-      FD_ZERO( &wfds );
-
-      FD_SET( socket, &wfds );
-
-      // NOTE: This function will indicate success even if the "select" return code has
-      // an error as it is expected that the error will occur during the send operation.
-      okay = ::select( socket + 1, 0, &wfds, 0, &tv ) != 0;
-
-      FD_CLR( socket, &wfds );
+      okay = ::poll( &fds, 1, timeout );
    }
 
    return okay;
