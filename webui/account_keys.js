@@ -393,6 +393,8 @@ async function render_keys( )
    install_keys( );
    keys_clear( );
 
+   g_keys_give_waiting = null;
+
    // NOTE: Said plainly (Damon and Ian, 2026-11-11) - the node's twelve words make everyone's keys here.
    document.getElementById( "keys_words_lede" ).textContent = keys_words_text( ciyam.is_admin );
    document.getElementById( "keys_words_lede" ).hidden = ( keys_words_text( ciyam.is_admin ) === "" );
@@ -523,7 +525,9 @@ async function render_keys( )
       set_error( "keys_error", ciyam.is_admin ? "That's someone's code asking for their keys - choose Give keys beside their name in"
        + " People, then scan it there." : "That code is for your administrator to scan - in People, with Give keys." );
 
-   // NOTE: Give keys, from People - only admin's, once admin's own keys are here (the people key is kept with them).
+   // NOTE: Give keys, from People - only admin's, once admin's own keys are here (the people key is kept with them). Not here, and
+   // it waits for them, said where they are asked for, and follows once they are (Damon, 2026-11-16: the keys made again elsewhere,
+   // Give keys seemed to do nothing).
    var give = keys_give_taken( );
 
    if( ( give !== null ) && ciyam.is_admin )
@@ -531,8 +535,7 @@ async function render_keys( )
       if( !document.getElementById( "keys_here" ).hidden )
          keys_show_give( give );
       else
-         set_error( "keys_error", "To give " + give.name + " their keys, your own need to be on this browser first - use the node's"
-          + " twelve words, or your own, here." );
+         keys_give_wait( give );
    }
 
    // NOTE: Another device's code opened here is put in Add another device and answered only on "Use it", under its warning (found by
@@ -677,6 +680,8 @@ async function keys_show_here( access, lede, from_link )
    keys_draw_rooms( );
 
    keys_show( "keys_here" );
+
+   keys_give_follow( keys_give_waited( ) );
 }
 
 // ---- Setting them up
@@ -1196,6 +1201,38 @@ const c_keys_give_check = "ciyam give person check ";
 // NOTE: Who admin is giving keys to - { pin, name } - while Give keys shows.
 var g_keys_give = null;
 
+// NOTE: Who admin chose Give keys for while admin's own keys weren't on this browser - shown once they are.
+var g_keys_give_waiting = null;
+
+// NOTE: Said above what asks for admin's keys - the node's words, or "Get them from another device".
+function keys_give_wait( give )
+{
+   var lede_id = !document.getElementById( "keys_none" ).hidden ? "keys_none_lede" : "keys_enter_lede";
+   var lede = document.getElementById( lede_id );
+
+   g_keys_give_waiting = give;
+
+   lede.textContent = "To give " + give.name + " their keys, yours need to be on this browser first - Give keys follows once they"
+    + " are. " + lede.textContent;
+   lede.hidden = false;
+}
+
+// NOTE: Who was waiting, taken once - null if no one.
+function keys_give_waited( )
+{
+   var give = g_keys_give_waiting;
+
+   g_keys_give_waiting = null;
+
+   return give;
+}
+
+function keys_give_follow( give )
+{
+   if( ( give !== null ) && ciyam.is_admin && !document.getElementById( "keys_here" ).hidden )
+      keys_show_give( give );
+}
+
 async function keys_give_seal( secret, entropy, name )
 {
    var sm = keys_module( "secure_message" );
@@ -1558,8 +1595,17 @@ async function keys_give_go( )
 
    set_error( "give_error", "" );
 
-   if( ( give === null ) || ( g_keys.access === "" ) )
+   if( give === null )
       return;
+
+   // NOTE: Never nothing said after a scan (Damon, 2026-11-16).
+   if( g_keys.access === "" )
+   {
+      set_error( "give_error", "Your own keys aren't open on this browser - open Your keys, type the node's twelve words, then choose"
+       + " Give keys again." );
+
+      return;
+   }
 
    // NOTE: The password only for a people key sealed under it before. The words needed only while nothing is kept - offered too once
    // the password doesn't open it, but the right password still does without them (found by "give_keys", 2026-11-16).
@@ -2273,6 +2319,9 @@ async function keys_enter_go( )
 
    document.getElementById( "keys_enter_words" ).value = "";
 
+   // NOTE: Give keys waiting follows once the people key is kept, so it asks for nothing.
+   var waiting = keys_give_waited( );
+
    await keys_show_here( access, "Your keys are on this browser.", false );
 
    // NOTE: Kept with them unless it is there already, so Give keys doesn't ask for the words again (Damon, 2026-11-16) - not kept,
@@ -2284,6 +2333,8 @@ async function keys_enter_go( )
       if( latest !== null )
          await keys_keep_people( people, latest, "keys_error" );
    }
+
+   keys_give_follow( waiting );
 }
 
 // NOTE: This person's entropy from the entropy of the node's twelve words (Ian, 2026-11-11 - one set of words for the node and
