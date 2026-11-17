@@ -2153,7 +2153,8 @@ check( "a call's state - the offer joined once every part is there, then its ans
  cp.call_states( call_seen( "maya", call_offer.slice( 0, 2 ) ), "admin", "maya", 1794000010 )[ "0a1b2c3d" ].offer,
  cp.call_states( call_seen( "maya", call_offer ), "admin", "maya", 1794000010 )[ "0a1b2c3d" ].offer === call_data,
  cp.call_states( call_seen( "maya", call_offer ).concat( call_seen( "admin", call_answer ) ), "admin", "maya", 1794000010 )[ "0a1b2c3d" ] ],
- [ "", true, { id: "0a1b2c3d", caller: "maya", at: 1794000000, offer: call_data, answer: "BBBB", ended: false, declined: false, busy: false } ] );
+ [ "", true, { id: "0a1b2c3d", caller: "maya", at: 1794000000, offer: call_data, answer: "BBBB", ended: false, declined: false, busy: false,
+ renew: "", renew_at: 0, renewed: "", renewed_at: 0 } ] );
 check( "- busy, from the one called - not from the caller", [
  cp.call_states( call_seen( "maya", call_offer ).concat( call_seen( "admin", call_msg( 1794000002, "admin", "busy", "" ) ) ), "admin", "maya",
  1794000010 )[ "0a1b2c3d" ].busy, cp.call_states( call_seen( "maya", call_offer.concat( call_msg( 1794000002, "maya", "busy", "" ) ) ), "admin",
@@ -2183,6 +2184,29 @@ check( "- the call going is taken however long ago it began: its end an hour on"
 check( "- two answers, from two devices of the one called, not joined into one", cp.call_states( call_seen( "maya", call_offer ).concat( call_seen(
  "admin", call_msg( 1794000005, "admin", "answer", call_data ).slice( 0, 1 ).concat( call_msg( 1794000006, "admin", "answer", "CCCC" ) ) ) ),
  "admin", "maya", 1794000010 )[ "0a1b2c3d" ].answer, "CCCC" );
+// NOTE: When the node posted each (its unique), not the sender's clock (Damon, 2026-11-17: clocks more than 90 s apart, never rung).
+var call_posted = function( sender, texts, unique ) { return texts.map( function( text ) { return { sender: sender, text: text, unique: unique }; } ); };
+check( "- how long ago by the node's clock: an offer sealed an hour fast rings, one posted long ago does not", [
+ Object.keys( cp.call_states( call_posted( "maya", call_msg( 1794003600, "maya", "offer", "AAAA" ), "1794000002001" ), "admin", "maya",
+ 1794000010 ) ).length, Object.keys( cp.call_states( call_posted( "maya", call_msg( 1794000000, "maya", "offer", "AAAA" ), "1793990000001" ),
+ "admin", "maya", 1794000010 ) ).length, cp.call_states( call_posted( "maya", call_msg( 1794003600, "maya", "offer", "AAAA" ), "1794000002001" ),
+ "admin", "maya", 1794000010 )[ "0a1b2c3d" ].at, cp.call_message_seconds( "", 1794000000 ), cp.call_message_seconds( "1794000002001", 0 ) ],
+ [ 1, 0, 1794000002, 1794000000, 1794000002 ] );
+check( "- a renewal from the caller, its answer from the one called - the latest of each; not the other way round", ( function( )
+{
+   var renewed = cp.call_states( call_seen( "maya", call_offer ).concat( call_seen( "admin", call_answer ) )
+    .concat( call_seen( "maya", call_msg( 1794000100, "maya", "renew", "R1" ) ) ).concat( call_seen( "maya", call_msg( 1794000200, "maya", "renew", "R2" ) ) )
+    .concat( call_seen( "admin", call_msg( 1794000201, "admin", "renewed", "S2" ) ) ), "admin", "maya", 1794000210, "0a1b2c3d" )[ "0a1b2c3d" ];
+   var wrong = cp.call_states( call_seen( "maya", call_offer ).concat( call_seen( "admin", call_msg( 1794000100, "admin", "renew", "R1" ) ) )
+    .concat( call_seen( "maya", call_msg( 1794000101, "maya", "renewed", "S1" ) ) ), "admin", "maya", 1794000110, "0a1b2c3d" )[ "0a1b2c3d" ];
+   var older = cp.call_states( call_seen( "maya", call_offer ).concat( call_seen( "maya", call_msg( 1794000200, "maya", "renew", "R2" ) ) )
+    .concat( call_seen( "maya", call_msg( 1794000100, "maya", "renew", "R1" ) ) ), "admin", "maya", 1794000210, "0a1b2c3d" )[ "0a1b2c3d" ];
+   return [ renewed.renew, renewed.renew_at, renewed.renewed, renewed.renewed_at, wrong.renew, wrong.renewed, older.renew ];
+} )( ), [ "R2", 1794000200, "S2", 1794000201, "", "", "R2" ] );
+check( "- a call given up for the other's, the two calling at once, has no line of its own", cp.call_line_text( cp.parse_call_message(
+ "☎call 0a1b2c3d 1794000000 maya end 1/1 crossed" ) ), "" );
+check( "- renewals not shown", [ "☎call 0a1b2c3d 1794000000 maya renew 1/1 AAAA", "☎call 0a1b2c3d 1794000000 admin renewed 1/1 BBBB" ].map(
+ function( text ) { return cp.call_line_text( cp.parse_call_message( text ) ); } ), [ "", "" ] );
 check( "a call's length", [ cp.call_elapsed_text( 0 ), cp.call_elapsed_text( 65 ), cp.call_elapsed_text( 3725 ), cp.call_elapsed_text( -4 ) ],
  [ "0:00", "1:05", "1:02:05", "0:00" ] );
 check( "a call's lines in the conversation - the call, a decline, busy, its end with how long; the rest not shown", [ call_offer[ 0 ],

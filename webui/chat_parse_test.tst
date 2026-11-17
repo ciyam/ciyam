@@ -989,6 +989,10 @@ ok   - not taken when the node names someone else as its sender - the caller's o
 ok   - an answer or end with no offer seen is not a call; nor anyone's but the two; nor an offer gone stale
 ok   - the call going is taken however long ago it began: its end an hour on
 ok   - two answers, from two devices of the one called, not joined into one
+ok   - how long ago by the node's clock: an offer sealed an hour fast rings, one posted long ago does not
+ok   - a renewal from the caller, its answer from the one called - the latest of each; not the other way round
+ok   - a call given up for the other's, the two calling at once, has no line of its own
+ok   - renewals not shown
 ok   a call's length
 ok   a call's lines in the conversation - the call, a decline, busy, its end with how long; the rest not shown
 ok   the node's call relay - STUN and TURN on its own host, with its credentials

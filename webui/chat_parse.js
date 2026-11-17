@@ -5063,7 +5063,13 @@ const c_call_fresh_seconds = 90;
 // NOTE: An end's data for a call that never connected - drawn as such, not as a call not answered (found by review, 2026-11-14).
 const c_call_end_failed = "failed";
 
-const c_call_pattern = /^☎call ([0-9a-f]{8}) ([0-9]{10}) ([-a-z0-9]{3,12}) (offer|answer|end|decline|busy) ([0-9]{1,2})\/([0-9]{1,2})(?: ([A-Za-z0-9+\/=]+))?$/;
+// NOTE: An end's data for a call given up for the other's, the two having called each other at once (Damon, 2026-11-17) - not drawn:
+// the call that went ahead has the conversation's line.
+const c_call_end_crossed = "crossed";
+
+// NOTE: "renew" and "renewed" - the caller's new description once the connection was lost (a phone moving from WiFi to 4G, say), and
+// the answer to it, keeping the call (Damon, 2026-11-17).
+const c_call_pattern = /^☎call ([0-9a-f]{8}) ([0-9]{10}) ([-a-z0-9]{3,12}) (offer|answer|end|decline|busy|renew|renewed) ([0-9]{1,2})\/([0-9]{1,2})(?: ([A-Za-z0-9+\/=]+))?$/;
 
 // NOTE: The texts to seal and send, in order - "from" the one sending them.
 function call_messages( id, at, from, kind, data )
@@ -5105,11 +5111,23 @@ function is_call_message( text )
    return parse_call_message( text ) !== null;
 }
 
-// NOTE: The calls in "opened" - [ { sender, text } ] opened from the direct message between "me" and "other", oldest first - sent
-// within "c_call_fresh_seconds" of "now" (Unix seconds), as { <id>: { id, caller, at, offer, answer, ended, declined, busy } }.
-// "offer" and "answer" are the data joined once every part is there, else "". Only a call begun by an offer is taken, from either of
-// the two; its answer, decline and busy only from the other of them, its end from either. Each sent by whom it says, sealed. The call
-// "keep" - one going - is taken however long ago it began (found by review, 2026-11-14: a hang up after 90 seconds went unseen).
+// NOTE: When a message was posted, in Unix seconds by the node's own clock - its unique (seconds with a three-digit count after them,
+// "parse_message_line( )"); "at" - the time sealed in it, by the sender's clock - for one without.
+function call_message_seconds( unique, at )
+{
+   return /^[0-9]{13}$/.test( String( unique || "" ) ) ? Math.floor( Number( unique ) / 1000 ) : at;
+}
+
+// NOTE: The calls in "opened" - [ { sender, text, unique } ] opened from the direct message between "me" and "other", oldest first -
+// posted within "c_call_fresh_seconds" of "now" (Unix seconds by the node's clock), as { <id>: { id, caller, at, offer, answer, ended,
+// declined, busy, renew, renew_at, renewed, renewed_at } }. "offer", "answer", "renew" and "renewed" are the data joined once every part
+// is there, else "" - the latest renewal and its answer ("renew_at", "renewed_at" - when each was sealed). Only a call begun by an offer
+// is taken, from either of the two; its renewals from the caller alone; its answer, decline, busy and renewals' answers only from the
+// other of them, its end from either. Each sent by whom it says, sealed. The call "keep" - one going - is taken however long ago it
+// began (found by review, 2026-11-14: a hang up after 90 seconds went unseen).
+//
+// How long ago is by when the node posted each, not the time the sender sealed in it (Damon, 2026-11-17: two clocks more than 90 s
+// apart, and a call never rang) - "now" is the node's time too ("call_now( )").
 function call_states( opened, me, other, now, keep )
 {
    var calls = { };
@@ -5123,21 +5141,22 @@ function call_states( opened, me, other, now, keep )
          return;
 
       var state = calls[ call.id ];
+      var posted = call_message_seconds( message.unique, call.at );
 
-      if( ( call.id !== keep ) && ( Math.abs( now - ( state ? state.at : call.at ) ) > c_call_fresh_seconds ) )
+      if( ( call.id !== keep ) && ( Math.abs( now - ( state ? state.at : posted ) ) > c_call_fresh_seconds ) )
          return;
 
       if( call.kind === "offer" )
       {
          if( !state )
-            state = calls[ call.id ] = { id: call.id, caller: message.sender, at: call.at, offer: "", answer: "", ended: false, declined: false,
-             busy: false };
+            state = calls[ call.id ] = { id: call.id, caller: message.sender, at: posted, offer: "", answer: "", ended: false, declined: false,
+             busy: false, renew: "", renew_at: 0, renewed: "", renewed_at: 0 };
          else if( state.caller !== message.sender )
             return;
       }
       else if( !state )
          return;
-      else if( ( call.kind !== "end" ) && ( message.sender === state.caller ) )
+      else if( ( call.kind !== "end" ) && ( ( message.sender === state.caller ) !== ( call.kind === "renew" ) ) )
          return;
 
       if( call.kind === "end" )
@@ -5174,6 +5193,15 @@ function call_states( opened, me, other, now, keep )
          for( var i = 1; i <= piece.parts; i++ )
             joined += piece.got[ i ];
 
+         // NOTE: A renewal, or its answer, only if it is the latest yet - an older one complete later is not taken over it.
+         if( ( call.kind === "renew" ) || ( call.kind === "renewed" ) )
+         {
+            if( call.at < state[ call.kind + "_at" ] )
+               return;
+
+            state[ call.kind + "_at" ] = call.at;
+         }
+
          state[ call.kind ] = joined;
       }
    } );
@@ -5201,6 +5229,9 @@ function call_line_text( call )
    {
       if( call.data === c_call_end_failed )
          return "Call couldn't connect";
+
+      if( call.data === c_call_end_crossed )
+         return "";
 
       return /^[0-9]+$/.test( call.data ) ? "Call ended · " + call_elapsed_text( parseInt( call.data, 10 ) ) : "Call not answered";
    }
@@ -5264,6 +5295,8 @@ if( typeof module !== "undefined" )
       call_relay_servers: call_relay_servers,
       c_call_fresh_seconds: c_call_fresh_seconds,
       c_call_end_failed: c_call_end_failed,
+      c_call_end_crossed: c_call_end_crossed,
+      call_message_seconds: call_message_seconds,
       call_messages: call_messages,
       parse_call_message: parse_call_message,
       is_call_message: is_call_message,

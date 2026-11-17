@@ -22,6 +22,15 @@ const c_call_ring_ms = 45000;
 // NOTE: How long the set-up waits for the browser to gather its ways to be reached - all are sent at once, in the offer or answer.
 const c_call_gather_ms = 5000;
 
+// NOTE: A call that loses its connection (a phone moving from WiFi to 4G, say) is given this long to get it back before it ends
+// (Damon, 2026-11-17) - the caller renewing it with a new description ("call_renew( )") once it has been lost for "c_call_drop_ms",
+// which a browser often gets back from by itself.
+const c_call_renew_ms = 20000;
+const c_call_drop_ms = 3000;
+
+// NOTE: How often the node's clock is asked again ("call_clock( )").
+const c_call_clock_every_ms = 60 * 60 * 1000;
+
 // NOTE: The call there is, or null - { id, room, other, role ("caller" or "callee"), state ("starting", "calling", "ringing",
 // "connecting", "in-call"), offer, pc, local, started, answered }.
 var g_call = null;
@@ -42,6 +51,14 @@ var g_call_looking = false;
 var g_call_watch_timer = null;
 var g_call_ring_timer = null;
 var g_call_clock_timer = null;
+
+// NOTE: The node's clock less this device's, in seconds, and when it was last asked - a call's times are the node's (Damon, 2026-11-17:
+// two clocks more than 90 s apart, and a call never rang). 0 until known.
+var g_call_clock_offset = 0;
+var g_call_clock_asked = 0;
+
+// NOTE: The screen kept awake during a call ("call_wake( )") - the browser's lock, or null.
+var g_call_wake = null;
 
 function call_new_id( )
 {
@@ -78,9 +95,35 @@ async function call_unpack( data )
    return await new Response( stream ).text( );
 }
 
+// NOTE: Now, in Unix seconds by the node's clock.
 function call_now( )
 {
-   return Math.floor( Date.now( ) / 1000 );
+   return Math.floor( Date.now( ) / 1000 ) + g_call_clock_offset;
+}
+
+// NOTE: The node's clock, asked once an hour ("/unix-now", which needs no session) - the offset taken from the middle of the request.
+// Not known, and calls are timed by this device's clock, as before.
+async function call_clock( )
+{
+   if( ( g_call_clock_asked !== 0 ) && ( Date.now( ) - g_call_clock_asked < c_call_clock_every_ms ) )
+      return;
+
+   g_call_clock_asked = Date.now( );
+
+   var text = "";
+   var sent = Date.now( );
+
+   await serialised( function( )
+   {
+      return ciyam.fetch( ciyam.get_unix_now_url( ), "GET", function( response ) { text = String( response || "" ).trim( ); } );
+   } );
+
+   var middle = Math.round( ( sent + Date.now( ) ) / 2000 );
+
+   if( /^[0-9]{10}$/.test( text ) )
+      g_call_clock_offset = parseInt( text, 10 ) - middle;
+   else
+      g_call_clock_asked = 0;
 }
 
 // NOTE: Whether the open room can be called from - an encrypted direct message.
@@ -291,6 +334,11 @@ async function call_watch( )
 
    try
    {
+      await call_clock( );
+
+      if( g_signing_out )
+         return;
+
       var rooms = g_rooms.slice( );
 
       for( var i = 0; i < rooms.length; i++ )
@@ -376,6 +424,10 @@ function call_apply( room, other, calls )
             call_take_answer( call.answer );
          else if( ( g_call.role === "callee" ) && ( g_call.state === "ringing" ) && ( call.answer !== "" ) )
             call_end_local( "Answered on another device." );
+         else if( ( g_call.role === "callee" ) && ( g_call.started !== 0 ) && ( call.renew !== "" ) && ( call.renew_at > g_call.renew_taken ) )
+            call_take_renew( call.renew, call.renew_at );
+         else if( ( g_call.role === "caller" ) && ( call.renewed !== "" ) && ( call.renewed_at > g_call.renewed_taken ) )
+            call_take_renewed( call.renewed, call.renewed_at );
 
          return;
       }
@@ -387,6 +439,15 @@ function call_apply( room, other, calls )
       {
          if( g_call === null )
             call_ring( room, other, call );
+         else if( call_crossing( room, other ) )
+         {
+            // NOTE: The two called each other at once (Damon, 2026-11-17: each was told the other was busy) - the call with the higher
+            // id goes ahead on both sides, so each decides alike: the other's taken in place of this one's, or theirs left to them.
+            g_call_handled[ call.id ] = true;
+
+            if( call.id > g_call.id )
+               call_cross( room, other, call );
+         }
          else
          {
             g_call_handled[ call.id ] = true;
@@ -452,6 +513,12 @@ function call_connection( servers )
 
       if( pc.connectionState === "connected" )
          call_connected( );
+      else if( ( ( pc.connectionState === "disconnected" ) || ( pc.connectionState === "failed" ) ) && ( g_call.started !== 0 ) )
+      {
+         // NOTE: One that had connected - got back, or renewed, rather than ended (Damon, 2026-11-17: a phone moving from WiFi to 4G
+         // lost the call).
+         call_lost( );
+      }
       else if( pc.connectionState === "failed" )
       {
          // NOTE: One that never connected is most likely two networks with no relay between them; one that had, lost (found by review:
@@ -540,7 +607,7 @@ async function do_start_call( )
    }
 
    var call = g_call = { id: call_new_id( ), room: room, other: other, role: "caller", state: "starting", offer: "", pc: null, local: null,
-    started: 0, answered: false, at: call_now( ), offered: false };
+    started: 0, answered: false, at: call_now( ), offered: false, renew_taken: 0, renewed_taken: 0, lost: null };
 
    g_call_handled[ call.id ] = true;
 
@@ -611,8 +678,7 @@ function call_ring( room, other, call )
 {
    g_call_handled[ call.id ] = true;
 
-   g_call = { id: call.id, room: room, other: other, role: "callee", state: "ringing", offer: call.offer, pc: null, local: null, started: 0,
-    answered: false, at: call.at, offered: true };
+   g_call = call_as_callee( room, other, call );
 
    call_show( other + " is calling" );
 
@@ -630,6 +696,159 @@ function call_ring( room, other, call )
       if( ( g_call === ringing ) && ( ringing.state === "ringing" ) )
          call_end_local( "Missed call from " + other + "." );
    }, c_call_ring_ms );
+}
+
+// NOTE: A call from "other" in "room", as the one called has it.
+function call_as_callee( room, other, call )
+{
+   return { id: call.id, room: room, other: other, role: "callee", state: "ringing", offer: call.offer, pc: null, local: null, started: 0,
+    answered: false, at: call.at, offered: true, renew_taken: 0, renewed_taken: 0, lost: null };
+}
+
+// NOTE: Whether a call from "other" in "room" crosses this one's own to them, not yet answered - the two calling each other at once.
+function call_crossing( room, other )
+{
+   return ( g_call !== null ) && ( g_call.role === "caller" ) && ( g_call.room === room ) && ( g_call.other === other ) && !g_call.answered
+    && ( g_call.started === 0 );
+}
+
+// NOTE: This one's own call given up for theirs, which is answered at once - each meant to call the other, so no ring. Its own ended as
+// crossed, so their other devices stop ringing for it and it has no line of its own in the conversation.
+function call_cross( room, other, call )
+{
+   var mine = g_call;
+
+   if( mine.offered )
+      call_send( mine.room, mine.other, mine.id, "end", c_call_end_crossed ).catch( function( ) { } );
+
+   call_end_local( "" );
+
+   g_call = call_as_callee( room, other, call );
+
+   g_call_handled[ call.id ] = true;
+
+   call_watch_fast( true );
+
+   do_accept_call( );
+}
+
+// NOTE: The connection lost during a call - got back, or renewed by the caller, within "c_call_renew_ms", or the call ends.
+function call_lost( )
+{
+   var call = g_call;
+
+   if( ( call === null ) || ( call.started === 0 ) || ( call.lost !== null ) )
+      return;
+
+   call.lost = window.setTimeout( function( )
+   {
+      if( ( g_call === call ) && ( call.lost !== null ) )
+      {
+         if( call.role === "caller" )
+            call_send_quietly( "end" );
+
+         call_end_local( "The call was lost." );
+      }
+   }, c_call_renew_ms );
+
+   call_show( "Reconnecting to " + call.other + "…" );
+
+   call_watch_fast( true );
+
+   // NOTE: The caller alone renews it, so the two never cross; a browser often gets a connection back by itself, so not at once.
+   if( call.role === "caller" )
+      window.setTimeout( function( ) { call_renew( call ); }, c_call_drop_ms );
+}
+
+// NOTE: The connection back - the wait for it ended, and the call shown as going again.
+function call_recovered( )
+{
+   var call = g_call;
+
+   if( ( call === null ) || ( call.lost === null ) )
+      return;
+
+   window.clearTimeout( call.lost );
+
+   call.lost = null;
+
+   call_watch_fast( false );
+
+   call_show( "In a call with " + call.other );
+}
+
+// NOTE: The caller's new description for a lost call - its ways to be reached found again (an ICE restart), sealed and sent as a
+// renewal, for the one called to answer ("call_take_renew( )"). Nothing if the call came back meanwhile.
+async function call_renew( call )
+{
+   if( ( g_call !== call ) || ( call.lost === null ) || ( call.pc === null ) )
+      return;
+
+   try
+   {
+      await call.pc.setLocalDescription( await call.pc.createOffer( { iceRestart: true } ) );
+      await call_gathered( call.pc );
+
+      if( ( g_call !== call ) || ( call.lost === null ) )
+         return;
+
+      await call_send( call.room, call.other, call.id, "renew", await call_pack( call.pc.localDescription.sdp ) );
+   }
+   catch( e )
+   {
+      // NOTE: Not renewed - the call ends when its wait does ("call_lost( )").
+   }
+}
+
+// NOTE: The one called answers a renewal - its own ways to be reached found again, and sent back. A renewal while the connection still
+// works here (the caller's network changed, say) is answered too.
+async function call_take_renew( renew, renew_at )
+{
+   var call = g_call;
+
+   call.renew_taken = renew_at;
+
+   try
+   {
+      await call.pc.setRemoteDescription( { type: "offer", sdp: await call_unpack( renew ) } );
+      await call.pc.setLocalDescription( await call.pc.createAnswer( ) );
+      await call_gathered( call.pc );
+
+      if( g_call !== call )
+         return;
+
+      await call_send( call.room, call.other, call.id, "renewed", await call_pack( call.pc.localDescription.sdp ) );
+
+      if( call.pc.connectionState === "connected" )
+         call_recovered( );
+   }
+   catch( e )
+   {
+      // NOTE: Not answered - the call ends when its wait does, if it was lost here too.
+   }
+}
+
+// NOTE: The caller takes the answer to its renewal - only while it is waiting for one.
+async function call_take_renewed( renewed, renewed_at )
+{
+   var call = g_call;
+
+   call.renewed_taken = renewed_at;
+
+   if( call.pc.signalingState !== "have-local-offer" )
+      return;
+
+   try
+   {
+      await call.pc.setRemoteDescription( { type: "answer", sdp: await call_unpack( renewed ) } );
+
+      if( ( g_call === call ) && ( call.pc.connectionState === "connected" ) )
+         call_recovered( );
+   }
+   catch( e )
+   {
+      // NOTE: Not taken - the call ends when its wait does.
+   }
 }
 
 async function do_accept_call( )
@@ -710,8 +929,16 @@ async function call_take_answer( answer )
 
 function call_connected( )
 {
-   if( ( g_call === null ) || ( g_call.state === "in-call" ) )
+   if( g_call === null )
       return;
+
+   // NOTE: Connected again after being lost.
+   if( g_call.state === "in-call" )
+   {
+      call_recovered( );
+
+      return;
+   }
 
    g_call.state = "in-call";
    g_call.started = Date.now( );
@@ -730,7 +957,53 @@ function call_connected( )
    g_call_clock_timer = window.setInterval( call_show_time, 1000 );
 
    call_show_time( );
+
+   call_wake( true );
 }
+
+// NOTE: The screen kept on during a call (Damon, 2026-11-17) - a phone otherwise dims and locks in the middle of one. The browser lets
+// it go when the page is hidden, so it is asked again when the page shows ("visibilitychange", below). Where there is none, nothing.
+async function call_wake( on )
+{
+   if( g_call_wake !== null )
+   {
+      var held = g_call_wake;
+
+      g_call_wake = null;
+
+      held.release( ).catch( function( ) { } );
+   }
+
+   if( !on || !navigator.wakeLock )
+      return;
+
+   try
+   {
+      var lock = await navigator.wakeLock.request( "screen" );
+
+      // NOTE: The call ended while it was asked for.
+      if( ( g_call === null ) || ( g_call.state !== "in-call" ) )
+      {
+         lock.release( ).catch( function( ) { } );
+
+         return;
+      }
+
+      g_call_wake = lock;
+
+      lock.addEventListener( "release", function( ) { if( g_call_wake === lock ) g_call_wake = null; } );
+   }
+   catch( e )
+   {
+      g_call_wake = null;
+   }
+}
+
+document.addEventListener( "visibilitychange", function( )
+{
+   if( ( document.visibilityState === "visible" ) && ( g_call !== null ) && ( g_call.state === "in-call" ) && ( g_call_wake === null ) )
+      call_wake( true );
+} );
 
 function do_decline_call( )
 {
@@ -797,8 +1070,17 @@ function call_end_local( said )
       g_call_clock_timer = null;
    }
 
+   call_wake( false );
+
    if( call !== null )
    {
+      if( call.lost !== null )
+      {
+         window.clearTimeout( call.lost );
+
+         call.lost = null;
+      }
+
       if( call.pc !== null )
          call.pc.close( );
 
