@@ -25,8 +25,9 @@
 #include "ciyam_web_session.h"
 
 #include "sio.h"
-#include "base64.h"
 #include "sha1.h"
+#include "regex.h"
+#include "base64.h"
 #include "sha256.h"
 #include "threads.h"
 #include "date_time.h"
@@ -82,9 +83,9 @@ const size_t c_cws_max_sessions_default = 100;
 const size_t c_cws_max_sessions_allowed = 1000;
 
 // NOTE: How long a call relay's credentials last - asked for before each call, so a call outlasts them only if it goes on
-// for longer than this (coturn checks them again as an allocation is refreshed). They end on the hour after it, so all of a
-// person's credentials asked for within an hour are the same - and coturn's allocations to one set of credentials ("user-quota")
-// are a limit on each person, not on each request (found by review, 2026-11-15).
+// for longer than this (coturn checks them again as an allocation is refreshed). They end on the hour after it, so all of
+// a person's credentials asked for within one hour are the same - and coturn's allocations to a single set of credentials
+// ("user-quota") are a limit on each person, not on each request (found by review, 2026-11-15).
 const int64_t c_cws_relay_seconds = 43200;
 const int64_t c_cws_relay_rounding = 3600;
 
@@ -219,7 +220,7 @@ constexpr const char* c_cws_help_request_output = "quit\n"
  "attach storage <name>\ncreate message <room> [for=<name,>;]text=<text>\ndelete device <ident>\ndelete message <room>\n"
  "delete javascript\ndelete stylesheet\ndelete webcmdlist\ndelete user-keys\nemploy unlock-key <key>\nretain javascript\n"
  "retain stylesheet\nretain webcmdlist\nretain user-keys\nreview users\nreview devices\n"
- "review messages <room> [[from=<unix_time>;]extra={NONE|PEEK|TIME|KEYID|ENTIRE}]\nreview storages\nreview javascript[s] [<name>]\n"
+ "review messages <room> [[from=<unix_time>;]extra={NONE|PEEK|TIME|KEYID|ENTIRE}]\nreview setting <name>\nreview storages\nreview javascript[s] [<name>]\n"
  "review stylesheet[s] [<name>]\nreview webcmdlist[s] [<name>]\nreview user-keys\nreview storage-modules [<id>/enums|lists|views[/<item_id>]]\n"
  "review storage-instances <id>/<cid>[/<key>] [[key=<key>;][num=[-|+]<num>;][path=<path>;][query=<query>;][fields=<fields>]]\n"
  "update user *** password=<password>\nupdate message <room> name=<name>|owner=<user>|posts={ANY|OWN|NONE|REACT}|closes=<unix_time>\n"
@@ -229,7 +230,7 @@ constexpr const char* c_cws_help_request_admin_output = "quit\n"
  "attach storage <name>\ncreate user [secret|nominated=[[!]<pin>:][<username>]]\ncreate message <room> [for=<name,>;]text=<text>\n"
  "create unlock-key [encrypted=<prefix>-<xor_hash>]\ndelete user <pin>\ndelete device <ident>\ndelete message <room>\ndelete javascript\ndelete stylesheet\n"
  "delete webcmdlist\ndelete user-keys\nemploy unlock-key <key>\nretain javascript\nretain stylesheet\nretain webcmdlist\nretain user-keys\nreview logs [<name> [lines=10]]\n"
- "review users\nreview devices\nreview messages <room> [[from=<unix_time>;]extra={NONE|PEEK|TIME|KEYID|ENTIRE}]\nreview settings\nreview storages\nreview javascript[s] [<name>]\n"
+ "review users\nreview devices\nreview messages <room> [[from=<unix_time>;]extra={NONE|PEEK|TIME|KEYID|ENTIRE}]\nreview setting[s] [<name>]\nreview storages\nreview javascript[s] [<name>]\n"
  "review stylesheet[s] [<name>]\nreview webcmdlist[s] [<name>]\nreview user-keys\nreview storage-modules [<id>/enums|lists|views[/<item_id>]]\n"
  "review storage-instances <id>/<cid>[/<key>] [[key=<key>;][num=[-|+]<num>;][path=<path>;][query=<query>;][fields=<fields>]]\n"
  "update user <pin> keys={REPLACE|RESTORE}|password=<password>\nupdate message <room> name=<name>|owner=<user>|posts={ANY|OWN|NONE|REACT}|closes=<unix_time>\n"
@@ -3688,21 +3689,27 @@ bool process_cws_request( http_request_type request_type, const string& uri_suff
                }
                else if( uri_suffix == c_cws_uri_suffix_settings )
                {
-                  found = true;
-
-                  string settings( get_system_variable( string( c_special_variable_system_setting_prefix ) + "*" ) );
-
-                  replace( settings, c_special_variable_system_setting_prefix, "" );
-
-                  if( !is_json_output )
-                     response = settings;
+                  if( access != g_cws_admin_token )
+                     // FUTURE: This message should be handled as a server string message.
+                     error = "All settings can only be reviewed by the administrator.";
                   else
                   {
-                     vector< string > all_settings;
+                     found = true;
 
-                     split( settings, all_settings, '\n' );
+                     string settings( get_system_variable( string( c_special_variable_system_setting_prefix ) + "*" ) );
 
-                     response = as_json_array( "all_settings", all_settings );
+                     replace( settings, c_special_variable_system_setting_prefix, "" );
+
+                     if( !is_json_output )
+                        response = settings;
+                     else
+                     {
+                        vector< string > all_settings;
+
+                        split( settings, all_settings, '\n' );
+
+                        response = as_json_array( "all_settings", all_settings );
+                     }
                   }
                }
                else if( uri_suffix == c_cws_uri_suffix_storages )
@@ -3773,26 +3780,33 @@ bool process_cws_request( http_request_type request_type, const string& uri_suff
                         if( option_parameters.size( ) > valid_options )
                            // FUTURE: This message should be handled as a server string message.
                            error = "Invalid options '" + options + "' for setting update.";
-                        // NOTE: The ntfy server goes into the "curl" command line that "send_ntfy_message" runs as
-                        // "https://<server>/<topic>" so only a host name and an optional port are accepted.
-                        else if( !value.empty( ) && ( setting == "ntfy_server" ) && !is_host_and_port( value ) )
-                           // FUTURE: This message should be handled as a server string message.
-                           error = "Invalid ntfy server '" + value + "' (expecting a host name with an optional port).";
                         else
                         {
-                           set_system_variable( ">" + var_name, value );
-
-                           // NOTE: An empty value first clears the persistent system variable
-                           // then restores the "ciyam_server.sio" value (if it is not empty).
-                           if( value.empty( ) )
+                           if( !value.empty( ) )
                            {
-                              if( var_name == get_special_var_name( e_special_var_system_setting_ntfy_server ) )
-                                 value = get_ntfy_server( false );
+                              // NOTE: The ntfy server goes into the "curl" command line that "send_ntfy_message" runs
+                              // as "https://<server>/<topic>" so only a host name and an optional port are accepted.
+                              if( ( var_name == get_special_var_name( e_special_var_system_setting_ntfy_server ) ) && !is_host_and_port( value ) )
+                                 // FUTURE: This message should be handled as a server string message.
+                                 error = "Invalid ntfy server '" + value + "' (expecting a host name with an optional port).";
+                           }
 
+                           if( error.empty( ) )
+                           {
+                              set_system_variable( ">" + var_name, value );
+
+                              // NOTE: An empty value first clears the persistent system variable
+                              // then restores the "ciyam_server.sio" value (if it is not empty).
                               if( value.empty( ) )
-                                 value = g_none_var;
+                              {
+                                 if( var_name == get_special_var_name( e_special_var_system_setting_ntfy_server ) )
+                                    value = get_ntfy_server( false );
 
-                              set_system_variable( var_name, value );
+                                 if( value.empty( ) )
+                                    value = g_none_var;
+
+                                 set_system_variable( var_name, value );
+                              }
                            }
                         }
                      }
