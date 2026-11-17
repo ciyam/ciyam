@@ -1275,6 +1275,10 @@ function make_log_entry( source, method, url, body, response, started, finished 
    if( /^\/cws\/relay\/?$/.test( endpoint.split( "?" )[ 0 ] ) )
       text = text.replace( /^([^\n]*\n)[A-Za-z0-9+\/=]+/, "$1(the relay's password)" ).replace( /("credential":")[^"]*/, "$1(hidden)" );
 
+   // NOTE: A person's own alerts topic ("alerts") - a secret: anyone with it could read their alerts (found by review, 2026-11-17).
+   if( /^\/cws\/alerts\/?$/.test( endpoint.split( "?" )[ 0 ] ) )
+      text = text.replace( /^[A-Za-z0-9_-]+(?=\n)/, "(your alerts topic)" ).replace( /("topic":")[^"]*/, "$1(hidden)" );
+
    var failed = ( response === null ) || is_error_output( text );
 
    if( text.length > c_console_max_response_chars )

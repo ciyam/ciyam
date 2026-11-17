@@ -467,6 +467,11 @@ check( "the call relay's password never kept - as text or JSON", [ cp.make_log_e
  "{\"username\":\"1794043200:verify-a\",\"credential\":\"AbCdEfGhIjKlMnOpQrStUvWx+/0=\",\"address\":\"\"}", t0, t1 ).response ],
  [ "1794043200:verify-a\n(the relay's password)\n192.168.0.12",
  "{\"username\":\"1794043200:verify-a\",\"credential\":\"(hidden)\",\"address\":\"\"}" ] );
+check( "a person's alerts topic never kept - as text or JSON; the server still shown", [ cp.make_log_entry( "account", "GET",
+ "http://h/cws/alerts?access=20401&device=c5588b&format=text&session=ddd52e", null, "upABCDEFGHIJ234567\nantares.local:8443", t0, t1 ).response,
+ cp.make_log_entry( "account", "GET", "http://h/cws/alerts?access=20401&device=c5588b&session=ddd52e", null,
+ "{\"topic\":\"upABCDEFGHIJ234567\",\"server\":\"antares.local:8443\"}", t0, t1 ).response ],
+ [ "(your alerts topic)\nantares.local:8443", "{\"topic\":\"(hidden)\",\"server\":\"antares.local:8443\"}" ] );
 
 check( "error marked", cp.make_log_entry( "console", "GET", "http://h/cws?request=x", null, "[bad]", t0, t1 ).ok, false );
 

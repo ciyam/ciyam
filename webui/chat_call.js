@@ -676,6 +676,8 @@ async function do_start_call( )
       if( rung && ( call.state === "calling" ) )
          call_show( "Calling " + other + "… - ringing their phone too" );
 
+      // NOTE: From when the offer went, by the node's clock - a slow ring doesn't push it past the time the offer counts for (found by
+      // review, 2026-11-17).
       g_call_ring_timer = window.setTimeout( function( )
       {
          if( ( g_call === call ) && ( call.state === "calling" ) )
@@ -684,7 +686,7 @@ async function do_start_call( )
 
             call_end_local( other + " didn't answer." );
          }
-      }, rung ? c_call_ring_alerted_ms : c_call_ring_ms );
+      }, call_ring_left( call, rung ? c_call_ring_alerted_ms : c_call_ring_ms ) );
    }
    catch( e )
    {
@@ -733,11 +735,20 @@ function call_ring( room, other, call )
 
    var ringing = g_call;
 
+   // NOTE: For as long as the caller may be ringing - their phone rung too, it is longer - from when the offer was posted; a caller
+   // giving up sooner ends it here with their "end" (found by review, 2026-11-17: here it gave up at 45 s, the caller still ringing).
    g_call_ring_timer = window.setTimeout( function( )
    {
       if( ( g_call === ringing ) && ( ringing.state === "ringing" ) )
          call_end_local( "Missed call from " + other + "." );
-   }, c_call_ring_ms );
+   }, call_ring_left( ringing, c_call_ring_alerted_ms ) );
+}
+
+// NOTE: How long a call has left to ring of "ring_ms", counted from when its offer was posted (the node's clock) - a few seconds at
+// least, so one seen late still shows.
+function call_ring_left( call, ring_ms )
+{
+   return Math.max( 5000, ring_ms - Math.max( 0, call_now( ) - call.at ) * 1000 );
 }
 
 // NOTE: A call from "other" in "room", as the one called has it.

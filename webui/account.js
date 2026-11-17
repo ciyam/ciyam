@@ -879,12 +879,17 @@ async function do_mine_notify( on )
       document.getElementById( "mine_notify_status" ).textContent = notify_status_text( "off", outcome );
 }
 
+// NOTE: Each Show, and each Hide - an answer that comes after a Hide (leaving Notifications while it was asked, say) is not shown
+// (found by review, 2026-11-17).
+var g_mine_alerts_asks = 0;
+
 // NOTE: Your own alerts on a phone (Damon, 2026-11-17) - the node's "alerts": this person's ntfy topic and the server, made the first
 // time they are asked for ("parse_alerts_reply( )"). The code opens the ntfy app on the subscription ("ntfy_subscribe_link( )").
 async function do_mine_alerts_show( )
 {
    var status = document.getElementById( "mine_alerts_status" );
    var asked_for = ciyam.access;
+   var ask = ++g_mine_alerts_asks;
 
    status.textContent = "Asking the node…";
 
@@ -894,7 +899,7 @@ async function do_mine_alerts_show( )
        + ciyam.sessid, "GET", done );
    } );
 
-   if( ciyam.access !== asked_for )
+   if( ( ciyam.access !== asked_for ) || ( ask !== g_mine_alerts_asks ) )
       return;
 
    var alerts = parse_alerts_reply( response );
@@ -909,6 +914,9 @@ async function do_mine_alerts_show( )
 
    if( ( typeof QRCode === "undefined" ) && ( typeof keys_load_script === "function" ) )
       await keys_load_script( "qrcode.min.js" );
+
+   if( ( ciyam.access !== asked_for ) || ( ask !== g_mine_alerts_asks ) )
+      return;
 
    var box = document.getElementById( "mine_alerts_qr" );
 
@@ -935,6 +943,8 @@ async function do_mine_alerts_show( )
 // NOTE: The topic taken off the page again - on Hide, on leaving Notifications, and signing out.
 function mine_alerts_hide( )
 {
+   g_mine_alerts_asks++;
+
    document.getElementById( "mine_alerts_qr" ).replaceChildren( );
    document.getElementById( "mine_alerts_topic" ).textContent = "";
    document.getElementById( "mine_alerts_server" ).textContent = "";

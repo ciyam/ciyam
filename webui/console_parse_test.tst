@@ -212,6 +212,7 @@ ok   credentials never kept
 ok   request kept
 ok   a password's hash never kept - hidden in the request and the query
 ok   the call relay's password never kept - as text or JSON
+ok   a person's alerts topic never kept - as text or JSON; the server still shown
 ok   error marked
 ok   network failure
 ok   posted body kept
