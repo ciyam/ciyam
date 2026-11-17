@@ -82,6 +82,10 @@ const size_t c_cws_session_length = 20;
 const size_t c_cws_max_sessions_default = 100;
 const size_t c_cws_max_sessions_allowed = 1000;
 
+// NOTE: How long a session must have been idle before a new one (other than for "admin") can replace it when
+// the maximum number of sessions already exist (Ian, 2026-11-17: "at least 10 minutes" - see ISS-039).
+const int64_t c_cws_session_idle_seconds = 600;
+
 // NOTE: How long a call relay's credentials last - asked for before each call, so a call outlasts them only if it goes on
 // for longer than this (coturn checks them again as an allocation is refreshed). They end on the hour after it, so all of
 // a person's credentials asked for within one hour are the same - and coturn's allocations to a single set of credentials
@@ -736,34 +740,38 @@ void init_session_info( const string& access, const string& device, const string
 
    if( !g_session_info.count( session ) )
    {
-      if( g_session_info.size( ) >= maximum_sessions )
+      // NOTE: If is an "admin" session then terminates
+      // all old sessions (which includes "admin" ones)
+      // in order to allow this new session. For other
+      // users the oldest session is only replaced if
+      // it has been idle long enough (as otherwise an
+      // active session could be removed by anyone who
+      // simply keeps on creating new sessions).
+      while( g_session_info.size( ) >= maximum_sessions )
       {
-         if( access != g_cws_admin_token )
+         int64_t oldest = 0;
+
+         string oldest_session;
+
+         for( auto i = g_session_info.begin( ); i != g_session_info.end( ); ++i )
+         {
+            if( !oldest || ( i->second->last_request < oldest ) )
+            {
+               oldest_session = i->first;
+               oldest = i->second->last_request;
+            }
+         }
+
+         if( oldest_session.empty( ) )
+            throw runtime_error( "unable to find the oldest session in init_session_info" );
+
+         if( ( access != g_cws_admin_token ) && ( oldest > ( now - c_cws_session_idle_seconds ) ) )
             throw runtime_error( "*** maximum allowed sessions already exist ***" );
 
-         // NOTE: If is an "admin" session then terminates
-         // all old sessions (which includes "admin" ones)
-         // in order to allow this new session.
-         while( g_session_info.size( ) >= maximum_sessions )
-         {
-            int64_t oldest = 0;
+         TRACE_LOG( TRACE_VERBOSE | TRACE_SESSION, "(web_session) replacing idle session "
+          + oldest_session + " (last request " + to_string( now - oldest ) + "s ago) for a new one" );
 
-            string oldest_session;
-
-            for( auto i = g_session_info.begin( ); i != g_session_info.end( ); ++i )
-            {
-               if( !oldest || ( i->second->last_request < oldest ) )
-               {
-                  oldest_session = i->first;
-                  oldest = i->second->last_request;
-               }
-            }
-
-            if( oldest_session.empty( ) )
-               throw runtime_error( "unable to find the oldest session in init_session_info" );
-
-            g_session_info.erase( oldest_session );
-         }
+         g_session_info.erase( oldest_session );
       }
    }
 
