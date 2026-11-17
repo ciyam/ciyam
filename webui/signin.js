@@ -563,7 +563,35 @@ async function signin_reset_browser( )
 
    signin_forget_tab_keys( "" );
 
+   await signin_forget_kept_files( );
+
    location.reload( );
+}
+
+// NOTE: The apps' files kept in this browser let go, and what keeps them ("app_worker.js") - a reset leaves nothing of the node's
+// behind, so the next load is from the node itself.
+async function signin_forget_kept_files( )
+{
+   try
+   {
+      if( navigator.serviceWorker )
+      {
+         var held = await navigator.serviceWorker.getRegistrations( );
+
+         await Promise.all( held.map( function( registration ) { return registration.unregister( ); } ) );
+      }
+
+      if( window.caches )
+      {
+         var names = await caches.keys( );
+
+         await Promise.all( names.filter( function( name ) { return name.indexOf( "ciyam-app-" ) === 0; } )
+          .map( function( name ) { return caches.delete( name ); } ) );
+      }
+   }
+   catch( e )
+   {
+   }
 }
 
 // NOTE: What the sign in is doing, under the spinner ("sign_in_progress( )" in "chat_parse.js").

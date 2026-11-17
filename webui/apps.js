@@ -586,3 +586,15 @@ function apps_console_frame_unload( )
    if( frame !== null )
       frame.remove( );
 }
+
+// NOTE: The apps' own files kept in this browser, so switching apps asks the node nothing for them ("app_worker.js", Damon,
+// 2026-11-17) - where the browser runs one: a secure page (HTTPS, or "localhost"). Elsewhere the apps load as they always have.
+function apps_keep_files( )
+{
+   if( ( typeof navigator === "undefined" ) || !navigator.serviceWorker || !window.isSecureContext )
+      return;
+
+   navigator.serviceWorker.register( "app_worker.js" ).catch( function( ) { } );
+}
+
+apps_keep_files( );
