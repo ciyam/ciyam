@@ -1028,27 +1028,57 @@ string get_relay_port( )
 }
 
 // NOTE: The key for a person's alerts, made if they have none yet and "make" - or empty (Damon, 2026-11-17: calls ringing a phone).
+// None for a name with anything but letters, digits, "." "_" and "-" - a "*" or "?" would match other variables (found by review).
 string get_alerts_key( const string& username, bool make )
 {
    guard g( g_mutex );
 
-   string var_name( string( c_cws_alerts_key_prefix ) + username );
+   string key;
 
-   string key( get_system_variable( var_name ) );
-
-   if( key.empty( ) && make )
+   if( !username.empty( ) && ( username.find_first_not_of(
+    "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789._-" ) == string::npos ) )
    {
-      sha256 hash( uuid( ).as_string( ) + uuid( ).as_string( ) );
+      string var_name( string( c_cws_alerts_key_prefix ) + username );
 
-      key = hash.get_digest_as_string( );
+      key = get_system_variable( var_name );
 
-      set_system_variable( ">" + var_name, key );
+      if( key.empty( ) && make )
+      {
+         sha256 hash( uuid( ).as_string( ) + uuid( ).as_string( ) );
+
+         key = hash.get_digest_as_string( );
+
+         set_system_variable( ">" + var_name, key );
+      }
    }
 
    return key;
 }
 
-// NOTE: Whether "caller" may ring now in "room" - not if they rang there within "c_cws_ring_seconds" - taking the ring if so.
+// NOTE: A person's alerts key let go, as their account is removed - otherwise someone later given the same name would get the old
+// topic, which the first person's phone may still be subscribed to (found by review, 2026-11-17).
+void remove_alerts_key( const string& username )
+{
+   if( !get_alerts_key( username, false ).empty( ) )
+      set_system_variable( ">" + string( c_cws_alerts_key_prefix ) + username, "" );
+}
+
+// NOTE: The ntfy topic for an alerts key - worked out once ("ntfy_topic" hardens it, so many rounds), then remembered (found by
+// review, 2026-11-17: every "alerts" and every ring hashed it again).
+string alerts_topic( const string& key )
+{
+   static map< string, string > topics;
+
+   guard g( g_mutex );
+
+   if( !topics.count( key ) )
+      topics[ key ] = ntfy_topic( key );
+
+   return topics[ key ];
+}
+
+// NOTE: Whether "caller" may ring now in "room" - not if they rang there within "c_cws_ring_seconds" - taking the ring if so. Rings
+// long past are let go as each is taken.
 bool take_ring( const string& caller, const string& room, int64_t now )
 {
    static map< string, int64_t > last_rings;
@@ -1057,47 +1087,52 @@ bool take_ring( const string& caller, const string& room, int64_t now )
 
    string key( caller + ' ' + room );
 
-   if( last_rings.count( key ) && ( now < ( last_rings[ key ] + c_cws_ring_seconds ) ) )
-      return false;
+   bool okay = !last_rings.count( key ) || ( now >= ( last_rings[ key ] + c_cws_ring_seconds ) );
 
-   last_rings[ key ] = now;
+   if( okay )
+   {
+      for( auto i = last_rings.begin( ); i != last_rings.end( ); )
+      {
+         if( now >= ( i->second + c_cws_ring_seconds ) )
+            i = last_rings.erase( i );
+         else
+            ++i;
+      }
 
-   return true;
+      last_rings[ key ] = now;
+   }
+
+   return okay;
 }
 
 // NOTE: The other person in "room" if it is a direct message between "caller" and just one other - named "/<a>/<b>" (the two in
 // order) with exactly the two as its members - or empty.
 string ring_other_person( const string& caller, const string& room )
 {
-   if( ( room.length( ) != 7 ) || ( room.find_first_not_of( "0123456789" ) != string::npos ) )
-      return string( );
-
-   string name( get_system_variable( "@irc_names_" + room ) );
-   string users( get_system_variable( "@irc_users_" + room ) );
-
-   if( ( name.length( ) < 3 ) || ( name[ 0 ] != '/' ) )
-      return string( );
-
-   string::size_type pos = name.find( '/', 1 );
-
-   if( pos == string::npos )
-      return string( );
-
-   string first( name.substr( 1, pos - 1 ) );
-   string second( name.substr( pos + 1 ) );
-
    string other;
 
-   if( first == caller )
-      other = second;
-   else if( second == caller )
-      other = first;
+   if( ( room.length( ) == 7 ) && ( room.find_first_not_of( "0123456789" ) == string::npos ) )
+   {
+      string name( get_system_variable( "@irc_names_" + room ) );
+      string users( get_system_variable( "@irc_users_" + room ) );
 
-   if( other.empty( ) || ( other == caller ) || ( other.find( '/' ) != string::npos ) )
-      return string( );
+      string::size_type pos = ( ( name.length( ) >= 3 ) && ( name[ 0 ] == '/' ) ) ? name.find( '/', 1 ) : string::npos;
 
-   if( ( users != ( '@' + first + '@' + second ) ) && ( users != ( '@' + second + '@' + first ) ) )
-      return string( );
+      if( pos != string::npos )
+      {
+         string first( name.substr( 1, pos - 1 ) );
+         string second( name.substr( pos + 1 ) );
+
+         if( first == caller )
+            other = second;
+         else if( second == caller )
+            other = first;
+
+         if( ( other == caller ) || ( other.find( '/' ) != string::npos )
+          || ( ( users != ( '@' + first + '@' + second ) ) && ( users != ( '@' + second + '@' + first ) ) ) )
+            other.erase( );
+      }
+   }
 
    return other;
 }
@@ -3344,9 +3379,14 @@ bool process_cws_request( http_request_type request_type, const string& uri_suff
                      use_none_response = true;
                   else
                   {
-                     string topic( ntfy_topic( get_alerts_key( username, true ) ) );
+                     string key( get_alerts_key( username, true ) );
 
-                     if( !is_json_output )
+                     string topic( key.empty( ) ? string( ) : alerts_topic( key ) );
+
+                     if( topic.empty( ) )
+                        // FUTURE: This message should be handled as a server string message.
+                        error = "No alerts are available for this account.";
+                     else if( !is_json_output )
                         response = topic + '\n' + server;
                      else
                         response = "{\"topic\":\"" + topic + "\",\"server\":\"" + escaped_json( server ) + "\"}";
@@ -3711,9 +3751,15 @@ bool process_cws_request( http_request_type request_type, const string& uri_suff
                      {
                         found = true;
 
+                        string removed_username( get_user_name( pin ) );
+
                         remove_user_info_from_storage( pin );
 
                         set_system_variable( g_cws_username_for_prefix + pin, "" );
+
+                        // NOTE: Their alerts key too - see "remove_alerts_key".
+                        if( !removed_username.empty( ) )
+                           remove_alerts_key( removed_username );
                      }
                   }
                }
