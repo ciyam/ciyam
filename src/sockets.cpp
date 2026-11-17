@@ -413,7 +413,7 @@ bool socket_base::has_input( size_t timeout ) const
       fds.fd = socket;
       fds.events = POLLIN;
 
-      okay = ( ::poll( &fds, 1, timeout ) > 0 );
+      okay = ( ::poll( &fds, 1, timeout ) != 0 );
    }
 
    return okay;
@@ -430,7 +430,7 @@ bool socket_base::can_output( size_t timeout ) const
       fds.fd = socket;
       fds.events = POLLOUT;
 
-      okay = ( ::poll( &fds, 1, timeout ) > 0 );
+      okay = ( ::poll( &fds, 1, timeout ) != 0 );
    }
 
    return okay;
