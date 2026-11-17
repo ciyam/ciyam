@@ -18,6 +18,7 @@
 #  include <iostream>
 #  include <stdexcept>
 #  ifdef __GNUG__
+#     include <poll.h>
 #     include <csignal>
 #  endif
 #endif
@@ -339,20 +340,16 @@ void ssl_socket::ssl_accept( size_t timeout, bool* p_rc )
 
          timeout -= c_attempt_milliseconds;
 
-         fd_set fdset;
+         struct pollfd fds;
 
-         FD_ZERO( &fdset );
-         FD_SET( socket, &fdset );
-
-         struct timeval tv;
-
-         tv.tv_sec = 0;
-         tv.tv_usec = ( c_attempt_milliseconds * 1000 );
+         fds.fd = socket;
 
          if( err == SSL_ERROR_WANT_READ )
-            ::select( socket + 1, &fdset, 0, 0, &tv );
+            fds.events = POLLIN;
          else
-            ::select( socket + 1, 0, &fdset, 0, &tv );
+            fds.events = POLLOUT;
+
+         ::poll( &fds, 1, timeout );
 
          rc = SSL_accept( p_ssl );
       }
@@ -412,20 +409,16 @@ void ssl_socket::ssl_connect( size_t timeout, bool* p_rc )
 
          timeout -= c_attempt_milliseconds;
 
-         fd_set fdset;
+         struct pollfd fds;
 
-         FD_ZERO( &fdset );
-         FD_SET( socket, &fdset );
-
-         struct timeval tv;
-
-         tv.tv_sec = 0;
-         tv.tv_usec = ( c_attempt_milliseconds * 1000 );
+         fds.fd = socket;
 
          if( err == SSL_ERROR_WANT_READ )
-            ::select( socket + 1, &fdset, 0, 0, &tv );
+            fds.events = POLLIN;
          else
-            ::select( socket + 1, 0, &fdset, 0, &tv );
+            fds.events = POLLOUT;
+
+         ::poll( &fds, 1, timeout );
 
          rc = SSL_connect( p_ssl );
       }
