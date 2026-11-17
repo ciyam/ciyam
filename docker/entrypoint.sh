@@ -94,12 +94,15 @@ fi
 # makes it) - one a phone can trust, signed by a test CA it has installed, rather than the self-signed one made on first start
 # (2026-11-17). In place before the server starts, which makes its own only when there is none.
 if [ -f /etc/ciyam-tls/ciyam.pem ]; then
-   if grep -q "PRIVATE KEY" /etc/ciyam-tls/ciyam.pem && grep -q "BEGIN CERTIFICATE" /etc/ciyam-tls/ciyam.pem; then
+   # NOTE: A certificate that reads as one, and the key its own - the two public keys alike (found by review, 2026-11-17).
+   cert_key=$( openssl x509 -in /etc/ciyam-tls/ciyam.pem -noout -pubkey 2>/dev/null )
+   own_key=$( openssl pkey -in /etc/ciyam-tls/ciyam.pem -pubout 2>/dev/null )
+   if [ -n "$cert_key" ] && [ "$cert_key" = "$own_key" ]; then
       cp /etc/ciyam-tls/ciyam.pem ciyam.pem
       chmod o-r ciyam.pem
       echo "(TLS certificate: given - $( openssl x509 -in ciyam.pem -noout -subject 2>/dev/null ))"
    else
-      echo "(TLS certificate given at /etc/ciyam-tls ignored - not a key and a certificate)"
+      echo "(TLS certificate given at /etc/ciyam-tls ignored - not a certificate with its own key)"
    fi
 fi
 
@@ -218,8 +221,9 @@ if [ -n "${CIYAM_TURN_SECRET:-}" ]; then
       # NOTE: The port it listens on - "CIYAM_TURN_PORT", which the node also hands out with the credentials, or 3478 (2026-11-17).
       turn_port=3478
       if [ -n "${CIYAM_TURN_PORT:-}" ]; then
-         if printf '%s' "$CIYAM_TURN_PORT" | grep -qE '^[0-9]{1,5}$' && [ "$CIYAM_TURN_PORT" -ge 1 ] && [ "$CIYAM_TURN_PORT" -le 65535 ]; then
-            turn_port=$CIYAM_TURN_PORT
+         # NOTE: As a number - "03478" as 3478, as the node hands it out (found by review, 2026-11-17).
+         if printf '%s' "$CIYAM_TURN_PORT" | grep -qE '^[0-9]{1,5}$' && [ $(( 10#$CIYAM_TURN_PORT )) -ge 1 ] && [ $(( 10#$CIYAM_TURN_PORT )) -le 65535 ]; then
+            turn_port=$(( 10#$CIYAM_TURN_PORT ))
          else
             echo "(call relay port '$CIYAM_TURN_PORT' ignored - a number from 1 to 65535)"
          fi
