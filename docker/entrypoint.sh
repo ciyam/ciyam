@@ -221,11 +221,12 @@ if [ -n "${CIYAM_TURN_SECRET:-}" ]; then
       # NOTE: The port it listens on - "CIYAM_TURN_PORT", which the node also hands out with the credentials, or 3478 (2026-11-17).
       turn_port=3478
       if [ -n "${CIYAM_TURN_PORT:-}" ]; then
-         # NOTE: As a number - "03478" as 3478, as the node hands it out (found by review, 2026-11-17).
-         if printf '%s' "$CIYAM_TURN_PORT" | grep -qE '^[0-9]{1,5}$' && [ $(( 10#$CIYAM_TURN_PORT )) -ge 1 ] && [ $(( 10#$CIYAM_TURN_PORT )) -le 65535 ]; then
+         # NOTE: As a number - "03478" as 3478, as the node hands it out (found by review, 2026-11-17) - and from 1024, as the node takes
+         # it (Ian, 2026-11-17: below that only root may listen, and the node isn't assumed to run as root).
+         if printf '%s' "$CIYAM_TURN_PORT" | grep -qE '^[0-9]{1,5}$' && [ $(( 10#$CIYAM_TURN_PORT )) -ge 1024 ] && [ $(( 10#$CIYAM_TURN_PORT )) -le 65535 ]; then
             turn_port=$(( 10#$CIYAM_TURN_PORT ))
          else
-            echo "(call relay port '$CIYAM_TURN_PORT' ignored - a number from 1 to 65535)"
+            echo "(call relay port '$CIYAM_TURN_PORT' ignored - a number from 1024 to 65535)"
          fi
       fi
 
