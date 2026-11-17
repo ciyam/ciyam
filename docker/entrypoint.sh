@@ -215,6 +215,16 @@ if [ -n "${CIYAM_TURN_SECRET:-}" ]; then
             CIYAM_TURN_REALM= ;;
       esac
 
+      # NOTE: The port it listens on - "CIYAM_TURN_PORT", which the node also hands out with the credentials, or 3478 (2026-11-17).
+      turn_port=3478
+      if [ -n "${CIYAM_TURN_PORT:-}" ]; then
+         if printf '%s' "$CIYAM_TURN_PORT" | grep -qE '^[0-9]{1,5}$' && [ "$CIYAM_TURN_PORT" -ge 1 ] && [ "$CIYAM_TURN_PORT" -le 65535 ]; then
+            turn_port=$CIYAM_TURN_PORT
+         else
+            echo "(call relay port '$CIYAM_TURN_PORT' ignored - a number from 1 to 65535)"
+         fi
+      fi
+
       # NOTE: "public/private" - the address phones reach, and this container's own that it stands for.
       private_ip=$(hostname -i | awk '{ print $1 }')
 
@@ -222,7 +232,7 @@ if [ -n "${CIYAM_TURN_SECRET:-}" ]; then
          umask 077
 
          {
-            echo "listening-port=3478"
+            echo "listening-port=$turn_port"
             echo "min-port=49160"
             echo "max-port=49200"
             echo "fingerprint"
@@ -263,7 +273,7 @@ if [ -n "${CIYAM_TURN_SECRET:-}" ]; then
       chown turnserver:turnserver /var/log/turnserver.log
 
       if turnserver -c /etc/turnserver.conf --daemon; then
-         echo "(call relay: coturn on 3478${CIYAM_TURN_EXTERNAL_IP:+, reached at $CIYAM_TURN_EXTERNAL_IP})"
+         echo "(call relay: coturn on $turn_port${CIYAM_TURN_EXTERNAL_IP:+, reached at $CIYAM_TURN_EXTERNAL_IP})"
       else
          echo "Error: the call relay (coturn) did not start - see /var/log/turnserver.log."
       fi

@@ -240,6 +240,7 @@ constexpr const char* c_web_session_script = "web_session.cin";
 
 constexpr const char* c_web_session_relay_secret_env = "CIYAM_TURN_SECRET";
 constexpr const char* c_web_session_relay_address_env = "CIYAM_TURN_EXTERNAL_IP";
+constexpr const char* c_web_session_relay_port_env = "CIYAM_TURN_PORT";
 
 constexpr const char* c_web_session_none_response = "[none]";
 constexpr const char* c_web_session_okay_response = "[okay]";
@@ -981,6 +982,25 @@ string get_relay_address( )
    }
 
    return address;
+}
+
+// NOTE: The port the call relay is reached on - "CIYAM_TURN_PORT" - or empty for coturn's standard 3478. Another where that one
+// is taken (mgp's is one below, as LiveKit's own TURN has it - Ian, 2026-11-15). Only digits, from 1 to 65535.
+string get_relay_port( )
+{
+   const char* p_port = getenv( c_web_session_relay_port_env );
+
+   string port( p_port ? p_port : "" );
+
+   if( port.empty( ) || ( port.length( ) > 5 ) || ( port.find_first_not_of( "0123456789" ) != string::npos ) )
+      return string( );
+
+   int value = atoi( port.c_str( ) );
+
+   if( ( value < 1 ) || ( value > 65535 ) )
+      return string( );
+
+   return to_string( value );
 }
 
 bool is_pin_token( const string& token )
@@ -3200,12 +3220,16 @@ bool process_cws_request( http_request_type request_type, const string& uri_suff
                      string relay_password( base64::encode( buffer, c_sha1_digest_size ) );
 
                      string relay_address( get_relay_address( ) );
+                     string relay_port( get_relay_port( ) );
 
+                     // NOTE: The port as a fourth line, after the address - an empty line for no address, so each keeps its place.
                      if( !is_json_output )
-                        response = relay_username + '\n' + relay_password + ( relay_address.empty( ) ? "" : '\n' + relay_address );
+                        response = relay_username + '\n' + relay_password
+                         + ( ( relay_address.empty( ) && relay_port.empty( ) ) ? "" : '\n' + relay_address )
+                         + ( relay_port.empty( ) ? "" : '\n' + relay_port );
                      else
                         response = "{\"username\":\"" + escaped_json( relay_username ) + "\",\"credential\":\""
-                         + relay_password + "\",\"address\":\"" + relay_address + "\"}";
+                         + relay_password + "\",\"address\":\"" + relay_address + "\",\"port\":\"" + relay_port + "\"}";
                   }
                }
                // NOTE: A user's own keys (encrypted before they get here) which are only
