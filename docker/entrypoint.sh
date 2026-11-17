@@ -75,7 +75,12 @@ case "${CIYAM_NTFY_SERVER:-}" in
 esac
 
 if [ -n "${CIYAM_NTFY_SERVER:-}" ]; then
-   if [ -f /etc/ciyam-ntfy/ntfy.crt ]; then
+   # NOTE: The certificate authority that signed ntfy's certificate, where there is one (a local test CA, 2026-11-17) - OpenSSL
+   # trusts only a certificate that signs itself as a root, so a signed one alone would not do; else ntfy's own, self-signed.
+   if [ -f /etc/ciyam-ntfy/ca.crt ]; then
+      cp /etc/ciyam-ntfy/ca.crt /usr/local/share/ca-certificates/ciyam-ntfy-ca.crt
+      update-ca-certificates >/dev/null 2>&1
+   elif [ -f /etc/ciyam-ntfy/ntfy.crt ]; then
       cp /etc/ciyam-ntfy/ntfy.crt /usr/local/share/ca-certificates/ciyam-ntfy.crt
       update-ca-certificates >/dev/null 2>&1
    fi
@@ -83,6 +88,19 @@ if [ -n "${CIYAM_NTFY_SERVER:-}" ]; then
    sed -i "s|^#* *<ntfy_server>.*| <ntfy_server>$CIYAM_NTFY_SERVER|" ciyam_server.sio
 
    echo "(ntfy server: $CIYAM_NTFY_SERVER)"
+fi
+
+# NOTE: The node's own certificate, when one is given at /etc/ciyam-tls (key and certificate in one file, as "create_ciyam_pem"
+# makes it) - one a phone can trust, signed by a test CA it has installed, rather than the self-signed one made on first start
+# (2026-11-17). In place before the server starts, which makes its own only when there is none.
+if [ -f /etc/ciyam-tls/ciyam.pem ]; then
+   if grep -q "PRIVATE KEY" /etc/ciyam-tls/ciyam.pem && grep -q "BEGIN CERTIFICATE" /etc/ciyam-tls/ciyam.pem; then
+      cp /etc/ciyam-tls/ciyam.pem ciyam.pem
+      chmod o-r ciyam.pem
+      echo "(TLS certificate: given - $( openssl x509 -in ciyam.pem -noout -subject 2>/dev/null ))"
+   else
+      echo "(TLS certificate given at /etc/ciyam-tls ignored - not a key and a certificate)"
+   fi
 fi
 
 # NOTE: Admin's alerts - a stand-in, for the ntfy proof of concept, for what the server's own "at_init"
