@@ -349,7 +349,7 @@ void ssl_socket::ssl_accept( size_t timeout, bool* p_rc )
          else
             fds.events = POLLOUT;
 
-         ::poll( &fds, 1, timeout );
+         ::poll( &fds, 1, c_attempt_milliseconds );
 
          rc = SSL_accept( p_ssl );
       }
@@ -418,7 +418,7 @@ void ssl_socket::ssl_connect( size_t timeout, bool* p_rc )
          else
             fds.events = POLLOUT;
 
-         ::poll( &fds, 1, timeout );
+         ::poll( &fds, 1, c_attempt_milliseconds );
 
          rc = SSL_connect( p_ssl );
       }
