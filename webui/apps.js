@@ -589,10 +589,33 @@ function apps_console_frame_unload( )
 
 // NOTE: The apps' own files kept in this browser, so switching apps asks the node nothing for them ("app_worker.js", Damon,
 // 2026-11-17) - where the browser runs one: a secure page (HTTPS, or "localhost"). Elsewhere the apps load as they always have.
+// "cws.app_worker" set to "off" in this browser's storage turns it off here, and lets go of what it kept - for working on the apps
+// without a hard reload after each change (found by review, 2026-11-17).
+const c_apps_worker_switch = "cws.app_worker";
+
 function apps_keep_files( )
 {
    if( ( typeof navigator === "undefined" ) || !navigator.serviceWorker || !window.isSecureContext )
       return;
+
+   var off = false;
+
+   try
+   {
+      off = ( localStorage.getItem( c_apps_worker_switch ) === "off" );
+   }
+   catch( e )
+   {
+      off = false;
+   }
+
+   if( off )
+   {
+      if( typeof signin_forget_kept_files === "function" )
+         signin_forget_kept_files( );
+
+      return;
+   }
 
    navigator.serviceWorker.register( "app_worker.js" ).catch( function( ) { } );
 }

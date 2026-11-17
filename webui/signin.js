@@ -568,8 +568,9 @@ async function signin_reset_browser( )
    location.reload( );
 }
 
-// NOTE: The apps' files kept in this browser let go, and what keeps them ("app_worker.js") - a reset leaves nothing of the node's
-// behind, so the next load is from the node itself.
+// NOTE: The apps' files kept in this browser let go, and what keeps them ("app_worker.js") - so the next load is from the node itself.
+// The worker is taken on again as that page opens ("apps_keep_files( )"), starting empty; another of the apps still open in a tab is
+// left with the copy it has until it is opened again.
 async function signin_forget_kept_files( )
 {
    try
