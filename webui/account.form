@@ -692,6 +692,39 @@ http://www.opensource.org/licenses/mit-license.php.
 
                      <p class="account-lede" id="mine_notify_status" aria-live="polite"></p>
                   </div>
+
+                  <!-- NOTE: Your own alerts on a phone (Damon, 2026-11-17) - the node's "alerts": a topic of your own, which a call
+                       rings with the chat closed. The topic is a secret (anyone with it could read what is sent to it), so shown
+                       only when asked for, and taken off the page again on Hide or on leaving ("mine_alerts_hide( )"). -->
+                  <div class="account-card account-form" id="mine_alerts">
+                     <div>
+                        <h2>On your phone</h2>
+                        <p class="account-lede">Calls ring your phone through the ntfy app, even with the chat closed - only who
+                         is calling, never anything said. Subscribe to your own topic in the app once.</p>
+                     </div>
+
+                     <div class="account-actions-row" id="mine_alerts_start">
+                        <button type="button" class="chat-btn chat-btn--primary" id="mine_alerts_show" onclick="do_mine_alerts_show( )">Show my code</button>
+                     </div>
+
+                     <div class="account-contact-add" id="mine_alerts_part" hidden>
+                        <div class="account-contact-own">
+                           <div class="chat-label">Scan it with the phone's camera</div>
+                           <div class="account-keys-qr" id="mine_alerts_qr" aria-hidden="true"></div>
+                        </div>
+                        <div>
+                           <div class="chat-label">Or in the ntfy app, subscribe to</div>
+                           <code class="account-keys-key" id="mine_alerts_topic"></code>
+                           <p class="account-lede" id="mine_alerts_server"></p>
+                        </div>
+                        <p class="account-lede">Keep the topic to yourself - anyone with it could read your alerts.</p>
+                        <div class="account-actions-row">
+                           <button type="button" class="chat-btn" id="mine_alerts_hide" onclick="mine_alerts_hide( )">Hide</button>
+                        </div>
+                     </div>
+
+                     <p class="account-lede" id="mine_alerts_status" role="status" aria-live="polite"></p>
+                  </div>
                </div>
             </div>
          </section>

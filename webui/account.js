@@ -550,6 +550,10 @@ function show_section( name )
    if( ( name !== "devices" ) && ( typeof keys_hide_device === "function" ) )
       keys_hide_device( );
 
+   // NOTE: Your own alerts' topic too (2026-11-17).
+   if( name !== "notify" )
+      mine_alerts_hide( );
+
    if( typeof keys_leave_section === "function" )
       keys_leave_section( name );
    shell_close_rail( );
@@ -779,6 +783,8 @@ function clear_session( )
    if( typeof keys_clear === "function" )
       keys_clear( );
 
+   mine_alerts_hide( );
+
    signin_forget_session( );
 
    g_viewers = { };
@@ -871,6 +877,70 @@ async function do_mine_notify( on )
    // NOTE: Asked to turn on and the browser did not - refused, or its question closed unanswered - the line says which.
    if( on && ( outcome !== "on" ) )
       document.getElementById( "mine_notify_status" ).textContent = notify_status_text( "off", outcome );
+}
+
+// NOTE: Your own alerts on a phone (Damon, 2026-11-17) - the node's "alerts": this person's ntfy topic and the server, made the first
+// time they are asked for ("parse_alerts_reply( )"). The code opens the ntfy app on the subscription ("ntfy_subscribe_link( )").
+async function do_mine_alerts_show( )
+{
+   var status = document.getElementById( "mine_alerts_status" );
+   var asked_for = ciyam.access;
+
+   status.textContent = "Asking the node…";
+
+   var response = await request( function( done )
+   {
+      return ciyam.fetch( ciyam.get_cws_url( ) + "/alerts?access=" + ciyam.access + "&device=" + ciyam.device + "&format=text&session="
+       + ciyam.sessid, "GET", done );
+   } );
+
+   if( ciyam.access !== asked_for )
+      return;
+
+   var alerts = parse_alerts_reply( response );
+
+   if( ( alerts === null ) || alerts.none )
+   {
+      status.textContent = ( alerts && alerts.none ) ? "This node has no ntfy server for alerts yet - ask your administrator."
+       : "The node didn't say your topic: " + ( problem_text( response ) || "no answer." );
+
+      return;
+   }
+
+   if( ( typeof QRCode === "undefined" ) && ( typeof keys_load_script === "function" ) )
+      await keys_load_script( "qrcode.min.js" );
+
+   var box = document.getElementById( "mine_alerts_qr" );
+
+   box.replaceChildren( );
+
+   // NOTE: Drawn in the page, so the topic goes nowhere else - and the library's own title taken off, as the topic is a secret.
+   if( typeof QRCode !== "undefined" )
+   {
+      new QRCode( box, { text: ntfy_subscribe_link( alerts.server, alerts.topic ), width: c_keys_device_qr_size, height: c_keys_device_qr_size,
+       colorDark: "#1b1f2a", colorLight: "#ffffff", correctLevel: QRCode.CorrectLevel.M } );
+
+      box.removeAttribute( "title" );
+      box.querySelectorAll( "[title]" ).forEach( function( node ) { node.removeAttribute( "title" ); } );
+   }
+
+   document.getElementById( "mine_alerts_topic" ).textContent = alerts.topic;
+   document.getElementById( "mine_alerts_server" ).textContent = "on the server " + alerts.server;
+   document.getElementById( "mine_alerts_part" ).hidden = false;
+   document.getElementById( "mine_alerts_start" ).hidden = true;
+
+   status.textContent = "";
+}
+
+// NOTE: The topic taken off the page again - on Hide, on leaving Notifications, and signing out.
+function mine_alerts_hide( )
+{
+   document.getElementById( "mine_alerts_qr" ).replaceChildren( );
+   document.getElementById( "mine_alerts_topic" ).textContent = "";
+   document.getElementById( "mine_alerts_server" ).textContent = "";
+   document.getElementById( "mine_alerts_part" ).hidden = true;
+   document.getElementById( "mine_alerts_start" ).hidden = false;
+   document.getElementById( "mine_alerts_status" ).textContent = "";
 }
 
 // ====================================================================

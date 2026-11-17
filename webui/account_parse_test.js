@@ -337,6 +337,11 @@ check( "- the person's first step says to show their code, then Next; the admini
  /press Next\.$/.test( ap.exchange_steps( "device", "asking" ).ledes[ 0 ] ) ], [ true, true, true ] );
 check( "- contact codes: the same two, in either order, with nothing more said", ap.exchange_steps( "contact" ),
  { labels: [ "They scan your code", "You scan theirs" ], ledes: [ ] } );
+check( "a person's own alerts - their topic and the ntfy server, as an address; none; anything else not taken", [
+ ap.parse_alerts_reply( "upABCDEFGHIJ234567\nantares.local:8443\n" ), ap.parse_alerts_reply( "[none]" ),
+ ap.parse_alerts_reply( "Error: Unknown request" ), ap.parse_alerts_reply( "up AB\nantares.local" ),
+ ap.parse_alerts_reply( "upAB\nhttps://antares.local" ), ap.parse_alerts_reply( "upAB\nx;rm\n" ) ],
+ [ { topic: "upABCDEFGHIJ234567", server: "https://antares.local:8443" }, { none: true }, null, null, null, null ] );
 check( "xor of two hex strings - and back", [ ap.xor_hex( "0f0f", "ffff" ), ap.xor_hex( ap.xor_hex( sealed_key, ask_key ), ask_key ) ],
  [ "f0f0", sealed_key ] );
 check( "- not the same length, or not hex", [ ap.xor_hex( "0f", "fff" ), ap.xor_hex( "zz", "00" ) ], [ "", "" ] );

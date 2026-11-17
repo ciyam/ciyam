@@ -940,10 +940,13 @@ http://www.opensource.org/licenses/mit-license.php.
             <section class="home-health-gap" aria-labelledby="alerts_mine_heading">
                <div class="home-health-head">
                   <h2 id="alerts_mine_heading">My notifications</h2>
-                  <span class="home-note">Waiting on the node</span>
+                  <span class="home-note">Calls now</span>
                </div>
-               <p class="home-alerts-gap-text">Each person's own topic: the node's notices for everyone - down, back up, planned
-                downtime - and their own direct messages and invitations, never their words. Coming once the node sends them.</p>
+               <!-- NOTE: Each person's own topic is the node's "alerts" (2026-11-17), set up on My account, Notifications - calls ring
+                    it now; the node's notices for everyone, direct messages and invitations are still to come. -->
+               <p class="home-alerts-gap-text">Each person's own topic - set up on My account, under Notifications. Calls ring it
+                now, so a phone rings with the chat closed; the node's notices for everyone, and direct messages and invitations
+                (never their words), are still to come.</p>
             </section>
          </section>
 

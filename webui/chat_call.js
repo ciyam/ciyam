@@ -16,8 +16,10 @@
 // NOTE: How often the call's conversation is read while it is being set up - the poll's four seconds would be slow to ring and answer.
 const c_call_watch_ms = 1000;
 
-// NOTE: How long a call rings before it is given up.
+// NOTE: How long a call rings before it is given up - longer when the other person's phone was rung too ("call_ring_phone( )"), so
+// there is time to see it, open the chat and answer (Damon, 2026-11-17) - within the 90 seconds an offer counts for.
 const c_call_ring_ms = 45000;
+const c_call_ring_alerted_ms = 85000;
 
 // NOTE: How long the set-up waits for the browser to gather its ways to be reached - all are sent at once, in the offer or answer.
 const c_call_gather_ms = 5000;
@@ -666,6 +668,14 @@ async function do_start_call( )
 
       call_watch_fast( true );
 
+      var rung = await call_ring_phone( call );
+
+      if( g_call !== call )
+         return;
+
+      if( rung && ( call.state === "calling" ) )
+         call_show( "Calling " + other + "… - ringing their phone too" );
+
       g_call_ring_timer = window.setTimeout( function( )
       {
          if( ( g_call === call ) && ( call.state === "calling" ) )
@@ -674,13 +684,36 @@ async function do_start_call( )
 
             call_end_local( other + " didn't answer." );
          }
-      }, c_call_ring_ms );
+      }, rung ? c_call_ring_alerted_ms : c_call_ring_ms );
    }
    catch( e )
    {
       if( g_call === call )
          call_end_local( "The call couldn't be started: " + ( e && e.message ? e.message : "the camera or microphone was refused" ) + "." );
    }
+}
+
+// NOTE: The other person's phone rung by the node (its "ring" - Damon, 2026-11-17: a call reached no one with the chat closed), on
+// their own ntfy topic, with only who is calling - true if it was. Not if they never set their phone up for it ("[none]"), or the
+// node can't (an older node, no ntfy server); the call rings in the chat all the same.
+async function call_ring_phone( call )
+{
+   var answer = "";
+
+   try
+   {
+      await serialised( function( )
+      {
+         return ciyam.fetch( ciyam.get_cws_url( ) + "/ring?access=" + ciyam.access + "&device=" + ciyam.device + "&format=text&options="
+          + encodeURIComponent( "room=" + call.room ) + "&session=" + ciyam.sessid, "POST", function( r ) { answer = String( r || "" ).trim( ); } );
+      } );
+   }
+   catch( e )
+   {
+      answer = "";
+   }
+
+   return answer === "[okay]";
 }
 
 function call_ring( room, other, call )

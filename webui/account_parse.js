@@ -719,6 +719,25 @@ function give_field_problems( password, words, device )
    return problems;
 }
 
+// NOTE: The node's answer to "alerts" - this person's own ntfy topic and the ntfy server, a line each (Damon, 2026-11-17) - as
+// { topic, server } with the server as an address ("https://" before it, as the node sends to it), { none: true } if the node has
+// no ntfy server ("[none]"), or null for anything else. The topic as ntfy takes one, the server a host with a port if need be.
+function parse_alerts_reply( text )
+{
+   var value = String( text || "" ).trim( );
+
+   if( value === "[none]" )
+      return { none: true };
+
+   var lines = value.split( /\r?\n/ );
+
+   if( ( lines.length !== 2 ) || !/^[A-Za-z0-9_-]{1,64}$/.test( lines[ 0 ] )
+    || !/^[A-Za-z0-9][A-Za-z0-9.-]*(:[0-9]{1,5})?$/.test( lines[ 1 ] ) )
+      return null;
+
+   return { topic: lines[ 0 ], server: "https://" + lines[ 1 ].toLowerCase( ) };
+}
+
 // NOTE: Two hex strings of the same length, XORed digit by digit - "" if they are not.
 function xor_hex( a, b )
 {
@@ -751,6 +770,7 @@ if( typeof module !== "undefined" )
       exchange_steps: exchange_steps,
       parse_device_link: parse_device_link,
       give_field_problems: give_field_problems,
+      parse_alerts_reply: parse_alerts_reply,
       admin_keys_text: admin_keys_text,
       written_signin_text: written_signin_text,
       keys_words_text: keys_words_text,
