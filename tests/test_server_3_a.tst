@@ -55,6 +55,7 @@ retain user-keys
 review users
 review devices
 review messages <room> [[from=<unix_time>;]extra={NONE|PEEK|TIME|KEYID|ENTIRE}]
+review setting <name>
 review storages
 review javascript[s] [<name>]
 review stylesheet[s] [<name>]
@@ -247,7 +248,7 @@ review logs [<name> [lines=10]]
 review users
 review devices
 review messages <room> [[from=<unix_time>;]extra={NONE|PEEK|TIME|KEYID|ENTIRE}]
-review settings
+review setting[s] [<name>]
 review storages
 review javascript[s] [<name>]
 review stylesheet[s] [<name>]
