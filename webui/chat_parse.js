@@ -5258,15 +5258,29 @@ function call_elapsed_text( seconds )
 // tried directly, as before.
 const c_call_relay_port = 3478;
 
+//
+// A fourth line is the relay's port, where it isn't coturn's standard (mgp's is another - Ian, 2026-11-15), the third then empty if
+// there is no address (2026-11-17).
 function call_relay_servers( text, host )
 {
-   var lines = String( text || "" ).trim( ).split( /\r?\n/ );
+   var lines = String( text || "" ).replace( /^\s+|[\r\n]+$/g, "" ).split( /\r?\n/ );
+   var port = c_call_relay_port;
 
-   if( ( lines.length < 2 ) || ( lines.length > 3 ) || !/^[0-9]{10}:[-a-z0-9]{3,30}$/.test( lines[ 0 ] )
+   if( ( lines.length < 2 ) || ( lines.length > 4 ) || !/^[0-9]{10}:[-a-z0-9]{3,30}$/.test( lines[ 0 ] )
     || !/^[A-Za-z0-9+\/]{27}=$/.test( lines[ 1 ] ) )
       return [ ];
 
-   if( lines.length === 3 )
+   if( lines.length === 4 )
+   {
+      var given = /^[0-9]{1,5}$/.test( lines[ 3 ] ) ? parseInt( lines[ 3 ], 10 ) : 0;
+
+      if( ( given < 1 ) || ( given > 65535 ) )
+         return [ ];
+
+      port = given;
+   }
+
+   if( ( lines.length >= 3 ) && ( lines[ 2 ] !== "" ) )
    {
       if( /^[0-9]{1,3}(\.[0-9]{1,3}){3}$/.test( lines[ 2 ] ) )
          host = lines[ 2 ];
@@ -5275,11 +5289,13 @@ function call_relay_servers( text, host )
       else
          return [ ];
    }
+   else if( lines.length === 3 )
+      return [ ];
 
    if( !/^(\[[0-9A-Fa-f:.]+\]|[A-Za-z0-9.-]+)$/.test( String( host || "" ) ) )
       return [ ];
 
-   var where = host + ":" + c_call_relay_port;
+   var where = host + ":" + port;
 
    // NOTE: TURN over TCP too (Damon, 2026-11-17: a call to a Pixel never connected) - Vanadium, GrapheneOS's browser, allows WebRTC
    // no UDP but through a proxy by default ("Disable non-proxied UDP"), so it reaches the relay over TCP or not at all.

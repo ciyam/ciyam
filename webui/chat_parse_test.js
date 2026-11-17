@@ -2228,6 +2228,12 @@ check( "- at the relay's own address when the node gives one - not the page's ho
  "1794043200:maya\nAbCdEfGhIjKlMnOpQrStUvWx+/0=\n2001:db8::7", "localhost" )[ 0 ].urls, cp.call_relay_servers(
  "1794043200:maya\nAbCdEfGhIjKlMnOpQrStUvWx+/0=\nrelay.example.org", "localhost" ).length ],
  [ "turn:203.0.113.7:3478?transport=udp", "stun:[2001:db8::7]:3478", 0 ] );
+check( "- on the relay's own port when the node gives one - after its address, or after an empty line", [ cp.call_relay_servers(
+ "1794043200:maya\nAbCdEfGhIjKlMnOpQrStUvWx+/0=\n203.0.113.7\n3477", "api.ciyam.org" )[ 2 ].urls, cp.call_relay_servers(
+ "1794043200:maya\nAbCdEfGhIjKlMnOpQrStUvWx+/0=\n\n3477\n", "api.ciyam.org" )[ 0 ].urls, cp.call_relay_servers(
+ "1794043200:maya\nAbCdEfGhIjKlMnOpQrStUvWx+/0=\n203.0.113.7\n70000", "api.ciyam.org" ).length, cp.call_relay_servers(
+ "1794043200:maya\nAbCdEfGhIjKlMnOpQrStUvWx+/0=\n203.0.113.7\nx", "api.ciyam.org" ).length ],
+ [ "turn:203.0.113.7:3477?transport=tcp", "stun:api.ciyam.org:3477", 0, 0 ] );
 check( "- none when the node has no relay, or answers otherwise, or the host is odd", [ "[none]", "", "Error: This web session is not valid.",
  "1794043200:maya", "1794043200:maya\nnot-base64", "1794043200:maya\nAbCdEfGhIjKlMnOpQrStUvWx+/0=\n1.2.3.4\nextra" ].map( function( text )
 {

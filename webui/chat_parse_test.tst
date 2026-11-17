@@ -998,6 +998,7 @@ ok   a call's lines in the conversation - the call, a decline, busy, its end wit
 ok   the node's call relay - STUN and TURN on its own host, with its credentials
 ok   - an address as the page has it, IPv6 in its brackets
 ok   - at the relay's own address when the node gives one - not the page's host
+ok   - on the relay's own port when the node gives one - after its address, or after an empty line
 ok   - none when the node has no relay, or answers otherwise, or the host is odd
 
 All checks passed.
