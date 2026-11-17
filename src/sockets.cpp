@@ -312,16 +312,16 @@ bool socket_base::connect( const ip_address& addr, size_t timeout )
       {
          ::connect( socket, addr.get_sock_addr( ), addr.get_sock_addr_size( ) );
 
-         struct sockaddr peer_addr;
+         struct sockaddr_storage peer_addr;
 
-         socklen_t peer_addr_len;
+         socklen_t peer_addr_len = sizeof( peer_addr );
 
          struct pollfd fds;
 
          fds.fd = socket;
          fds.events = POLLOUT;
 
-         if( ::poll( &fds, 1, timeout ) )
+         if( ::poll( &fds, 1, timeout ) > 0 )
          {
             // NOTE: The "getpeername" call is used to detect connection when non-blocking.
             if( ::getpeername( socket, ( struct sockaddr* )&peer_addr, &peer_addr_len ) == 0 )
@@ -413,7 +413,7 @@ bool socket_base::has_input( size_t timeout ) const
       fds.fd = socket;
       fds.events = POLLIN;
 
-      okay = ::poll( &fds, 1, timeout );
+      okay = ( ::poll( &fds, 1, timeout ) > 0 );
    }
 
    return okay;
@@ -430,7 +430,7 @@ bool socket_base::can_output( size_t timeout ) const
       fds.fd = socket;
       fds.events = POLLOUT;
 
-      okay = ::poll( &fds, 1, timeout );
+      okay = ( ::poll( &fds, 1, timeout ) > 0 );
    }
 
    return okay;
