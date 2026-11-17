@@ -969,7 +969,7 @@ string get_relay_secret( )
    return secret;
 }
 
-// NOTE: Where the call relay is reached - the "CIYAM_TURN_EXTERNAL_IP" coturn was told to give out (an IP address, as coturn
+// NOTE: Where the call relay is reached - the "CIYAM_TURN_EXTERNAL_IP" that coturn provides (and being the IP address that it
 // takes) - or empty, and the page's own host is used. Not the page's host always: a page may come through a proxy that passes
 // no UDP, and a page opened at "localhost" can't reach a relay there once the camera is allowed (each network adapter is then
 // used for itself, found 2026-11-15).
@@ -978,6 +978,10 @@ string get_relay_address( )
    const char* p_address = getenv( c_web_session_relay_address_env );
 
    string address( p_address ? p_address : "" );
+
+   // NOTE: If not set then use the "@ip_ext_addr" system variable.
+   if( address.empty( ) )
+      address = get_system_variable( e_special_var_ip_ext_addr );
 
    // NOTE: A "." or a ":" as well, so a name all of hex letters ("cafe") isn't taken for one (found by review, 2026-11-15).
    if( ( address.length( ) > 45 ) || ( address.find_first_of( ".:" ) == string::npos ) )
@@ -992,8 +996,8 @@ string get_relay_address( )
    return address;
 }
 
-// NOTE: The port the call relay is reached on - "CIYAM_TURN_PORT" - or empty for coturn's standard 3478. Another where that one
-// is taken (mgp's is one below, as LiveKit's own TURN has it - Ian, 2026-11-15). Only digits, from 1 to 65535.
+// NOTE: The port the call relay is reached on - "CIYAM_TURN_PORT" - or empty for coturn's standard 3478. Another where
+// that one has been taken (such as when LiveKit's own TURN has it - Ian, 2026-11-15). Only digits, from 1024 to 65535.
 string get_relay_port( )
 {
    const char* p_port = getenv( c_web_session_relay_port_env );
@@ -1005,7 +1009,7 @@ string get_relay_port( )
 
    int value = atoi( port.c_str( ) );
 
-   if( ( value < 1 ) || ( value > 65535 ) )
+   if( ( value < 1024 ) || ( value > 65535 ) )
       return string( );
 
    return to_string( value );
