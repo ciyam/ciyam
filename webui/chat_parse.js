@@ -5069,7 +5069,13 @@ const c_call_end_crossed = "crossed";
 
 // NOTE: "renew" and "renewed" - the caller's new description once the connection was lost (a phone moving from WiFi to 4G, say), and
 // the answer to it, keeping the call (Damon, 2026-11-17).
-const c_call_pattern = /^☎call ([0-9a-f]{8}) ([0-9]{10}) ([-a-z0-9]{3,12}) (offer|answer|end|decline|busy|renew|renewed) ([0-9]{1,2})\/([0-9]{1,2})(?: ([A-Za-z0-9+\/=]+))?$/;
+const c_call_pattern = new RegExp( "^☎call ([0-9a-f]{8}) ([0-9]{10}) ([-a-z0-9]{3,12}) (offer|answer|end|decline|busy|renew|renewed) "
+ + "([0-9]{1,2})/([0-9]{1,2})(?: ([A-Za-z0-9+/=]+))?$" );
+
+// NOTE: How far the time sealed in a call's message may be from when the node posted it - a device's own clock may be off by this
+// much. A message re-posted by the node long after it was sealed is not taken (found by review, 2026-11-17: an old offer posted
+// again rang, and could even take the place of a call being made).
+const c_call_sealed_drift_seconds = 3600;
 
 // NOTE: The texts to seal and send, in order - "from" the one sending them.
 function call_messages( id, at, from, kind, data )
@@ -5142,6 +5148,9 @@ function call_states( opened, me, other, now, keep )
 
       var state = calls[ call.id ];
       var posted = call_message_seconds( message.unique, call.at );
+
+      if( Math.abs( posted - call.at ) > c_call_sealed_drift_seconds )
+         return;
 
       if( ( call.id !== keep ) && ( Math.abs( now - ( state ? state.at : posted ) ) > c_call_fresh_seconds ) )
          return;
@@ -5255,12 +5264,10 @@ function call_elapsed_text( seconds )
 // "<expiry>:<username>" then the password, then the relay's address if the node was told it - so nothing is asked of anyone else:
 // STUN for each device's address as the world sees it, and TURN to relay the call when the two can't reach each other. With no
 // address, the page's own host ("host"). None ("[none]" - the node has no relay - or anything that isn't credentials) and the call is
-// tried directly, as before.
+// tried directly, as before. A fourth line is the relay's port, where it isn't coturn's standard (mgp's is another - Ian, 2026-11-15),
+// the third then empty if there is no address (2026-11-17).
 const c_call_relay_port = 3478;
 
-//
-// A fourth line is the relay's port, where it isn't coturn's standard (mgp's is another - Ian, 2026-11-15), the third then empty if
-// there is no address (2026-11-17).
 function call_relay_servers( text, host )
 {
    var lines = String( text || "" ).replace( /^\s+|[\r\n]+$/g, "" ).split( /\r?\n/ );

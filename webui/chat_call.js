@@ -113,10 +113,17 @@ async function call_clock( )
    var text = "";
    var sent = Date.now( );
 
-   await serialised( function( )
+   // NOTE: Kept out of the console's request log, as the poll is (found by review, 2026-11-17).
+   g_in_poll = true;
+
+   var asking = serialised( function( )
    {
       return ciyam.fetch( ciyam.get_unix_now_url( ), "GET", function( response ) { text = String( response || "" ).trim( ); } );
    } );
+
+   g_in_poll = false;
+
+   await asking;
 
    var middle = Math.round( ( sent + Date.now( ) ) / 2000 );
 
@@ -442,11 +449,14 @@ function call_apply( room, other, calls )
          else if( call_crossing( room, other ) )
          {
             // NOTE: The two called each other at once (Damon, 2026-11-17: each was told the other was busy) - the call with the higher
-            // id goes ahead on both sides, so each decides alike: the other's taken in place of this one's, or theirs left to them.
-            g_call_handled[ call.id ] = true;
-
+            // id goes ahead on both sides, so each decides alike: the other's taken in place of this one's, or theirs left to them -
+            // not marked handled, so it still rings should this one end before they cross to it (found by review, 2026-11-17).
             if( call.id > g_call.id )
+            {
+               g_call_handled[ call.id ] = true;
+
                call_cross( room, other, call );
+            }
          }
          else
          {
@@ -521,18 +531,15 @@ function call_connection( servers )
       }
       else if( pc.connectionState === "failed" )
       {
-         // NOTE: One that never connected is most likely two networks with no relay between them; one that had, lost (found by review:
-         // the other closing their page was put down to the network).
-         var connected = g_call.started !== 0;
-
-         // NOTE: Both sides see it fail - the caller alone says so, so the conversation has one line for it, not two (found by review).
+         // NOTE: One that never connected (one that had is renewed, above) - most likely two networks with no relay between them.
+         // Both sides see it fail - the caller alone says so, so the conversation has one line for it, not two (found by review).
          if( g_call.role === "caller" )
             call_send_quietly( "end", true );
 
          // NOTE: Without a relay - the node has none, or didn't answer for it - only on the same network (found by review: "this node has
          // no relay" was untrue when the request failed).
-         call_end_local( connected ? "The call was lost." : ( g_call.relayed ? "The call couldn't connect." : "The call couldn't connect -"
-          + " without a relay, calls only work between people on the same network." ) );
+         call_end_local( g_call.relayed ? "The call couldn't connect." : "The call couldn't connect - without a relay, calls only work"
+          + " between people on the same network." );
       }
    } );
 
@@ -643,7 +650,9 @@ async function do_start_call( )
 
       if( !await call_send( room, other, call.id, "offer", data ) )
       {
-         call_end_local( "The call couldn't be started - the node didn't take it. Try again." );
+         // NOTE: Only if it is still this call - given up meanwhile for theirs ("call_cross( )"), that one goes on (found by review).
+         if( g_call === call )
+            call_end_local( "The call couldn't be started - the node didn't take it. Try again." );
 
          return;
       }
@@ -755,9 +764,21 @@ function call_lost( )
 
    call_watch_fast( true );
 
-   // NOTE: The caller alone renews it, so the two never cross; a browser often gets a connection back by itself, so not at once.
+   // NOTE: The caller alone renews it, so the two never cross; a browser often gets a connection back by itself, so not at once. Kept,
+   // so a loss got back from within the wait sends nothing, and a second loss only one renewal (found by review, 2026-11-17).
    if( call.role === "caller" )
-      window.setTimeout( function( ) { call_renew( call ); }, c_call_drop_ms );
+      call.renew_timer = window.setTimeout( function( ) { call.renew_timer = null; call_renew( call ); }, c_call_drop_ms );
+}
+
+// NOTE: The wait before a renewal, if there is one, given up.
+function call_renew_stop( call )
+{
+   if( call.renew_timer )
+   {
+      window.clearTimeout( call.renew_timer );
+
+      call.renew_timer = null;
+   }
 }
 
 // NOTE: The connection back - the wait for it ended, and the call shown as going again.
@@ -771,6 +792,8 @@ function call_recovered( )
    window.clearTimeout( call.lost );
 
    call.lost = null;
+
+   call_renew_stop( call );
 
    call_watch_fast( false );
 
@@ -1080,6 +1103,8 @@ function call_end_local( said )
 
          call.lost = null;
       }
+
+      call_renew_stop( call );
 
       if( call.pc !== null )
          call.pc.close( );

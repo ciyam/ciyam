@@ -2192,6 +2192,10 @@ check( "- how long ago by the node's clock: an offer sealed an hour fast rings, 
  "admin", "maya", 1794000010 ) ).length, cp.call_states( call_posted( "maya", call_msg( 1794003600, "maya", "offer", "AAAA" ), "1794000002001" ),
  "admin", "maya", 1794000010 )[ "0a1b2c3d" ].at, cp.call_message_seconds( "", 1794000000 ), cp.call_message_seconds( "1794000002001", 0 ) ],
  [ 1, 0, 1794000002, 1794000000, 1794000002 ] );
+check( "- a message sealed long before the node posted it not taken - an old offer posted again; a device's clock an hour out is", [
+ Object.keys( cp.call_states( call_posted( "maya", call_msg( 1793990000, "maya", "offer", "AAAA" ), "1794000002001" ), "admin", "maya",
+ 1794000010 ) ).length, Object.keys( cp.call_states( call_posted( "maya", call_msg( 1794003500, "maya", "offer", "AAAA" ), "1794000002001" ),
+ "admin", "maya", 1794000010 ) ).length ], [ 0, 1 ] );
 check( "- a renewal from the caller, its answer from the one called - the latest of each; not the other way round", ( function( )
 {
    var renewed = cp.call_states( call_seen( "maya", call_offer ).concat( call_seen( "admin", call_answer ) )

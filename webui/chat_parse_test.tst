@@ -990,6 +990,7 @@ ok   - an answer or end with no offer seen is not a call; nor anyone's but the t
 ok   - the call going is taken however long ago it began: its end an hour on
 ok   - two answers, from two devices of the one called, not joined into one
 ok   - how long ago by the node's clock: an offer sealed an hour fast rings, one posted long ago does not
+ok   - a message sealed long before the node posted it not taken - an old offer posted again; a device's clock an hour out is
 ok   - a renewal from the caller, its answer from the one called - the latest of each; not the other way round
 ok   - a call given up for the other's, the two calling at once, has no line of its own
 ok   - renewals not shown
