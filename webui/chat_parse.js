@@ -5264,7 +5264,7 @@ function call_elapsed_text( seconds )
 // "<expiry>:<username>" then the password, then the relay's address if the node was told it - so nothing is asked of anyone else:
 // STUN for each device's address as the world sees it, and TURN to relay the call when the two can't reach each other. With no
 // address, the page's own host ("host"). None ("[none]" - the node has no relay - or anything that isn't credentials) and the call is
-// tried directly, as before. A fourth line is the relay's port, where it isn't coturn's standard (mgp's is another - Ian, 2026-11-15),
+// tried directly, as before. A fourth line is the relay's port, where it isn't coturn's standard (one shared with LiveKit, say),
 // the third then empty if there is no address (2026-11-17).
 const c_call_relay_port = 3478;
 
