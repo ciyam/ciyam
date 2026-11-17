@@ -86,6 +86,16 @@ const size_t c_cws_max_sessions_allowed = 1000;
 // the maximum number of sessions already exist (Ian, 2026-11-17: "at least 10 minutes" - see ISS-039).
 const int64_t c_cws_session_idle_seconds = 600;
 
+// NOTE: A person's own key for their alerts - a random value kept on the node (persistent), from which their ntfy topic is made
+// ("ntfy_topic"). Not their name: the topic made from it would then be known to anyone who knew the identity (Damon, 2026-11-17).
+constexpr const char* c_cws_alerts_key_prefix = "@cws_alerts_key_";
+
+// NOTE: How often one person may ring another in a conversation - a call rings for 45 seconds, so a ring now and then is plenty, and
+// nobody can flood another's phone with them.
+const int64_t c_cws_ring_seconds = 20;
+
+constexpr const char* c_cws_request_ring_options_room = "room";
+
 // NOTE: How long a call relay's credentials last - asked for before each call, so a call outlasts them only if it goes on
 // for longer than this (coturn checks them again as an allocation is refreshed). They end on the hour after it, so all of
 // a person's credentials asked for within one hour are the same - and coturn's allocations to a single set of credentials
@@ -156,6 +166,8 @@ constexpr const char* c_cws_artifacts_link = ".ciyam";
 
 constexpr const char* c_cws_uri_suffix_help = "help";
 constexpr const char* c_cws_uri_suffix_logs = "logs";
+constexpr const char* c_cws_uri_suffix_ring = "ring";
+constexpr const char* c_cws_uri_suffix_alerts = "alerts";
 constexpr const char* c_cws_uri_suffix_relay = "relay";
 constexpr const char* c_cws_uri_suffix_users = "users";
 constexpr const char* c_cws_uri_suffix_status = "status";
@@ -1013,6 +1025,81 @@ string get_relay_port( )
       return string( );
 
    return to_string( value );
+}
+
+// NOTE: The key for a person's alerts, made if they have none yet and "make" - or empty (Damon, 2026-11-17: calls ringing a phone).
+string get_alerts_key( const string& username, bool make )
+{
+   guard g( g_mutex );
+
+   string var_name( string( c_cws_alerts_key_prefix ) + username );
+
+   string key( get_system_variable( var_name ) );
+
+   if( key.empty( ) && make )
+   {
+      sha256 hash( uuid( ).as_string( ) + uuid( ).as_string( ) );
+
+      key = hash.get_digest_as_string( );
+
+      set_system_variable( ">" + var_name, key );
+   }
+
+   return key;
+}
+
+// NOTE: Whether "caller" may ring now in "room" - not if they rang there within "c_cws_ring_seconds" - taking the ring if so.
+bool take_ring( const string& caller, const string& room, int64_t now )
+{
+   static map< string, int64_t > last_rings;
+
+   guard g( g_mutex );
+
+   string key( caller + ' ' + room );
+
+   if( last_rings.count( key ) && ( now < ( last_rings[ key ] + c_cws_ring_seconds ) ) )
+      return false;
+
+   last_rings[ key ] = now;
+
+   return true;
+}
+
+// NOTE: The other person in "room" if it is a direct message between "caller" and just one other - named "/<a>/<b>" (the two in
+// order) with exactly the two as its members - or empty.
+string ring_other_person( const string& caller, const string& room )
+{
+   if( ( room.length( ) != 7 ) || ( room.find_first_not_of( "0123456789" ) != string::npos ) )
+      return string( );
+
+   string name( get_system_variable( "@irc_names_" + room ) );
+   string users( get_system_variable( "@irc_users_" + room ) );
+
+   if( ( name.length( ) < 3 ) || ( name[ 0 ] != '/' ) )
+      return string( );
+
+   string::size_type pos = name.find( '/', 1 );
+
+   if( pos == string::npos )
+      return string( );
+
+   string first( name.substr( 1, pos - 1 ) );
+   string second( name.substr( pos + 1 ) );
+
+   string other;
+
+   if( first == caller )
+      other = second;
+   else if( second == caller )
+      other = first;
+
+   if( other.empty( ) || ( other == caller ) || ( other.find( '/' ) != string::npos ) )
+      return string( );
+
+   if( ( users != ( '@' + first + '@' + second ) ) && ( users != ( '@' + second + '@' + first ) ) )
+      return string( );
+
+   return other;
 }
 
 bool is_pin_token( const string& token )
@@ -3242,6 +3329,71 @@ bool process_cws_request( http_request_type request_type, const string& uri_suff
                      else
                         response = "{\"username\":\"" + escaped_json( relay_username ) + "\",\"credential\":\""
                          + relay_password + "\",\"address\":\"" + relay_address + "\",\"port\":\"" + relay_port + "\"}";
+                  }
+               }
+               // NOTE: The signed-in person's own ntfy topic, and the ntfy server - for their phone to subscribe to, so the
+               // node can reach them with the chat closed (Damon, 2026-11-17: a call ringing a phone, Ian agreeing). Made from a
+               // key of their own, made the first time they ask. "[none]" if the node has no ntfy server.
+               else if( is_get_request && ( uri_suffix == c_cws_uri_suffix_alerts ) )
+               {
+                  found = true;
+
+                  string server( get_ntfy_server( ) );
+
+                  if( server.empty( ) || ( server == g_none_var ) )
+                     use_none_response = true;
+                  else
+                  {
+                     string topic( ntfy_topic( get_alerts_key( username, true ) ) );
+
+                     if( !is_json_output )
+                        response = topic + '\n' + server;
+                     else
+                        response = "{\"topic\":\"" + topic + "\",\"server\":\"" + escaped_json( server ) + "\"}";
+                  }
+               }
+               // NOTE: A call starting - the other person in a direct message rung on their own ntfy topic, so their phone rings
+               // with the chat closed. Only in a direct message between just the two of them, no more often than each
+               // "c_cws_ring_seconds", and saying only who is calling (the call itself is sealed between them). "[none]" if they
+               // have never asked for their topic, so the caller can be told.
+               else if( is_post_request && ( uri_suffix == c_cws_uri_suffix_ring ) )
+               {
+                  string room;
+
+                  if( option_parameters.count( c_cws_request_ring_options_room ) )
+                     room = option_parameters[ c_cws_request_ring_options_room ];
+
+                  string other( ring_other_person( username, room ) );
+
+                  if( ( option_parameters.size( ) != 1 ) || other.empty( ) )
+                     // FUTURE: This message should be handled as a server string message.
+                     error = "A call can only ring someone in a direct message with them.";
+                  else
+                  {
+                     found = true;
+
+                     string key( get_alerts_key( other, false ) );
+
+                     if( key.empty( ) )
+                        use_none_response = true;
+                     else if( !take_ring( username, room, now ) )
+                        // FUTURE: This message should be handled as a server string message.
+                        error = "Rung just now - wait a few seconds.";
+                     else
+                     {
+                        string title( "Call" );
+                        string priority( "urgent" );
+                        string tags( "telephone_receiver" );
+
+                        bool sent = true;
+
+                        send_ntfy_message( key, username + " is calling", &title, &priority, &tags, &sent );
+
+                        // NOTE: Sent, the answer is "[okay]" (an empty response).
+                        if( !sent )
+                           // FUTURE: This message should be handled as a server string message.
+                           error = "This node has no ntfy server to ring with.";
+                     }
                   }
                }
                // NOTE: A user's own keys (encrypted before they get here) which are only
