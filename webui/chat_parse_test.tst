@@ -1000,6 +1000,7 @@ ok   the node's call relay - STUN and TURN on its own host, with its credentials
 ok   - an address as the page has it, IPv6 in its brackets
 ok   - at the relay's own address when the node gives one - not the page's host
 ok   - on the relay's own port when the node gives one - after its address, or after an empty line
+ok   - "3478:5349" (Ian's turn_port) - TLS on the second, at the page's host by name only; a bad one, no relay
 ok   - none when the node has no relay, or answers otherwise, or the host is odd
 
 All checks passed.
