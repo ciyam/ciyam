@@ -4222,6 +4222,10 @@ void read_server_configuration( )
 
       g_turn_secret = reader.read_opt_attribute( c_attribute_secret );
 
+      string turn_secret( g_turn_secret.empty( ) ? g_none_name : g_turn_secret );
+
+      set_system_variable( e_special_var_system_setting_turn_secret, turn_secret );
+
       g_turn_ip_addr = reader.read_opt_attribute( c_attribute_ip_addr, get_special_var_name( e_special_var_ip_ext_addr ) );
 
       set_system_variable( e_special_var_system_setting_turn_ip_addr, g_turn_ip_addr );
@@ -6480,12 +6484,7 @@ string get_ntfy_server( bool from_setting_variable )
 
    if( from_setting_variable
     && has_system_variable( e_special_var_system_setting_ntfy_server ) )
-   {
       value = get_system_variable( e_special_var_system_setting_ntfy_server );
-
-      if( value == g_none_name )
-         value.erase( );
-   }
 
    return value;
 }
@@ -7516,6 +7515,9 @@ string get_turn_ip_addr( bool from_setting_variable )
 
    if( from_setting_variable && has_system_variable( e_special_var_system_setting_turn_ip_addr ) )
       retval = get_system_variable( e_special_var_system_setting_turn_ip_addr );
+
+   if( retval == get_special_var_name( e_special_var_ip_ext_addr ) )
+      retval = get_system_variable( e_special_var_ip_ext_addr );
 
    return retval;
 }
