@@ -381,6 +381,10 @@ int64_t get_smtp_max_attached_data( );
 
 std::string get_smtp_suffix_or_domain( );
 
+std::string get_turn_port( bool from_setting_variable = true );
+std::string get_turn_secret( bool from_setting_variable = true );
+std::string get_turn_ip_addr( bool from_setting_variable = true );
+
 struct external_client
 {
    external_client( ) : port( 0 ), is_local( false ) { }
