@@ -170,6 +170,8 @@ constexpr const char* c_server_tx_log_file = "ciyam_server.tlg";
 constexpr const char* c_release_file_name = ".release";
 constexpr const char* c_version_file_name = ".version";
 
+constexpr const char* c_default_turn_ports = "3478:5349";
+
 constexpr const char* c_skip_compress_file = ".skip_compress";
 
 constexpr const char* c_ext_ip_addr_file = ".ext_ip_addr";
@@ -190,6 +192,7 @@ constexpr const char* c_server_command_sessions = "sessions";
 constexpr const char* c_section_mbox = "mbox";
 constexpr const char* c_section_pop3 = "pop3";
 constexpr const char* c_section_smtp = "smtp";
+constexpr const char* c_section_turn = "turn";
 constexpr const char* c_section_email = "email";
 constexpr const char* c_section_client = "client";
 constexpr const char* c_section_extern = "extern";
@@ -201,9 +204,11 @@ constexpr const char* c_attribute_path = "path";
 constexpr const char* c_attribute_port = "port";
 constexpr const char* c_attribute_label = "label";
 constexpr const char* c_attribute_domain = "domain";
+constexpr const char* c_attribute_secret = "secret";
 constexpr const char* c_attribute_server = "server";
 constexpr const char* c_attribute_sender = "sender";
 constexpr const char* c_attribute_suffix = "suffix";
+constexpr const char* c_attribute_ip_addr = "ip_addr";
 constexpr const char* c_attribute_logging = "logging";
 constexpr const char* c_attribute_use_udp = "use_udp";
 constexpr const char* c_attribute_filename = "filename";
@@ -2089,6 +2094,10 @@ string g_smtp_suffix;
 string g_smtp_username;
 string g_smtp_password;
 string g_smtp_security;
+
+string g_turn_port;
+string g_turn_secret;
+string g_turn_ip_addr;
 
 int g_smtp_max_send_attempts = c_min_smtp_max_send_attempts;
 
@@ -4205,6 +4214,24 @@ void read_server_configuration( )
       g_num_recv_stream_sessions = from_string< size_t >( reader.read_opt_attribute(
        c_attribute_num_recv_stream_sessions, to_string( c_num_recv_stream_sessions_default ) ) );
 
+      reader.start_section( c_section_turn );
+
+      g_turn_port = reader.read_opt_attribute( c_attribute_port, c_default_turn_ports );
+
+      set_system_variable( e_special_var_system_setting_turn_port, g_turn_port );
+
+      g_turn_secret = reader.read_opt_attribute( c_attribute_secret );
+
+      string turn_secret( g_turn_secret.empty( ) ? g_none_name : g_turn_secret );
+
+      set_system_variable( e_special_var_system_setting_turn_secret, turn_secret );
+
+      g_turn_ip_addr = reader.read_opt_attribute( c_attribute_ip_addr, get_special_var_name( e_special_var_ip_ext_addr ) );
+
+      set_system_variable( e_special_var_system_setting_turn_ip_addr, g_turn_ip_addr );
+
+      reader.finish_section( c_section_turn );
+
       reader.start_section( c_section_email );
 
       if( reader.has_started_section( c_section_mbox ) )
@@ -4239,6 +4266,7 @@ void read_server_configuration( )
             g_smtp_sender = g_smtp_username;
 
          string max_send_attempts = reader.read_opt_attribute( c_attribute_max_send_attempts );
+
          if( !max_send_attempts.empty( ) )
             g_smtp_max_send_attempts = atoi( max_send_attempts.c_str( ) );
 
@@ -4247,6 +4275,7 @@ void read_server_configuration( )
              + " is less than min. smtp send attempts " + to_string( c_min_smtp_max_send_attempts ) );
 
          string max_attached_data = reader.read_opt_attribute( c_attribute_max_attached_data );
+
          if( !max_attached_data.empty( ) )
             g_smtp_max_attached_data = unformat_bytes( max_attached_data );
 
@@ -6455,12 +6484,7 @@ string get_ntfy_server( bool from_setting_variable )
 
    if( from_setting_variable
     && has_system_variable( e_special_var_system_setting_ntfy_server ) )
-   {
       value = get_system_variable( e_special_var_system_setting_ntfy_server );
-
-      if( value == g_none_name )
-         value.erase( );
-   }
 
    return value;
 }
@@ -7461,6 +7485,39 @@ string get_smtp_suffix_or_domain( )
 
    if( retval.empty( ) )
       retval = get_domain( );
+
+   return retval;
+}
+
+string get_turn_port( bool from_setting_variable )
+{
+   string retval( g_turn_port );
+
+   if( from_setting_variable && has_system_variable( e_special_var_system_setting_turn_port ) )
+      retval = get_system_variable( e_special_var_system_setting_turn_port );
+
+   return retval;
+}
+
+string get_turn_secret( bool from_setting_variable )
+{
+   string encrypted_secret( g_turn_secret );
+
+   if( from_setting_variable && has_system_variable( e_special_var_system_setting_turn_secret ) )
+      encrypted_secret = get_system_variable( e_special_var_system_setting_turn_secret );
+
+   return decrypt_data( encrypted_secret, true );
+}
+
+string get_turn_ip_addr( bool from_setting_variable )
+{
+   string retval( g_turn_ip_addr );
+
+   if( from_setting_variable && has_system_variable( e_special_var_system_setting_turn_ip_addr ) )
+      retval = get_system_variable( e_special_var_system_setting_turn_ip_addr );
+
+   if( retval == get_special_var_name( e_special_var_ip_ext_addr ) )
+      retval = get_system_variable( e_special_var_ip_ext_addr );
 
    return retval;
 }

@@ -36,6 +36,11 @@
 # <max_http_post_allowed>100MB
 # <num_recv_stream_sessions>10
 # <num_send_stream_sessions>1
+ <turn/>
+#  <port>3478:5349
+#  <secret>
+#  <ip_addr>@ip_ext_addr
+ </turn>
  <email/>
 #  <pop3/>
 #   <server>name.org:995
