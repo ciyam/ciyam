@@ -447,10 +447,10 @@ function log_problems_text( problems )
    return parts.join( " and " ) + when;
 }
 
-// NOTE: How many messages a room keeps - its queue's limit (9,000 since 2026-10-01, Ian). A full room drops its oldest
-// for each new one since "@qs_pf_irc" (2026-10-11, "IRC Domain Model"). The node does not report the limit to a page,
-// so it is named here.
-const c_home_room_limit = 9000;
+// NOTE: How many messages a room keeps - its queue's limit, the node's default as rooms set none of their own (3,000 since
+// 2026-11-15, Ian - 9,000 before). A full room drops its oldest for each new one since "@qs_pf_irc" (2026-10-11, "IRC Domain
+// Model"). The node does not report the limit to a page, so it is named here.
+const c_home_room_limit = 3000;
 
 const c_home_room_filling = 0.8;
 
@@ -485,7 +485,7 @@ function rooms_filling_text( filling )
    return ( filling.length === 1 ? "1 room is" : filling.length + " rooms are" ) + " filling up";
 }
 
-// NOTE: One filling room in words - "General - 7,412 of 9,000 messages (82%)", or full.
+// NOTE: One filling room in words - "General - 2,471 of 3,000 messages (82%)", or full.
 function room_filling_line( room )
 {
    var of = room.total.toLocaleString( "en-AU" ) + " of " + c_home_room_limit.toLocaleString( "en-AU" ) + " messages";
