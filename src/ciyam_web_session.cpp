@@ -428,8 +428,35 @@ inline bool is_relay_ports( const string& s )
 // for "CIYAM_TURN_EXTERNAL_IP" alike (Ian, 2026-11-18).
 inline bool is_ip_address( const string& s )
 {
-   return !s.empty( ) && ( s.length( ) <= 45 ) && ( s.find_first_of( ".:" ) != string::npos )
+   bool okay = !s.empty( ) && ( s.length( ) <= 45 ) && ( s.find_first_of( ".:" ) != string::npos )
     && ( s.find_first_not_of( "0123456789abcdefABCDEF.:" ) == string::npos );
+
+   // NOTE: Without a ":" an IPv4 address - four numbers from 0 to 255, so "1.2.3" or "999.1.1.1" is refused where it is set
+   // rather than leaving calls without a relay (found by review, 2026-11-19).
+   if( okay && ( s.find( ':' ) == string::npos ) )
+   {
+      size_t parts = 0;
+
+      string::size_type from = 0;
+
+      while( okay && ( from <= s.length( ) ) )
+      {
+         string::size_type dot = s.find( '.', from );
+
+         string part( s.substr( from, ( dot == string::npos ) ? string::npos : ( dot - from ) ) );
+
+         okay = !part.empty( ) && ( part.length( ) <= 3 )
+          && ( part.find_first_not_of( "0123456789" ) == string::npos ) && ( atoi( part.c_str( ) ) <= 255 );
+
+         ++parts;
+
+         from = ( dot == string::npos ) ? ( s.length( ) + 1 ) : ( dot + 1 );
+      }
+
+      okay = okay && ( parts == 4 );
+   }
+
+   return okay;
 }
 
 // NOTE: The call relay's shared secret - 16 to 64 characters with no spaces or control characters ("hmac_sha1" hashes a longer
@@ -1008,8 +1035,9 @@ struct cws_active_command
 
 // NOTE: The call relay's shared secret (coturn's "use-auth-secret") - from the same "CIYAM_TURN_SECRET" the container starts
 // coturn with, else the node's own "turn" setting ("ciyam_server.sio" or "@system_setting_turn_secret", Ian, 2026-11-18), which
-// is kept encrypted so only the server can read it. Not decrypted when there is none (the variable is then "@none"), nor if the
-// server can't (the identity locked). Empty if there is none (or it isn't usable), so there is no relay.
+// is kept encrypted so only the server can read it. Not decrypted when there is none (the variable is then "@none"). Decrypted
+// without the identity (locked) it comes out as nothing usable, which "is_relay_secret( )" refuses - the "catch" is only for a
+// decryption that throws. Empty if there is none (or it isn't usable), so there is no relay.
 string get_relay_secret( )
 {
    const char* p_secret = getenv( c_web_session_relay_secret_env );
@@ -1072,6 +1100,18 @@ string get_relay_port( )
 
    if( !is_relay_ports( port ) )
       port.erase( );
+   else
+   {
+      // NOTE: As numbers - "03478" handed out as 3478 (found by review, 2026-11-19).
+      string::size_type colon = port.find( ':' );
+
+      string ports( to_string( atoi( port.substr( 0, colon ).c_str( ) ) ) );
+
+      if( colon != string::npos )
+         ports += ':' + to_string( atoi( port.substr( colon + 1 ).c_str( ) ) );
+
+      port = ports;
+   }
 
    return port;
 }
