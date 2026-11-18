@@ -196,7 +196,8 @@ if [ -n "${CIYAM_TURN_SECRET:-}" ]; then
    # No more than 64, as the node hands out credentials made with it ("ciyam_web_session.cpp") and refuses a longer one.
    if ! printf '%s' "$CIYAM_TURN_SECRET" | grep -qE '^[A-Za-z0-9]{16,64}$'; then
       echo "Error: CIYAM_TURN_SECRET is to be 16 to 64 letters and digits (openssl rand -hex 32) - the call relay is not started."
-      # NOTE: Nor handed out by the node, which would otherwise make credentials for a relay that isn't there.
+      # NOTE: Nor handed out by the node, which would otherwise make credentials for a relay that isn't there. (Only its own
+      # "turn_secret" setting, if admin has set one, would still be - a relay elsewhere, as on a node not in a container.)
       unset CIYAM_TURN_SECRET
    else
       # NOTE: An address, not a name (coturn takes only an address here) - anything else is left out rather than written in. A "."
@@ -287,6 +288,8 @@ if [ -n "${CIYAM_TURN_SECRET:-}" ]; then
          echo "(call relay: coturn on $turn_port${CIYAM_TURN_EXTERNAL_IP:+, reached at $CIYAM_TURN_EXTERNAL_IP})"
       else
          echo "Error: the call relay (coturn) did not start - see /var/log/turnserver.log."
+         # NOTE: As for a refused secret - the node is not to hand out credentials for it (found by review, 2026-11-19).
+         unset CIYAM_TURN_SECRET
       fi
    fi
 fi
