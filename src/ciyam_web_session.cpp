@@ -887,6 +887,7 @@ void remove_all_sessions_for_access( const string& access_token )
    vector< string > usernames;
    vector< string > devices;
 
+   // NOTE: Empty code block for scope purposes.
    {
       guard g( g_mutex );
 
@@ -4023,6 +4024,48 @@ bool process_cws_request( http_request_type request_type, const string& uri_suff
                               if( ( var_name == get_special_var_name( e_special_var_system_setting_ntfy_server ) ) && !is_host_and_port( value ) )
                                  // FUTURE: This message should be handled as a server string message.
                                  error = "Invalid ntfy server '" + value + "' (expecting a host name with an optional port).";
+                              else if( var_name == get_special_var_name( e_special_var_system_setting_turn_port ) )
+                              {
+                                 string::size_type pos = value.find( ':' );
+
+                                 string port( value.substr( 0, pos ) );
+
+                                 string tls_port;
+
+                                 if( pos != string::npos )
+                                    tls_port = value.substr( pos + 1 );
+
+                                 bool valid = true;
+
+                                 if( port.find_first_not_of( "0123456789" ) != string::npos )
+                                    valid = false;
+                                 else
+                                 {
+                                    int p = atoi( port.c_str( ) );
+
+                                    if( ( p < 1024 ) || ( p > 65535 ) )
+                                       valid = false;
+                                 }
+
+                                 if( !tls_port.empty( ) )
+                                 {
+                                    if( tls_port.find( "0123456789" ) != string::npos )
+                                       valid = false;
+                                    else
+                                    {
+                                       int p = atoi( tls_port.c_str( ) );
+
+                                       if( ( p < 1024 ) || ( p > 65535 ) )
+                                          valid = false;
+                                    }
+                                 }
+
+                                 if( !valid )
+                                    // FUTURE: This message should be handled as a server string message.
+                                    error = "Invalid TURN port value(s) must be between 1024..65535.";
+                              }
+                              else if( var_name == get_special_var_name( e_special_var_system_setting_turn_secret ) )
+                                 value = encrypt_data( value, false, true );
                            }
 
                            if( error.empty( ) )
@@ -4035,6 +4078,12 @@ bool process_cws_request( http_request_type request_type, const string& uri_suff
                               {
                                  if( var_name == get_special_var_name( e_special_var_system_setting_ntfy_server ) )
                                     value = get_ntfy_server( false );
+                                 else if( var_name == get_special_var_name( e_special_var_system_setting_turn_port ) )
+                                    value = get_turn_port( false );
+                                 else if( var_name == get_special_var_name( e_special_var_system_setting_turn_secret ) )
+                                    value = get_turn_secret( false );
+                                 else if( var_name == get_special_var_name( e_special_var_system_setting_turn_ip_addr ) )
+                                    value = get_turn_ip_addr( false );
 
                                  if( value.empty( ) )
                                     value = g_none_var;
