@@ -369,6 +369,7 @@ constexpr const char* c_special_variable_blockchain_put_list_hash = "@blockchain
 constexpr const char* c_special_variable_blockchain_shared_height = "@blockchain_shared_height";
 constexpr const char* c_special_variable_blockchain_stream_cipher = "@blockchain_stream_cipher";
 constexpr const char* c_special_variable_blockchain_zenith_height = "@blockchain_zenith_height";
+constexpr const char* c_special_variable_system_setting_turn_port = "@system_setting_turn_port";
 constexpr const char* c_special_variable_blockchain_checked_shared = "@blockchain_checked_shared";
 constexpr const char* c_special_variable_blockchain_get_tree_files = "@blockchain_get_tree_files";
 constexpr const char* c_special_variable_blockchain_num_tree_items = "@blockchain_num_tree_items";
@@ -385,9 +386,11 @@ constexpr const char* c_special_variable_blockchain_shared_identity = "@blockcha
 constexpr const char* c_special_variable_use_insecure_peer_protocol = "@use_insecure_peer_protocol";
 constexpr const char* c_special_variable_blockchain_waiting_for_hub = "@blockchain_waiting_for_hub";
 constexpr const char* c_special_variable_system_setting_ntfy_server = "@system_setting_ntfy_server";
+constexpr const char* c_special_variable_system_setting_turn_secret = "@system_setting_turn_secret";
 constexpr const char* c_special_variable_blockchain_block_processing = "@blockchain_block_processing";
 constexpr const char* c_special_variable_blockchain_zenith_tree_hash = "@blockchain_zenith_tree_hash";
 constexpr const char* c_special_variable_totals_exclude_hidden_blobs = "@totals_exclude_hidden_blobs";
+constexpr const char* c_special_variable_system_setting_turn_ip_addr = "@system_setting_turn_ip_addr";
 constexpr const char* c_special_variable_blockchain_height_processing = "@blockchain_height_processing";
 constexpr const char* c_special_variable_blockchain_peer_hub_identity = "@blockchain_peer_hub_identity";
 constexpr const char* c_special_variable_blockchain_targeted_identity = "@blockchain_targeted_identity";
@@ -761,6 +764,7 @@ void init_special_variable_names( )
       g_special_variable_names.push_back( c_special_variable_blockchain_shared_height );
       g_special_variable_names.push_back( c_special_variable_blockchain_stream_cipher );
       g_special_variable_names.push_back( c_special_variable_blockchain_zenith_height );
+      g_special_variable_names.push_back( c_special_variable_system_setting_turn_port );
       g_special_variable_names.push_back( c_special_variable_blockchain_checked_shared );
       g_special_variable_names.push_back( c_special_variable_blockchain_get_tree_files );
       g_special_variable_names.push_back( c_special_variable_blockchain_num_tree_items );
@@ -777,9 +781,11 @@ void init_special_variable_names( )
       g_special_variable_names.push_back( c_special_variable_use_insecure_peer_protocol );
       g_special_variable_names.push_back( c_special_variable_blockchain_waiting_for_hub );
       g_special_variable_names.push_back( c_special_variable_system_setting_ntfy_server );
+      g_special_variable_names.push_back( c_special_variable_system_setting_turn_secret );
       g_special_variable_names.push_back( c_special_variable_blockchain_block_processing );
       g_special_variable_names.push_back( c_special_variable_blockchain_zenith_tree_hash );
       g_special_variable_names.push_back( c_special_variable_totals_exclude_hidden_blobs );
+      g_special_variable_names.push_back( c_special_variable_system_setting_turn_ip_addr );
       g_special_variable_names.push_back( c_special_variable_blockchain_height_processing );
       g_special_variable_names.push_back( c_special_variable_blockchain_peer_hub_identity );
       g_special_variable_names.push_back( c_special_variable_blockchain_targeted_identity );
