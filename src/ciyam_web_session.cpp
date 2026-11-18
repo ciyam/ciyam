@@ -402,6 +402,51 @@ inline bool is_host_and_port( const string& s )
     && ( port.find_first_not_of( "0123456789" ) == string::npos ) && ( atoi( port.c_str( ) ) <= 65535 );
 }
 
+// NOTE: A port for the call relay - digits only, from 1024 to 65535.
+inline bool is_relay_port( const string& s )
+{
+   return !s.empty( ) && ( s.length( ) <= 5 ) && ( s.find_first_not_of( "0123456789" ) == string::npos )
+    && ( atoi( s.c_str( ) ) >= 1024 ) && ( atoi( s.c_str( ) ) <= 65535 );
+}
+
+// NOTE: The call relay's ports - "<port>" or "<port>:<TLS port>" (such as "3478:5349"), each as "is_relay_port( )" checks.
+// The same check for the "turn_port" setting and for "CIYAM_TURN_PORT" (Ian, 2026-11-18).
+inline bool is_relay_ports( const string& s )
+{
+   string::size_type colon = s.find( ':' );
+
+   bool okay = is_relay_port( s.substr( 0, colon ) );
+
+   if( okay && ( colon != string::npos ) )
+      okay = is_relay_port( s.substr( colon + 1 ) );
+
+   return okay;
+}
+
+// NOTE: An IPv4 or IPv6 address - hex digits, "." and ":" only, with a "." or a ":" (so a name all of hex letters such as "cafe"
+// isn't taken for one, found by review 2026-11-15) and no longer than an IPv6 address can be. For the "turn_ip_addr" setting and
+// for "CIYAM_TURN_EXTERNAL_IP" alike (Ian, 2026-11-18).
+inline bool is_ip_address( const string& s )
+{
+   return !s.empty( ) && ( s.length( ) <= 45 ) && ( s.find_first_of( ".:" ) != string::npos )
+    && ( s.find_first_not_of( "0123456789abcdefABCDEF.:" ) == string::npos );
+}
+
+// NOTE: The call relay's shared secret - 16 to 64 characters with no spaces or control characters ("hmac_sha1" hashes a longer
+// key first and then reads past the hash). For the "turn_secret" setting and for "CIYAM_TURN_SECRET" alike.
+inline bool is_relay_secret( const string& s )
+{
+   bool okay = ( s.length( ) >= c_cws_relay_secret_min ) && ( s.length( ) <= c_cws_relay_secret_max );
+
+   for( size_t i = 0; okay && ( i < s.length( ) ); i++ )
+   {
+      if( !isgraph( ( unsigned char )s[ i ] ) )
+         okay = false;
+   }
+
+   return okay;
+}
+
 inline string escaped_json( const string& s )
 {
    string str( escaped( s, "/\"", '\\', c_json_escape_specials ) );
@@ -962,70 +1007,73 @@ struct cws_active_command
 };
 
 // NOTE: The call relay's shared secret (coturn's "use-auth-secret") - from the same "CIYAM_TURN_SECRET" the container starts
-// coturn with. Only letters and digits, and no more than 64 of them, as "hmac_sha1" hashes a longer key first and then reads
-// past the hash. Empty if there is none (or it isn't usable), so there is no relay.
+// coturn with, else the node's own "turn" setting ("ciyam_server.sio" or "@system_setting_turn_secret", Ian, 2026-11-18), which
+// is kept encrypted so only the server can read it. Not decrypted when there is none (the variable is then "@none"), nor if the
+// server can't (the identity locked). Empty if there is none (or it isn't usable), so there is no relay.
 string get_relay_secret( )
 {
    const char* p_secret = getenv( c_web_session_relay_secret_env );
 
    string secret( p_secret ? p_secret : "" );
 
-   if( ( secret.length( ) < c_cws_relay_secret_min ) || ( secret.length( ) > c_cws_relay_secret_max ) )
-      return string( );
-
-   for( size_t i = 0; i < secret.length( ); i++ )
+   if( secret.empty( ) )
    {
-      if( !isalnum( ( unsigned char )secret[ i ] ) )
-         return string( );
+      string encrypted( get_system_variable( e_special_var_system_setting_turn_secret ) );
+
+      if( !encrypted.empty( ) && ( encrypted != g_none_var ) )
+      {
+         try
+         {
+            secret = get_turn_secret( );
+         }
+         catch( ... )
+         {
+            secret.erase( );
+         }
+      }
    }
+
+   if( !is_relay_secret( secret ) )
+      secret.erase( );
 
    return secret;
 }
 
 // NOTE: Where the call relay is reached - the "CIYAM_TURN_EXTERNAL_IP" that coturn provides (and being the IP address that it
-// takes) - or empty, and the page's own host is used. Not the page's host always: a page may come through a proxy that passes
-// no UDP, and a page opened at "localhost" can't reach a relay there once the camera is allowed (each network adapter is then
-// used for itself, found 2026-11-15).
+// takes), else the node's "turn_ip_addr" setting ("@ip_ext_addr" unless set otherwise, Ian) - or empty, and the page's own host
+// is used. Not the page's host always: a page may come through a proxy that passes no UDP, and a page opened at "localhost"
+// can't reach a relay there once the camera is allowed (each network adapter is then used for itself, found 2026-11-15).
 string get_relay_address( )
 {
    const char* p_address = getenv( c_web_session_relay_address_env );
 
    string address( p_address ? p_address : "" );
 
-   // NOTE: If not set then use the "@ip_ext_addr" system variable.
    if( address.empty( ) )
-      address = get_system_variable( e_special_var_ip_ext_addr );
+      address = get_turn_ip_addr( );
 
-   // NOTE: A "." or a ":" as well, so a name all of hex letters ("cafe") isn't taken for one (found by review, 2026-11-15).
-   if( ( address.length( ) > 45 ) || ( address.find_first_of( ".:" ) == string::npos ) )
-      return string( );
-
-   for( size_t i = 0; i < address.length( ); i++ )
-   {
-      if( !isxdigit( ( unsigned char )address[ i ] ) && ( address[ i ] != '.' ) && ( address[ i ] != ':' ) )
-         return string( );
-   }
+   if( !is_ip_address( address ) )
+      address.erase( );
 
    return address;
 }
 
-// NOTE: The port the call relay is reached on - "CIYAM_TURN_PORT" - or empty for coturn's standard 3478. Another where
-// that one has been taken (such as when LiveKit's own TURN has it - Ian, 2026-11-15). Only digits, from 1024 to 65535.
+// NOTE: The ports the call relay is reached on - "CIYAM_TURN_PORT", else the node's "turn_port" setting ("3478:5349" unless
+// set otherwise, Ian, 2026-11-18) - as "<port>" or "<port>:<TLS port>", or empty for coturn's standard 3478. Another where
+// that one has been taken (such as when LiveKit's own TURN has it - Ian, 2026-11-15).
 string get_relay_port( )
 {
    const char* p_port = getenv( c_web_session_relay_port_env );
 
    string port( p_port ? p_port : "" );
 
-   if( port.empty( ) || ( port.length( ) > 5 ) || ( port.find_first_not_of( "0123456789" ) != string::npos ) )
-      return string( );
+   if( port.empty( ) )
+      port = get_turn_port( );
 
-   int value = atoi( port.c_str( ) );
+   if( !is_relay_ports( port ) )
+      port.erase( );
 
-   if( ( value < 1024 ) || ( value > 65535 ) )
-      return string( );
-
-   return to_string( value );
+   return port;
 }
 
 // NOTE: The key for a person's alerts, made if they have none yet and "make" - or empty (Damon, 2026-11-17: calls ringing a phone).
@@ -3989,6 +4037,10 @@ bool process_cws_request( http_request_type request_type, const string& uri_suff
                   if( is_put_request && ( access != g_cws_admin_token ) )
                      // FUTURE: This message should be handled as a server string message.
                      error = "Settings can only be changed by the administrator.";
+                  // NOTE: The relay's secret, even encrypted, only for the administrator (Ian, 2026-11-17).
+                  else if( ( var_name == get_special_var_name( e_special_var_system_setting_turn_secret ) ) && ( access != g_cws_admin_token ) )
+                     // FUTURE: This message should be handled as a server string message.
+                     error = "This setting can only be read by the administrator.";
                   else if( value.empty( ) )
                      // FUTURE: This message should be handled as a server string message.
                      error = "Unknown setting name '" + setting + "'";
@@ -4024,48 +4076,22 @@ bool process_cws_request( http_request_type request_type, const string& uri_suff
                               if( ( var_name == get_special_var_name( e_special_var_system_setting_ntfy_server ) ) && !is_host_and_port( value ) )
                                  // FUTURE: This message should be handled as a server string message.
                                  error = "Invalid ntfy server '" + value + "' (expecting a host name with an optional port).";
-                              else if( var_name == get_special_var_name( e_special_var_system_setting_turn_port ) )
-                              {
-                                 string::size_type pos = value.find( ':' );
-
-                                 string port( value.substr( 0, pos ) );
-
-                                 string tls_port;
-
-                                 if( pos != string::npos )
-                                    tls_port = value.substr( pos + 1 );
-
-                                 bool valid = true;
-
-                                 if( port.find_first_not_of( "0123456789" ) != string::npos )
-                                    valid = false;
-                                 else
-                                 {
-                                    int p = atoi( port.c_str( ) );
-
-                                    if( ( p < 1024 ) || ( p > 65535 ) )
-                                       valid = false;
-                                 }
-
-                                 if( !tls_port.empty( ) )
-                                 {
-                                    if( tls_port.find( "0123456789" ) != string::npos )
-                                       valid = false;
-                                    else
-                                    {
-                                       int p = atoi( tls_port.c_str( ) );
-
-                                       if( ( p < 1024 ) || ( p > 65535 ) )
-                                          valid = false;
-                                    }
-                                 }
-
-                                 if( !valid )
-                                    // FUTURE: This message should be handled as a server string message.
-                                    error = "Invalid TURN port value(s) must be between 1024..65535.";
-                              }
+                              else if( ( var_name == get_special_var_name( e_special_var_system_setting_turn_port ) ) && !is_relay_ports( value ) )
+                                 // FUTURE: This message should be handled as a server string message.
+                                 error = "Invalid TURN port value(s) must be between 1024..65535.";
+                              else if( ( var_name == get_special_var_name( e_special_var_system_setting_turn_ip_addr ) )
+                               && ( value != get_special_var_name( e_special_var_ip_ext_addr ) ) && !is_ip_address( value ) )
+                                 // FUTURE: This message should be handled as a server string message.
+                                 error = "Invalid TURN IP address '" + value + "' (expecting an IPv4 or IPv6 address or '"
+                                  + get_special_var_name( e_special_var_ip_ext_addr ) + "').";
                               else if( var_name == get_special_var_name( e_special_var_system_setting_turn_secret ) )
-                                 value = encrypt_data( value, false, true );
+                              {
+                                 if( !is_relay_secret( value ) )
+                                    // FUTURE: This message should be handled as a server string message.
+                                    error = "Invalid TURN secret (expecting 16 to 64 characters without spaces).";
+                                 else
+                                    value = encrypt_data( value, false, true );
+                              }
                            }
 
                            if( error.empty( ) )
@@ -4081,7 +4107,21 @@ bool process_cws_request( http_request_type request_type, const string& uri_suff
                                  else if( var_name == get_special_var_name( e_special_var_system_setting_turn_port ) )
                                     value = get_turn_port( false );
                                  else if( var_name == get_special_var_name( e_special_var_system_setting_turn_secret ) )
-                                    value = get_turn_secret( false );
+                                 {
+                                    // NOTE: Encrypted again - the variable holds the secret encrypted ("get_turn_secret( )"
+                                    // decrypts it), so restoring it decrypted would leave nothing usable.
+                                    try
+                                    {
+                                       string secret( get_turn_secret( false ) );
+
+                                       if( !secret.empty( ) )
+                                          value = encrypt_data( secret, false, true );
+                                    }
+                                    catch( ... )
+                                    {
+                                       value.erase( );
+                                    }
+                                 }
                                  else if( var_name == get_special_var_name( e_special_var_system_setting_turn_ip_addr ) )
                                     value = get_turn_ip_addr( false );
 
