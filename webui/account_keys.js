@@ -845,8 +845,21 @@ function keys_pick( row, note, button, is_right, index )
    }
 }
 
+// NOTE: What the node keeps for this account's keys now, trimmed - or null if it could not be read.
+async function keys_node_now( )
+{
+   var response = String( await request( function( done ) { return ciyam.fetch( keys_url( "" ), "GET", done ); } ) || "" ).trim( );
+
+   return ( ( response === "" ) || is_error_response( response ) ) ? null : response;
+}
+
 // NOTE: The keys made from "entropy", locked under its access key and sent - kept here once the node has them. No one else's
 // public keys yet: new keys, or made again when the node had lost them.
+//
+// The node read again first: what this page read on opening may be gone by now - keys set up meanwhile on another device, with
+// contacts, would be replaced by these, which have none, as the node takes keys made from the same words again (Damon, 2026-11-20:
+// a contact added on the laptop gone once the phone, opened before, took its keys from the administrator). Those opened instead,
+// if these words make them; else said, and nothing sent.
 async function keys_make_and_save( entropy, lede, people )
 {
    set_error( "keys_error", "" );
@@ -870,6 +883,51 @@ async function keys_make_and_save( entropy, lede, people )
    {
       keys_busy( "" );
       set_error( "keys_error", "Your keys could not be made: " + ( e && e.message ? e.message : "reload the page to try again." ) );
+
+      return;
+   }
+
+   var now = await keys_node_now( );
+   var state = ( now === null ) ? "unreadable" : keys_state( false, now );
+
+   if( state === "unreadable" )
+   {
+      keys_busy( "" );
+      set_error( "keys_error", "Your keys could not be read again from the node - reload the page to try again." );
+
+      return;
+   }
+
+   if( state === "elsewhere" )
+   {
+      var opened_access = "";
+
+      try
+      {
+         opened_access = await uk.access_key( entropy, uk.rounds_of( now ) );
+
+         await uk.unlock( opened_access, now );
+      }
+      catch( e )
+      {
+         opened_access = "";
+      }
+
+      keys_busy( "" );
+
+      if( opened_access === "" )
+      {
+         set_error( "keys_error", "Keys were set up for this account meanwhile, on another device, from other words - reload the page to"
+          + " see what to do." );
+
+         return;
+      }
+
+      g_keys.node = now;
+
+      keys_keep_here( opened_access );
+
+      await keys_show_here( opened_access, lede, false );
 
       return;
    }
