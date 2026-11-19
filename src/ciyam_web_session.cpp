@@ -3382,15 +3382,14 @@ bool process_cws_request( http_request_type request_type, const string& uri_suff
                {
                   found = true;
 
-                  string secret( get_system_variable( e_special_var_system_setting_turn_secret ) );
+                  // NOTE: Read once, then checked - decrypted only when encrypted (with a ':'), one from "CIYAM_TURN_SECRET" as
+                  // given. Read twice, a setting being cleared in between could have credentials made from "@none" (found by review).
+                  string secret( get_turn_secret( ) );
 
                   if( secret.empty( ) || ( secret == g_none_var ) )
                      use_none_response = true;
                   else
                   {
-                     // NOTE: Decrypted only when encrypted (with a ':') - one from "CIYAM_TURN_SECRET" is as given.
-                     secret = get_turn_secret( );
-
                      int64_t expires = ( ( ( now + c_cws_relay_seconds ) / c_cws_relay_rounding ) + 1 ) * c_cws_relay_rounding;
 
                      string relay_username( to_string( expires ) + ':' + username );
