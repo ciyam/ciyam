@@ -3287,7 +3287,9 @@ bool process_cws_request( http_request_type request_type, const string& uri_suff
 
                      string relay_port( get_system_variable( e_special_var_system_setting_turn_port ) );
 
-                     string relay_address( get_system_variable( e_special_var_system_setting_turn_ip_addr ) );
+                     // NOTE: With "@ip_ext_addr" resolved - the setting holds that name unless set otherwise, and a phone
+                     // given it has no relay at all.
+                     string relay_address( get_turn_ip_addr( ) );
 
                      // NOTE: The port as a fourth line, after the address - an empty line for no address, so each keeps its place.
                      if( !is_json_output )
@@ -3924,6 +3926,10 @@ bool process_cws_request( http_request_type request_type, const string& uri_suff
                   if( is_put_request && ( access != g_cws_admin_token ) )
                      // FUTURE: This message should be handled as a server string message.
                      error = "Settings can only be changed by the administrator.";
+                  // NOTE: The relay's secret, even encrypted, only for the administrator (Ian, 2026-11-17).
+                  else if( ( var_name == get_special_var_name( e_special_var_system_setting_turn_secret ) ) && ( access != g_cws_admin_token ) )
+                     // FUTURE: This message should be handled as a server string message.
+                     error = "This setting can only be read by the administrator.";
                   else if( value.empty( ) )
                      // FUTURE: This message should be handled as a server string message.
                      error = "Unknown setting name '" + setting + "'";
@@ -3979,11 +3985,13 @@ bool process_cws_request( http_request_type request_type, const string& uri_suff
 
                                  if( !valid )
                                     // FUTURE: This message should be handled as a server string message.
-                                    error = "Invalid TURN port value(s) must be provided as <port>{:<tls_port>].";
+                                    error = "Invalid TURN port value(s) must be provided as <port>[:<tls_port>].";
                               }
                               else if( var_name == get_special_var_name( e_special_var_system_setting_turn_secret ) )
                                  value = encrypt_data( value, false, true );
-                              else if( var_name == get_special_var_name( e_special_var_system_setting_turn_ip_addr ) )
+                              // NOTE: "@ip_ext_addr" too - the default, which clearing doesn't put back (it restores the address).
+                              else if( ( var_name == get_special_var_name( e_special_var_system_setting_turn_ip_addr ) )
+                               && ( value != get_special_var_name( e_special_var_ip_ext_addr ) ) )
                               {
                                  bool rc = false;
 
@@ -4008,7 +4016,21 @@ bool process_cws_request( http_request_type request_type, const string& uri_suff
                                  else if( var_name == get_special_var_name( e_special_var_system_setting_turn_port ) )
                                     value = get_turn_port( false );
                                  else if( var_name == get_special_var_name( e_special_var_system_setting_turn_secret ) )
-                                    value = get_turn_secret( false );
+                                 {
+                                    // NOTE: Encrypted again - the variable holds the secret encrypted (the relay decrypts it),
+                                    // so restoring it decrypted would leave nothing usable.
+                                    try
+                                    {
+                                       string secret( get_turn_secret( false ) );
+
+                                       if( !secret.empty( ) )
+                                          value = encrypt_data( secret, false, true );
+                                    }
+                                    catch( ... )
+                                    {
+                                       value.erase( );
+                                    }
+                                 }
                                  else if( var_name == get_special_var_name( e_special_var_system_setting_turn_ip_addr ) )
                                     value = get_turn_ip_addr( false );
 
