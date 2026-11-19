@@ -3983,7 +3983,8 @@ bool process_cws_request( http_request_type request_type, const string& uri_suff
 
                                  check_port( port, &valid );
 
-                                 if( valid && !tls_port.empty( ) )
+                                 // NOTE: Checked whenever there is a ':' - "3478:" would otherwise leave the chat with no relay.
+                                 if( valid && ( pos != string::npos ) )
                                     check_port( tls_port, &valid );
 
                                  if( !valid )
