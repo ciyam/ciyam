@@ -96,6 +96,17 @@ const int64_t c_cws_ring_seconds = 20;
 
 constexpr const char* c_cws_request_ring_options_room = "room";
 
+// NOTE: An answer to a key exchange left for the device it is for (Damon, 2026-11-18: Give keys in one scan, Ian agreeing) - kept in
+// memory only, for at most ten minutes, handed over once; no more than a hundred waiting at once.
+const int64_t c_cws_handover_seconds = 600;
+
+const size_t c_cws_handover_most = 100;
+const size_t c_cws_handover_answer_max = 200;
+
+constexpr const char* c_cws_request_handover_options_id = "id";
+constexpr const char* c_cws_request_handover_options_for = "for";
+constexpr const char* c_cws_request_handover_options_answer = "answer";
+
 // NOTE: How long a call relay's credentials last - asked for before each call, so a call outlasts them only if it goes on
 // for longer than this (coturn checks them again as an allocation is refreshed). They end on the hour after it, so all of
 // a person's credentials asked for within one hour are the same - and coturn's allocations to a single set of credentials
@@ -169,6 +180,7 @@ constexpr const char* c_cws_uri_suffix_logs = "logs";
 constexpr const char* c_cws_uri_suffix_ring = "ring";
 constexpr const char* c_cws_uri_suffix_alerts = "alerts";
 constexpr const char* c_cws_uri_suffix_relay = "relay";
+constexpr const char* c_cws_uri_suffix_handover = "handover";
 constexpr const char* c_cws_uri_suffix_users = "users";
 constexpr const char* c_cws_uri_suffix_status = "status";
 constexpr const char* c_cws_uri_suffix_devices = "devices";
@@ -1033,6 +1045,73 @@ bool take_ring( const string& caller, const string& room, int64_t now )
    }
 
    return okay;
+}
+
+// NOTE: The answers to key exchanges waiting for their devices - by the id the device asks with (its one-off public key), each with
+// who it is for and when it lapses.
+struct handover
+{
+   string for_user;
+   string answer;
+
+   int64_t until;
+};
+
+map< string, handover > g_cws_handovers;
+
+// NOTE: Those lapsed let go - with "g_mutex" held.
+void prune_handovers( int64_t now )
+{
+   for( auto i = g_cws_handovers.begin( ); i != g_cws_handovers.end( ); )
+   {
+      if( now >= i->second.until )
+         i = g_cws_handovers.erase( i );
+      else
+         ++i;
+   }
+}
+
+// NOTE: "answer" left under "id" for "for_user" - false if a hundred are already waiting. One left again under the same id (the code
+// scanned again) takes the other's place.
+bool leave_handover( const string& id, const string& for_user, const string& answer, int64_t now )
+{
+   guard g( g_mutex );
+
+   prune_handovers( now );
+
+   bool okay = g_cws_handovers.count( id ) || ( g_cws_handovers.size( ) < c_cws_handover_most );
+
+   if( okay )
+   {
+      handover& left = g_cws_handovers[ id ];
+
+      left.for_user = for_user;
+      left.answer = answer;
+      left.until = now + c_cws_handover_seconds;
+   }
+
+   return okay;
+}
+
+// NOTE: The answer left under "id", if it is for "username" - handed over once, so it is then gone - or empty.
+string take_handover( const string& id, const string& username, int64_t now )
+{
+   guard g( g_mutex );
+
+   prune_handovers( now );
+
+   string answer;
+
+   auto i = g_cws_handovers.find( id );
+
+   if( ( i != g_cws_handovers.end( ) ) && ( i->second.for_user == username ) )
+   {
+      answer = i->second.answer;
+
+      g_cws_handovers.erase( i );
+   }
+
+   return answer;
 }
 
 // NOTE: The other person in "room" if it is a direct message between "caller" and just one other - named "/<a>/<b>" (the two in
@@ -3372,6 +3451,58 @@ bool process_cws_request( http_request_type request_type, const string& uri_suff
                            // FUTURE: This message should be handled as a server string message.
                            error = "This node has no ntfy server to ring with.";
                      }
+                  }
+               }
+               // NOTE: A key exchange's answer left for the device it is for, so that device needn't scan it (Damon, 2026-11-18: Give
+               // keys in one scan, Ian agreeing) - under the id the device asks with, for one person: the administrator may leave one
+               // for anyone (Give keys), anyone else only for themselves (Add another device). The answer is sealed on the device that
+               // made it, for the other alone - the node can neither open it nor make one the other would take.
+               else if( is_post_request && ( uri_suffix == c_cws_uri_suffix_handover ) )
+               {
+                  // NOTE: Counted before any is read, as reading a missing one adds it.
+                  bool has_options = ( option_parameters.size( ) == 3 ) && option_parameters.count( c_cws_request_handover_options_id )
+                   && option_parameters.count( c_cws_request_handover_options_for ) && option_parameters.count( c_cws_request_handover_options_answer );
+
+                  string id( option_parameters[ c_cws_request_handover_options_id ] );
+                  string for_user( option_parameters[ c_cws_request_handover_options_for ] );
+                  string answer( option_parameters[ c_cws_request_handover_options_answer ] );
+
+                  if( !has_options || ( id.length( ) != 64 ) || ( id.find_first_not_of( "0123456789abcdef" ) != string::npos )
+                   || answer.empty( ) || ( answer.length( ) > c_cws_handover_answer_max )
+                   || ( answer.find_first_not_of( "0123456789abcdef." ) != string::npos ) || for_user.empty( ) )
+                     // FUTURE: This message should be handled as a server string message.
+                     error = "Invalid options '" + options + "' for handover.";
+                  else if( ( access != g_cws_admin_token ) && ( for_user != username ) )
+                     // FUTURE: This message should be handled as a server string message.
+                     error = "Only the administrator can leave keys for someone else.";
+                  else if( !leave_handover( id, for_user, answer, now ) )
+                     // FUTURE: This message should be handled as a server string message.
+                     error = "Too many are waiting to be collected - try again in a few minutes.";
+                  else
+                     found = true;
+               }
+               // NOTE: The answer left for this device's code, handed over once - "[none]" if there is none for this person (yet).
+               else if( is_get_request && ( uri_suffix == c_cws_uri_suffix_handover ) )
+               {
+                  bool has_options = ( option_parameters.size( ) == 1 ) && option_parameters.count( c_cws_request_handover_options_id );
+
+                  string id( option_parameters[ c_cws_request_handover_options_id ] );
+
+                  if( !has_options || ( id.length( ) != 64 ) || ( id.find_first_not_of( "0123456789abcdef" ) != string::npos ) )
+                     // FUTURE: This message should be handled as a server string message.
+                     error = "Invalid options '" + options + "' for handover.";
+                  else
+                  {
+                     found = true;
+
+                     string answer( take_handover( id, username, now ) );
+
+                     if( answer.empty( ) )
+                        use_none_response = true;
+                     else if( !is_json_output )
+                        response = answer;
+                     else
+                        response = "{\"answer\":\"" + answer + "\"}";
                   }
                }
                // NOTE: A user's own keys (encrypted before they get here) which are only
