@@ -551,9 +551,13 @@ const c_device_reply_prefix = "keys-reply=";
 const c_device_give_prefix = "keys-give=";
 const c_device_given_prefix = "keys-given=";
 
-function device_ask_link( page, public_key )
+// NOTE: In one scan (Damon, 2026-11-18, Ian agreeing) - the answer left on the node for the device to collect, so it needn't scan one
+// back. Each code then carries a one-off secret of its own ("pick", 32 hex digits) after its public key, which only the camera passes
+// on: the answer's check is made with it, so the node, which could make an answer of its own to a public key, can't make one the
+// device would take. A code without one (an older page's) is answered as before, by a code shown back.
+function device_ask_link( page, public_key, pick )
 {
-   return page + "#" + c_device_ask_prefix + public_key;
+   return page + "#" + c_device_ask_prefix + public_key + ( pick ? "." + pick : "" );
 }
 
 function device_reply_link( page, public_key, sealed, check )
@@ -561,9 +565,25 @@ function device_reply_link( page, public_key, sealed, check )
    return page + "#" + c_device_reply_prefix + public_key + "." + sealed + "." + check;
 }
 
-function device_give_link( page, public_key )
+function device_give_link( page, public_key, pick )
 {
-   return page + "#" + c_device_give_prefix + public_key;
+   return page + "#" + c_device_give_prefix + public_key + ( pick ? "." + pick : "" );
+}
+
+// NOTE: What is left on the node for the device - an answer's address without its page and kind: "<key>.<sealed>.<check>" - or "".
+function handover_answer( link )
+{
+   var device = parse_device_link( link );
+
+   return ( device && ( ( device.kind === "reply" ) || ( device.kind === "given" ) ) ) ? device.key + "." + device.sealed + "." + device.check : "";
+}
+
+// NOTE: What the node handed over, read as the answer it is - "given" for a code that asked the administrator, else "reply" - or null.
+function handover_device( kind, answer )
+{
+   var device = parse_device_link( ( ( kind === "give" ) ? c_device_given_prefix : c_device_reply_prefix ) + String( answer || "" ).trim( ) );
+
+   return ( device && ( device.kind === ( ( kind === "give" ) ? "given" : "reply" ) ) ) ? device : null;
 }
 
 function device_given_link( page, public_key, sealed, check )
@@ -594,12 +614,18 @@ function device_page_of( text, own )
 //
 // "contact" - contact codes, each a public key that never changes, so the two are swapped in either order and nothing is said as
 // now; the labels only, the card itself saying the rest (Damon, 2026-11-17).
-function exchange_steps( flow, side, name )
+//
+// "one_scan" - in one scan (Damon, 2026-11-18): the answer left on the node, so the device getting the keys takes it by itself - the
+// code shown back said only as what to scan if it doesn't come.
+function exchange_steps( flow, side, name, one_scan )
 {
    var who = String( name || "" ) || "they";
 
    if( flow === "contact" )
       return { labels: [ "They scan your code", "You scan theirs" ], ledes: [ ] };
+
+   if( one_scan )
+      return exchange_one_scan( flow, side, who );
 
    if( flow === "give" )
    {
@@ -626,8 +652,38 @@ function exchange_steps( flow, side, name )
     + " showing. It works only on this device, and only once." ] };
 }
 
-// NOTE: An ask or a reply - a whole address, the part after "#", or pasted with spaces or line breaks in it - as { kind: "ask", key }
-// or { kind: "reply", key, sealed, check } (or "give" and "given", as those are), or null for anything else.
+// NOTE: "exchange_steps( )" in one scan - "who" already the name or "they".
+function exchange_one_scan( flow, side, who )
+{
+   if( flow === "give" )
+   {
+      if( side === "giving" )
+         return { labels: [ "Scan " + who + "'s code", who + "'s device takes their keys" ],
+          ledes: [ "On " + who + "'s device, signed in as them, they choose Get them from your administrator under Your keys. Scan the"
+          + " code it shows. Their keys are made from the node's twelve words and their PIN.", "Sent to " + who + "'s device - their keys"
+          + " open there by themselves in a moment. If they don't, " + who + " presses Next and holds their device up to this code. It works"
+          + " only on that device, for " + who + ", and only once." ] };
+
+      return { labels: [ "Your administrator scans this code", "Your keys arrive" ],
+       ledes: [ "Show this code to your administrator. In People, they choose Give keys beside your name and scan it. Your keys then"
+       + " arrive here by themselves.", "If your keys haven't arrived, hold this device up to the code your administrator is showing. It"
+       + " works only on this device, and only once." ] };
+   }
+
+   if( side === "giving" )
+      return { labels: [ "Scan the new device's code", "It takes your keys" ],
+       ledes: [ "On the other device, sign in as you and choose Get them from another device under Your keys. Scan the code it shows.",
+       "Sent to the other device - your keys open there by themselves in a moment. If they don't, it presses Next and holds its camera"
+       + " up to this code. It works only on that device, and only once." ] };
+
+   return { labels: [ "Your other device scans this code", "Your keys arrive" ],
+    ledes: [ "On a device that has your keys, signed in as you, choose Add another device under Devices and scan this code. Your keys"
+    + " then arrive here by themselves.", "If your keys haven't arrived, hold this device up to the code your other device is showing."
+    + " It works only on this device, and only once." ] };
+}
+
+// NOTE: An ask or a reply - a whole address, the part after "#", or pasted with spaces or line breaks in it - as { kind: "ask", key,
+// pick } ("pick" "" for a code without one) or { kind: "reply", key, sealed, check } (or "give" and "given", as those are), or null for anything else.
 function parse_device_link( text )
 {
    var value = String( text || "" ).replace( /\s+/g, "" );
@@ -636,20 +692,20 @@ function parse_device_link( text )
    if( at >= 0 )
       value = value.substring( at + 1 );
 
-   var ask = /^keys-ask=([0-9a-fA-F]{64})$/.exec( value );
+   var ask = /^keys-ask=([0-9a-fA-F]{64})(\.[0-9a-fA-F]{32})?$/.exec( value );
 
    if( ask )
-      return { kind: "ask", key: ask[ 1 ].toLowerCase( ) };
+      return { kind: "ask", key: ask[ 1 ].toLowerCase( ), pick: ( ask[ 2 ] || "" ).substring( 1 ).toLowerCase( ) };
 
    var reply = /^keys-reply=([0-9a-fA-F]{64})\.([0-9a-fA-F]{64})\.([0-9a-fA-F]{16})$/.exec( value );
 
    if( reply )
       return { kind: "reply", key: reply[ 1 ].toLowerCase( ), sealed: reply[ 2 ].toLowerCase( ), check: reply[ 3 ].toLowerCase( ) };
 
-   var give = /^keys-give=([0-9a-fA-F]{64})$/.exec( value );
+   var give = /^keys-give=([0-9a-fA-F]{64})(\.[0-9a-fA-F]{32})?$/.exec( value );
 
    if( give )
-      return { kind: "give", key: give[ 1 ].toLowerCase( ) };
+      return { kind: "give", key: give[ 1 ].toLowerCase( ), pick: ( give[ 2 ] || "" ).substring( 1 ).toLowerCase( ) };
 
    var given = /^keys-given=([0-9a-fA-F]{64})\.([0-9a-fA-F]{32})\.([0-9a-fA-F]{16})$/.exec( value );
 
@@ -767,6 +823,8 @@ if( typeof module !== "undefined" )
       device_give_link: device_give_link,
       device_given_link: device_given_link,
       device_page_of: device_page_of,
+      handover_answer: handover_answer,
+      handover_device: handover_device,
       exchange_steps: exchange_steps,
       parse_device_link: parse_device_link,
       give_field_problems: give_field_problems,

@@ -281,7 +281,7 @@ check( "another device - the ask, this page with its public key after #", ap.dev
  "http://n/account.html#keys-ask=" + ask_key );
 check( "- read back, whole, after # only, or pasted broken over lines in capitals", [ ap.parse_device_link( ap.device_ask_link( "http://n/account.html",
  ask_key ) ), ap.parse_device_link( "keys-ask=" + ask_key ), ap.parse_device_link( "#keys-ask=" + ask_key.substr( 0, 30 ).toUpperCase( ) + "\n "
- + ask_key.substr( 30 ) ) ], [ { kind: "ask", key: ask_key }, { kind: "ask", key: ask_key }, { kind: "ask", key: ask_key } ] );
+ + ask_key.substr( 30 ) ) ], [ { kind: "ask", key: ask_key, pick: "" }, { kind: "ask", key: ask_key, pick: "" }, { kind: "ask", key: ask_key, pick: "" } ] );
 check( "- the reply, read back", ap.parse_device_link( ap.device_reply_link( "http://n/account.html", reply_key, sealed_key, "0123456789abcdef" ) ),
  { kind: "reply", key: reply_key, sealed: sealed_key, check: "0123456789abcdef" } );
 check( "- not one: the old address with the access key, a key too short, a reply with no check, nothing", [ ap.parse_device_link( "http://n/account"
@@ -292,7 +292,7 @@ check( "- not one: the old address with the access key, a key too short, a reply
 var given_entropy = "d4".repeat( 16 );
 check( "keys from the administrator - the ask and the answer, each its own kind", [ ap.device_give_link( "http://n/account.html", ask_key ),
  ap.parse_device_link( ap.device_give_link( "http://n/account.html", ask_key ) ), ap.parse_device_link( ap.device_given_link( "http://n/account.html",
- reply_key, given_entropy, "0123456789abcdef" ) ) ], [ "http://n/account.html#keys-give=" + ask_key, { kind: "give", key: ask_key },
+ reply_key, given_entropy, "0123456789abcdef" ) ) ], [ "http://n/account.html#keys-give=" + ask_key, { kind: "give", key: ask_key, pick: "" },
  { kind: "given", key: reply_key, sealed: given_entropy, check: "0123456789abcdef" } ] );
 check( "- the answer opens where their code was made - the page at their address, else this page", [
  ap.device_page_of( "http://192.168.0.12:13031/account.html#keys-give=" + ask_key, "http://localhost:13031/account.html" ),
@@ -306,6 +306,23 @@ check( "- the answer opens where their code was made - the page at their address
 check( "- an answer with an access key's length not taken as one, nor another device's with an entropy's", [ ap.parse_device_link( "keys-given="
  + reply_key + "." + sealed_key + ".0123456789abcdef" ), ap.parse_device_link( "keys-reply=" + reply_key + "." + given_entropy
  + ".0123456789abcdef" ) ], [ null, null ] );
+
+// NOTE: In one scan (Damon, 2026-11-18) - each code with a one-off secret after its key, and the answer left on the node without its page.
+var pick = "e5".repeat( 16 );
+check( "in one scan - the codes with their secret, read back; a secret of the wrong length not taken", [
+ ap.device_give_link( "http://n/account.html", ask_key, pick ), ap.parse_device_link( ap.device_give_link( "http://n/account.html", ask_key, pick ) ),
+ ap.parse_device_link( ap.device_ask_link( "http://n/account.html", ask_key, pick.toUpperCase( ) ) ),
+ ap.parse_device_link( "keys-give=" + ask_key + "." + pick.substr( 2 ) ) ],
+ [ "http://n/account.html#keys-give=" + ask_key + "." + pick, { kind: "give", key: ask_key, pick: pick }, { kind: "ask", key: ask_key, pick: pick },
+ null ] );
+check( "- what is left on the node, and read back as the answer of the code's own kind - not the other's", [
+ ap.handover_answer( ap.device_given_link( "http://n/account.html", reply_key, given_entropy, "0123456789abcdef" ) ),
+ ap.handover_device( "give", reply_key + "." + given_entropy + ".0123456789abcdef\n" ),
+ ap.handover_device( "device", reply_key + "." + sealed_key + ".0123456789abcdef" ),
+ ap.handover_device( "device", reply_key + "." + given_entropy + ".0123456789abcdef" ),
+ ap.handover_device( "give", "[none]" ), ap.handover_answer( ap.device_give_link( "http://n/account.html", ask_key, pick ) ) ],
+ [ reply_key + "." + given_entropy + ".0123456789abcdef", { kind: "given", key: reply_key, sealed: given_entropy, check: "0123456789abcdef" },
+ { kind: "reply", key: reply_key, sealed: sealed_key, check: "0123456789abcdef" }, null, null, "" ] );
 check( "a claim not signed in - said why, with the way on", [ ap.written_signin_text( "Timed out waiting for web session response." ),
  ap.written_signin_text( "Error: something else" ), ap.written_signin_text( "" ) ], [ "Your account is ready, but signing you in didn't work just"
  + " now (the node was busy starting up) - open the chat and sign in there, then set up your keys on My account.", "Your account is"
@@ -337,6 +354,14 @@ check( "- the person's first step says to show their code, then Next; the admini
  /press Next\.$/.test( ap.exchange_steps( "device", "asking" ).ledes[ 0 ] ) ], [ true, true, true ] );
 check( "- contact codes: the same two, in either order, with nothing more said", ap.exchange_steps( "contact" ),
  { labels: [ "They scan your code", "You scan theirs" ], ledes: [ ] } );
+check( "- in one scan: the second step the keys arriving; the code shown back only if they don't", [ ap.exchange_steps( "give", "asking", "",
+ true ).labels, ap.exchange_steps( "give", "giving", "Ellie", true ).labels, ap.exchange_steps( "device", "asking", "", true ).labels,
+ ap.exchange_steps( "device", "giving", "", true ).labels, /arrive here by themselves\.$/.test( ap.exchange_steps( "give", "asking", "", true ).ledes[ 0 ] ),
+ /^Sent to Ellie's device.*If they don't, Ellie presses Next/.test( ap.exchange_steps( "give", "giving", "Ellie", true ).ledes[ 1 ] ),
+ ap.exchange_steps( "contact", "", "", true ).labels ],
+ [ [ "Your administrator scans this code", "Your keys arrive" ], [ "Scan Ellie's code", "Ellie's device takes their keys" ],
+ [ "Your other device scans this code", "Your keys arrive" ], [ "Scan the new device's code", "It takes your keys" ], true, true,
+ [ "They scan your code", "You scan theirs" ] ] );
 check( "a person's own alerts - their topic and the ntfy server, as an address; none; anything else not taken", [
  ap.parse_alerts_reply( "upABCDEFGHIJ234567\nantares.local:8443\n" ), ap.parse_alerts_reply( "[none]" ),
  ap.parse_alerts_reply( "Error: Unknown request" ), ap.parse_alerts_reply( "up AB\nantares.local" ),

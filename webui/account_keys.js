@@ -547,7 +547,7 @@ async function render_keys( )
       {
          keys_show_device( );
 
-         document.getElementById( "keys_device_ask" ).value = device_ask_link( location.origin + location.pathname, device.key );
+         document.getElementById( "keys_device_ask" ).value = device_ask_link( location.origin + location.pathname, device.key, device.pick );
          document.getElementById( "keys_device_use" ).focus( );
       }
       else
@@ -920,9 +920,9 @@ function keys_draw_qr( id, text )
 
 // NOTE: The exchange's two steps ("exchange_steps( )"), "step" (1 or 2) the one now - those before it marked done, or those in
 // "ticked" if given (a contact's, in either order, with none now). Their labels may carry a name, so as text. Returns the ledes.
-function keys_draw_steps( id, flow, side, step, name, ticked )
+function keys_draw_steps( id, flow, side, step, name, ticked, one_scan )
 {
-   var steps = exchange_steps( flow, side, name );
+   var steps = exchange_steps( flow, side, name, one_scan );
    var list = document.getElementById( id );
 
    list.replaceChildren( );
@@ -966,12 +966,31 @@ function keys_random_seed( )
    return Array.prototype.map.call( bytes, function( b ) { return ( "0" + b.toString( 16 ) ).slice( -2 ); } ).join( "" );
 }
 
-async function keys_device_seal( secret, access )
+// NOTE: "pick" - the code's own one-off secret, if it had one ("device_ask_link( )"): the check made with it, so only something that
+// read the code itself - never the node it may be left on - can make an answer the device will take.
+async function keys_device_seal( secret, access, pick )
 {
    var sm = keys_module( "secure_message" );
 
    return { sealed: xor_hex( access, await sm.hmac_sha256( secret, c_keys_device_pad ) ),
-    check: ( await sm.hmac_sha256( secret, c_keys_device_check + access ) ).substr( 0, 16 ) };
+    check: ( await sm.hmac_sha256( secret, c_keys_device_check + access + ( pick ? ":" + pick : "" ) ) ).substr( 0, 16 ) };
+}
+
+// NOTE: An answer left on the node for the device that showed "device" - "for_user" alone may collect it. True if the node took it.
+async function keys_hand_over( device, for_user, link )
+{
+   var answer = handover_answer( link );
+
+   if( !device.pick || ( answer === "" ) )
+      return false;
+
+   var response = await request( function( done )
+   {
+      return ciyam.fetch( ciyam.get_cws_url( ) + "/handover?options=" + encodeURIComponent( "id=" + device.key + ";for=" + for_user + ";answer="
+       + answer ) + "&access=" + ciyam.access + "&device=" + ciyam.device + "&format=text&session=" + ciyam.sessid, "POST", done );
+   } );
+
+   return problem_text( response ) === "";
 }
 
 // ---- The device that has the keys - Add another device, under Devices
@@ -980,7 +999,7 @@ function keys_show_device( )
 {
    keys_hide_device( );
 
-   document.getElementById( "keys_device_lede" ).textContent = keys_draw_steps( "keys_device_steps", "device", "giving", 1 )[ 0 ];
+   document.getElementById( "keys_device_lede" ).textContent = keys_draw_steps( "keys_device_steps", "device", "giving", 1, "", null, true )[ 0 ];
    document.getElementById( "keys_device_part" ).hidden = false;
    document.getElementById( "keys_device_row" ).hidden = true;
    document.getElementById( "keys_device_ask" ).focus( );
@@ -1033,15 +1052,19 @@ async function keys_device_answer( device )
       return;
    }
 
-   var sealing = await keys_device_seal( secret, g_keys.access );
+   var sealing = await keys_device_seal( secret, g_keys.access, device.pick );
    var link = device_reply_link( location.origin + location.pathname, sm.public_key_of_seed( seed ), sealing.sealed, sealing.check );
 
    seed = "";
    secret = "";
 
+   // NOTE: Left on the node for the other device as well, so it needn't scan the code shown back (Damon, 2026-11-18).
+   var handed = await keys_hand_over( device, ciyam.username, link );
+
    keys_draw_qr( "keys_device_qr", link );
 
-   document.getElementById( "keys_device_reply_lede" ).textContent = keys_draw_steps( "keys_device_steps", "device", "giving", 2 )[ 1 ];
+   document.getElementById( "keys_device_reply_lede" ).textContent = keys_draw_steps( "keys_device_steps", "device", "giving", 2, "",
+    null, handed )[ 1 ];
    document.getElementById( "keys_device_link" ).value = link;
    document.getElementById( "keys_device_ask_part" ).hidden = true;
    document.getElementById( "keys_device_reply_part" ).hidden = false;
@@ -1063,7 +1086,8 @@ function keys_ask_kept( )
    {
       var kept = JSON.parse( localStorage.getItem( c_keys_ask_name ) || "null" );
 
-      if( kept && /^[0-9a-f]{64}$/.test( kept.seed ) && ( Date.now( ) - kept.at < c_keys_ask_life ) )
+      if( kept && /^[0-9a-f]{64}$/.test( kept.seed ) && /^([0-9a-f]{32})?$/.test( String( kept.pick || "" ) )
+       && ( Date.now( ) - kept.at < c_keys_ask_life ) )
          return kept;
 
       // NOTE: Too old, or not one - not left behind (found by review, 2026-11-06).
@@ -1081,6 +1105,8 @@ function keys_ask_forget( )
 {
    g_keys_ask = null;
 
+   keys_ask_unwatch( );
+
    try
    {
       localStorage.removeItem( c_keys_ask_name );
@@ -1096,7 +1122,7 @@ function keys_ask_start( kind )
    var sm = keys_module( "secure_message" );
    var giving = ( kind === "give" );
 
-   g_keys_ask = { seed: keys_random_seed( ), at: Date.now( ), kind: giving ? "give" : "device" };
+   g_keys_ask = { seed: keys_random_seed( ), pick: keys_random_seed( ).substr( 0, 32 ), at: Date.now( ), kind: giving ? "give" : "device" };
 
    try
    {
@@ -1107,7 +1133,8 @@ function keys_ask_start( kind )
    }
 
    var page = location.origin + location.pathname;
-   var link = giving ? device_give_link( page, sm.public_key_of_seed( g_keys_ask.seed ) ) : device_ask_link( page, sm.public_key_of_seed( g_keys_ask.seed ) );
+   var key = sm.public_key_of_seed( g_keys_ask.seed );
+   var link = giving ? device_give_link( page, key, g_keys_ask.pick ) : device_ask_link( page, key, g_keys_ask.pick );
 
    keys_draw_qr( "keys_ask_qr", link );
 
@@ -1120,13 +1147,73 @@ function keys_ask_start( kind )
    set_error( "keys_error", "" );
    keys_ask_step( 1 );
    keys_show( "keys_ask" );
+   keys_ask_watch( key );
+}
+
+// NOTE: How often the device showing its code asks the node for the answer left for it (Damon, 2026-11-18: in one scan). Not logged
+// in the console's request log unless it is logging polling, as the chat's polls aren't.
+const c_keys_ask_watch_ms = 2500;
+
+var g_keys_ask_watch = 0;
+
+function keys_ask_unwatch( )
+{
+   ++g_keys_ask_watch;
+}
+
+// NOTE: Asked while this code shows, signed in, until an answer comes (or the code lapses, or is cancelled) - then opened as one
+// scanned. Only the person signed in here can be handed one, and only the one left for this code.
+function keys_ask_watch( key )
+{
+   var watch = ++g_keys_ask_watch;
+   var asked_for = ciyam.access;
+
+   async function look( )
+   {
+      var kept = keys_ask_kept( );
+
+      if( ( watch !== g_keys_ask_watch ) || ( kept === null ) || ( ciyam.access !== asked_for ) || ( ciyam.sessid === "" )
+       || document.getElementById( "keys_ask" ).hidden )
+         return;
+
+      var response = await request( function( done )
+      {
+         g_request_quiet = true;
+
+         var pending = ciyam.fetch( ciyam.get_cws_url( ) + "/handover?options=" + encodeURIComponent( "id=" + key ) + "&access="
+          + ciyam.access + "&device=" + ciyam.device + "&format=text&session=" + ciyam.sessid, "GET", done );
+
+         g_request_quiet = false;
+
+         return pending;
+      } );
+
+      if( ( watch !== g_keys_ask_watch ) || ( ciyam.access !== asked_for ) )
+         return;
+
+      var device = handover_device( kept.kind, response );
+
+      if( device === null )
+      {
+         window.setTimeout( look, c_keys_ask_watch_ms );
+
+         return;
+      }
+
+      keys_ask_unwatch( );
+
+      await keys_ask_take( device, true );
+   }
+
+   window.setTimeout( look, c_keys_ask_watch_ms );
 }
 
 // NOTE: Step 1, this device's code shown for the other to scan; step 2, the other's answer scanned - the camera started at once, as
 // Next is the press a browser asks for before it will (Damon, 2026-11-17). The code stays as it was, for Back.
 function keys_ask_step( step )
 {
-   var ledes = keys_draw_steps( "keys_ask_steps", ( g_keys_ask && ( g_keys_ask.kind === "give" ) ) ? "give" : "device", "asking", step );
+   var ledes = keys_draw_steps( "keys_ask_steps", ( g_keys_ask && ( g_keys_ask.kind === "give" ) ) ? "give" : "device", "asking", step, "",
+    null, !!( g_keys_ask && g_keys_ask.pick ) );
 
    if( step === 1 )
       keys_scan_stop( );
@@ -1183,7 +1270,7 @@ async function keys_ask_open( device )
       access = xor_hex( device.sealed, await sm.hmac_sha256( secret, c_keys_device_pad ) );
 
       // NOTE: Sealed again as the other device sealed it - the same check only if this is what it sent, to this device.
-      if( ( ( await keys_device_seal( secret, access ) ).check !== device.check ) || !/^[0-9a-f]{64}$/.test( access ) )
+      if( ( ( await keys_device_seal( secret, access, kept.pick ) ).check !== device.check ) || !/^[0-9a-f]{64}$/.test( access ) )
          access = "";
    }
    catch( e )
@@ -1200,7 +1287,13 @@ async function keys_ask_open( device )
 // NOTE: The answer scanned or pasted here - opened, and the keys shown as from another device's address.
 async function keys_ask_use( text )
 {
-   var device = parse_device_link( ( typeof text === "string" ) ? text : document.getElementById( "keys_ask_reply" ).value );
+   await keys_ask_take( parse_device_link( ( typeof text === "string" ) ? text : document.getElementById( "keys_ask_reply" ).value ), false );
+}
+
+// NOTE: An answer - scanned or pasted, or "handed" over by the node (in one scan) - opened, and the keys shown. One handed over that
+// doesn't open is said as such, and the code shown back is then the way.
+async function keys_ask_take( device, handed )
+{
    var kept = keys_ask_kept( );
 
    set_error( "keys_error", "" );
@@ -1218,8 +1311,9 @@ async function keys_ask_use( text )
 
       if( entropy === "" )
       {
-         set_error( "keys_error", "That answer isn't for this device's code, or is for someone else - ask your administrator to scan the"
-          + " code shown here again." );
+         set_error( "keys_error", handed ? "What arrived from the node didn't open with this device's code - press Next and scan the code"
+          + " your administrator is showing instead." : "That answer isn't for this device's code, or is for someone else - ask your"
+          + " administrator to scan the code shown here again." );
 
          return;
       }
@@ -1242,7 +1336,9 @@ async function keys_ask_use( text )
 
    if( access === "" )
    {
-      set_error( "keys_error", "That answer isn't for this device's code - scan the code shown here on the other device again." );
+      set_error( "keys_error", handed ? "What arrived from the node didn't open with this device's code - press Next and scan the code"
+       + " your other device is showing instead." : "That answer isn't for this device's code - scan the code shown here on the other"
+       + " device again." );
 
       return;
    }
@@ -1294,12 +1390,13 @@ function keys_give_follow( give )
       keys_show_give( give );
 }
 
-async function keys_give_seal( secret, entropy, name )
+// NOTE: "pick" as for "keys_device_seal( )".
+async function keys_give_seal( secret, entropy, name, pick )
 {
    var sm = keys_module( "secure_message" );
 
    return { sealed: xor_hex( entropy, ( await sm.hmac_sha256( secret, c_keys_give_pad ) ).substr( 0, 32 ) ),
-    check: ( await sm.hmac_sha256( secret, c_keys_give_check + entropy + ":" + name ) ).substr( 0, 16 ) };
+    check: ( await sm.hmac_sha256( secret, c_keys_give_check + entropy + ":" + name + ( pick ? ":" + pick : "" ) ) ).substr( 0, 16 ) };
 }
 
 // NOTE: The administrator's answer opened with this device's one-off key - this person's entropy, or "" if it is not the answer to
@@ -1320,7 +1417,7 @@ async function keys_given_open( device )
 
       entropy = xor_hex( device.sealed, ( await sm.hmac_sha256( secret, c_keys_give_pad ) ).substr( 0, 32 ) );
 
-      if( ( ( await keys_give_seal( secret, entropy, ciyam.username ) ).check !== device.check ) || !/^[0-9a-f]{32}$/.test( entropy ) )
+      if( ( ( await keys_give_seal( secret, entropy, ciyam.username, kept.pick ) ).check !== device.check ) || !/^[0-9a-f]{32}$/.test( entropy ) )
          entropy = "";
    }
    catch( e )
@@ -1500,7 +1597,7 @@ function keys_show_give( give )
    g_keys_give = give;
 
    document.getElementById( "give_heading" ).textContent = "Give " + give.name + " their keys";
-   document.getElementById( "give_lede" ).textContent = keys_draw_steps( "give_steps", "give", "giving", 1, give.name )[ 0 ];
+   document.getElementById( "give_lede" ).textContent = keys_draw_steps( "give_steps", "give", "giving", 1, give.name, null, true )[ 0 ];
 
    keys_give_asking( );
 
@@ -1709,7 +1806,7 @@ async function keys_give_go( )
    try
    {
       var secret = sm.shared_secret_of_seed( seed, device.key );
-      var sealing = await keys_give_seal( secret, await uk.person_entropy( people, give.pin ), give.name );
+      var sealing = await keys_give_seal( secret, await uk.person_entropy( people, give.pin ), give.name, device.pick );
 
       link = device_given_link( device_page_of( document.getElementById( "give_ask" ).value, location.origin + location.pathname ),
        sm.public_key_of_seed( seed ), sealing.sealed, sealing.check );
@@ -1722,14 +1819,24 @@ async function keys_give_go( )
    seed = "";
    people = "";
 
-   keys_give_busy( "" );
-
    if( link === "" )
    {
+      keys_give_busy( "" );
       keys_give_problems( { password: "", words: "", ask: "That code could not be read - scan it again, or paste its address." } );
 
       return;
    }
+
+   // NOTE: Left on the node for their device too, so they needn't scan the code shown back (Damon, 2026-11-18, Ian agreeing) - for
+   // them alone to collect, and of no use to the node, which can't open it.
+   keys_give_busy( "Sending it to " + give.name + "'s device…" );
+
+   var handed = await keys_hand_over( device, give.name, link );
+
+   keys_give_busy( "" );
+
+   if( g_keys_give !== give )
+      return;
 
    document.getElementById( "give_password" ).value = "";
    document.getElementById( "give_words" ).value = "";
@@ -1737,7 +1844,7 @@ async function keys_give_go( )
    keys_draw_qr( "give_qr", link );
 
    document.getElementById( "give_link" ).value = link;
-   document.getElementById( "give_reply_lede" ).textContent = keys_draw_steps( "give_steps", "give", "giving", 2, give.name )[ 1 ];
+   document.getElementById( "give_reply_lede" ).textContent = keys_draw_steps( "give_steps", "give", "giving", 2, give.name, null, handed )[ 1 ];
    document.getElementById( "give_ask_part" ).hidden = true;
    document.getElementById( "give_reply_part" ).hidden = false;
    document.getElementById( "give_done" ).focus( );

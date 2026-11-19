@@ -105,6 +105,8 @@ ok   - not one: the old address with the access key, a key too short, a reply wi
 ok   keys from the administrator - the ask and the answer, each its own kind
 ok   - the answer opens where their code was made - the page at their address, else this page
 ok   - an answer with an access key's length not taken as one, nor another device's with an entropy's
+ok   in one scan - the codes with their secret, read back; a secret of the wrong length not taken
+ok   - what is left on the node, and read back as the answer of the code's own kind - not the other's
 ok   a claim not signed in - said why, with the way on
 ok   admin's keys at set up or recovery - made, opened, left, or not made
 ok   the node's words said plainly under Your keys - admin's; nothing for everyone else, never offered them
@@ -114,6 +116,7 @@ ok   - with the people key kept, only their code (Ian, 2026-11-16: no password)
 ok   the exchange in two steps - the same steps on both devices, each said for whoever holds it
 ok   - the person's first step says to show their code, then Next; the administrator's second says the person presses it
 ok   - contact codes: the same two, in either order, with nothing more said
+ok   - in one scan: the second step the keys arriving; the code shown back only if they don't
 ok   a person's own alerts - their topic and the ntfy server, as an address; none; anything else not taken
 ok   xor of two hex strings - and back
 ok   - not the same length, or not hex
