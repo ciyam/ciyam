@@ -101,6 +101,7 @@ constexpr const char* c_cws_request_ring_options_room = "room";
 const int64_t c_cws_handover_seconds = 600;
 
 const size_t c_cws_handover_most = 100;
+const size_t c_cws_handover_most_each = 3;
 const size_t c_cws_handover_answer_max = 200;
 
 constexpr const char* c_cws_request_handover_options_id = "id";
@@ -1052,9 +1053,17 @@ bool take_ring( const string& caller, const string& room, int64_t now )
 struct handover
 {
    string for_user;
+   string left_by;
    string answer;
 
    int64_t until;
+};
+
+enum handover_result
+{
+   e_handover_result_left,
+   e_handover_result_taken,
+   e_handover_result_too_many
 };
 
 map< string, handover > g_cws_handovers;
@@ -1071,26 +1080,53 @@ void prune_handovers( int64_t now )
    }
 }
 
-// NOTE: "answer" left under "id" for "for_user" - false if a hundred are already waiting. One left again under the same id (the code
-// scanned again) takes the other's place.
-bool leave_handover( const string& id, const string& for_user, const string& answer, int64_t now )
+// NOTE: "answer" left under "id" for "for_user" by "left_by". One left again under the same id (the code scanned again) takes
+// the other's place - but only by whoever left it, or the administrator, so someone who has seen another's code can't replace
+// what was left for them (found by review, 2026-11-19). At most a hundred waiting, and three left by anyone but the administrator
+// - so no one can take every place.
+handover_result leave_handover( const string& id,
+ const string& for_user, const string& answer, const string& left_by, bool is_admin, int64_t now )
 {
    guard g( g_mutex );
 
    prune_handovers( now );
 
-   bool okay = g_cws_handovers.count( id ) || ( g_cws_handovers.size( ) < c_cws_handover_most );
+   handover_result result = e_handover_result_left;
 
-   if( okay )
+   auto i = g_cws_handovers.find( id );
+
+   if( i != g_cws_handovers.end( ) )
+   {
+      if( !is_admin && ( i->second.left_by != left_by ) )
+         result = e_handover_result_taken;
+   }
+   else if( g_cws_handovers.size( ) >= c_cws_handover_most )
+      result = e_handover_result_too_many;
+   else if( !is_admin )
+   {
+      size_t num_left = 0;
+
+      for( i = g_cws_handovers.begin( ); i != g_cws_handovers.end( ); ++i )
+      {
+         if( i->second.left_by == left_by )
+            ++num_left;
+      }
+
+      if( num_left >= c_cws_handover_most_each )
+         result = e_handover_result_too_many;
+   }
+
+   if( result == e_handover_result_left )
    {
       handover& left = g_cws_handovers[ id ];
 
       left.for_user = for_user;
+      left.left_by = left_by;
       left.answer = answer;
       left.until = now + c_cws_handover_seconds;
    }
 
-   return okay;
+   return result;
 }
 
 // NOTE: The answer left under "id", if it is for "username" - handed over once, so it is then gone - or empty.
@@ -3456,7 +3492,8 @@ bool process_cws_request( http_request_type request_type, const string& uri_suff
                // NOTE: A key exchange's answer left for the device it is for, so that device needn't scan it (Damon, 2026-11-18: Give
                // keys in one scan, Ian agreeing) - under the id the device asks with, for one person: the administrator may leave one
                // for anyone (Give keys), anyone else only for themselves (Add another device). The answer is sealed on the device that
-               // made it, for the other alone - the node can neither open it nor make one the other would take.
+               // made it, for the other alone - the node can neither open it nor make one the other would take (while the pages it
+               // serves are as they are).
                else if( is_post_request && ( uri_suffix == c_cws_uri_suffix_handover ) )
                {
                   // NOTE: Counted before any is read, as reading a missing one adds it.
@@ -3475,11 +3512,19 @@ bool process_cws_request( http_request_type request_type, const string& uri_suff
                   else if( ( access != g_cws_admin_token ) && ( for_user != username ) )
                      // FUTURE: This message should be handled as a server string message.
                      error = "Only the administrator can leave keys for someone else.";
-                  else if( !leave_handover( id, for_user, answer, now ) )
-                     // FUTURE: This message should be handled as a server string message.
-                     error = "Too many are waiting to be collected - try again in a few minutes.";
                   else
-                     found = true;
+                  {
+                     handover_result result = leave_handover( id, for_user, answer, username, access == g_cws_admin_token, now );
+
+                     if( result == e_handover_result_taken )
+                        // FUTURE: This message should be handled as a server string message.
+                        error = "Keys are already waiting to be collected with that code.";
+                     else if( result == e_handover_result_too_many )
+                        // FUTURE: This message should be handled as a server string message.
+                        error = "Too many are waiting to be collected - try again in a few minutes.";
+                     else
+                        found = true;
+                  }
                }
                // NOTE: The answer left for this device's code, handed over once - "[none]" if there is none for this person (yet).
                else if( is_get_request && ( uri_suffix == c_cws_uri_suffix_handover ) )
