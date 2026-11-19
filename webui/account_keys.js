@@ -919,7 +919,7 @@ function keys_draw_qr( id, text )
 }
 
 // NOTE: The exchange's two steps ("exchange_steps( )"), "step" (1 or 2) the one now - those before it marked done, or those in
-// "ticked" if given (a contact's, in either order, with none now). Their labels may carry a name, so as text. Returns the ledes.
+// "ticked" if given. None in one scan, the list hidden. Their labels may carry a name, so as text. Returns the ledes.
 function keys_draw_steps( id, flow, side, step, name, ticked, one_scan )
 {
    var steps = exchange_steps( flow, side, name, one_scan );
@@ -960,13 +960,15 @@ function keys_draw_steps( id, flow, side, step, name, ticked, one_scan )
 }
 
 // NOTE: The giving side once the code is scanned ("prefix" "give" or "keys_device") - in one scan ("handed") it says the keys were
-// sent, the code to scan back closed behind "whose" keys not arriving (Damon, 2026-11-20); else that code open, as the thing to do.
-function keys_draw_reply( prefix, ledes, handed, whose )
+// sent, the code to scan back closed behind their not arriving on "where" (Damon, 2026-11-20); else that code open, as the thing to
+// do. No steps either way - not the two of the fallback appearing only now, the first already ticked (found by review, 2026-11-19).
+function keys_draw_reply( prefix, ledes, handed, where )
 {
    var fallback_lede = document.getElementById( prefix + "_fallback_lede" );
 
+   document.getElementById( prefix + "_steps" ).hidden = true;
    document.getElementById( prefix + "_reply_lede" ).textContent = ledes[ 1 ];
-   document.getElementById( prefix + "_fallback_summary" ).textContent = handed ? whose + " haven't arrived?" : "The code to scan";
+   document.getElementById( prefix + "_fallback_summary" ).textContent = handed ? "Not arrived on " + where + "?" : "The code to scan";
    document.getElementById( prefix + "_fallback" ).open = !handed;
 
    fallback_lede.textContent = handed ? ledes[ 2 ] : "";
@@ -1094,7 +1096,7 @@ async function keys_device_answer( device )
 
    keys_draw_qr( "keys_device_qr", link );
 
-   keys_draw_reply( "keys_device", keys_draw_steps( "keys_device_steps", "device", "giving", 2, "", null, handed ), handed, "Your keys" );
+   keys_draw_reply( "keys_device", keys_draw_steps( "keys_device_steps", "device", "giving", 2, "", null, handed ), handed, "the other device" );
    document.getElementById( "keys_device_link" ).value = link;
    document.getElementById( "keys_device_ask_part" ).hidden = true;
    document.getElementById( "keys_device_reply_part" ).hidden = false;
@@ -1875,7 +1877,7 @@ async function keys_give_go( )
    keys_draw_qr( "give_qr", link );
 
    document.getElementById( "give_link" ).value = link;
-   keys_draw_reply( "give", keys_draw_steps( "give_steps", "give", "giving", 2, give.name, null, handed ), handed, "Their keys" );
+   keys_draw_reply( "give", keys_draw_steps( "give_steps", "give", "giving", 2, give.name, null, handed ), handed, give.name + "'s device" );
    document.getElementById( "give_ask_part" ).hidden = true;
    document.getElementById( "give_reply_part" ).hidden = false;
    document.getElementById( "give_done" ).focus( );
@@ -2047,7 +2049,12 @@ async function keys_scan_start( which )
    if( !await qr_scan_library( ) )
    {
       if( opened === g_keys_scan_opened )
+      {
          keys_scan_status( "The QR code reader could not be loaded - reload the page to try again." );
+
+         // NOTE: The codes as text then, as without a camera (found by review, 2026-11-19).
+         keys_manual_open( g_keys_scan_target );
+      }
 
       return;
    }
