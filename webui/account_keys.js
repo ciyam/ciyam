@@ -995,6 +995,10 @@ async function keys_hand_over( device, for_user, link )
 
 // ---- The device that has the keys - Add another device, under Devices
 
+// NOTE: Counted each time the panel is put away (or opened again), so an answer still being left on the node when it was isn't then
+// drawn into it (found by review, 2026-11-19).
+var g_keys_device_turn = 0;
+
 function keys_show_device( )
 {
    keys_hide_device( );
@@ -1007,6 +1011,8 @@ function keys_show_device( )
 
 function keys_hide_device( )
 {
+   ++g_keys_device_turn;
+
    if( g_keys_scan_target === "device" )
       keys_scan_stop( );
 
@@ -1059,7 +1065,11 @@ async function keys_device_answer( device )
    secret = "";
 
    // NOTE: Left on the node for the other device as well, so it needn't scan the code shown back (Damon, 2026-11-18).
+   var turn = g_keys_device_turn;
    var handed = await keys_hand_over( device, ciyam.username, link );
+
+   if( turn !== g_keys_device_turn )
+      return;
 
    keys_draw_qr( "keys_device_qr", link );
 
