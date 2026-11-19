@@ -616,7 +616,8 @@ function device_page_of( text, own )
 // now; the labels only, the card itself saying the rest (Damon, 2026-11-17).
 //
 // "one_scan" - in one scan (Damon, 2026-11-18): the answer left on the node, so the device getting the keys takes it by itself - the
-// code shown back said only as what to scan if it doesn't come.
+// code shown back said only as what to scan if it doesn't come. No steps then (Damon, 2026-11-20: a second one that only happens by
+// itself read as one more thing to do), so no labels; the giving side's ledes the scan, it sent, and the code if it doesn't come.
 function exchange_steps( flow, side, name, one_scan )
 {
    var who = String( name || "" ) || "they";
@@ -658,25 +659,25 @@ function exchange_one_scan( flow, side, who )
    if( flow === "give" )
    {
       if( side === "giving" )
-         return { labels: [ "Scan " + who + "'s code", who + "'s device takes their keys" ],
+         return { labels: [ ],
           ledes: [ "On " + who + "'s device, signed in as them, they choose Get them from your administrator under Your keys. Scan the"
           + " code it shows. Their keys are made from the node's twelve words and their PIN.", "Sent to " + who + "'s device - their keys"
-          + " open there by themselves in a moment. If they don't, " + who + " presses Next and holds their device up to this code. It works"
-          + " only on that device, for " + who + ", and only once." ] };
+          + " open there by themselves in a moment.", "If they haven't, " + who + " presses Next and holds their device up to this code. It"
+          + " works only on that device, for " + who + ", and only once." ] };
 
-      return { labels: [ "Your administrator scans this code", "Your keys arrive" ],
+      return { labels: [ ],
        ledes: [ "Show this code to your administrator. In People, they choose Give keys beside your name and scan it. Your keys then"
        + " arrive here by themselves.", "If your keys haven't arrived, hold this device up to the code your administrator is showing. It"
        + " works only on this device, and only once." ] };
    }
 
    if( side === "giving" )
-      return { labels: [ "Scan the new device's code", "It takes your keys" ],
+      return { labels: [ ],
        ledes: [ "On the other device, sign in as you and choose Get them from another device under Your keys. Scan the code it shows.",
-       "Sent to the other device - your keys open there by themselves in a moment. If they don't, it presses Next and holds its camera"
-       + " up to this code. It works only on that device, and only once." ] };
+       "Sent to the other device - your keys open there by themselves in a moment.", "If they haven't, it presses Next and holds its"
+       + " camera up to this code. It works only on that device, and only once." ] };
 
-   return { labels: [ "Your other device scans this code", "Your keys arrive" ],
+   return { labels: [ ],
     ledes: [ "On a device that has your keys, signed in as you, choose Add another device under Devices and scan this code. Your keys"
     + " then arrive here by themselves.", "If your keys haven't arrived, hold this device up to the code your other device is showing."
     + " It works only on this device, and only once." ] };

@@ -116,7 +116,7 @@ ok   - with the people key kept, only their code (Ian, 2026-11-16: no password)
 ok   the exchange in two steps - the same steps on both devices, each said for whoever holds it
 ok   - the person's first step says to show their code, then Next; the administrator's second says the person presses it
 ok   - contact codes: the same two, in either order, with nothing more said
-ok   - in one scan: the second step the keys arriving; the code shown back only if they don't
+ok   - in one scan: no steps (Damon, 2026-11-20); the keys sent, and the code shown back only if they don't arrive
 ok   a person's own alerts - their topic and the ntfy server, as an address; none; anything else not taken
 ok   xor of two hex strings - and back
 ok   - not the same length, or not hex

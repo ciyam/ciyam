@@ -927,6 +927,9 @@ function keys_draw_steps( id, flow, side, step, name, ticked, one_scan )
 
    list.replaceChildren( );
 
+   // NOTE: None in one scan - nothing is left to do after it (Damon, 2026-11-20).
+   list.hidden = ( steps.labels.length === 0 );
+
    steps.labels.forEach( function( label, index )
    {
       var item = document.createElement( "li" );
@@ -954,6 +957,20 @@ function keys_draw_steps( id, flow, side, step, name, ticked, one_scan )
    } );
 
    return steps.ledes;
+}
+
+// NOTE: The giving side once the code is scanned ("prefix" "give" or "keys_device") - in one scan ("handed") it says the keys were
+// sent, the code to scan back closed behind "whose" keys not arriving (Damon, 2026-11-20); else that code open, as the thing to do.
+function keys_draw_reply( prefix, ledes, handed, whose )
+{
+   var fallback_lede = document.getElementById( prefix + "_fallback_lede" );
+
+   document.getElementById( prefix + "_reply_lede" ).textContent = ledes[ 1 ];
+   document.getElementById( prefix + "_fallback_summary" ).textContent = handed ? whose + " haven't arrived?" : "The code to scan";
+   document.getElementById( prefix + "_fallback" ).open = !handed;
+
+   fallback_lede.textContent = handed ? ledes[ 2 ] : "";
+   fallback_lede.hidden = !handed;
 }
 
 // NOTE: 32 random bytes as hex - a one-off private key's seed.
@@ -1021,6 +1038,7 @@ function keys_hide_device( )
    document.getElementById( "keys_device_ask" ).value = "";
    document.getElementById( "keys_device_ask_part" ).hidden = false;
    document.getElementById( "keys_device_reply_part" ).hidden = true;
+   document.getElementById( "keys_device_fallback" ).open = false;
    document.getElementById( "keys_device_part" ).hidden = true;
    document.getElementById( "keys_device_row" ).hidden = false;
    document.getElementById( "device_scan_status" ).textContent = "";
@@ -1076,8 +1094,7 @@ async function keys_device_answer( device )
 
    keys_draw_qr( "keys_device_qr", link );
 
-   document.getElementById( "keys_device_reply_lede" ).textContent = keys_draw_steps( "keys_device_steps", "device", "giving", 2, "",
-    null, handed )[ 1 ];
+   keys_draw_reply( "keys_device", keys_draw_steps( "keys_device_steps", "device", "giving", 2, "", null, handed ), handed, "Your keys" );
    document.getElementById( "keys_device_link" ).value = link;
    document.getElementById( "keys_device_ask_part" ).hidden = true;
    document.getElementById( "keys_device_reply_part" ).hidden = false;
@@ -1595,6 +1612,7 @@ function keys_give_reset( )
    document.getElementById( "give_scan_status" ).textContent = "";
    document.getElementById( "give_manual" ).open = false;
    document.getElementById( "give_link_manual" ).open = false;
+   document.getElementById( "give_fallback" ).open = false;
    document.getElementById( "give_ask_part" ).hidden = false;
    document.getElementById( "give_reply_part" ).hidden = true;
 
@@ -1857,7 +1875,7 @@ async function keys_give_go( )
    keys_draw_qr( "give_qr", link );
 
    document.getElementById( "give_link" ).value = link;
-   document.getElementById( "give_reply_lede" ).textContent = keys_draw_steps( "give_steps", "give", "giving", 2, give.name, null, handed )[ 1 ];
+   keys_draw_reply( "give", keys_draw_steps( "give_steps", "give", "giving", 2, give.name, null, handed ), handed, "Their keys" );
    document.getElementById( "give_ask_part" ).hidden = true;
    document.getElementById( "give_reply_part" ).hidden = false;
    document.getElementById( "give_done" ).focus( );

@@ -1280,6 +1280,7 @@ button.account-back,
 }
 
 .account-keys-device-step[hidden],
+.account-exchange-steps[hidden],
 #device_error:empty,
 .account-keys-device-show[hidden],
 .account-keys-needed[hidden],

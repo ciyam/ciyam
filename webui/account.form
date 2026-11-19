@@ -491,12 +491,19 @@ http://www.opensource.org/licenses/mit-license.php.
                      </div>
                      <div class="account-keys-device-step" id="give_reply_part" hidden>
                         <p class="account-lede" id="give_reply_lede"></p>
-                        <div class="account-keys-qr" id="give_qr" aria-hidden="true"></div>
-                        <details class="account-keys-manual" id="give_link_manual">
-                           <summary>Can't use the camera?</summary>
+                        <!-- NOTE: In one scan the code shown back only if their keys don't arrive (Damon, 2026-11-20) - else open. -->
+                        <details class="account-keys-manual" id="give_fallback">
+                           <summary id="give_fallback_summary"></summary>
                            <div class="account-keys-manual-fields">
-                              <label class="chat-label" for="give_link">The address for it</label>
-                              <input type="text" class="chat-field account-keys-key" id="give_link" readonly>
+                              <p class="account-lede" id="give_fallback_lede"></p>
+                              <div class="account-keys-qr" id="give_qr" aria-hidden="true"></div>
+                              <details class="account-keys-manual" id="give_link_manual">
+                                 <summary>Can't use the camera?</summary>
+                                 <div class="account-keys-manual-fields">
+                                    <label class="chat-label" for="give_link">The address for it</label>
+                                    <input type="text" class="chat-field account-keys-key" id="give_link" readonly>
+                                 </div>
+                              </details>
                            </div>
                         </details>
                         <div class="account-actions-row">
@@ -642,9 +649,16 @@ http://www.opensource.org/licenses/mit-license.php.
                         </div>
                         <div class="account-keys-device-step" id="keys_device_reply_part" hidden>
                            <p class="account-lede" id="keys_device_reply_lede"></p>
-                           <div class="account-keys-qr" id="keys_device_qr" aria-hidden="true"></div>
-                           <label class="chat-label" for="keys_device_link">The address for it</label>
-                           <input type="text" class="chat-field account-keys-key" id="keys_device_link" readonly>
+                           <!-- NOTE: In one scan the code shown back only if the keys don't arrive (Damon, 2026-11-20) - else open. -->
+                           <details class="account-keys-manual" id="keys_device_fallback">
+                              <summary id="keys_device_fallback_summary"></summary>
+                              <div class="account-keys-manual-fields">
+                                 <p class="account-lede" id="keys_device_fallback_lede"></p>
+                                 <div class="account-keys-qr" id="keys_device_qr" aria-hidden="true"></div>
+                                 <label class="chat-label" for="keys_device_link">The address for it</label>
+                                 <input type="text" class="chat-field account-keys-key" id="keys_device_link" readonly>
+                              </div>
+                           </details>
                            <div class="account-actions-row">
                               <button type="button" class="chat-btn" id="keys_device_back">Back</button>
                               <button type="button" class="chat-btn chat-btn--primary" id="keys_device_done">Done</button>
