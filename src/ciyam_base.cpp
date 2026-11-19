@@ -7520,12 +7520,18 @@ string get_turn_port( bool from_setting_variable )
 
 string get_turn_secret( bool from_setting_variable )
 {
-   string encrypted_secret( g_turn_secret );
+   string secret( g_turn_secret );
 
    if( from_setting_variable && has_system_variable( e_special_var_system_setting_turn_secret ) )
-      encrypted_secret = get_system_variable( e_special_var_system_setting_turn_secret );
+      secret = get_system_variable( e_special_var_system_setting_turn_secret );
 
-   return decrypt_data( encrypted_secret, true );
+   // NOTE: An encrypted secret will contain a ':' (as the salt separator)
+   // whereas one provided via an environment variable will not have been
+   // encrypted (so is returned as is).
+   if( secret.find( ':' ) != string::npos )
+      secret = decrypt_data( secret, true );
+
+   return secret;
 }
 
 string get_turn_ip_addr( bool from_setting_variable )
