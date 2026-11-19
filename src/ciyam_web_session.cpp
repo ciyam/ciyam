@@ -3273,7 +3273,10 @@ bool process_cws_request( http_request_type request_type, const string& uri_suff
                      use_none_response = true;
                   else
                   {
-                     secret = decrypt_data( secret, true );
+                     // NOTE: Decrypted only when encrypted, which puts a salt and a ':' first (the "turn" section or setting) -
+                     // one from "CIYAM_TURN_SECRET" is kept as given and has none (Ian, 2026-11-19: short term, for the container).
+                     if( secret.find( ':' ) != string::npos )
+                        secret = decrypt_data( secret, true );
 
                      int64_t expires = ( ( ( now + c_cws_relay_seconds ) / c_cws_relay_rounding ) + 1 ) * c_cws_relay_rounding;
 
