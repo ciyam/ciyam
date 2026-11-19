@@ -151,6 +151,10 @@ constexpr const char* c_str_peer = "(peer)";
 constexpr const char* c_script_arg_opt = "opt";
 constexpr const char* c_script_arg_set = "set";
 
+constexpr const char* c_env_var_turn_port = "CIYAM_TURN_PORT";
+constexpr const char* c_env_var_turn_secret = "CIYAM_TURN_SECRET";
+constexpr const char* c_env_var_turn_ip_addr = "CIYAM_TURN_IP_ADDR";
+
 constexpr const char* c_dummy_host_name = "ciyam.peer";
 
 constexpr const char* c_at_init_script = "./at_init";
@@ -4214,23 +4218,38 @@ void read_server_configuration( )
       g_num_recv_stream_sessions = from_string< size_t >( reader.read_opt_attribute(
        c_attribute_num_recv_stream_sessions, to_string( c_num_recv_stream_sessions_default ) ) );
 
-      reader.start_section( c_section_turn );
+      // NOTE: If no "turn" configuration section exists
+      // then can also obtain TURN information via a set
+      // of environment variables.
+      if( !reader.has_started_section( c_section_turn ) )
+      {
+         g_turn_port = has_environment_variable( c_env_var_turn_port )
+          ? get_environment_variable( c_env_var_turn_port ) : string( c_default_turn_ports );
 
-      g_turn_port = reader.read_opt_attribute( c_attribute_port, c_default_turn_ports );
+         g_turn_secret = has_environment_variable( c_env_var_turn_secret )
+          ? get_environment_variable( c_env_var_turn_secret ) : g_none_name;
+
+         g_turn_ip_addr = has_environment_variable( c_env_var_turn_ip_addr )
+          ? get_environment_variable( c_env_var_turn_ip_addr ) : get_special_var_name( e_special_var_ip_ext_addr );
+      }
+      else
+      {
+         g_turn_port = reader.read_opt_attribute( c_attribute_port, c_default_turn_ports );
+
+         g_turn_secret = reader.read_opt_attribute( c_attribute_secret );
+
+         g_turn_ip_addr = reader.read_opt_attribute( c_attribute_ip_addr, get_special_var_name( e_special_var_ip_ext_addr ) );
+
+         reader.finish_section( c_section_turn );
+      }
 
       set_system_variable( e_special_var_system_setting_turn_port, g_turn_port );
-
-      g_turn_secret = reader.read_opt_attribute( c_attribute_secret );
 
       string turn_secret( g_turn_secret.empty( ) ? g_none_name : g_turn_secret );
 
       set_system_variable( e_special_var_system_setting_turn_secret, turn_secret );
 
-      g_turn_ip_addr = reader.read_opt_attribute( c_attribute_ip_addr, get_special_var_name( e_special_var_ip_ext_addr ) );
-
       set_system_variable( e_special_var_system_setting_turn_ip_addr, g_turn_ip_addr );
-
-      reader.finish_section( c_section_turn );
 
       reader.start_section( c_section_email );
 
