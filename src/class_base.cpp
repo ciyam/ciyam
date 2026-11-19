@@ -5733,7 +5733,7 @@ void send_ntfy_message( const string& user_key, const string& message,
 
       string prefix( c_ntfy_message_prefix );
 
-      string cmd( "curl -s" );
+      string cmd( "curl -s -m 5" );
 
       string headers( " " );
 
