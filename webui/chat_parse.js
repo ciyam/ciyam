@@ -5265,13 +5265,24 @@ function call_elapsed_text( seconds )
 // STUN for each device's address as the world sees it, and TURN to relay the call when the two can't reach each other. With no
 // address, the page's own host ("host"). None ("[none]" - the node has no relay - or anything that isn't credentials) and the call is
 // tried directly, as before. A fourth line is the relay's port, where it isn't coturn's standard (one shared with LiveKit, say),
-// the third then empty if there is no address (2026-11-17).
+// the third then empty if there is no address (2026-11-17) - or "<port>:<TLS port>", the node's "turn_port" setting ("3478:5349"
+// unless set otherwise, Ian, 2026-11-18), TURN over TLS then offered too. That one at the page's own host, and only where it is a
+// name: a relay's certificate is for the node's name, never for an address.
 const c_call_relay_port = 3478;
+
+function call_relay_port( text )
+{
+   var port = /^[0-9]{1,5}$/.test( text ) ? parseInt( text, 10 ) : 0;
+
+   return ( ( port >= 1 ) && ( port <= 65535 ) ) ? port : 0;
+}
 
 function call_relay_servers( text, host )
 {
    var lines = String( text || "" ).replace( /^\s+|[\r\n]+$/g, "" ).split( /\r?\n/ );
    var port = c_call_relay_port;
+   var tls_port = 0;
+   var page_host = String( host || "" );
 
    if( ( lines.length < 2 ) || ( lines.length > 4 ) || !/^[0-9]{10}:[-a-z0-9]{3,30}$/.test( lines[ 0 ] )
     || !/^[A-Za-z0-9+\/]{27}=$/.test( lines[ 1 ] ) )
@@ -5279,12 +5290,15 @@ function call_relay_servers( text, host )
 
    if( lines.length === 4 )
    {
-      var given = /^[0-9]{1,5}$/.test( lines[ 3 ] ) ? parseInt( lines[ 3 ], 10 ) : 0;
+      var ports = lines[ 3 ].split( ":" );
 
-      if( ( given < 1 ) || ( given > 65535 ) )
+      port = call_relay_port( ports[ 0 ] );
+
+      if( ports.length === 2 )
+         tls_port = call_relay_port( ports[ 1 ] );
+
+      if( ( port === 0 ) || ( ports.length > 2 ) || ( ( ports.length === 2 ) && ( tls_port === 0 ) ) )
          return [ ];
-
-      port = given;
    }
 
    if( ( lines.length >= 3 ) && ( lines[ 2 ] !== "" ) )
@@ -5306,8 +5320,13 @@ function call_relay_servers( text, host )
 
    // NOTE: TURN over TCP too (Damon, 2026-11-17: a call to a Pixel never connected) - Vanadium, GrapheneOS's browser, allows WebRTC
    // no UDP but through a proxy by default ("Disable non-proxied UDP"), so it reaches the relay over TCP or not at all.
-   return [ { urls: "stun:" + where }, { urls: "turn:" + where + "?transport=udp", username: lines[ 0 ], credential: lines[ 1 ] },
+   var servers = [ { urls: "stun:" + where }, { urls: "turn:" + where + "?transport=udp", username: lines[ 0 ], credential: lines[ 1 ] },
     { urls: "turn:" + where + "?transport=tcp", username: lines[ 0 ], credential: lines[ 1 ] } ];
+
+   if( ( tls_port !== 0 ) && /^[A-Za-z0-9-]+(\.[A-Za-z0-9-]+)*$/.test( page_host ) && /[A-Za-z]/.test( page_host ) )
+      servers.push( { urls: "turns:" + page_host + ":" + tls_port + "?transport=tcp", username: lines[ 0 ], credential: lines[ 1 ] } );
+
+   return servers;
 }
 
 // NOTE: Exported for Node.js; in the browser these are plain globals.

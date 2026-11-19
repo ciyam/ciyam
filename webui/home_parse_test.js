@@ -228,18 +228,19 @@ check( "- in words", [ hp.key_unlock_text( hp.last_key_unlock( unlocked_log ) ),
 
 var listed = [
    { kind: "room", room: "0000001", name: "Administration", total: 120 },
-   { kind: "room", room: "0000002", name: "General", total: 7412 },
-   { kind: "room", room: "0000003", name: "Busy", total: 9000 },
-   { kind: "room", room: "0000004", name: "", total: 7200 },
-   { kind: "chat", room: "0000005", name: "not a room", total: 8999 } ];
+   { kind: "room", room: "0000002", name: "General", total: 2471 },
+   { kind: "room", room: "0000003", name: "Busy", total: 3000 },
+   { kind: "room", room: "0000004", name: "", total: 2400 },
+   { kind: "room", room: "0000006", name: "Nearly", total: 2399 },
+   { kind: "chat", room: "0000005", name: "not a room", total: 2999 } ];
 
 check( "rooms filling - at 80% or more, fullest first", hp.rooms_filling( listed ).map( function( r ) { return r.name + " " + r.percent; } ),
  [ "Busy 100", "General 82", "#0000004 80" ] );
 check( "rooms filling - none", hp.rooms_filling( listed.slice( 0, 1 ) ), [ ] );
 check( "rooms filling - in words", [ hp.rooms_filling_text( [ ] ), hp.rooms_filling_text( [ 1 ] ), hp.rooms_filling_text( [ 1, 2 ] ) ],
  [ "No room is filling up", "1 room is filling up", "2 rooms are filling up" ] );
-check( "a filling room", hp.room_filling_line( hp.rooms_filling( listed )[ 1 ] ), "General - 7,412 of 9,000 messages (82%)" );
-check( "a full room", hp.room_filling_line( hp.rooms_filling( listed )[ 0 ] ), "Busy - full, 9,000 of 9,000 messages - the oldest make way for new ones" );
+check( "a filling room", hp.room_filling_line( hp.rooms_filling( listed )[ 1 ] ), "General - 2,471 of 3,000 messages (82%)" );
+check( "a full room", hp.room_filling_line( hp.rooms_filling( listed )[ 0 ] ), "Busy - full, 3,000 of 3,000 messages - the oldest make way for new ones" );
 
 var log = [ "one alpha", "two beta", "three alpha", "four gamma", "five alpha" ];
 
@@ -391,8 +392,8 @@ check( "more - none", hp.more_devices_text( 0 ), "" );
 heading( "health" );
 
 var some_problems = hp.log_problems( server_log );
-var some_filling = hp.rooms_filling( [ { room: "0000002", name: "General", kind: "room", total: 8280 },
- { room: "0000009", name: "Family", kind: "room", total: 9000 }, { room: "0000010", name: "Quiet", kind: "room", total: 12 } ] );
+var some_filling = hp.rooms_filling( [ { room: "0000002", name: "General", kind: "room", total: 2760 },
+ { room: "0000009", name: "Family", kind: "room", total: 3000 }, { room: "0000010", name: "Quiet", kind: "room", total: 12 } ] );
 var issues = hp.health_issues( { secure: true, keys: 0, problems: some_problems, filling: some_filling } );
 check( "what needs you - problems first, then the rest", issues.map( function( i ) { return i.key + " " + i.level; } ),
  [ "log problem", "room:0000009 problem", "room:0000002 warn", "keys warn" ] );
@@ -406,10 +407,10 @@ check( "warnings alone - a warning", hp.health_issues( { secure: true, keys: 2,
  .map( function( i ) { return i.title + " " + i.level; } ), [ "2 warnings since the restart warn" ] );
 check( "no keys on a node without a secure identity - not a problem", hp.health_issues( { secure: false, keys: 0, problems: null, filling: null } ), [ ] );
 check( "what the node did not say raises nothing", hp.health_issues( { secure: null, keys: null, problems: null, filling: null } ), [ ] );
-check( "the fullest rooms - filling or not, rooms only, as many as asked", hp.rooms_fullest( [ { room: "0000003", name: "", kind: "room", total: 40 },
- { room: "0000002", name: "General", kind: "room", total: 900 }, { room: "x", name: "bob", kind: "direct", total: 5000 },
+check( "the fullest rooms - filling or not, rooms only, as many as asked", hp.rooms_fullest( [ { room: "0000003", name: "", kind: "room", total: 13 },
+ { room: "0000002", name: "General", kind: "room", total: 300 }, { room: "x", name: "bob", kind: "direct", total: 5000 },
  { room: "0000004", name: "Quiet", kind: "room", total: 1 } ], 2 ),
- [ { room: "0000002", name: "General", total: 900, percent: 10 }, { room: "0000003", name: "#0000003", total: 40, percent: 0 } ] );
+ [ { room: "0000002", name: "General", total: 300, percent: 10 }, { room: "0000003", name: "#0000003", total: 13, percent: 0 } ] );
 check( "the heading", [ hp.health_heading( [ 1 ] ), hp.health_heading( [ 1, 2, 3 ] ) ], [ "1 thing needs you", "3 things need you" ] );
 check( "the node's kind", [ hp.node_kind_text( true, false ), hp.node_kind_text( false, true ), hp.node_kind_text( false, false ),
  hp.node_kind_text( null, null ) ],

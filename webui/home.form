@@ -601,7 +601,7 @@ http://www.opensource.org/licenses/mit-license.php.
                   </div>
                   <p class="home-health-line" id="rooms_heading">&hellip;</p>
                   <ul class="home-room-bars" id="rooms_filling"></ul>
-                  <p class="home-note home-empty" id="rooms_note">Rooms you're in. Each keeps 9,000 messages, then drops the oldest.</p>
+                  <p class="home-note home-empty" id="rooms_note">Rooms you're in. Each keeps 3,000 messages, then drops the oldest.</p>
                </section>
 
                <section class="home-card home-health-card" id="health_schedule_card" aria-labelledby="health_schedule_heading">
