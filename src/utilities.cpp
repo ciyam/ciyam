@@ -2194,6 +2194,104 @@ bool check_version_info( const version_info& ver_info, int major_version, int mi
    return okay;
 }
 
+void check_port( const string& port, bool* p_rc )
+{
+   bool valid = true;
+
+   if( p_rc )
+      *p_rc = true;
+
+   if( port.find_first_not_of( "0123456789" ) != string::npos )
+      valid = false;
+   else
+   {
+      int p = atoi( port.c_str( ) );
+
+      if( ( p < 1024 ) || ( p > 65535 ) )
+         valid = false;
+   }
+
+   if( !valid )
+   {
+      if( p_rc )
+         *p_rc = false;
+      else
+         throw runtime_error( "invalid port '" + port + "'" );
+   }
+}
+
+void check_ip_address( const string& ip_addr, bool* p_rc )
+{
+   string::size_type pos = ip_addr.find_first_of( ".:" );
+
+   bool valid = true;
+
+   if( p_rc )
+      *p_rc = true;
+
+   if( ( pos == string::npos ) || ( ip_addr.length( ) > 45 ) )
+      valid = false;
+   else
+   {
+      vector< string > parts;
+
+      bool is_ipv4 = false;
+
+      if( ip_addr[ pos ] == '.' )
+         is_ipv4 = true;
+
+      split( ip_addr, parts, ip_addr[ pos ] );
+
+      size_t num_parts = parts.size( );
+
+      bool had_empty = false;
+
+      if( is_ipv4 && ( ( num_parts != 4 ) || ( ip_addr.length( ) > 15 ) ) )
+         valid = false;
+      else
+      {
+         for( size_t i = 0; i < num_parts; i++ )
+         {
+            string next_part( parts[ i ] );
+
+            size_t part_length = next_part.length( );
+
+            if( !part_length )
+            {
+               if( had_empty || is_ipv4 )
+                  valid = false;
+               else
+                  had_empty = true;
+            }
+            else
+            {
+               for( size_t j = 0; j < part_length; j++ )
+               {
+                  valid = is_ipv4 ? isdigit( next_part[ j ] ) : isxdigit( next_part[ j ] );
+
+                  if( !valid )
+                     break;
+               }
+            }
+
+            if( is_ipv4 && ( atoi( next_part.c_str( ) ) > 255 ) )
+               valid = false;
+
+            if( !valid )
+               break;
+         }
+      }
+   }
+
+   if( !valid )
+   {
+      if( p_rc )
+         *p_rc = false;
+      else
+         throw runtime_error( "invalid IP address '" + ip_addr + "'" );
+   }
+}
+
 void parse_host_and_or_port( const string& host_and_or_port, string& host, int& port )
 {
    if( !host_and_or_port.empty( ) )

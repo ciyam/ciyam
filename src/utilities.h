@@ -1170,6 +1170,10 @@ std::string get_version_info( const std::string& s, version_info& ver_info );
 bool check_version_info( const version_info& ver_info,
  int major_version, int minor_version, bool* p_old = 0 );
 
+void check_port( const std::string& port, bool* p_rc );
+
+void check_ip_address( const std::string& ip_addr, bool* p_rc );
+
 void parse_host_and_or_port( const std::string& host_and_or_port, std::string& host, int& port );
 
 size_t setup_arguments( const char* p_input,
