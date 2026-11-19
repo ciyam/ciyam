@@ -1043,6 +1043,7 @@ async function keys_device_answer( device )
    if( g_keys.access === "" )
       return;
 
+   var turn = g_keys_device_turn;
    var sm = keys_module( "secure_message" );
    var seed = keys_random_seed( );
    var secret = "";
@@ -1065,7 +1066,9 @@ async function keys_device_answer( device )
    secret = "";
 
    // NOTE: Left on the node for the other device as well, so it needn't scan the code shown back (Damon, 2026-11-18).
-   var turn = g_keys_device_turn;
+   if( turn !== g_keys_device_turn )
+      return;
+
    var handed = await keys_hand_over( device, ciyam.username, link );
 
    if( turn !== g_keys_device_turn )
