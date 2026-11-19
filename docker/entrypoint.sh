@@ -184,7 +184,7 @@ fi
 
 # NOTE: The relay for calls between networks (coturn, 2026-11-15) - only with "CIYAM_TURN_SECRET". Its shared secret
 # ("use-auth-secret"): the node is to hand a signed-in person short-lived credentials made with the same secret, so no
-# password is kept for anyone. "CIYAM_TURN_EXTERNAL_IP" - the address phones reach this node by, needed behind NAT (a
+# password is kept for anyone. "CIYAM_TURN_IP_ADDR" - the address phones reach this node by, needed behind NAT (a
 # container always is); "CIYAM_TURN_REALM" - its name. Peers on private networks are refused, so the relay cannot be used
 # to reach anything on the host's own network - though not the node's own address, which is the peer when both use it. Plain
 # TURN on 3478 for now - TLS (5349) once the node has a certificate; the media itself is encrypted end to end (DTLS-SRTP).
@@ -193,7 +193,7 @@ fi
 # only UDP relayed, as WebRTC uses; run as its own user. (Reviewed 2026-11-15.)
 if [ -n "${CIYAM_TURN_SECRET:-}" ]; then
    # NOTE: Letters and digits only - a line break would add lines to the file, and spaces are trimmed ("openssl rand -hex 32").
-   # No more than 64, as the node hands out credentials made with it ("ciyam_web_session.cpp") and refuses a longer one.
+   # No more than 64, as the node makes the credentials it hands out with it ("hmac_sha1", which mishandles a longer key).
    if ! printf '%s' "$CIYAM_TURN_SECRET" | grep -qE '^[A-Za-z0-9]{16,64}$'; then
       echo "Error: CIYAM_TURN_SECRET is to be 16 to 64 letters and digits (openssl rand -hex 32) - the call relay is not started."
       # NOTE: Nor handed out by the node, which would otherwise make credentials for a relay that isn't there. (Only its own
@@ -203,16 +203,16 @@ if [ -n "${CIYAM_TURN_SECRET:-}" ]; then
       # NOTE: An address, not a name (coturn takes only an address here) - anything else is left out rather than written in. A "."
       # or a ":" too, so a name all of hex letters isn't taken for one; the realm a name (found by review, 2026-11-15).
       bad=0
-      case "${CIYAM_TURN_EXTERNAL_IP:-}" in
+      case "${CIYAM_TURN_IP_ADDR:-}" in
          *[!0-9A-Fa-f.:]*) bad=1 ;;
       esac
-      case "${CIYAM_TURN_EXTERNAL_IP:-}" in
+      case "${CIYAM_TURN_IP_ADDR:-}" in
          *[.:]*) ;;
          *) bad=1 ;;
       esac
-      if [ -n "${CIYAM_TURN_EXTERNAL_IP:-}" ] && [ "$bad" = "1" ]; then
-         echo "(call relay address '$CIYAM_TURN_EXTERNAL_IP' ignored - an IP address, not a name)"
-         CIYAM_TURN_EXTERNAL_IP=
+      if [ -n "${CIYAM_TURN_IP_ADDR:-}" ] && [ "$bad" = "1" ]; then
+         echo "(call relay address '$CIYAM_TURN_IP_ADDR' ignored - an IP address, not a name)"
+         CIYAM_TURN_IP_ADDR=
       fi
 
       case "${CIYAM_TURN_REALM:-}" in
@@ -251,8 +251,8 @@ if [ -n "${CIYAM_TURN_SECRET:-}" ]; then
             echo "use-auth-secret"
             echo "static-auth-secret=$CIYAM_TURN_SECRET"
             echo "realm=${CIYAM_TURN_REALM:-ciyam}"
-            if [ -n "${CIYAM_TURN_EXTERNAL_IP:-}" ]; then
-               echo "external-ip=$CIYAM_TURN_EXTERNAL_IP${private_ip:+/$private_ip}"
+            if [ -n "${CIYAM_TURN_IP_ADDR:-}" ]; then
+               echo "external-ip=$CIYAM_TURN_IP_ADDR${private_ip:+/$private_ip}"
             fi
             echo "user-quota=8"
             echo "total-quota=40"
@@ -271,8 +271,8 @@ if [ -n "${CIYAM_TURN_SECRET:-}" ]; then
             done
             # NOTE: Except the relay's own address - the peer when both people are relayed - should it be in one of those ranges (a
             # test node reached at its LAN address).
-            if [ -n "${CIYAM_TURN_EXTERNAL_IP:-}" ]; then
-               echo "allowed-peer-ip=$CIYAM_TURN_EXTERNAL_IP"
+            if [ -n "${CIYAM_TURN_IP_ADDR:-}" ]; then
+               echo "allowed-peer-ip=$CIYAM_TURN_IP_ADDR"
             fi
             echo "proc-user=turnserver"
             echo "proc-group=turnserver"
@@ -285,7 +285,7 @@ if [ -n "${CIYAM_TURN_SECRET:-}" ]; then
       chown turnserver:turnserver /var/log/turnserver.log
 
       if turnserver -c /etc/turnserver.conf --daemon; then
-         echo "(call relay: coturn on $turn_port${CIYAM_TURN_EXTERNAL_IP:+, reached at $CIYAM_TURN_EXTERNAL_IP})"
+         echo "(call relay: coturn on $turn_port${CIYAM_TURN_IP_ADDR:+, reached at $CIYAM_TURN_IP_ADDR})"
       else
          echo "Error: the call relay (coturn) did not start - see /var/log/turnserver.log."
          # NOTE: As for a refused secret - the node is not to hand out credentials for it (found by review, 2026-11-19).

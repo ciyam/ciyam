@@ -23,5 +23,5 @@ services:
     # NOTE: Uncomment, with a long random secret, to start coturn; the external address is this node's as phones reach it.
     # environment:
     #   CIYAM_TURN_SECRET: "<a long random secret>"
-    #   CIYAM_TURN_EXTERNAL_IP: "<this node's public address>"
+    #   CIYAM_TURN_IP_ADDR: "<this node's public address>"
     stop_grace_period: 20s

@@ -92,6 +92,12 @@ RUN sed -i "s|^\( *\)<user_home_path>.*|\1<user_home_path>/home/$CIYAM_USER|" ci
  && grep -q "^ *<user_home_path>/home/$CIYAM_USER$" ciyam_server.sio \
  && mkdir -p "/home/$CIYAM_USER/backup" "/home/$CIYAM_USER/opened" "/home/$CIYAM_USER/shared"
 
+# NOTE: The node takes the call relay's settings from the "CIYAM_TURN_" variables "entrypoint.sh" gives it only when
+# "ciyam_server.sio" has no "turn" section (Ian, 2026-11-19). The default has one, its attributes commented out, so the
+# section itself is commented out too.
+RUN sed -i "s|^\( *\)<turn/>$|#\1<turn/>|; s|^\( *\)</turn>$|#\1</turn>|" ciyam_server.sio \
+ && ! grep -qE "^ *</?turn/?>" ciyam_server.sio
+
 # NOTE: Stops "set_password" being run when the admin password is first set. That
 # script uses "sudo chpasswd" to set a *Linux* account password, which is neither
 # possible nor meaningful in a container - there is no sudo, and the container user
