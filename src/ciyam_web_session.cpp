@@ -3992,7 +3992,7 @@ bool process_cws_request( http_request_type request_type, const string& uri_suff
                               }
                               else if( var_name == get_special_var_name( e_special_var_system_setting_turn_secret ) )
                                  value = encrypt_data( value, false, true );
-                              // NOTE: "@ip_ext_addr" too - the default, which clearing doesn't put back (it restores the address).
+                              // NOTE: "@ip_ext_addr" too - the default, and better than an address as it follows any change (Ian).
                               else if( ( var_name == get_special_var_name( e_special_var_system_setting_turn_ip_addr ) )
                                && ( value != get_special_var_name( e_special_var_ip_ext_addr ) ) )
                               {
@@ -4035,7 +4035,14 @@ bool process_cws_request( http_request_type request_type, const string& uri_suff
                                     }
                                  }
                                  else if( var_name == get_special_var_name( e_special_var_system_setting_turn_ip_addr ) )
+                                 {
                                     value = get_turn_ip_addr( false );
+
+                                    // NOTE: As "@ip_ext_addr" rather than the address it resolves to, so that it will still
+                                    // follow any change of address.
+                                    if( value == get_system_variable( e_special_var_ip_ext_addr ) )
+                                       value = get_special_var_name( e_special_var_ip_ext_addr );
+                                 }
 
                                  if( value.empty( ) )
                                     value = g_none_var;
