@@ -254,10 +254,6 @@ constexpr const char* c_cws_help_request_admin_output = "quit\n"
 
 constexpr const char* c_web_session_script = "web_session.cin";
 
-constexpr const char* c_web_session_relay_secret_env = "CIYAM_TURN_SECRET";
-constexpr const char* c_web_session_relay_address_env = "CIYAM_TURN_EXTERNAL_IP";
-constexpr const char* c_web_session_relay_port_env = "CIYAM_TURN_PORT";
-
 constexpr const char* c_web_session_none_response = "[none]";
 constexpr const char* c_web_session_okay_response = "[okay]";
 
@@ -960,73 +956,6 @@ struct cws_active_command
       --g_cws_active_commands;
    }
 };
-
-// NOTE: The call relay's shared secret (coturn's "use-auth-secret") - from the same "CIYAM_TURN_SECRET" the container starts
-// coturn with. Only letters and digits, and no more than 64 of them, as "hmac_sha1" hashes a longer key first and then reads
-// past the hash. Empty if there is none (or it isn't usable), so there is no relay.
-string get_relay_secret( )
-{
-   const char* p_secret = getenv( c_web_session_relay_secret_env );
-
-   string secret( p_secret ? p_secret : "" );
-
-   if( ( secret.length( ) < c_cws_relay_secret_min ) || ( secret.length( ) > c_cws_relay_secret_max ) )
-      return string( );
-
-   for( size_t i = 0; i < secret.length( ); i++ )
-   {
-      if( !isalnum( ( unsigned char )secret[ i ] ) )
-         return string( );
-   }
-
-   return secret;
-}
-
-// NOTE: Where the call relay is reached - the "CIYAM_TURN_EXTERNAL_IP" that coturn provides (and being the IP address that it
-// takes) - or empty, and the page's own host is used. Not the page's host always: a page may come through a proxy that passes
-// no UDP, and a page opened at "localhost" can't reach a relay there once the camera is allowed (each network adapter is then
-// used for itself, found 2026-11-15).
-string get_relay_address( )
-{
-   const char* p_address = getenv( c_web_session_relay_address_env );
-
-   string address( p_address ? p_address : "" );
-
-   // NOTE: If not set then use the "@ip_ext_addr" system variable.
-   if( address.empty( ) )
-      address = get_system_variable( e_special_var_ip_ext_addr );
-
-   // NOTE: A "." or a ":" as well, so a name all of hex letters ("cafe") isn't taken for one (found by review, 2026-11-15).
-   if( ( address.length( ) > 45 ) || ( address.find_first_of( ".:" ) == string::npos ) )
-      return string( );
-
-   for( size_t i = 0; i < address.length( ); i++ )
-   {
-      if( !isxdigit( ( unsigned char )address[ i ] ) && ( address[ i ] != '.' ) && ( address[ i ] != ':' ) )
-         return string( );
-   }
-
-   return address;
-}
-
-// NOTE: The port the call relay is reached on - "CIYAM_TURN_PORT" - or empty for coturn's standard 3478. Another where
-// that one has been taken (such as when LiveKit's own TURN has it - Ian, 2026-11-15). Only digits, from 1024 to 65535.
-string get_relay_port( )
-{
-   const char* p_port = getenv( c_web_session_relay_port_env );
-
-   string port( p_port ? p_port : "" );
-
-   if( port.empty( ) || ( port.length( ) > 5 ) || ( port.find_first_not_of( "0123456789" ) != string::npos ) )
-      return string( );
-
-   int value = atoi( port.c_str( ) );
-
-   if( ( value < 1024 ) || ( value > 65535 ) )
-      return string( );
-
-   return to_string( value );
-}
 
 // NOTE: The key for a person's alerts, made if they have none yet and "make" - or empty (Damon, 2026-11-17: calls ringing a phone).
 // None for a name with anything but letters, digits, "." "_" and "-" - a "*" or "?" would match other variables (found by review).
@@ -3338,12 +3267,14 @@ bool process_cws_request( http_request_type request_type, const string& uri_suff
                {
                   found = true;
 
-                  string secret( get_relay_secret( ) );
+                  string secret( get_system_variable( e_special_var_system_setting_turn_secret ) );
 
-                  if( secret.empty( ) )
+                  if( secret.empty( ) || ( secret == g_none_var ) )
                      use_none_response = true;
                   else
                   {
+                     secret = decrypt_data( secret, true );
+
                      int64_t expires = ( ( ( now + c_cws_relay_seconds ) / c_cws_relay_rounding ) + 1 ) * c_cws_relay_rounding;
 
                      string relay_username( to_string( expires ) + ':' + username );
@@ -3354,8 +3285,9 @@ bool process_cws_request( http_request_type request_type, const string& uri_suff
 
                      string relay_password( base64::encode( buffer, c_sha1_digest_size ) );
 
-                     string relay_address( get_relay_address( ) );
-                     string relay_port( get_relay_port( ) );
+                     string relay_port( get_system_variable( e_special_var_system_setting_turn_port ) );
+
+                     string relay_address( get_system_variable( e_special_var_system_setting_turn_ip_addr ) );
 
                      // NOTE: The port as a fourth line, after the address - an empty line for no address, so each keeps its place.
                      if( !is_json_output )
@@ -3935,6 +3867,9 @@ bool process_cws_request( http_request_type request_type, const string& uri_suff
 
                      replace( settings, c_special_variable_system_setting_prefix, "" );
 
+                     replace( settings,
+                      get_special_var_name( e_special_var_ip_ext_addr ), get_system_variable( e_special_var_ip_ext_addr ) );
+
                      if( !is_json_output )
                         response = settings;
                      else
@@ -4037,35 +3972,27 @@ bool process_cws_request( http_request_type request_type, const string& uri_suff
 
                                  bool valid = true;
 
-                                 if( port.find_first_not_of( "0123456789" ) != string::npos )
-                                    valid = false;
-                                 else
-                                 {
-                                    int p = atoi( port.c_str( ) );
+                                 check_port( port, &valid );
 
-                                    if( ( p < 1024 ) || ( p > 65535 ) )
-                                       valid = false;
-                                 }
-
-                                 if( !tls_port.empty( ) )
-                                 {
-                                    if( tls_port.find( "0123456789" ) != string::npos )
-                                       valid = false;
-                                    else
-                                    {
-                                       int p = atoi( tls_port.c_str( ) );
-
-                                       if( ( p < 1024 ) || ( p > 65535 ) )
-                                          valid = false;
-                                    }
-                                 }
+                                 if( valid && !tls_port.empty( ) )
+                                    check_port( tls_port, &valid );
 
                                  if( !valid )
                                     // FUTURE: This message should be handled as a server string message.
-                                    error = "Invalid TURN port value(s) must be between 1024..65535.";
+                                    error = "Invalid TURN port value(s) must be provided as <port>{:<tls_port>].";
                               }
                               else if( var_name == get_special_var_name( e_special_var_system_setting_turn_secret ) )
                                  value = encrypt_data( value, false, true );
+                              else if( var_name == get_special_var_name( e_special_var_system_setting_turn_ip_addr ) )
+                              {
+                                 bool rc = false;
+
+                                 check_ip_address( value, &rc );
+
+                                 if( !rc )
+                                    // FUTURE: This message should be handled as a server string message.
+                                    error = "Invalid TURN address value (must be an IPv4 or IPv6 address format).";
+                              }
                            }
 
                            if( error.empty( ) )
