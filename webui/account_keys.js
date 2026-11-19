@@ -860,7 +860,10 @@ async function keys_node_now( )
 // contacts, would be replaced by these, which have none, as the node takes keys made from the same words again (Damon, 2026-11-20:
 // a contact added on the laptop gone once the phone, opened before, took its keys from the administrator). Those opened instead,
 // if these words make them; else said, and nothing sent.
-async function keys_make_and_save( entropy, lede, people )
+//
+// "people" - admin's people key, kept with the keys either way; "given" - from the administrator, so the last step of joining says so
+// rather than to keep words they never had (both found by review, 2026-11-20).
+async function keys_make_and_save( entropy, lede, people, given )
 {
    set_error( "keys_error", "" );
    keys_busy( "Securing your keys…" );
@@ -917,17 +920,28 @@ async function keys_make_and_save( entropy, lede, people )
 
       if( opened_access === "" )
       {
-         set_error( "keys_error", "Keys were set up for this account meanwhile, on another device, from other words - reload the page to"
-          + " see what to do." );
+         set_error( "keys_error", "Keys were set up for this account meanwhile, in another browser, from other words - reload the page and"
+          + " type those words to open them here." );
 
          return;
       }
 
-      g_keys.node = now;
-
+      // NOTE: As once saved, below - the words taken out of the page, and only then the keys shown.
       keys_keep_here( opened_access );
+      keys_clear( );
+
+      g_keys.node = now;
+      g_keys.given = !!given;
 
       await keys_show_here( opened_access, lede, false );
+
+      if( people )
+      {
+         var latest = await keys_latest( );
+
+         if( latest !== null )
+            await keys_keep_people( people, latest, "keys_error" );
+      }
 
       return;
    }
@@ -949,6 +963,7 @@ async function keys_make_and_save( entropy, lede, people )
    keys_clear( );
 
    g_keys.node = node;
+   g_keys.given = !!given;
 
    await keys_show_here( access, lede, false );
 }
@@ -1541,7 +1556,7 @@ async function keys_take_given( entropy )
 
    if( rounds === 0 )
    {
-      await keys_make_and_save( entropy, lede );
+      await keys_make_and_save( entropy, lede, "", true );
 
       return;
    }
