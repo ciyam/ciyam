@@ -556,37 +556,45 @@ http://www.opensource.org/licenses/mit-license.php.
                <div class="account-column-side">
                   <div class="account-card account-form account-keys-people" id="contacts_add_part" hidden>
                      <h2>Add a contact</h2>
-                     <p class="account-lede">You each show your contact code and scan or copy the other's - best together, where no one
-                      else can see the screens.</p>
+                     <p class="account-lede">You each show your contact code and scan the other's - best together, where no one else
+                      can see the screens.</p>
                      <!-- NOTE: Your code shown only when asked (Ian, 2026-10-27: your public key, with quantum attacks to come) - and
                           taken out of the page again on Done, or on leaving Contacts ("keys_hide_public( )"). -->
                      <div class="account-actions-row" id="contacts_start_row">
                         <button type="button" class="chat-btn chat-btn--primary" id="keys_public_show">Add a new contact</button>
                      </div>
                      <div class="account-contact-add" id="keys_public_part" hidden>
-                        <!-- NOTE: The same two steps as the keys' exchanges, in either order (Damon, 2026-11-17) - yours, which this
-                             page can't see read, and theirs, ticked once added ("keys_contact_steps( )"). -->
-                        <ol class="account-exchange-steps" id="contacts_steps" aria-label="Steps"></ol>
+                        <!-- NOTE: Your code to scan, and theirs scanned - added once read, so no steps (Damon, 2026-11-20). The codes
+                             as text, and a picture of theirs, only for when a camera can't be used - opened by itself then, as the
+                             keys' exchanges ("keys_manual_open( )"). -->
                         <div class="account-contact-own">
                            <div class="chat-label">Your contact code</div>
                            <div class="account-keys-qr" id="keys_qr" aria-hidden="true"></div>
-                           <code class="account-keys-key" id="keys_public"></code>
-                        </div>
-                        <div>
-                           <label class="chat-label" for="keys_add_key">Their contact code</label>
-                           <textarea class="chat-field account-keys-words" id="keys_add_key" rows="3" autocomplete="off" autocapitalize="off"
-                            spellcheck="false"></textarea>
                         </div>
                         <div class="chat-scan-reader" id="contacts_scan_reader"></div>
                         <p class="account-lede" id="contacts_scan_status" role="status" aria-live="polite"></p>
                         <input type="file" id="contacts_scan_file" accept="image/*" hidden>
-                        <div class="account-actions-row">
-                           <button type="button" class="chat-btn" id="contacts_scan">Scan their code</button>
-                           <button type="button" class="chat-btn" id="contacts_picture">Choose a picture&hellip;</button>
-                        </div>
+                        <details class="account-keys-manual" id="contacts_manual">
+                           <summary>Can't use the camera?</summary>
+                           <div class="account-keys-manual-fields">
+                              <div class="account-contact-own">
+                                 <div class="chat-label">Your contact code as text</div>
+                                 <code class="account-keys-key" id="keys_public"></code>
+                              </div>
+                              <div>
+                                 <label class="chat-label" for="keys_add_key">Their contact code</label>
+                                 <textarea class="chat-field account-keys-words" id="keys_add_key" rows="3" autocomplete="off"
+                                  autocapitalize="off" spellcheck="false"></textarea>
+                              </div>
+                              <div class="account-actions-row">
+                                 <button type="button" class="chat-btn" id="contacts_picture">Choose a picture&hellip;</button>
+                                 <button type="button" class="chat-btn chat-btn--primary" id="keys_add">Add them</button>
+                              </div>
+                           </div>
+                        </details>
                         <div class="account-actions-row">
                            <button type="button" class="chat-btn" id="keys_public_hide">Done</button>
-                           <button type="button" class="chat-btn chat-btn--primary" id="keys_add">Add them</button>
+                           <button type="button" class="chat-btn chat-btn--primary" id="contacts_scan">Scan their code</button>
                         </div>
                      </div>
                      <div class="chat-error-text" id="keys_add_error" role="alert"></div>

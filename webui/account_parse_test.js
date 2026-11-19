@@ -352,17 +352,13 @@ check( "- the person's first step says to show their code, then Next; the admini
  /^Show this code to your administrator.*press Next\.$/.test( ap.exchange_steps( "give", "asking" ).ledes[ 0 ] ),
  /^Now Ellie presses Next/.test( ap.exchange_steps( "give", "giving", "Ellie" ).ledes[ 1 ] ),
  /press Next\.$/.test( ap.exchange_steps( "device", "asking" ).ledes[ 0 ] ) ], [ true, true, true ] );
-check( "- contact codes: the same two, in either order, with nothing more said", ap.exchange_steps( "contact" ),
- { labels: [ "They scan your code", "You scan theirs" ], ledes: [ ] } );
 check( "- in one scan: no steps (Damon, 2026-11-20); the keys sent, and the code shown back only if they don't arrive", [
  ap.exchange_steps( "give", "asking", "", true ).labels, ap.exchange_steps( "give", "giving", "Ellie", true ).labels,
  ap.exchange_steps( "device", "asking", "", true ).labels, ap.exchange_steps( "device", "giving", "", true ).labels,
  /arrive here by themselves\.$/.test( ap.exchange_steps( "give", "asking", "", true ).ledes[ 0 ] ),
- ap.exchange_steps( "give", "giving", "Ellie", true ).ledes.slice( 1 ), ap.exchange_steps( "device", "giving", "", true ).ledes.length,
- ap.exchange_steps( "contact", "", "", true ).labels ],
+ ap.exchange_steps( "give", "giving", "Ellie", true ).ledes.slice( 1 ), ap.exchange_steps( "device", "giving", "", true ).ledes.length ],
  [ [ ], [ ], [ ], [ ], true, [ "Sent to Ellie's device - their keys open there by themselves in a moment.", "If they haven't, Ellie presses"
- + " Next and holds their device up to this code. It works only on that device, for Ellie, and only once." ], 3,
- [ "They scan your code", "You scan theirs" ] ] );
+ + " Next and holds their device up to this code. It works only on that device, for Ellie, and only once." ], 3 ] );
 check( "a person's own alerts - their topic and the ntfy server, as an address; none; anything else not taken", [
  ap.parse_alerts_reply( "upABCDEFGHIJ234567\nantares.local:8443\n" ), ap.parse_alerts_reply( "[none]" ),
  ap.parse_alerts_reply( "Error: Unknown request" ), ap.parse_alerts_reply( "up AB\nantares.local" ),

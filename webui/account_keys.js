@@ -1951,17 +1951,11 @@ function keys_show_public( )
 
    set_error( "keys_add_error", "" );
    keys_scan_status( "" );
-   keys_contact_steps( false );
 
+   document.getElementById( "contacts_manual" ).open = false;
    document.getElementById( "keys_public_part" ).hidden = false;
    document.getElementById( "contacts_start_row" ).hidden = true;
-   document.getElementById( "keys_add_key" ).focus( );
-}
-
-// NOTE: Add a contact's two steps - neither now, as they come in either order; theirs ticked once added ("added").
-function keys_contact_steps( added )
-{
-   keys_draw_steps( "contacts_steps", "contact", "", 0, "", added ? [ 2 ] : [ ] );
+   document.getElementById( "contacts_scan" ).focus( );
 }
 
 function keys_hide_public( )
@@ -1971,6 +1965,7 @@ function keys_hide_public( )
    document.getElementById( "keys_qr" ).replaceChildren( );
    document.getElementById( "keys_public" ).textContent = "";
    document.getElementById( "keys_add_key" ).value = "";
+   document.getElementById( "contacts_manual" ).open = false;
    document.getElementById( "keys_public_part" ).hidden = true;
    document.getElementById( "contacts_start_row" ).hidden = false;
 
@@ -2005,7 +2000,7 @@ function keys_scan_status( text )
 // NOTE: The addresses folded away under "Can't use the camera?" opened - when it can't be, or what was read is wrong.
 function keys_manual_open( target )
 {
-   var id = { ask: "keys_ask_manual", give: "give_manual" }[ target ];
+   var id = { ask: "keys_ask_manual", give: "give_manual", contacts: "contacts_manual" }[ target ];
 
    if( id && !document.getElementById( id ).open )
    {
@@ -2354,7 +2349,6 @@ async function keys_add_contact( )
    var problem = contact_problem( contact, g_keys.contacts, g_keys.own, own_name );
 
    keys_scan_status( "" );
-   keys_contact_steps( false );
 
    if( problem !== "" )
    {
@@ -2377,7 +2371,6 @@ async function keys_add_contact( )
    {
       document.getElementById( "keys_add_key" ).value = "";
 
-      keys_contact_steps( true );
       keys_scan_status( contact.name + " added - once they have added you too, your direct messages are encrypted." );
    }
 }
@@ -2757,8 +2750,6 @@ function install_keys( )
    document.getElementById( "keys_ask_use" ).addEventListener( "click", function( ) { keys_ask_use( ); } );
    document.getElementById( "ask_scan" ).addEventListener( "click", function( ) { keys_scan_start( "ask" ); } );
    document.getElementById( "keys_add" ).addEventListener( "click", keys_add_contact );
-   // NOTE: Another code begun - theirs no longer ticked, as it is for the next person.
-   document.getElementById( "keys_add_key" ).addEventListener( "input", function( ) { keys_contact_steps( false ); } );
    document.getElementById( "give_go" ).addEventListener( "click", keys_give_go );
    document.getElementById( "give_cancel" ).addEventListener( "click", keys_give_close );
    document.getElementById( "give_done" ).addEventListener( "click", keys_give_close );

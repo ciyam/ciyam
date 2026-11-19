@@ -610,10 +610,8 @@ function device_page_of( text, own )
 // NOTE: The exchange as the two steps it is, said the same on both devices, each for whoever holds it (Damon, 2026-11-17: said as one,
 // it wasn't clear a second code was to come) - "give", keys from the administrator, or "device", from another of one's own; "asking",
 // the device getting them, which shows its code then scans the answer, or "giving", which scans then shows. "name" - who is given
-// them, for the administrator's side. { labels, ledes }, one of each per step.
-//
-// "contact" - contact codes, each a public key that never changes, so the two are swapped in either order and nothing is said as
-// now; the labels only, the card itself saying the rest (Damon, 2026-11-17).
+// them, for the administrator's side. { labels, ledes }, one of each per step. (Contact codes have no steps since 2026-11-20 - each
+// added once scanned, the card itself saying the rest.)
 //
 // "one_scan" - in one scan (Damon, 2026-11-18): the answer left on the node, so the device getting the keys takes it by itself - the
 // code shown back said only as what to scan if it doesn't come. No steps then (Damon, 2026-11-20: a second one that only happens by
@@ -621,9 +619,6 @@ function device_page_of( text, own )
 function exchange_steps( flow, side, name, one_scan )
 {
    var who = String( name || "" ) || "they";
-
-   if( flow === "contact" )
-      return { labels: [ "They scan your code", "You scan theirs" ], ledes: [ ] };
 
    if( one_scan )
       return exchange_one_scan( flow, side, who );
