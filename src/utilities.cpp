@@ -2201,7 +2201,8 @@ void check_port( const string& port, bool* p_rc )
    if( p_rc )
       *p_rc = true;
 
-   if( port.find_first_not_of( "0123456789" ) != string::npos )
+   // NOTE: No more than five digits so that "atoi" cannot overflow.
+   if( port.empty( ) || ( port.length( ) > 5 ) || ( port.find_first_not_of( "0123456789" ) != string::npos ) )
       valid = false;
    else
    {
@@ -2220,6 +2221,73 @@ void check_port( const string& port, bool* p_rc )
    }
 }
 
+namespace
+{
+
+bool is_ipv4_address( const string& ip_addr )
+{
+   bool valid = ( ip_addr.find_first_not_of( "0123456789." ) == string::npos );
+
+   if( valid )
+   {
+      vector< string > parts;
+
+      split( ip_addr, parts, '.' );
+
+      if( parts.size( ) != 4 )
+         valid = false;
+
+      for( size_t i = 0; valid && ( i < parts.size( ) ); i++ )
+      {
+         string next_part( parts[ i ] );
+
+         if( next_part.empty( ) || ( next_part.length( ) > 3 ) || ( atoi( next_part.c_str( ) ) > 255 ) )
+            valid = false;
+      }
+   }
+
+   return valid;
+}
+
+// NOTE: Each group is one to four hex digits (with the last one permitted to be an IPv4 address that counts as two).
+bool has_ipv6_groups( const string& groups, size_t& num_groups, bool allow_ipv4 )
+{
+   bool valid = true;
+
+   num_groups = 0;
+
+   if( !groups.empty( ) )
+   {
+      vector< string > parts;
+
+      split( groups, parts, ':' );
+
+      for( size_t i = 0; valid && ( i < parts.size( ) ); i++ )
+      {
+         string next_part( parts[ i ] );
+
+         if( allow_ipv4 && ( i == ( parts.size( ) - 1 ) ) && ( next_part.find( '.' ) != string::npos ) )
+         {
+            num_groups += 2;
+
+            valid = is_ipv4_address( next_part );
+         }
+         else
+         {
+            ++num_groups;
+
+            if( next_part.empty( ) || ( next_part.length( ) > 4 )
+             || ( next_part.find_first_not_of( "0123456789abcdefABCDEF" ) != string::npos ) )
+               valid = false;
+         }
+      }
+   }
+
+   return valid;
+}
+
+}
+
 void check_ip_address( const string& ip_addr, bool* p_rc )
 {
    string::size_type pos = ip_addr.find_first_of( ".:" );
@@ -2231,56 +2299,26 @@ void check_ip_address( const string& ip_addr, bool* p_rc )
 
    if( ( pos == string::npos ) || ( ip_addr.length( ) > 45 ) )
       valid = false;
+   else if( ip_addr[ pos ] == '.' )
+      valid = is_ipv4_address( ip_addr );
+   else if( ip_addr.find_first_not_of( "0123456789abcdefABCDEF.:" ) != string::npos )
+      valid = false;
    else
    {
-      vector< string > parts;
+      // NOTE: Eight groups unless a single "::" stands in for one or more groups of zeros.
+      string::size_type double_colon = ip_addr.find( "::" );
 
-      bool is_ipv4 = false;
+      size_t num_head_groups = 0;
+      size_t num_tail_groups = 0;
 
-      if( ip_addr[ pos ] == '.' )
-         is_ipv4 = true;
-
-      split( ip_addr, parts, ip_addr[ pos ] );
-
-      size_t num_parts = parts.size( );
-
-      bool had_empty = false;
-
-      if( is_ipv4 && ( ( num_parts != 4 ) || ( ip_addr.length( ) > 15 ) ) )
+      if( double_colon == string::npos )
+         valid = has_ipv6_groups( ip_addr, num_head_groups, true ) && ( num_head_groups == 8 );
+      else if( ip_addr.find( "::", double_colon + 1 ) != string::npos )
          valid = false;
       else
-      {
-         for( size_t i = 0; i < num_parts; i++ )
-         {
-            string next_part( parts[ i ] );
-
-            size_t part_length = next_part.length( );
-
-            if( !part_length )
-            {
-               if( had_empty || is_ipv4 )
-                  valid = false;
-               else
-                  had_empty = true;
-            }
-            else
-            {
-               for( size_t j = 0; j < part_length; j++ )
-               {
-                  valid = is_ipv4 ? isdigit( next_part[ j ] ) : isxdigit( next_part[ j ] );
-
-                  if( !valid )
-                     break;
-               }
-            }
-
-            if( is_ipv4 && ( atoi( next_part.c_str( ) ) > 255 ) )
-               valid = false;
-
-            if( !valid )
-               break;
-         }
-      }
+         valid = has_ipv6_groups( ip_addr.substr( 0, double_colon ), num_head_groups, false )
+          && has_ipv6_groups( ip_addr.substr( double_colon + 2 ), num_tail_groups, true )
+          && ( ( num_head_groups + num_tail_groups ) <= 7 );
    }
 
    if( !valid )
