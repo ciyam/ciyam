@@ -642,17 +642,23 @@ function chat_secret_for_room( room )
    return ( other !== "" ) ? chat_secret_with( other ) : chat_room_key( room );
 }
 
-// NOTE: Whether a room is encrypted here, for the rail's padlock - as "chat_secret_for_room( )" would give a secret, without making a
-// shared secret for each direct message in the rail (slow on a phone without a JIT).
-function chat_room_encrypted( room )
+// NOTE: Whether a room is encrypted here, for the rail's padlock - as the header's badge decides it ("chat_dm_other( )", then
+// "chat_room_key( )"), without making a shared secret for each direct message in the rail (slow on a phone without a JIT). "entry"
+// the rail's own for the room, so a rail of many rooms is not looked through again for each.
+function chat_room_encrypted( room, entry )
 {
-   var entry = ( room === g_room ) ? { name: g_room_name } : find_room( room );
-   var other = entry ? dm_other_person( entry.name, ciyam.username ) : "";
+   if( !entry )
+      entry = ( room === g_room ) ? { name: g_room_name, owner: g_room_owner } : find_room( room );
+
+   if( !g_chat_keys || !entry )
+      return false;
+
+   var other = dm_trusted( entry.name, entry.owner ) ? dm_other_person( entry.name, ciyam.username ) : "";
 
    if( other !== "" )
-      return !!g_chat_keys && g_chat_keys.contacts.hasOwnProperty( other );
+      return g_chat_keys.contacts.hasOwnProperty( other );
 
-   return ( chat_room_key( room ) !== "" );
+   return can_have_room_key( room, entry.name ) && !!g_chat_keys.rooms[ room ];
 }
 
 // NOTE: For the line under a direct message ("dm_encryption_note( )"), or a group's ("group_encryption_note( )").

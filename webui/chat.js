@@ -1768,7 +1768,7 @@ function rooms_signature( )
       // NOTE: The close label too - it moves on by itself, to "Closed" (found by "room_close.js": the rail kept "Closes today").
       // NOTE: And whether it is encrypted here, so the rail's padlock shows as its key arrives.
       parts.push( r.room + ":" + r.name + ":" + r.owner + ":" + r.unread + "/" + r.total + ":" + r.posts + ":" + room_close_label( r.closes )
-       + ":" + ( chat_room_encrypted( r.room ) ? "e" : "" ) );
+       + ":" + ( chat_room_encrypted( r.room, r ) ? "e" : "" ) );
    }
 
    return parts.join( "|" );
@@ -1968,7 +1968,7 @@ function update_rail_item( node, item )
    room_sub.hidden = ( room_sub.textContent === "" );
 
    // NOTE: The padlock only once this browser holds the key - a shared secret with the other person, or the room key (2026-11-21).
-   node.querySelector( ".chat-room-encrypted" ).hidden = !chat_room_encrypted( entry.room );
+   node.querySelector( ".chat-room-encrypted" ).hidden = !chat_room_encrypted( entry.room, entry );
 
    var mark = node.querySelector( ".chat-room-lock" );
 
@@ -5529,7 +5529,8 @@ function apply_posting_rules( )
       input.dataset.refused = "1";
 
       clear_composer( );
-      input.placeholder = status.locked ? "🔒 " + status.reason : status.reason;
+      // NOTE: A no entry sign, as the rail marks a room nobody can post in - a padlock is for encryption alone (2026-11-21).
+      input.placeholder = status.locked ? "⛔ " + status.reason : status.reason;
 
       resize_composer( );
    }
