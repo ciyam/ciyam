@@ -383,7 +383,7 @@ http://www.opensource.org/licenses/mit-license.php.
                     remembers the choice (2026-10-18). -->
                <span class="chat-composer-end">
                   <span class="chat-composer-count" id="composer_count" aria-live="polite" hidden></span>
-                  <label class="chat-format-codes" title="Show the console's format codes (%R% and the like) in the box instead of the formatting">
+                  <label class="chat-format-codes" title="Show the format codes (%R% and the like) in the box instead of the formatting">
                      <input type="checkbox" id="composer_codes" onchange="do_toggle_codes( this.checked )"> Codes
                   </label>
                </span>

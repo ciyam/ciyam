@@ -2573,8 +2573,8 @@ function chat_owner_away_marker( entry )
 }
 
 // NOTE: The owner's other rooms with a key here - each looked through once it or the reserved room has changed, and those who have
-// joined passed the key as "chat_owner_send_keys( )" does for the open room (2026-11-07: a poll made in one browser and
-// signed out of, and its voters, joining later, were never given its key - the owner never opened the room again). Accepted that
+// joined passed the key as "chat_owner_send_keys( )" does for the open room (2026-11-07: a poll was made in one browser, which then
+// signed out, and its voters, joining later, were never given its key - the owner never opened the room again). Accepted that
 // a room looked through is marked read. A member without a contact code here is left to the open room's look, which tells them
 // plainly. Called as the room list is read; quietly, one room at a time.
 async function chat_owner_send_keys_away( )

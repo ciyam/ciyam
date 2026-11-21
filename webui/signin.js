@@ -1157,7 +1157,7 @@ var g_recover_fresh = null;
 // NOTE: The new password's hash, for Remember - "" until a recovery succeeds.
 var g_recover_hash = "";
 
-// NOTE: the BIP39 library - large, so read in only when recovery opens, and once.
+// NOTE: The BIP39 library - large, so read in only when recovery opens, and once.
 function recover_load_bip39( )
 {
    if( g_recover_bip39 === null )

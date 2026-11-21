@@ -1305,8 +1305,8 @@ function mask_device_sessions( text )
    return String( text || "" ).replace( /^(\s*[A-Za-z0-9]+\s+)[A-Za-z0-9]+(\*?)\s*$/gm, "$1(session)$2" );
 }
 
-// NOTE: The whole query for a logged request, to copy and try again (2026-10-06 - the harness still opened
-// "test_web_session.html" for it). An entry keeps no credentials, so they are put back from "session" -
+// NOTE: The whole query for a logged request, to copy and try again (2026-10-06 - "test_web_session.html" was
+// still opened for it). An entry keeps no credentials, so they are put back from "session" -
 // this tab's own, which a linked console shares with the chat - in the harness's order, where the
 // request had them. A password hash is never put back: a sign in's comes back as "passwd=PASSWORD_HASH".
 // "origin" is the server's address, before "/cws". Returns "" for an entry from before this was kept.

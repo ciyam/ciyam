@@ -832,7 +832,7 @@ function render_mine( )
    document.getElementById( "mine_username" ).value = name || ciyam.access;
 
    // NOTE: admin's password is the node's master password, which also unlocks the node after a
-   // restart - not something to change from a web page (an open question for the server).
+   // restart - not something to change from a web page (an open question).
    document.getElementById( "mine_password_form" ).hidden = ciyam.is_admin;
    document.getElementById( "mine_admin_note" ).hidden = !ciyam.is_admin;
 

@@ -445,8 +445,8 @@ http://www.opensource.org/licenses/mit-license.php.
                <div class="account-column-side">
                   <!-- NOTE: Give keys, from People (2026-11-11) - admin gives someone their keys, made from the people key
                        kept with admin's own and the person's PIN, by the exchange of two codes with their device ("keys_give_go( )").
-                       The people key is kept with admin's keys, under their lock alone (2026-11-16: not the password, which
-                       not to hand when out) - so only their code is needed; the node's words only until it is kept, and the
+                       The people key is kept with admin's keys, under their lock alone (2026-11-16: not the password, which may be
+                       in a password manager not to hand when out) - so only their code is needed; the node's words only until it is kept, and the
                        password only to open one sealed under it before, once. -->
                   <div class="account-card account-form account-keys-device" id="give_part" hidden>
                      <div>

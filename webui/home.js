@@ -609,7 +609,7 @@ function setup_update_strength( )
    set_text( "setup_strength_label", strength.text );
 }
 
-// NOTE: the server's "xor_hex_data" - the node's suggestion with the person's randomness, through the module's own "xor( )"
+// NOTE: The server's "xor_hex_data" - the node's suggestion with the person's randomness, through the module's own "xor( )"
 // ("ciyam_module_named( )") rather than setting its global and calling into it.
 function setup_mix( suggested, mine )
 {

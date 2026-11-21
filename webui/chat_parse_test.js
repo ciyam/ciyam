@@ -50,7 +50,7 @@ check( "three members parsed", members.length, 3 );
 check( "offline member", members[ 0 ], { name: "admin", sessions: 0, online: false } );
 check( "two sessions", members[ 2 ], { name: "test-2", sessions: 2, online: true } );
 check( "hyphenated name kept", members[ 1 ].name, "test-1" );
-// NOTE: the server's "extra=TIME" option (46797f3a) appends ".<time>" to each member - the chat asks
+// NOTE: The server's "extra=TIME" option (46797f3a) appends ".<time>" to each member - the chat asks
 // for it for read markers since 2026-09-28. Names and counts must still read correctly.
 check( "extra=TIME suffix tolerated", cp.parse_members( "admin+2.1790313275000 verify-a+0" ).map( function( m ) { return m.name + ":" + m.sessions; } ),
  [ "admin:2", "verify-a:0" ] );
@@ -549,7 +549,7 @@ check( "a stored backslash comes back single", multi[ 1 ].text, "double\\slash" 
 check( "backslash then break", multi[ 2 ].text, "bs then nl\\\nnext" );
 check( "an ending backslash is only that", [ multi[ 3 ].text, multi[ 4 ].text ], [ "ends with\\", "after" ] );
 check( "a tab comes back as one", multi[ 5 ].text, "a\tb" );
-// NOTE: the server's three-character prefixes (2026-11-05) - the kind and then " " or "X", read back to the kind alone.
+// NOTE: The server's three-character prefixes (2026-11-05) - the kind and then " " or "X", read back to the kind alone.
 check( "the prefixes - ordinary, private, a system event, a prompt read as ordinary", [ cp.parse_message_line( "1793900000000 admin   hello" ).text,
  cp.parse_message_line( "1793900000001 admin ! a note" ).text, cp.parse_message_line( "1793900000001 admin ! a note" ).private,
  cp.parse_message_line( "1793900000002 test-1 : joined" ).event.verb, cp.parse_message_line( "1793900000003 admin ? lunch?" ).text ],
@@ -1118,7 +1118,7 @@ check( "a request for a group", cp.dm_request_text( "admin", "DM admin + bob + c
 
 heading( "direct messages on the server" );
 
-// NOTE: the server's direct messages - made as ".<user>", named "/<a>/<b>" by the server, two people
+// NOTE: The server's direct messages - made as ".<user>", named "/<a>/<b>" by the server, two people
 // only (2026-10-02, "." since 2026-10-05). Checked on the container with "dm_server_probe.js".
 check( "the server's name read", cp.parse_dm_name( "/admin/verify-a" ), { people: [ "admin", "verify-a" ], count: 2, server: true } );
 check( "one person twice is not a conversation", cp.parse_dm_name( "/admin/admin" ), null );
@@ -1288,7 +1288,7 @@ check( "- a message that starts with one, as shared in a direct message - words 
  cp.room_key_in_message( "0000004#" + room_key + "0" ), cp.room_key_in_message( "0000004#" + room_key + "-x" ) ],
  [ { room: "0000004", key: room_key }, { room: "0000004", key: room_key }, null, { room: "0000004", key: room_key }, null,
  { room: "0000004", key: room_key } ] );
-// NOTE: The console takes a key of any length - one of the console's codes had 64 hex digits (2026-10-26).
+// NOTE: The console takes a key of any length - one key had 64 hex digits (2026-10-26).
 check( "- 64 hex digits taken too", [ cp.room_key_in_message( "0000004#" + room_key + room_key ),
  cp.parse_room_key( "0000004#" + room_key + room_key, "0000004" ) ], [ { room: "0000004", key: room_key + room_key },
  { key: room_key + room_key, problem: "" } ] );

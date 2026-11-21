@@ -163,7 +163,7 @@ ciyam_register_module( class extends ciyam_module
    }
 
    // NOTE: The people key as admin's keys keep it - as it is, under their lock alone, so Give keys asks for nothing (2026-11-16:
-   // a password from a password manager not to hand when out). One sealed ("PK1") is from before, opened once.
+   // the password may be in a password manager not to hand when out). One sealed ("PK1") is from before, opened once.
    static is_people_key( kept )
    {
       return /^[0-9a-f]{64}$/.test( String( kept || "" ) );

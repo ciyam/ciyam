@@ -117,7 +117,7 @@ http://www.opensource.org/licenses/mit-license.php.
                <div class="console-list-scroll is-saved" id="saved_scripts"></div>
                <button type="button" class="console-item is-new" onclick="do_new_script( )">+ New script</button>
 
-               <!-- NOTE: the server's ".list" files (webcmdlists) - any account can read them. One opens
+               <!-- NOTE: The server's ".list" files (webcmdlists) - any account can read them. One opens
                     in the editor as a copy: Run runs it, Save keeps it in this browser. -->
                <span class="console-listhead">Lists on the server</span>
                <div class="console-list-scroll is-lists" id="server_lists"></div>

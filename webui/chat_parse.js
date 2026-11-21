@@ -231,7 +231,7 @@ function parse_system_event( text )
    return event;
 }
 
-// NOTE: the server's three-character prefixes (2026-11-05, "prefixes.cin"): after the "_" the server takes off, a message's kind - " "
+// NOTE: The server's three-character prefixes (2026-11-05, "prefixes.cin"): after the "_" the server takes off, a message's kind - " "
 // ordinary, "!" private, ":" system, "?" a prompt, "/" reserved - and then " ", or "X" when it is encrypted, where there was the
 // kind alone before. Read back to that one character, an encrypted message's text starting "X\r" as the chat seals it
 // ("chat_seal_with( )", the server taking the "X\r" off as it is posted), so nothing after the reading changes. A prompt is read
@@ -1581,7 +1581,7 @@ function reaction_options( unique, code )
 // the client, so it can be encrypted). A poll is an ordinary message - "📊 <question>", then an option a line, "A) ...", "B) ..."
 // - so it reads as it is anywhere. A vote is a reaction to it, so one each: option A's the reaction "00", B's "01" and so on. The
 // reactions' emoji are not shown for them (2026-10-31: a serious question would not suit them); the console still shows
-// the votes as them, until there are reactions for polls of their own (keycap numbers - to suggest for the server).
+// the votes as them, until there are reactions for polls of their own (keycap numbers - yet to be suggested).
 const c_poll_marker = "📊";
 
 const c_poll_letters = [ "A", "B", "C", "D", "E", "F", "G", "H", "I", "J" ];
@@ -1965,7 +1965,7 @@ function can_close_room( room, entry, username, is_admin, is_dm, p_now )
 }
 
 // NOTE: Whether this user may leave a room (2026-10-12: "I can't seem to find any UI to leave a room"). Not the
-// entrance, nor the Admin room - it carries every invitation - nor a room they own: leaving your own room is thought
+// entrance, nor the Admin room - it carries every invitation - nor a room they own: leaving your own room is
 // probably wrong, and it would be left with nobody to look after it. General can be left since the server's change of 2026-10-12.
 function can_leave_room( room, entry, username )
 {
@@ -2607,7 +2607,7 @@ function room_key_sent_text( outcomes )
    if( by.failed.length > 0 )
       parts.push( "Could not send it to " + name_list( by.failed ) + " - try again." );
 
-   // NOTE: Nobody but the owner yet (Send pressed before anyone was in it, 2026-11-03, and seen nothing come of it) -
+   // NOTE: Nobody but the owner yet (Send was pressed before anyone was in it, 2026-11-03, and nothing came of it) -
    // those invited are sent it as they are ("chat_owner_send_keys( )").
    return ( parts.length > 0 ) ? parts.join( " " ) : "No one else is in it yet - each you invite is sent it.";
 }
@@ -2617,7 +2617,7 @@ function room_key_sent_text( outcomes )
 // entrance or reserved rooms, nor a direct message (named "/..."), which uses the other person's public key.
 const c_room_key_pattern = /^([0-9]{7})#([0-9a-f]{32}|[0-9a-f]{64})$/;
 
-// NOTE: "k" makes 32 hex digits; the console takes any length as the key, and one of the console's codes had 64 (2026-10-26) - so 64 too.
+// NOTE: "k" makes 32 hex digits; the console takes any length as the key, and one key had 64 (2026-10-26) - so 64 too.
 const c_room_key_digits = /^([0-9a-f]{32}|[0-9a-f]{64})$/;
 
 // NOTE: A key at the start of a message, anything after it (2026-10-26: "Text: [room#secret] *").
@@ -3322,7 +3322,7 @@ function user_initial( name )
    return ( text === "" ) ? "?" : text.charAt( 0 ).toUpperCase( );
 }
 
-// NOTE: A sign in error in plain words. the server's "connect" says "invalid or missing connect status"
+// NOTE: A sign in error in plain words. The server's "connect" says "invalid or missing connect status"
 // when the server's answer to signing in was not a session status (ISS-029); every other error
 // is already a sentence and is shown as it is.
 const c_connect_status_error = "invalid or missing connect status";
@@ -3683,7 +3683,7 @@ function parse_access_list( stored )
 }
 
 // NOTE: Returns null when nothing is left, so the caller removes the key rather than
-// storing an empty string. The server: "if intending to wipe the access it should be deleted
+// storing an empty string - "if intending to wipe the access it should be deleted
 // (rather than set to an empty string)".
 function format_access_list( entries )
 {
