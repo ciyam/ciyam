@@ -716,9 +716,16 @@ http://www.opensource.org/licenses/mit-license.php.
      ================================================================ -->
 
 <!-- NOTE: The rail shows the name, the unread count and any lock or invitation - the room's
-     number and owner are in the Room section once it is selected. -->
+     number and owner are in the Room section once it is selected. An encrypted conversation has the badge's padlock to the left
+     of its name, in a space every row keeps so the names line up (2026-11-21). -->
 <template id="tpl_room">
    <button type="button" class="chat-room">
+      <span class="chat-room-encrypted" role="img" aria-label="Encrypted" title="Encrypted" hidden>
+         <svg class="chat-padlock" viewBox="0 0 16 16" width="14" height="14" aria-hidden="true" focusable="false">
+            <rect x="3" y="7" width="10" height="7.5" rx="1.5" fill="currentColor"/>
+            <path d="M5.5 7V5a2.5 2.5 0 0 1 5 0v2" fill="none" stroke="currentColor" stroke-width="1.6"/>
+         </svg>
+      </span>
       <span class="chat-room-top">
          <span class="chat-room-name"></span>
          <span class="chat-room-lock" hidden></span>

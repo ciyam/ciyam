@@ -1766,7 +1766,9 @@ function rooms_signature( )
       var r = g_rooms[ i ];
 
       // NOTE: The close label too - it moves on by itself, to "Closed" (found by "room_close.js": the rail kept "Closes today").
-      parts.push( r.room + ":" + r.name + ":" + r.owner + ":" + r.unread + "/" + r.total + ":" + r.posts + ":" + room_close_label( r.closes ) );
+      // NOTE: And whether it is encrypted here, so the rail's padlock shows as its key arrives.
+      parts.push( r.room + ":" + r.name + ":" + r.owner + ":" + r.unread + "/" + r.total + ":" + r.posts + ":" + room_close_label( r.closes )
+       + ":" + ( chat_room_encrypted( r.room ) ? "e" : "" ) );
    }
 
    return parts.join( "|" );
@@ -1925,6 +1927,9 @@ function update_rail_item( node, item )
 
       node.classList.toggle( "is-selected", ( item.invite.room === g_selected_invite ) );
 
+      // NOTE: Never a padlock - no key reaches an invitation before it is taken up.
+      node.querySelector( ".chat-room-encrypted" ).hidden = true;
+
       return;
    }
 
@@ -1962,15 +1967,20 @@ function update_rail_item( node, item )
 
    room_sub.hidden = ( room_sub.textContent === "" );
 
+   // NOTE: The padlock only once this browser holds the key - a shared secret with the other person, or the room key (2026-11-21).
+   node.querySelector( ".chat-room-encrypted" ).hidden = !chat_room_encrypted( entry.room );
+
    var mark = node.querySelector( ".chat-room-lock" );
 
+   // NOTE: Who may post as a no entry sign or a megaphone, not the padlocks they were - a padlock in the rail is encryption alone
+   // (2026-11-21).
    if( entry.posts === "any" )
       mark.hidden = true;
    else
    {
       mark.hidden = false;
 
-      set_text( mark, ( entry.posts === "none" ) ? "\uD83D\uDD12" : "\uD83D\uDD13" );
+      set_text( mark, ( entry.posts === "none" ) ? "\u26D4" : "\uD83D\uDCE3" );
 
       mark.title = ( entry.posts === "none" ) ? "Locked - nobody can post"
        : "Only the room owner can post";
@@ -2130,6 +2140,9 @@ function show_encryption( )
 
    // NOTE: Calls are in an encrypted direct message - so offered as its encryption is shown ("chat_call.js").
    call_show_button( );
+
+   // NOTE: The rail's padlocks follow a key or a contact as it changes - redrawn only if one did ("rooms_signature( )").
+   render_rooms( );
 
    head.classList.toggle( "is-encrypted", ( badge !== null ) && badge.locked );
    head.classList.toggle( "is-unencrypted", ( badge !== null ) && !badge.locked );

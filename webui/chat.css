@@ -1497,9 +1497,11 @@ button.chat-avatar:hover
    gap: 2px;
 }
 
+/* NOTE: The left padding keeps a space for the padlock of an encrypted conversation, on every row so the names line up. */
 .chat-room
 {
-   padding: 10px;
+   position: relative;
+   padding: 10px 10px 10px 30px;
    border: 1px solid transparent;
    border-radius: var(--radius-sm);
    background: none;
@@ -1518,6 +1520,16 @@ button.chat-avatar:hover
 {
    background: var(--color-chat-bg-selected);
    border-color: var(--color-chat-border-selected);
+}
+
+/* NOTE: The header badge's padlock and green, in the space to the left of the name. */
+.chat-room-encrypted
+{
+   position: absolute;
+   left: 10px;
+   top: 13px;
+   line-height: 0;
+   color: var(--color-chat-online-text);
 }
 
 .chat-room-top
