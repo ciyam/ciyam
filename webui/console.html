@@ -46,7 +46,7 @@ http://www.opensource.org/licenses/mit-license.php.
 
    <!--
    NOTE: The server sends "Cache-Control: no-cache" for ".html", ".form", ".js" and ".css"
-   (Ian, 2026-09-27 - ISS-021), so the browser checks each file every time and an edited one
+   (2026-09-27 - ISS-021), so the browser checks each file every time and an edited one
    arrives with a plain reload. The console's files are still loaded below, in order, so the
    markup is in place before the scripts run.
    -->
@@ -54,7 +54,7 @@ http://www.opensource.org/licenses/mit-license.php.
    <!--
    NOTE: Asked for at once, alongside the files above. What the page loads once it has loaded - its form, then its scripts, in
    order - comes from what has already arrived: asked for one after another, each had waited for the last, four waits in a row
-   on a phone (Ian, 2026-11-14, over 4G - Chat to Home and back took ten seconds or more).
+   on a phone (2026-11-14, over 4G - Chat to Home and back took ten seconds or more).
    -->
    <link rel="preload" href="console.css" as="style">
    <link rel="preload" href="console.form" as="fetch" crossorigin="anonymous">

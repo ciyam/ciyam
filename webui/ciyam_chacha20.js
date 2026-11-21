@@ -7,7 +7,7 @@
 // block counter, the keystream XORed with the data, so the same call encrypts and decrypts. "xor( key, nonce, counter, data )"
 // is its core; "crypt( password, data )" is "crypt -cc" - the key the password's SHA-256, the nonce zero, the counter from
 // nought. One key and nonce must never encrypt two messages - the keystream would cancel out between them - so a message
-// needs a key of its own, or a nonce of its own (the secure messages' salt, Ian 2026-10-15).
+// needs a key of its own, or a nonce of its own (the secure messages' salt, 2026-10-15).
 ciyam_register_module( class extends ciyam_module
 {
    static about =

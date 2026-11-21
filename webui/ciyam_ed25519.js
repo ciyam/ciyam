@@ -51,7 +51,7 @@ ciyam_register_module( class extends ciyam_module
    // NOTE: Base64 as "base64::decode( )" reads it, into "out" - the same letters, the same leniency, the same refusals.
    static base64_into( text, out )
    {
-      // NOTE: As "decode_size( )" since Ian's rework (2026-10-20, ISS-049) - a length a multiple of four, and only the last two
+      // NOTE: As "decode_size( )" since the rework (2026-10-20, ISS-049) - a length a multiple of four, and only the last two
       // characters counted as filler.
       if( ( text.length % 4 ) !== 0 )
          throw new Error( "Not base64 - its length is not a multiple of four." );

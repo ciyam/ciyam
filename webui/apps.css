@@ -94,7 +94,7 @@
 }
 
 /* NOTE: A row is its app, which opens in this tab, and a button at its right for a new tab - or for the tab the app
-   is already open in (Damon, 2026-10-09). */
+   is already open in (2026-10-09). */
 .apps-row
 {
    display: flex;

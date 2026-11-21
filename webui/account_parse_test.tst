@@ -97,7 +97,7 @@ ok   the keys kept, by name, shortened
 ok   My account's sections, in order
 ok   - the one an address asks for, else the first
 ok   the room keys kept - said under them, or none yet
-ok   - listed by name, then number; one not in the listing last, by number (Damon, 2026-11-04)
+ok   - listed by name, then number; one not in the listing last, by number (2026-11-04)
 ok   another device - the ask, this page with its public key after #
 ok   - read back, whole, after # only, or pasted broken over lines in capitals
 ok   - the reply, read back
@@ -112,10 +112,10 @@ ok   admin's keys at set up or recovery - made, opened, left, or not made
 ok   the node's words said plainly under Your keys - admin's; nothing for everyone else, never offered them
 ok   Give keys - everything it lacks, by field, at once
 ok   - another device's code not taken for theirs; all there, nothing
-ok   - with the people key kept, only their code (Ian, 2026-11-16: no password)
+ok   - with the people key kept, only their code (2026-11-16: no password)
 ok   the exchange in two steps - the same steps on both devices, each said for whoever holds it
 ok   - the person's first step says to show their code, then Next; the administrator's second says the person presses it
-ok   - in one scan: no steps (Damon, 2026-11-20); the keys sent, and the code shown back only if they don't arrive
+ok   - in one scan: no steps (2026-11-20); the keys sent, and the code shown back only if they don't arrive
 ok   a person's own alerts - their topic and the ntfy server, as an address; none; anything else not taken
 ok   xor of two hex strings - and back
 ok   - not the same length, or not hex

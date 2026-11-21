@@ -3,7 +3,7 @@
 // Distributed under the MIT/X11 software license, please refer to the file license.txt
 // in the root project directory or http://www.opensource.org/licenses/mit-license.php.
 
-// NOTE: The twelve words typed with help (Ian, 2026-10-31: none when restoring keys - "especially preferable for phone usage"),
+// NOTE: The twelve words typed with help (2026-10-31: none when restoring keys - "especially preferable for phone usage"),
 // as "test_bip39.html" does it: the rest of the word offered, in grey, after what is typed; Tab or a space takes it; a word not
 // in the list underlined. A ghost over the field draws its text - the field's own is transparent, its caret and selection still
 // shown - so the ghost takes the field's font, padding and border, and the field grows rather than scrolls, so the two wrap

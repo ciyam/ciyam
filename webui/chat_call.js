@@ -3,7 +3,7 @@
 // Distributed under the MIT/X11 software license, please refer to the file license.txt
 // in the root project directory or http://www.opensource.org/licenses/mit-license.php.
 
-// NOTE: Calls (Ian, 2026-11-13: "the P2P style initially ... tied to a DM room") - one to one, browser to browser, in an encrypted
+// NOTE: Calls (2026-11-13: "the P2P style initially ... tied to a DM room") - one to one, browser to browser, in an encrypted
 // direct message. The call is set up with messages in the conversation, sealed with the secret the two share: an offer, its answer,
 // an end or a decline ("call_messages( )" in "chat_parse.js"). Sealed, the node can neither read them nor change the fingerprints of
 // the call's own encryption (DTLS-SRTP) in them, so it cannot sit in the middle of the call either.
@@ -17,7 +17,7 @@
 const c_call_watch_ms = 1000;
 
 // NOTE: How long a call rings before it is given up - longer when the other person's phone was rung too ("call_ring_phone( )"), so
-// there is time to see it, open the chat and answer (Damon, 2026-11-17) - within the 90 seconds an offer counts for.
+// there is time to see it, open the chat and answer (2026-11-17) - within the 90 seconds an offer counts for.
 const c_call_ring_ms = 45000;
 const c_call_ring_alerted_ms = 85000;
 
@@ -25,7 +25,7 @@ const c_call_ring_alerted_ms = 85000;
 const c_call_gather_ms = 5000;
 
 // NOTE: A call that loses its connection (a phone moving from WiFi to 4G, say) is given this long to get it back before it ends
-// (Damon, 2026-11-17) - the caller renewing it with a new description ("call_renew( )") once it has been lost for "c_call_drop_ms",
+// (2026-11-17) - the caller renewing it with a new description ("call_renew( )") once it has been lost for "c_call_drop_ms",
 // which a browser often gets back from by itself.
 const c_call_renew_ms = 20000;
 const c_call_drop_ms = 3000;
@@ -54,7 +54,7 @@ var g_call_watch_timer = null;
 var g_call_ring_timer = null;
 var g_call_clock_timer = null;
 
-// NOTE: The node's clock less this device's, in seconds, and when it was last asked - a call's times are the node's (Damon, 2026-11-17:
+// NOTE: The node's clock less this device's, in seconds, and when it was last asked - a call's times are the node's (2026-11-17:
 // two clocks more than 90 s apart, and a call never rang). 0 until known.
 var g_call_clock_offset = 0;
 var g_call_clock_asked = 0;
@@ -228,7 +228,7 @@ async function call_send( room, other, id, kind, data )
 }
 
 // NOTE: A room's messages since "since" (Unix seconds), read quietly - or null if it could not be read. Read without moving the
-// person's read point (Ian's "extra=PEEK", 2026-11-14): otherwise looking for a call marked the conversation read before they saw it
+// person's read point (the server's "extra=PEEK", 2026-11-14): otherwise looking for a call marked the conversation read before they saw it
 // (found by review, 2026-11-14).
 async function call_read_recent( room, since )
 {
@@ -450,7 +450,7 @@ function call_apply( room, other, calls )
             call_ring( room, other, call );
          else if( call_crossing( room, other ) )
          {
-            // NOTE: The two called each other at once (Damon, 2026-11-17: each was told the other was busy) - the call with the higher
+            // NOTE: The two called each other at once (2026-11-17: each was told the other was busy) - the call with the higher
             // id goes ahead on both sides, so each decides alike: the other's taken in place of this one's, or theirs left to them -
             // not marked handled, so it still rings should this one end before they cross to it (found by review, 2026-11-17).
             if( call.id > g_call.id )
@@ -527,7 +527,7 @@ function call_connection( servers )
          call_connected( );
       else if( ( ( pc.connectionState === "disconnected" ) || ( pc.connectionState === "failed" ) ) && ( g_call.started !== 0 ) )
       {
-         // NOTE: One that had connected - got back, or renewed, rather than ended (Damon, 2026-11-17: a phone moving from WiFi to 4G
+         // NOTE: One that had connected - got back, or renewed, rather than ended (2026-11-17: a phone moving from WiFi to 4G
          // lost the call).
          call_lost( );
       }
@@ -695,7 +695,7 @@ async function do_start_call( )
    }
 }
 
-// NOTE: The other person's phone rung by the node (its "ring" - Damon, 2026-11-17: a call reached no one with the chat closed), on
+// NOTE: The other person's phone rung by the node (its "ring" - 2026-11-17: a call reached no one with the chat closed), on
 // their own ntfy topic, with only who is calling - true if it was. Not if they never set their phone up for it ("[none]"), or the
 // node can't (an older node, no ntfy server); the call rings in the chat all the same.
 async function call_ring_phone( call )
@@ -1028,7 +1028,7 @@ function call_connected( )
    call_wake( true );
 }
 
-// NOTE: The screen kept on during a call (Damon, 2026-11-17) - a phone otherwise dims and locks in the middle of one. The browser lets
+// NOTE: The screen kept on during a call (2026-11-17) - a phone otherwise dims and locks in the middle of one. The browser lets
 // it go when the page is hidden, so it is asked again when the page shows ("visibilitychange", below). Where there is none, nothing.
 async function call_wake( on )
 {

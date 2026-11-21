@@ -124,8 +124,8 @@ check( "uptime - weeks", hp.parse_uptime( "1w 0d 3h 4m 5s\n" ), "1w 0d 3h 4m 5s"
 check( "uptime - an error", hp.parse_uptime( "Error: something" ), "" );
 check( "the node's line - its version and how long it has been up", [ hp.node_line( "0.0.0", "11 minutes" ), hp.node_line( "0.0.0", "" ) ],
  [ "Home node · CIYAM 0.0.0 · up 11 minutes", "Home node · CIYAM 0.0.0" ] );
-check( "uptime in words - minutes, no seconds (Ian, 2026-10-11)", hp.uptime_words( "41m 45s" ), "41 minutes" );
-// NOTE: The wait before "Check again" on a node someone else is setting up (Ian, 2026-11-12) - five minutes at first, then none.
+check( "uptime in words - minutes, no seconds (2026-10-11)", hp.uptime_words( "41m 45s" ), "41 minutes" );
+// NOTE: The wait before "Check again" on a node someone else is setting up (2026-11-12) - five minutes at first, then none.
 check( "the wait before Check again - minutes and seconds, nothing once it is over", [ 300, 299.2, 61, 9, 0, -3 ].map( hp.setup_retry_wait_text ),
  [ "You can check again in 5:00.", "You can check again in 5:00.", "You can check again in 1:01.", "You can check again in 0:09.", "", "" ] );
 check( "uptime in words - an hour and seconds is the hour", hp.uptime_words( "1h 0m 5s" ), "1 hour" );
@@ -158,7 +158,7 @@ check( "people waiting - one", hp.people_waiting_text( { active: 4, unclaimed: 1
 check( "people waiting - two", hp.people_waiting_text( { active: 4, unclaimed: 2 } ), "2 people haven't used their code yet." );
 check( "people waiting - none", hp.people_waiting_text( { active: 4, unclaimed: 0 } ), "Everyone you added has set up their account." );
 
-// NOTE: "@sid_secure" (Ian, 2026-10-12) - no unlock keys without a secure identity.
+// NOTE: "@sid_secure" (2026-10-12) - no unlock keys without a secure identity.
 check( "secure - asked of the node", hp.c_home_secure_request, "system_variable @sid_secure" );
 check( "secure - '1' is held encrypted", [ hp.parse_secure( "1" ), hp.parse_secure( "1\n" ) ], [ true, true ] );
 check( "secure - nothing is not - a development or demo node", hp.parse_secure( "" ), false );
@@ -333,7 +333,7 @@ check( "- a PIN, or part of one", pins_of( hp.people_matching( folk, "314" ) ), 
 check( "- the status as shown", pins_of( hp.people_matching( folk, "not yet" ) ), [ "31415" ] );
 check( "- every word found", [ hp.people_matching( folk, "verify active" ).length, hp.people_matching( folk, "verify admin" ).length ], [ 2, 0 ] );
 
-// NOTE: The disabled (Ian, 2026-11-09) - listed only with Show inactive ticked, and found by the status as shown.
+// NOTE: The disabled (2026-11-09) - listed only with Show inactive ticked, and found by the status as shown.
 const with_gone = folk.concat( [ { name: "gone", pin: "52020", status: "inactive" } ] );
 
 check( "people shown - the inactive left out", pins_of( hp.people_shown( with_gone, false ) ), [ "10301", "20401", "20402", "31415" ] );
@@ -458,7 +458,7 @@ check( "by person, the most recently seen first - yours marked",
 check( "- idle an hour or more counted - since 02:53 and 01:00", [ by_person.total, by_person.idle ], [ 4, 2 ] );
 check( "- said in a line", [ hp.sessions_line( by_person ), hp.sessions_line( hp.sessions_summary( [ ], at_four, "" ) ) ],
  [ "4 sessions open · 2 idle an hour or more.", "No sessions open." ] );
-// NOTE: As the node answers since Ian's "af67621d" - the PIN, and the start of the session and the device, X'd out.
+// NOTE: As the node answers since commit "af67621d" - the PIN, and the start of the session and the device, X'd out.
 var redacted = hp.parse_web_sessions( [
  "session              pin   device          init_request        last_request        username (ip_addr)",
  "-------------------- ----- --------------- ------------------- ------------------- ------------------",

@@ -130,7 +130,7 @@ system_state( )
    node -e "fetch('http://localhost:13031/system',{signal:AbortSignal.timeout(5000)}).then(r=>r.text()).then(t=>process.stdout.write(t)).catch(()=>{})" 2>/dev/null
 }
 
-# NOTE: A node left new - "CIYAM_NO_SETUP=1" - so setting one up from Home can be tried (Damon, 2026-10-12): "/system"
+# NOTE: A node left new - "CIYAM_NO_SETUP=1" - so setting one up from Home can be tried (2026-10-12): "/system"
 # answers "*CIYAM*" until someone does. Whoever is first sets it up, so only on a node nobody else can reach.
 if [ ! -f .web_access_admin ] && [ "${CIYAM_NO_SETUP:-}" = "1" ]; then
    echo "(no access token found - left NEW, to be set up from Home: http://localhost:13031/home.html)"
@@ -147,7 +147,7 @@ elif [ ! -f .web_access_admin ]; then
       seed=$(node -e 'console.log( require( "crypto" ).randomBytes( 67 ).toString( "hex" ) )')
 
       # NOTE: A test node only - set up from the entropy given, so its twelve words are known and recovering the node
-      # with them can be tried (Damon, 2026-10-09). Thirty-two hex characters are twelve words. Never for a real node:
+      # with them can be tried (2026-10-09). Thirty-two hex characters are twelve words. Never for a real node:
       # whoever has the words can take the node over.
       if [[ "${CIYAM_TEST_ENTROPY:-}" =~ ^[0-9a-f]{32}$ ]]; then
          seed="$CIYAM_TEST_ENTROPY"
@@ -225,7 +225,7 @@ if [ -n "${CIYAM_TURN_SECRET:-}" ]; then
       turn_port=3478
       if [ -n "${CIYAM_TURN_PORT:-}" ]; then
          # NOTE: As a number - "03478" as 3478, as the node hands it out (found by review, 2026-11-17) - and from 1024, as the node takes
-         # it (Ian, 2026-11-17: below that only root may listen, and the node isn't assumed to run as root).
+         # it (2026-11-17: below that only root may listen, and the node isn't assumed to run as root).
          if printf '%s' "$CIYAM_TURN_PORT" | grep -qE '^[0-9]{1,5}$' && [ $(( 10#$CIYAM_TURN_PORT )) -ge 1024 ] && [ $(( 10#$CIYAM_TURN_PORT )) -le 65535 ]; then
             turn_port=$(( 10#$CIYAM_TURN_PORT ))
          else
@@ -234,7 +234,7 @@ if [ -n "${CIYAM_TURN_SECRET:-}" ]; then
       fi
 
       # NOTE: The node hands out the port coturn has here, and only it - without "CIYAM_TURN_PORT" it would hand out its own
-      # "turn_port" setting ("3478:5349" unless set otherwise, Ian, 2026-11-18), a TLS port that coturn here doesn't listen on.
+      # "turn_port" setting ("3478:5349" unless set otherwise, 2026-11-18), a TLS port that coturn here doesn't listen on.
       export CIYAM_TURN_PORT="$turn_port"
 
       # NOTE: "public/private" - the address phones reach, and this container's own that it stands for.

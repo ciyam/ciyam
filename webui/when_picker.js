@@ -3,9 +3,9 @@
 // Distributed under the MIT/X11 software license, please refer to the file license.txt
 // in the root project directory or http://www.opensource.org/licenses/mit-license.php.
 
-// NOTE: The day and time picker (Damon, 2026-10-31) - in place of the browser's own, which differs from one browser to the next
-// and could not take what Ian asked for (2026-10-31: a Select beside Clear, the day not set by clicking it). A field showing the
-// day and time chosen (yyyy-mm-dd, as Ian prefers) opens a month below it: a click or the arrow keys mark a day, an hour and a
+// NOTE: The day and time picker (2026-10-31) - in place of the browser's own, which differs from one browser to the next
+// and could not take what was asked for (2026-10-31: a Select beside Clear, the day not set by clicking it). A field showing the
+// day and time chosen (yyyy-mm-dd) opens a month below it: a click or the arrow keys mark a day, an hour and a
 // minute are chosen under it, and Select sets them - Clear empties the field, Cancel or Escape leave it as it was. Days outside
 // the limits cannot be marked, and a time outside them is said and cannot be selected. The value is kept in the input it is
 // given, as a "datetime-local" field's ("2026-11-06T17:00"), so the page reads it as before. The pure parts are the "when_"
@@ -453,7 +453,7 @@ function when_picker( input, options )
 
    return {
       is_open: is_open,
-      // NOTE: Opened by the page - the poll dialog's Pick a time opens the month at once (Damon, 2026-11-04: it took a second click).
+      // NOTE: Opened by the page - the poll dialog's Pick a time opens the month at once (2026-11-04: it took a second click).
       open: function( ) { if( !is_open( ) && !field.disabled ) open( ); },
       close: function( ) { close( false ); },
       set_range: function( min, max )

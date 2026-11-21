@@ -43,14 +43,14 @@ const c_format_type_text = "text";
 const c_session_type_admin = "[adm]";
 const c_session_type_standard = "[std]";
 
-// NOTE: How the PIN and password are hashed before they are sent (Ian, 2026-10-23: "hardening should actually take place
+// NOTE: How the PIN and password are hashed before they are sent (2026-10-23: "hardening should actually take place
 // _before_ sending it to the server"). Version 0 is one SHA-256, as sent until then - which the node keeps, so whoever runs
 // one could guess a password at that speed. Version 1 hardens it here first: rounds of SHA-256 of what there is with the PIN
-// and password after it, as "harden" does - a floor good on its own, and more for a shorter password (Ian: "only multiply for
+// and password after it, as "harden" does - a floor good on its own, and more for a shorter password ("only multiply for
 // even more rounds for weaker (length in particular) passwords"). What a version does is fixed once used - a change is a new
 // version - so a hash already kept goes on matching the one it was made with.
 //
-// A password of 40 or more UTF-8 bytes has no extra rounds (Ian, 2026-10-25: "if a password is > 39 characters long then we
+// A password of 40 or more UTF-8 bytes has no extra rounds (2026-10-25: "if a password is > 39 characters long then we
 // could skip the extra hash rounds" - one that long most likely comes from a password manager). With one round version 1 is
 // version 0, so such an account needs no version kept or switched.
 const c_password_hash_version = 1;
@@ -60,8 +60,8 @@ const c_password_unhardened_length = 40;
 // NOTE: In a page, a pause every so many rounds, so it can redraw while hardening.
 const c_password_hash_pause = 5000;
 
-// NOTE: The version a PIN's password was last hashed with in this browser (Ian, 2026-10-23: a version in "localStorage") - "_"
-// before a PIN, as "cws.hashed_<pin>", and "@" before a name, as "cws.notify@<name>" (Ian, 2026-10-25). The first days had
+// NOTE: The version a PIN's password was last hashed with in this browser (2026-10-23: a version in "localStorage") - "_"
+// before a PIN, as "cws.hashed_<pin>", and "@" before a name, as "cws.notify@<name>" (2026-10-25). The first days had
 // "@" before the PIN too; one found so is moved.
 const c_storage_hash_version_prefix = "cws.hash_version_";
 const c_storage_hash_version_prefix_old = "cws.hash_version@";
@@ -241,10 +241,10 @@ class CIYAM
    }
 
    // NOTE: Hashed as UTF-8, as Node's is - "sha2.min.js" given the text itself took each character's low byte, so a password
-   // not plain ASCII set in a browser did not sign in from the command line (Ian, 2026-10-22: "please change the sign-in hash to
+   // not plain ASCII set in a browser did not sign in from the command line (2026-10-22: "please change the sign-in hash to
    // use UTF-8"). One set that way before needs setting again.
    // NOTE: The PIN and password as they are sent - hashed as "version", the current one if none is given ("password_hash( )").
-   // Both kinds of hashing keep the UTF-8 of the text, as the server and Node do (Ian, 2026-10-22).
+   // Both kinds of hashing keep the UTF-8 of the text, as the server and Node do (2026-10-22).
    async hash_combined( password, access, version )
    {
       if( access == null )
@@ -261,7 +261,7 @@ class CIYAM
       return result;
    }
 
-   // NOTE: What a password's hardening and a sign in are doing, for a page to show (Ian, 2026-10-25: "I don't see any progress
+   // NOTE: What a password's hardening and a sign in are doing, for a page to show (2026-10-25: "I don't see any progress
    // ... a progress whilst it is hashing (or waiting for 3 secs) would be a suggestion"): "securing" with the fraction done,
    // "waiting" with the seconds left before trying the other way, "updating" while the password is set the current way - and
    // null when it is over. A page's own failure to show it never stops the sign in.
@@ -305,7 +305,7 @@ class CIYAM
 
    // NOTE: The version a PIN's password was last hashed with in this browser. None kept for it: a browser keeping versions
    // for other PINs has signed in since there were versions, so the current one; one keeping things for the node but no
-   // versions at all signed in before them, so the first (Ian, 2026-10-23) - and on the command line, the current one. A
+   // versions at all signed in before them, so the first (2026-10-23) - and on the command line, the current one. A
    // wrong guess costs one more try ("connect( )").
    hash_version_for( access )
    {
@@ -638,7 +638,7 @@ class CIYAM
    // NOTE: Signing in, the password hashed as this browser last hashed it for the PIN ("hash_version_for( )"). Typed, and
    // refused as if wrong, it is tried once more the other way - for an account a browser has not seen, or one whose password
    // admin set - and if it was the older way, the password is hashed the current way and set at once, the session staying
-   // open as a change of password leaves it (Ian, 2026-10-23: "could automatically change this after signing in"). A saved
+   // open as a change of password leaves it (2026-10-23: "could automatically change this after signing in"). A saved
    // hash ("hashed") is used as it is, and changes nothing - there is no password to hash again.
    //
    // Only a PIN signing in is guessed at: anything else - twelve words' entropy recovering a node, a secret, a PIN with a
@@ -1614,7 +1614,7 @@ async function ciyam_node( host, access, device, hashed, passwd, test, debug, qu
 }
 
 // ====================================================================
-// Modules - "ciyam_<name>.js" plug-in algorithms (Damon, 2026-10-16; agreed with Ian - "JavaScript Modules Design")
+// Modules - "ciyam_<name>.js" plug-in algorithms (2026-10-16; agreed - "JavaScript Modules Design")
 // ====================================================================
 //
 // A module is a class - "about" says what it is, "run( input )" answers - registered with "ciyam_register_module( )". Its
@@ -1634,7 +1634,7 @@ async function ciyam_node( host, access, device, hashed, passwd, test, debug, qu
 // "about.name" is written as the file is named - "ciyam_echo" for "ciyam_echo.js" - so the server's renaming of a module
 // opened to become an account's own ("ciyam_<name>" to "ciyam_<PIN>") renames it too; the registry knows it as "echo".
 //
-// A page uses one through "ciyam_module_named( name )" - its class, for its own functions and "new" - and the console and Ian's
+// A page uses one through "ciyam_module_named( name )" - its class, for its own functions and "new" - and the console and the
 // harness through the "ciyam_<name>_at_load", "_execute" and "_result" globals registering makes ("ciyam_module_legacy( )"),
 // so the lists that "wait ciyam_<name>_result" keep working. What a module needs from the page - progress, a QR code drawn,
 // hashing - comes in its "context" ("ciyam_module_page_context( )"), not from page globals.
@@ -1755,7 +1755,7 @@ function ciyam_utf8_binary( text )
 }
 
 // NOTE: The page's "localStorage", or null - reached through "window" alone, so the command line never touches the one Node
-// has begun to offer, which warns each time it is touched without a file to keep it in (Ian, 2026-10-25: nodejs/node#60303).
+// has begun to offer, which warns each time it is touched without a file to keep it in (2026-10-25: nodejs/node#60303).
 function page_storage( )
 {
    if( typeof window === "undefined" )
@@ -1799,7 +1799,7 @@ function is_okay_response( response )
 
 // NOTE: Version 1's rounds for a password, by its length in UTF-8 bytes - one only for 40 or more, the floor for twelve or
 // more, twice it for nine to eleven, three times for fewer. Bytes, as a console script measures it ("@strlen"), so
-// "init_web_access" can work the same out for admin (Ian, 2026-10-23).
+// "init_web_access" can work the same out for admin (2026-10-23).
 function password_hash_rounds( password )
 {
    var length = new TextEncoder( ).encode( String( password || "" ) ).length;
@@ -1817,7 +1817,7 @@ function password_hash_rounds( password )
 // NOTE: The PIN and password hashed as "version", in lower-case hex - version 0 one SHA-256 of the two; version 1 that many
 // rounds ("password_hash_rounds( )") - one SHA-256 of the two, then each round after hashing what there is with the two after
 // it - as the server's "crypto_hash -x=<rounds - 1>" does, so a console script can make it too ("init_web_access" for admin,
-// Ian 2026-10-23). In a page through "sha2.min.js", in step, pausing now and then so the page can redraw; with "node_crypto",
+// 2026-10-23). In a page through "sha2.min.js", in step, pausing now and then so the page can redraw; with "node_crypto",
 // Node's own SHA-256.
 async function password_hash( access, password, version, node_crypto, on_fraction )
 {
@@ -1843,7 +1843,7 @@ async function password_hash( access, password, version, node_crypto, on_fractio
    var rounds = password_hash_rounds( password );
 
    // NOTE: In a page, the browser's own SHA-256 where it is the faster ("ciyam_sha256_fastest( )") - without a JIT, the library
-   // took 76 seconds for 300000 rounds on a PC, the browser's own 4 (Damon, 2026-11-17: minutes on a Pixel, in Vanadium). Each
+   // took 76 seconds for 300000 rounds on a PC, the browser's own 4 (2026-11-17: minutes on a Pixel, in Vanadium). Each
    // round awaited, so the page redraws as it goes. The same hash either way - each is SHA-256 of the same UTF-8.
    var native = ( !node_crypto && ( rounds > 1 ) ) ? ( await ciyam_sha256_fastest( ) ).native : false;
    var s = native ? await ciyam_sha256_hex( input ) : sha( text );
@@ -1866,7 +1866,7 @@ async function password_hash( access, password, version, node_crypto, on_fractio
 }
 
 // NOTE: SHA-256 of text, as lower-case hex - the browser's own where it has one (a secure context: https, or localhost),
-// "sha2.min.js" otherwise. Decided once a page, for every module that hashes (Ian, 2026-10-09).
+// "sha2.min.js" otherwise. Decided once a page, for every module that hashes (2026-10-09).
 var ciyam_sha256_native = null;
 
 async function ciyam_sha256_hex( text )
@@ -1888,7 +1888,7 @@ async function ciyam_sha256_hex( text )
 }
 
 // NOTE: The faster SHA-256 for many rounds - the browser's own, awaited each time, or "sha2.min.js", in step - timed once a
-// page, as Ian's "harden" did on every load (Ian, 2026-10-09: "work out whether to use the browser's native SHA-256").
+// page, as the server's "harden" did on every load (2026-10-09: "work out whether to use the browser's native SHA-256").
 // Resolves to { native, hash } - "hash" in step when not native, a promise when it is.
 //
 // Each is run a while first, untimed, then timed on 5000 rounds: timed cold on 2000, the library - slow until the engine has
@@ -1950,7 +1950,7 @@ async function ciyam_sha256_time( )
    }
 
    // NOTE: The library many times slower even cold - a browser running scripts without a JIT, as Vanadium on GrapheneOS does
-   // by default, where it is some twenty times the slower (Damon, 2026-11-17: a password took minutes to harden on a Pixel) -
+   // by default, where it is some twenty times the slower (2026-11-17: a password took minutes to harden on a Pixel) -
    // the browser's own taken at once, rather than spending seconds more timing the library.
    if( library_warm > ( native_warm * c_sha256_library_far_slower ) )
       return { native: true, hash: ciyam_sha256_hex };
@@ -2028,7 +2028,7 @@ function ciyam_module_page_context( host, prefix, stopped )
    };
 }
 
-// NOTE: The globals the console, Ian's harness and the lists use - "ciyam_<name>_at_load( callback )" (with the page's
+// NOTE: The globals the console, the harness and the lists use - "ciyam_<name>_at_load( callback )" (with the page's
 // "init_script_value" run at once), "_execute( callback, input )" and "_result" - made for a registered module. Usage
 // hints ("include_script_usage_hints") as the old modules gave them: on loading, "employ javascript <name> <example>";
 // with the first answer, its "hint" - a function of the result, where the hint holds it ("rpc_unlock"'s).

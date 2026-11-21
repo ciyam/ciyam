@@ -48,7 +48,7 @@
    color: var(--color-chat-accent-deep);
 }
 
-/* NOTE: A refusal stands out - a panel in the card's own type, with the critical colours (Damon, 2026-10-10: it was
+/* NOTE: A refusal stands out - a panel in the card's own type, with the critical colours (2026-10-10: it was
    small mono type, easily missed). Nothing shows while there is no refusal. */
 .chat-signin .signin-error:not( :empty )
 {

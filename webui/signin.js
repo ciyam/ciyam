@@ -4,7 +4,7 @@
 // in the root project directory or http://www.opensource.org/licenses/mit-license.php.
 
 // NOTE: The node's sign in, shared - one copy for every app, so the sign in is the same everywhere
-// (Damon, 2026-10-08) - Home, the chat, the accounts page and the console, each of which had its own copy.
+// (2026-10-08) - Home, the chat, the accounts page and the console, each of which had its own copy.
 // It is the accounts page's, the newest of the three: the saved accounts, "Remember on this browser", a typed
 // password tried again with a new device token after the node was set up again, "Reset this browser"; with
 // the chat's "Contacting the server..." while it signs in.
@@ -19,11 +19,11 @@
 //   options.ids            optional - { access, submit }: the ids a page's suites know its list and button by
 //   options.on_busy        optional - called with true as the sign in starts and false as it ends
 //
-// The heading, its line and the button are the same everywhere (Damon, 2026-10-10: "the login screen should be the same
-// for all" - the parts are one app, Ian's point). Only Home rewords it, for a locked node ("signin_describe( )").
+// The heading, its line and the button are the same everywhere (2026-10-10: "the login screen should be the same
+// for all" - the parts are one app). Only Home rewords it, for a locked node ("signin_describe( )").
 //
 // On a locked node it offers recovering with the twelve words, below its buttons - in place, whichever part this is,
-// then on to "options.on_signed_in" as after a sign in (Damon, 2026-10-10; Home's alone before). Needs Ian's
+// then on to "options.on_signed_in" as after a sign in (2026-10-10; Home's alone before). Needs the
 // "bip39.min.js" beside it, read in only then, and "recovery_words( )" and the rest from "chat_parse.js".
 //
 // "request" may be left out - the sign in is then made at once, as the console made it.
@@ -42,7 +42,7 @@ const c_signin_storage_access = "cws.access";
 const c_signin_storage_hashed_prefix = "cws.hashed_";
 
 // NOTE: What opens an account's keys, kept on this browser ("account_keys.js", 2026-10-25) - a hash of its twelve words, not
-// the words (Ian). Forgotten with the account, and the tab's copy on signing out ("signin_forget_tab_keys( )").
+// the words. Forgotten with the account, and the tab's copy on signing out ("signin_forget_tab_keys( )").
 const c_signin_storage_keys_prefix = "cws.user_keys_";
 
 // NOTE: One brought by another browser's QR code, held for the tab until the keys are shown ("account_keys.js").
@@ -114,7 +114,7 @@ function signin_build( host, options )
 
    form.appendChild( signin_element( "label", { class: "chat-label", for: "signin_pin", id: "signin_pin_label" }, "PIN" ) );
 
-   // NOTE: Typed out of sight, like the password (Ian, 2026-10-10).
+   // NOTE: Typed out of sight, like the password (2026-10-10).
    var pin = signin_element( "input", { type: "password", id: "signin_pin", class: "chat-field chat-field--mono",
     inputmode: "numeric", maxlength: "5", autocomplete: "off" } );
 
@@ -126,7 +126,7 @@ function signin_build( host, options )
    form.appendChild( signin_element( "input", { type: "password", id: "signin_password", class: "chat-field",
     autocomplete: "current-password" } ) );
 
-   // NOTE: A saved password is used without its field (Ian, 2026-10-29: an empty field looks as if a password must be typed) -
+   // NOTE: A saved password is used without its field (2026-10-29: an empty field looks as if a password must be typed) -
    // typed instead if it no longer works.
    var saved = signin_element( "div", { class: "signin-hint", id: "signin_hint", hidden: "" } );
    var type_it = signin_element( "button", { type: "button", class: "chat-btn--link", id: "signin_type_password" }, "Type it instead" );
@@ -150,7 +150,7 @@ function signin_build( host, options )
    form.appendChild( retain );
    form.appendChild( signin_element( "div", { class: "signin-hint" }, "Saving the password as well signs you in without typing it." ) );
 
-   // NOTE: A refusal stands out - a panel of its own (Damon, 2026-10-10: it was small grey-red type).
+   // NOTE: A refusal stands out - a panel of its own (2026-10-10: it was small grey-red type).
    form.appendChild( signin_element( "div", { class: "chat-error-text signin-error", id: "signin_error", role: "alert" } ) );
 
    var actions = signin_element( "div", { class: "chat-signin-actions" } );
@@ -164,7 +164,7 @@ function signin_build( host, options )
    form.appendChild( actions );
 
    // NOTE: Recovering with the twelve words - only on a locked node ("signin_check_locked( )"), and below the buttons:
-   // an edge case, rarely needed (Damon, 2026-10-10).
+   // an edge case, rarely needed (2026-10-10).
    var offer = signin_element( "button", { type: "button", class: "chat-btn chat-signin-setup recover-offer", id: "recover_offer", hidden: "" },
     "Can't sign in? Recover the node with its twelve words" );
 
@@ -180,18 +180,18 @@ function signin_build( host, options )
 
    form.appendChild( busy );
 
-   // NOTE: How far securing the password has got - it is hardened before it is sent, a second or two (Ian, 2026-10-25).
+   // NOTE: How far securing the password has got - it is hardened before it is sent, a second or two (2026-10-25).
    form.appendChild( signin_element( "progress", { class: "chat-signin-progress", id: "signin_busy_bar", max: "1", value: "0", hidden: "" } ) );
 
    if( g_signin_options.setup_href )
       form.appendChild( signin_element( "div", { class: "chat-hint chat-signin-centred", id: "signin_setup_hint" },
        "With the code or PIN from the person who added you." ) );
 
-   // NOTE: A forgotten password is reset by admin, the account then set up again with its PIN (Damon and Ian, 2026-10-29).
+   // NOTE: A forgotten password is reset by admin, the account then set up again with its PIN (2026-10-29).
    form.appendChild( signin_element( "div", { class: "chat-hint chat-signin-centred", id: "signin_forgot" },
     "Forgotten your password? Ask your admin to reset it." ) );
 
-   // NOTE: One line (Damon, 2026-10-28: the sign in scrolled) - what it forgets is said by the question it asks first.
+   // NOTE: One line (2026-10-28: the sign in scrolled) - what it forgets is said by the question it asks first.
    var foot = signin_element( "div", { class: "chat-signin-foot" } );
    var reset = signin_element( "button", { type: "button", class: "chat-btn--link", id: "signin_reset" }, "Reset this browser" );
 
@@ -204,8 +204,8 @@ function signin_build( host, options )
    form.appendChild( foot );
    view.appendChild( form );
 
-   // NOTE: A node not set up yet - nobody can sign in; it is set up from Home (Ian, 2026-10-13: a Back from setting up
-   // landed him on a part's sign in).
+   // NOTE: A node not set up yet - nobody can sign in; it is set up from Home (2026-10-13: a Back from setting up
+   // landed them on a part's sign in).
    var fresh = signin_element( "div", { class: "chat-signin-form", id: "signin_new_node", hidden: "" } );
    var fresh_brand = signin_element( "div", { class: "chat-brand" } );
 
@@ -399,7 +399,7 @@ function signin_remember_device( )
 }
 
 // NOTE: The accounts saved on this browser, by any app, ahead of "Enter a PIN...", the first chosen - by name, never by
-// PIN (Ian, 2026-10-10).
+// PIN (2026-10-10).
 function signin_fill_saved( )
 {
    signin_forget_stale_names( );
@@ -432,7 +432,7 @@ function signin_fill_saved( )
 
    select.selectedIndex = chosen_saved_index( ordered, last );
 
-   // NOTE: The list only once there is an account saved here - with none, its one choice is "Enter a PIN…" (Damon, 2026-10-28:
+   // NOTE: The list only once there is an account saved here - with none, its one choice is "Enter a PIN…" (2026-10-28:
    // the sign in scrolled).
    document.getElementById( "signin_access_label" ).hidden = ( ordered.length === 0 );
    select.hidden = ( ordered.length === 0 );
@@ -772,7 +772,7 @@ function signin_forget_session( )
 }
 
 // NOTE: The access keys this tab keeps - an account not remembered keeps its in "sessionStorage", which outlived signing out,
-// a reload and clearing "localStorage" (Ian, 2026-10-27). All but "kept_pin"'s go: none on signing out, the account's own
+// a reload and clearing "localStorage" (2026-10-27). All but "kept_pin"'s go: none on signing out, the account's own
 // on signing in, so a reload while signed in still has it.
 function signin_forget_tab_keys( kept_pin )
 {
@@ -869,7 +869,7 @@ async function signin_resume( )
    if( g_signin_leaving )
       return false;
 
-   // NOTE: The chat not turned on refuses the lobby, though the session is good (Ian, 2026-10-13) - so it is kept, and
+   // NOTE: The chat not turned on refuses the lobby, though the session is good (2026-10-13) - so it is kept, and
    // the part says why it cannot go on.
    if( ( reply.trim( ) === "" ) || ( is_error_response( reply ) && !irc_unavailable( reply ) ) )
    {
@@ -909,7 +909,7 @@ function signin_resumed_listing( )
 }
 
 // ====================================================================
-// Recovering the node with its twelve words (Ian, 2026-10-09; in every part, 2026-10-10)
+// Recovering the node with its twelve words (2026-10-09; in every part, 2026-10-10)
 // ====================================================================
 
 // NOTE: The two cards - the words and a new master password, then admin's PIN - built here, as the sign in is, so
@@ -933,7 +933,7 @@ function recover_build( )
 
    form.appendChild( brand );
 
-   // NOTE: Two steps, as setting up has (Damon, 2026-10-13): the twelve words, then the new master password - all on one
+   // NOTE: Two steps, as setting up has (2026-10-13): the twelve words, then the new master password - all on one
    // card it was long, and scrolled on a phone. "recover_show_step( )" shows one.
    var step_words = signin_element( "div", { class: "recover-step", id: "recover_step_words" } );
    var step_password = signin_element( "div", { class: "recover-step", id: "recover_step_password", hidden: "" } );
@@ -1107,7 +1107,7 @@ function recover_build( )
    done.appendChild( signin_element( "p", { class: "recover-note", id: "recover_keys_note" } ) );
 
    // NOTE: Admin's PIN, and the password, remembered on this browser as setting up's end offers (2026-10-13) - the browser
-   // started afresh by the recovery, with this session's device as its own (Ian, 2026-10-14).
+   // started afresh by the recovery, with this session's device as its own (2026-10-14).
    done.appendChild( signin_element( "label", { class: "chat-label", for: "recover_retain" }, "Remember on this browser" ) );
 
    var retain = signin_element( "select", { id: "recover_retain", class: "chat-field" } );
@@ -1157,7 +1157,7 @@ var g_recover_fresh = null;
 // NOTE: The new password's hash, for Remember - "" until a recovery succeeds.
 var g_recover_hash = "";
 
-// NOTE: Ian's BIP39 library - large, so read in only when recovery opens, and once.
+// NOTE: the BIP39 library - large, so read in only when recovery opens, and once.
 function recover_load_bip39( )
 {
    if( g_recover_bip39 === null )
@@ -1219,8 +1219,8 @@ function load_strength_rules( then )
    return g_strength_rules;
 }
 
-// NOTE: A reveal button in a new password's field - the eye - showing the password as typed, or hiding it again (Damon,
-// 2026-10-25: "if we get a suggested password, we have no way of seeing what was suggested"). Each field once; the field is
+// NOTE: A reveal button in a new password's field - the eye - showing the password as typed, or hiding it again
+// (2026-10-25: "if we get a suggested password, we have no way of seeing what was suggested"). Each field once; the field is
 // wrapped so the button sits inside it. "attach_reveals( )" finds them all - "autocomplete" of "new-password".
 function attach_reveal( input )
 {
@@ -1234,7 +1234,7 @@ function attach_reveal( input )
    input.parentNode.insertBefore( wrap, input );
    wrap.appendChild( input );
 
-   // NOTE: Not a tab stop (Ian, 2026-10-27) - Password to its "type it again" is one tab; from the keys, the checkbox after both
+   // NOTE: Not a tab stop (2026-10-27) - Password to its "type it again" is one tab; from the keys, the checkbox after both
    // shows them ("reveal_check( )").
    var button = signin_element( "button", { type: "button", class: "chat-reveal", id: input.id + "_reveal", tabindex: "-1" } );
    var ns = "http://www.w3.org/2000/svg";
@@ -1290,7 +1290,7 @@ function set_revealed( input, shown )
       check.checked = !!shown;
 }
 
-// NOTE: A new password and its "type it again" are shown or hidden together (Damon, 2026-10-25) - the new password fields
+// NOTE: A new password and its "type it again" are shown or hidden together (2026-10-25) - the new password fields
 // with a reveal in the same form, or the same section of Home's set-up or step of recovery.
 function reveal_partners( input )
 {
@@ -1311,7 +1311,7 @@ function attach_reveals( root )
 
    fields.forEach( attach_reveal );
 
-   // NOTE: Each new password and its "type it again" one tab apart (Ian, 2026-10-27, as the legacy page): "Suggest one" on the
+   // NOTE: Each new password and its "type it again" one tab apart (2026-10-27, as the legacy page): "Suggest one" on the
    // first's label row - a back-tab from it - and a checkbox after the last to show them both, the eyes being no tab stops.
    fields.forEach( function( field )
    {
@@ -1369,7 +1369,7 @@ function reveal_check( field )
       label.parentNode.insertBefore( note, label.nextSibling );
 }
 
-// NOTE: "Suggest one" (Ian, 2026-10-23: a suggested passphrase of five words) - five BIP39 words fill the new password and
+// NOTE: "Suggest one" (2026-10-23: a suggested passphrase of five words) - five BIP39 words fill the new password and
 // its confirmation, each told it changed, shown in both - as a browser's own password manager does - and in "note_id", to be
 // written down.
 async function offer_passphrase( password_id, confirm_id, note_id )
@@ -1395,7 +1395,7 @@ async function offer_passphrase( password_id, confirm_id, note_id )
       set_revealed( field, true );
    } );
 
-   // NOTE: One line - it is in both fields too (Damon, 2026-10-28: Welcome pushed past the bottom of the screen).
+   // NOTE: One line - it is in both fields too (2026-10-28: Welcome pushed past the bottom of the screen).
    signin_set_text( note_id, "Write this down: " + phrase );
    document.getElementById( note_id ).hidden = false;
 }
@@ -1410,7 +1410,7 @@ function recover_inputs( )
    return Array.from( document.querySelectorAll( "#recover_words input" ) );
 }
 
-// NOTE: "options" - { fresh: true, on_back } to recover onto a node not set up (setting up's choice, Damon, 2026-10-13);
+// NOTE: "options" - { fresh: true, on_back } to recover onto a node not set up (setting up's choice, 2026-10-13);
 // anything else - the sign in's click - is a locked node's recovery.
 async function recover_show( options )
 {
@@ -1531,7 +1531,7 @@ function recover_words_status( )
    return problem;
 }
 
-// ---- The words a box offers as it is typed in - from their start, as an autocomplete does (Damon, 2026-10-10: the
+// ---- The words a box offers as it is typed in - from their start, as an autocomplete does (2026-10-10: the
 // browser's own list matched anywhere in a word). Up and down choose, Enter or Tab takes one and goes on to the next
 // box, Escape closes, a click takes one.
 
@@ -1692,7 +1692,7 @@ async function recover_words_go( )
 }
 
 // NOTE: Enter moves on from a box whether a word was chosen from the list or typed in full - the last box to the new
-// password - and never sends the form from a word (Damon, 2026-10-10: Enter on a whole word sent it, and the count of
+// password - and never sends the form from a word (2026-10-10: Enter on a whole word sent it, and the count of
 // words then stood as an error).
 function recover_on_keydown( event )
 {
@@ -1808,12 +1808,12 @@ function signin_keep_keys( access )
    }
 }
 
-// NOTE: Admin's keys from the node's twelve words (Ian, 2026-11-12: admin is the node) - made as setting up or recovering the node
+// NOTE: Admin's keys from the node's twelve words (2026-11-12: admin is the node) - made as setting up or recovering the node
 // signs in, so Give keys in People works at once. From the people key and "admin" ("person_entropy( )" in "ciyam_user_keys.js"), not
 // admin's PIN, which a recovery changes. Keys the node has that the words open are kept as they are - contacts and room keys with
 // them - and only opened here; keys from other words are left alone. "made", "opened", "other" or "failed" ("admin_keys_text( )").
-// NOTE: The people key is kept with them too, as Give keys keeps it - so Give keys asks for nothing, as the words are here now (Damon,
-// 2026-11-16: "this has to be a smooth and simple process"; Ian, 2026-11-16: not the password either).
+// NOTE: The people key is kept with them too, as Give keys keeps it - so Give keys asks for nothing, as the words are here now
+// (2026-11-16: "this has to be a smooth and simple process"; 2026-11-16: not the password either).
 async function signin_admin_keys( entropy )
 {
    try
@@ -1966,10 +1966,10 @@ async function recover_submit( event )
 
    signin_set_text( "recover_status", "Checking the words with the node..." );
 
-   // NOTE: The words' entropy as "access", and the new password - "connect( )" in "ciyam.js" then does as Ian's curl
+   // NOTE: The words' entropy as "access", and the new password - "connect( )" in "ciyam.js" then does as the server's curl
    // does: the node checks the entropy, answers with admin's PIN, and takes the password with the entropy, then the
    // session is made as for any sign in. A fresh device is registered, as from the terminal - kept as the browser's own
-   // once it succeeds, the browser started afresh (Ian, 2026-10-14; below). The entropy's hash rather than the entropy, as
+   // once it succeeds, the browser started afresh (2026-10-14; below). The entropy's hash rather than the entropy, as
    // at set up ("setup_finish( )" in "home.js") - the node takes either for the same identity.
    var device = ciyam.device;
 
@@ -2023,7 +2023,7 @@ async function recover_submit( event )
       return;
    }
 
-   // NOTE: A recovery starts this browser afresh (Ian, 2026-10-14) - most likely a new device, its storage empty, and
+   // NOTE: A recovery starts this browser afresh (2026-10-14) - most likely a new device, its storage empty, and
    // anything kept here from before suspect: its device token may be a node's first, random one, which no other node
    // knows (later ones carry a checksum from the identity). So everything kept for the node goes, as "Reset this browser"
    // does - the session itself is the tab's - and this session's device becomes the browser's, its hash for Remember.
@@ -2065,7 +2065,7 @@ async function recover_submit( event )
    document.getElementById( "recover_form" ).hidden = true;
    document.getElementById( "recover_done" ).hidden = false;
 
-   // NOTE: The way on has the focus - not the heading, which looked strange outlined (Damon, 2026-10-10).
+   // NOTE: The way on has the focus - not the heading, which looked strange outlined (2026-10-10).
    document.getElementById( "recover_continue" ).focus( );
 }
 

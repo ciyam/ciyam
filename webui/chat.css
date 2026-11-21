@@ -70,7 +70,7 @@ textarea
    display: flex;
    flex-direction: column;
    /* NOTE: "dvh" - the height actually left visible, smaller while a phone's address bar shows; "vh" alone is the height
-      with the bar hidden, which put the chat's message box below the screen in GrapheneOS's Vanadium (Ian, 2026-10-07). */
+      with the bar hidden, which put the chat's message box below the screen in GrapheneOS's Vanadium (2026-10-07). */
    height: 100vh;
    height: 100dvh;
    background: var(--color-chat-bg);
@@ -261,7 +261,7 @@ button.chat-avatar:hover
 }
 
 /* NOTE: A dialog of fields - the poll's and the room's - each label with its field, what it lacks under it, and the parts evenly
-   apart (Damon, 2026-11-04: the label's own margins on top of the dialog's gap left the spacing uneven). */
+   apart (2026-11-04: the label's own margins on top of the dialog's gap left the spacing uneven). */
 .chat-dialog.chat-form-dialog
 {
    gap: 18px;
@@ -297,7 +297,7 @@ button.chat-avatar:hover
    font-weight: 700;
 }
 
-/* NOTE: "* needed" on the title's line, so it takes no line of its own (Damon, 2026-11-04: the poll dialog opened scrolling). */
+/* NOTE: "* needed" on the title's line, so it takes no line of its own (2026-11-04: the poll dialog opened scrolling). */
 .chat-form-head
 {
    display: flex;
@@ -313,7 +313,7 @@ button.chat-avatar:hover
    white-space: nowrap;
 }
 
-/* NOTE: The poll dialog made compact enough to open without scrolling on a laptop's screen (Damon, 2026-11-04) - a little wider,
+/* NOTE: The poll dialog made compact enough to open without scrolling on a laptop's screen (2026-11-04) - a little wider,
    so the close's choices fit on one line, closer parts, and lower fields. */
 .chat-dialog.chat-poll-dialog
 {
@@ -660,7 +660,7 @@ button.chat-avatar:hover
    margin-top: 0;
 }
 
-/* NOTE: A closed room keeps its messages to read, but nothing on them can be changed (Ian, 2026-10-30). */
+/* NOTE: A closed room keeps its messages to read, but nothing on them can be changed (2026-10-30). */
 .chat-messages.is-closed .chat-message-edit,
 .chat-messages.is-closed .chat-message-pin,
 .chat-messages.is-closed .chat-message-delete,
@@ -675,7 +675,7 @@ button.chat-avatar:hover
 }
 
 /* NOTE: The reactions stay - for a poll they are the result - but are no longer given by clicking them; nor on an encrypted
-   message that cannot be read here (Ian, 2026-10-30). */
+   message that cannot be read here (2026-10-30). */
 .chat-messages.is-closed button.chat-reaction,
 .chat-message.is-unopened button.chat-reaction
 {
@@ -780,7 +780,7 @@ button.chat-avatar:hover
    color: var(--color-chat-text-secondary);
 }
 
-/* NOTE: The way to a member's contact codes, at the end of their row (Damon, 2026-11-08). */
+/* NOTE: The way to a member's contact codes, at the end of their row (2026-11-08). */
 .chat-room-key-member-go
 {
    margin-left: auto;
@@ -806,7 +806,7 @@ button.chat-avatar:hover
    gap: 6px;
 }
 
-/* NOTE: The key pasted, all of it seen - a box that wraps (Ian, 2026-10-26: the field was too small). */
+/* NOTE: The key pasted, all of it seen - a box that wraps (2026-10-26: the field was too small). */
 .chat-room-key-input
 {
    height: auto;
@@ -856,7 +856,7 @@ button.chat-avatar:hover
 }
 
 /* NOTE: The same red in both themes - the critical text colour, used before, is a light pink in the dark one, too pale for white
-   text - and darker on hover, not the plain button's pale hover, which left the white text unreadable (Damon, 2026-10-28). */
+   text - and darker on hover, not the plain button's pale hover, which left the white text unreadable (2026-10-28). */
 .chat-btn--danger
 {
    border-color: var(--color-chat-critical);
@@ -1074,7 +1074,7 @@ button.chat-avatar:hover
    outline: none;
 }
 
-/* NOTE: The twelve words typed with help ("words_entry.js", Ian, 2026-10-31) - the field's text drawn by a ghost over it, which
+/* NOTE: The twelve words typed with help ("words_entry.js", 2026-10-31) - the field's text drawn by a ghost over it, which
    takes its font, padding and border widths, so both wrap alike; the field grows rather than scrolls. */
 .words-entry
 {
@@ -1423,7 +1423,7 @@ button.chat-avatar:hover
    text-align: center;
 }
 
-/* NOTE: One line - "Trouble signing in? Reset this browser" (Damon, 2026-10-28: the sign in scrolled). */
+/* NOTE: One line - "Trouble signing in? Reset this browser" (2026-10-28: the sign in scrolled). */
 .chat-signin-foot
 {
    margin-top: 22px;
@@ -1864,7 +1864,7 @@ button.chat-avatar:hover
    flex: none;
 }
 
-/* NOTE: Pinned messages - beneath any announcements, above the conversation (Ian's server, 2026-10-14). Neutral, as they
+/* NOTE: Pinned messages - beneath any announcements, above the conversation (the server, 2026-10-14). Neutral, as they
    are the room's own; several scroll inside the strip rather than pushing the conversation off the screen. */
 .chat-pinned-strip
 {
@@ -1879,7 +1879,7 @@ button.chat-avatar:hover
    background: var(--color-chat-bg-rail);
 }
 
-/* NOTE: The strip shut - one line: the pin, how many, the first, and Show (Ian, 2026-10-14). */
+/* NOTE: The strip shut - one line: the pin, how many, the first, and Show (2026-10-14). */
 .chat-pinned-line
 {
    display: flex;
@@ -2009,7 +2009,7 @@ button.chat-avatar:hover
    flex: none;
 }
 
-/* NOTE: A pinned poll's options on a line of their own, under the question and Unpin (Ian, 2026-11-01). */
+/* NOTE: A pinned poll's options on a line of their own, under the question and Unpin (2026-11-01). */
 .chat-pinned-poll
 {
    order: 1;
@@ -2160,7 +2160,7 @@ button.chat-avatar:hover
    overflow-wrap: anywhere;
 }
 
-/* NOTE: Encryption in the bar and the details (Damon, 2026-11-02) - a padlock shut or open with the word, in green or amber,
+/* NOTE: Encryption in the bar and the details (2026-11-02) - a padlock shut or open with the word, in green or amber,
    and a line of the same colour along the bar's foot. Never the colour alone - the padlock and the word say it too. */
 .chat-padlock
 {
@@ -2354,7 +2354,7 @@ button.chat-avatar:hover
    padding: 8px 0 3px;
 }
 
-/* NOTE: A person's run of messages (Damon, 2026-10-28) - the name and time on the first only, the time back on hover. */
+/* NOTE: A person's run of messages (2026-10-28) - the name and time on the first only, the time back on hover. */
 .chat-message.is-continued
 {
    padding-top: 1px;
@@ -2415,7 +2415,7 @@ button.chat-avatar:hover
 }
 
 /* NOTE: Read markers - who has read up to this message. Quiet, and to the right. */
-/* NOTE: "Seen by" at the end of the row read up to (Damon, 2026-10-28) - small initials, then how many more; drawn from the marks'
+/* NOTE: "Seen by" at the end of the row read up to (2026-10-28) - small initials, then how many more; drawn from the marks'
    attributes, so they are not taken for part of what was said. */
 .chat-seen
 {
@@ -2488,7 +2488,7 @@ button.chat-avatar:hover
    align-self: center;
 }
 
-/* NOTE: A private message drawn as a folded note passed in the room (Ian, 2026-11-04: in a meeting, a note slid in front of one
+/* NOTE: A private message drawn as a folded note passed in the room (2026-11-04: in a meeting, a note slid in front of one
    person - known at a glance for what it is, with no other room to look in). A slip of paper as wide as its words, a corner
    folded down, a shadow under it; the pill still says who it is to. */
 .chat-message.is-private .chat-message-text
@@ -2648,7 +2648,7 @@ button.chat-avatar:hover
    margin-right: auto;
 }
 
-/* NOTE: Reactions beneath the message (Ian, 2026-10-29) - under its text; "seen by" stays on the first line. */
+/* NOTE: Reactions beneath the message (2026-10-29) - under its text; "seen by" stays on the first line. */
 .chat-reactions
 {
    grid-column: 3;
@@ -2664,7 +2664,7 @@ button.chat-avatar:hover
    display: none;
 }
 
-/* NOTE: A poll (Ian, 2026-10-31) - its options with the votes for each, a bar behind each as its share; voted for by clicking one,
+/* NOTE: A poll (2026-10-31) - its options with the votes for each, a bar behind each as its share; voted for by clicking one,
    not from the React button. */
 .chat-message.is-poll .chat-message-react
 {
@@ -2735,7 +2735,7 @@ button.chat-poll-option:hover
    position: relative;
 }
 
-/* NOTE: An option's letter - plain, whatever the question (Damon, 2026-10-31: the reactions' emoji would not suit a serious one). */
+/* NOTE: An option's letter - plain, whatever the question (2026-10-31: the reactions' emoji would not suit a serious one). */
 .chat-poll-letter
 {
    flex: none;
@@ -3096,7 +3096,7 @@ button.chat-reaction:hover
    color: var(--color-chat-critical-text);
 }
 
-/* NOTE: A message edited to spaces - deleted (Ian, 2026-10-15): said so, quietly, where it was. */
+/* NOTE: A message edited to spaces - deleted (2026-10-15): said so, quietly, where it was. */
 .chat-message.is-deleted .chat-message-body
 {
    font-style: italic;
@@ -3110,7 +3110,7 @@ button.chat-reaction:hover
    text-decoration: none;
 }
 
-/* NOTE: A pinned message, where it was said - a faint pin after it, no more (Ian, 2026-10-14: "less visible"). */
+/* NOTE: A pinned message, where it was said - a faint pin after it, no more (2026-10-14: "less visible"). */
 .chat-pin-mark
 {
    display: inline-flex;
@@ -3147,7 +3147,7 @@ button.chat-reaction:hover
    }
 }
 
-/* NOTE: A day boundary - the only row centred, with a rule either side (Damon, 2026-10-28: as Element has it); notices sit in the
+/* NOTE: A day boundary - the only row centred, with a rule either side (2026-10-28: as Element has it); notices sit in the
    time column, as messages do. */
 .chat-day
 {
@@ -3176,8 +3176,8 @@ button.chat-reaction:hover
    white-space: nowrap;
 }
 
-/* NOTE: A notice, or a run of them as one line - in the time column as a message is, quiet, an icon for what happened (Damon,
-   2026-10-28: centred with a rule either side, each read as a day). A notice folded into a run is not drawn until Show all. */
+/* NOTE: A notice, or a run of them as one line - in the time column as a message is, quiet, an icon for what happened
+   (2026-10-28: centred with a rule either side, each read as a day). A notice folded into a run is not drawn until Show all. */
 .chat-notice,
 .chat-notice-run
 {
@@ -3194,7 +3194,7 @@ button.chat-reaction:hover
 }
 
 /* NOTE: A block of notices one after another on a light band, wider than the text by its padding so the time column still lines
-   up, and over the list's gap so the band is unbroken (Damon, 2026-10-28: the conversation the main thing, the room's events
+   up, and over the list's gap so the band is unbroken (2026-10-28: the conversation the main thing, the room's events
    set apart). "band_notices( )" marks the rows. */
 .chat-notice.is-band,
 .chat-notice-run.is-band
@@ -3892,7 +3892,7 @@ button.chat-reaction:hover
    margin-top: 6px;
 }
 
-/* NOTE: A dialog's buttons one size - the primary one is the sign in's, larger, elsewhere (Damon, 2026-10-30: Cancel beside Reset
+/* NOTE: A dialog's buttons one size - the primary one is the sign in's, larger, elsewhere (2026-10-30: Cancel beside Reset
    password was the smaller). */
 .chat-dialog-actions .chat-btn
 {
@@ -3901,7 +3901,7 @@ button.chat-reaction:hover
    font-size: var(--font-size-chat-meta);
 }
 
-/* ---- a question in place of "confirm( )" ("dialog.js", Damon, 2026-10-27) - over every other dialog, drawer and menu ---- */
+/* ---- a question in place of "confirm( )" ("dialog.js", 2026-10-27) - over every other dialog, drawer and menu ---- */
 
 .chat-ask-scrim
 {
@@ -3919,7 +3919,7 @@ button.chat-reaction:hover
    white-space: pre-line;
 }
 
-/* ---- the people picker ("picker.js", Damon, 2026-10-27) - the chosen as chips in a field, and a popup list with a search ---- */
+/* ---- the people picker ("picker.js", 2026-10-27) - the chosen as chips in a field, and a popup list with a search ---- */
 
 .chat-picker
 {
@@ -4467,7 +4467,7 @@ button.chat-reaction:hover
       padding: 8px 10px;
    }
 
-   /* NOTE: Who a direct message is with is left out - its name says as much, and the bar was crowded (Damon, 2026-11-02);
+   /* NOTE: Who a direct message is with is left out - its name says as much, and the bar was crowded (2026-11-02);
       anything more, a warning or the close, stays. */
    .chat-thread-sub.is-plain
    {
@@ -4658,7 +4658,7 @@ button.chat-reaction:hover
    margin: 6px 0 2px;
 }
 
-/* NOTE: On the new password's label row since 2026-10-27 (Ian) - a back-tab from the password, not a tab stop between it and
+/* NOTE: On the new password's label row since 2026-10-27 - a back-tab from the password, not a tab stop between it and
    its "type it again". */
 .chat-label-row
 {
@@ -4686,7 +4686,7 @@ button.chat-reaction:hover
    margin-top: 22px;
 }
 
-/* NOTE: Both passwords shown from the keyboard (Ian, 2026-10-27) - the eyes are no tab stops. */
+/* NOTE: Both passwords shown from the keyboard (2026-10-27) - the eyes are no tab stops. */
 .chat-reveal-check
 {
    display: flex;
@@ -4893,7 +4893,7 @@ button.chat-reaction:hover
    color: var(--color-chat-text-secondary);
 }
 
-/* ---- desktop notifications (Damon, 2026-10-20) ---- */
+/* ---- desktop notifications (2026-10-20) ---- */
 
 /* NOTE: The switch in the account menu - its name, and On or Off at the right. */
 .chat-user-menu-item.chat-notify-item
@@ -4981,7 +4981,7 @@ button.chat-reaction:hover
    }
 }
 
-/* NOTE: Calls (Ian, 2026-11-13) - the Call button in an encrypted direct message's bar, and the call's panel under it: the other
+/* NOTE: Calls (2026-11-13) - the Call button in an encrypted direct message's bar, and the call's panel under it: the other
    person's video, yours small in its corner, and a bar of what is happening and what can be done. */
 .chat-call-start
 {

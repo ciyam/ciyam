@@ -3,9 +3,9 @@
 // Distributed under the MIT/X11 software license, please refer to the file license.txt
 // in the root project directory or http://www.opensource.org/licenses/mit-license.php.
 
-// NOTE: An account's own keys as the node keeps them ("user-keys", Ian 2026-10-22) - a module ("Modules" in "ciyam.js"). The
+// NOTE: An account's own keys as the node keeps them ("user-keys", 2026-10-22) - a module ("Modules" in "ciyam.js"). The
 // keys come from the account's secret entropy - its twelve words, made as a node's are - which is never kept anywhere but on
-// paper (Ian, 2026-10-25: "encrypt them with a hash (or X hash rounds) of the user entropy (which can be safely stored in
+// paper (2026-10-25: "encrypt them with a hash (or X hash rounds) of the user entropy (which can be safely stored in
 // localStorage as it won't help anyone trying to crack the actual twelve words)"). From the entropy:
 //
 //    the access key - "harden"'s rounds of "user_keys" and the entropy - kept by each browser, and passed from one to another
@@ -21,7 +21,7 @@
 // ciphertext "crypt -cc" (ChaCha20) under it, and the HMAC HMAC-SHA256 of the ciphertext's hex keyed with "mac" and the key, in
 // full. Locking again picks a new salt. ("UK1", under a passphrase, and "UK2", under the entropy itself, were never used.)
 //
-// Guarded (Ian's suggestion, 2026-10-27) with a line before them, the node keeping both:
+// Guarded (suggested 2026-10-27) with a line before them, the node keeping both:
 //
 //    UK#:<rounds>:<check>
 //
@@ -29,7 +29,7 @@
 // rounds it has, so it takes keys with fewer rounds - a new access key, which no browser that had the old one can make (a round
 // of "harden" needs the entropy) - only from the words; and only the same guard otherwise, or the same check to erase them.
 //
-// Admin's keys may keep the people key too (Damon, 2026-11-11 - for Give keys in People), sealed under admin's PIN and password so
+// Admin's keys may keep the people key too (2026-11-11 - for Give keys in People), sealed under admin's PIN and password so
 // someone at admin's browser cannot give keys without the password:
 //
 //    PK1:<rounds>:<salt>:<sealed>:<check>
@@ -64,7 +64,7 @@ ciyam_register_module( class extends ciyam_module
    static c_people_label = "people_key:";
    static c_person_label = "person_entropy:";
 
-   // NOTE: Admin's keys from the people key and this in place of a PIN (Ian, 2026-11-12) - admin is the node, and a recovery gives
+   // NOTE: Admin's keys from the people key and this in place of a PIN (2026-11-12) - admin is the node, and a recovery gives
    // admin a new PIN, which would make other keys.
    static c_admin_person = "admin";
 
@@ -138,7 +138,7 @@ ciyam_register_module( class extends ciyam_module
       return BIP39.mnemonicToEntropy( text );
    }
 
-   // NOTE: One set of twelve words for a node and everyone on it (Ian, 2026-11-09 and 2026-11-11) - the "people key", from the
+   // NOTE: One set of twelve words for a node and everyone on it (2026-11-09 and 2026-11-11) - the "people key", from the
    // node's entropy by a hash of its own: the node is given the entropy's SHA-256 (the same identity as the entropy, "cdd681cc"),
    // so it cannot make this.
    static async people_key( node_entropy )
@@ -162,8 +162,8 @@ ciyam_register_module( class extends ciyam_module
       return ( await ciyam_sha256_hex( this.c_person_label + key + ":" + text ) ).substr( 0, 32 );
    }
 
-   // NOTE: The people key as admin's keys keep it - as it is, under their lock alone, so Give keys asks for nothing (Ian, 2026-11-16:
-   // his password comes from a password manager he hasn't with him when out). One sealed ("PK1") is from before, opened once.
+   // NOTE: The people key as admin's keys keep it - as it is, under their lock alone, so Give keys asks for nothing (2026-11-16:
+   // a password from a password manager not to hand when out). One sealed ("PK1") is from before, opened once.
    static is_people_key( kept )
    {
       return /^[0-9a-f]{64}$/.test( String( kept || "" ) );
@@ -251,7 +251,7 @@ ciyam_register_module( class extends ciyam_module
       return harden.rounds( hasher, count, this.c_label + this.checked_entropy( entropy ), null );
    }
 
-   // NOTE: The access key one round on from "access_key" - so one made with a round fewer (Ian, 2026-10-27: a new access key, a
+   // NOTE: The access key one round on from "access_key" - so one made with a round fewer (2026-10-27: a new access key, a
    // round fewer each time) is seen to come from the same words as the one it replaces, without hashing them all again.
    static async next_access_key( entropy, access_key )
    {
@@ -323,7 +323,7 @@ ciyam_register_module( class extends ciyam_module
    }
 
    // NOTE: What is kept - checked, so nothing that could not be used is locked: the two keys, others' public keys by name, and
-   // room keys by room (Ian, 2026-10-25: 32 hex digits from "irc.cin"'s "k", used as they are).
+   // room keys by room (2026-10-25: 32 hex digits from "irc.cin"'s "k", used as they are).
    static contents_text( contents )
    {
       var given = ( contents || { } ).contacts || { };

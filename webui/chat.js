@@ -37,7 +37,7 @@ var g_invitations = [ ];
 var g_announcements = [ ];
 var g_announcements_drawn = "";
 
-// NOTE: The room's pinned messages, from its last read - every read returns them all (Ian's server, 2026-10-14).
+// NOTE: The room's pinned messages, from its last read - every read returns them all (the server, 2026-10-14).
 var g_pinned = [ ];
 var g_pinned_drawn = "";
 var g_pinned_expanded = true;
@@ -58,7 +58,7 @@ var g_edit_unique = "";
 var g_edit_private = false;
 var g_edit_draft = "";
 
-// NOTE: The message being edited as it would be sent, unchanged - so saving it unchanged sends nothing (Ian, 2026-10-31).
+// NOTE: The message being edited as it would be sent, unchanged - so saving it unchanged sends nothing (2026-10-31).
 var g_edit_original = "";
 var g_recipients = [ ];
 
@@ -344,7 +344,7 @@ function enter_chat( )
 
    apps_refresh( );
 
-   // NOTE: Admin has no conversations of its own to start (Ian, 2026-10-05).
+   // NOTE: Admin has no conversations of its own to start (2026-10-05).
    document.getElementById( "dm_new" ).hidden = !dm_allowed( dm_me( ) );
    document.getElementById( "user_menu_session" ).textContent = ciyam.sessid;
    document.getElementById( "console_session" ).textContent = "inherits chat session " + ciyam.sessid;
@@ -412,7 +412,7 @@ function do_toggle_user_menu( )
 }
 
 // ====================================================================
-// Desktop notifications (Damon, 2026-10-20) - from the chat only, while it is open but not in front; who and where, never
+// Desktop notifications (2026-10-20) - from the chat only, while it is open but not in front; who and where, never
 // what was said ("notifications_due( )" and "messages_notification( )" in "chat_parse.js"). Offered once by a bar, then
 // switched in the account menu or on My account ("notify.js").
 // ====================================================================
@@ -1613,7 +1613,7 @@ function load_rooms( )
    } );
 }
 
-// NOTE: The chat not turned on - said once, in the thread, and nothing more asked of the node (Ian, 2026-10-13).
+// NOTE: The chat not turned on - said once, in the thread, and nothing more asked of the node (2026-10-13).
 var g_chat_off = false;
 
 function chat_turned_off( )
@@ -1708,7 +1708,7 @@ function on_rooms_response( response )
 
       watch_held_rooms( );
 
-      // NOTE: The owner's other keyed rooms looked through as they change, those who joined passed the key (Damon, 2026-11-07).
+      // NOTE: The owner's other keyed rooms looked through as they change, those who joined passed the key (2026-11-07).
       chat_owner_send_keys_away( );
 
       notify_rooms( );
@@ -1949,12 +1949,12 @@ function update_rail_item( node, item )
 
    var room_sub = node.querySelector( ".chat-room-sub" );
 
-   // NOTE: A room in its last hour, or closed, says so here (Ian, 2026-10-30) - an earlier close time is in Room Details.
+   // NOTE: A room in its last hour, or closed, says so here (2026-10-30) - an earlier close time is in Room Details.
    var close_state = room_close_state( entry.closes );
 
    var closing = ( ( close_state === "closing" ) || ( close_state === "closed" ) ) ? room_close_label( entry.closes ) : "";
 
-   // NOTE: The owner's room with members still without its key, as last found - opening it passes the key on (Damon, 2026-11-05).
+   // NOTE: The owner's room with members still without its key, as last found - opening it passes the key on (2026-11-05).
    var keyless = owner_keyless_text( g_owner_key_states[ entry.room ] );
 
    set_text( room_sub, ( declined.length > 0 ) ? ( name_list( declined ) + " declined" ) : ( waiting ? "waiting for them to accept"
@@ -2004,7 +2004,7 @@ function select_room( room, token )
    if( !document.getElementById( "scan_dialog" ).hidden )
       do_close_scan_dialog( );
 
-   // NOTE: An alert about the last room goes with it (Ian, 2026-10-31) - one shown before any room, about the session, stays.
+   // NOTE: An alert about the last room goes with it (2026-10-31) - one shown before any room, about the session, stays.
    var alert = document.getElementById( "chat_alert" );
 
    if( !alert.hidden && ( alert.dataset.room || "" ) !== "" && ( alert.dataset.room !== room ) )
@@ -2091,7 +2091,7 @@ function show_thread_title( )
 
    var outsiders = dm_trusted( g_room_name, g_room_owner ) ? room_outsiders( ) : [ ];
 
-   // NOTE: Encrypted or not is the badge's to say now ("show_encryption( )"), not this line's (Damon, 2026-11-02).
+   // NOTE: Encrypted or not is the badge's to say now ("show_encryption( )"), not this line's (2026-11-02).
    if( is_dm )
       sub.textContent = ( others.length > 0 ) ? ( "Direct message · only you and " + name_list( others ) ) : "Direct message";
    else if( ( outsiders.length > 0 ) && ( chat_room_secret( ) !== "" ) )
@@ -2102,10 +2102,10 @@ function show_thread_title( )
    else
       sub.textContent = "";
 
-   // NOTE: Only who it is with - which a phone leaves out, its name above saying as much (Damon, 2026-11-02).
+   // NOTE: Only who it is with - which a phone leaves out, its name above saying as much (2026-11-02).
    sub.classList.toggle( "is-plain", is_dm );
 
-   // NOTE: And when the room closes (Ian, 2026-10-30).
+   // NOTE: And when the room closes (2026-10-30).
    var entry = find_room( g_room );
 
    g_close_label_applied = entry ? room_close_label( entry.closes ) : "";
@@ -2122,7 +2122,7 @@ function show_thread_title( )
 }
 
 // NOTE: The badge at the right of the bar, the row at the top of the details and a line along the bar's foot, green or amber
-// (Damon, 2026-11-02) - encrypted or not, and in the badge's title and the row who can read it or what would encrypt it.
+// (2026-11-02) - encrypted or not, and in the badge's title and the row who can read it or what would encrypt it.
 function show_encryption( )
 {
    var badge = ( g_room === "" ) ? null : chat_encryption_badge( );
@@ -2162,7 +2162,7 @@ function show_encryption( )
 }
 
 // NOTE: The way to My account for what would encrypt the room ("encryption_action( )") - in its details always, and over the message
-// box in a direct message (Damon, 2026-11-05), until put off with "Not now".
+// box in a direct message (2026-11-05), until put off with "Not now".
 function show_encryption_action( )
 {
    var action = ( g_room === "" ) ? null : encryption_action( chat_encryption_note( ) );
@@ -2173,7 +2173,7 @@ function show_encryption_action( )
    row.hidden = ( action === null );
    bar.hidden = keyless ? false : ( ( action === null ) || ( parse_dm_name( g_room_name ) === null ) || !!g_keys_offer_later[ g_room ] );
 
-   // NOTE: In a room that is encrypted, a member without its key can't post (Damon, 2026-11-05) - said over the message box, with
+   // NOTE: In a room that is encrypted, a member without its key can't post (2026-11-05) - said over the message box, with
    // the way to the key: accepting it, or the contact codes it needs ("member_keyless_text( )").
    document.getElementById( "composer_keys_later" ).hidden = keyless;
 
@@ -2218,7 +2218,7 @@ function do_encryption_action( event )
       return;
    }
 
-   // NOTE: Exchanged here, with the room's owner (Damon, 2026-11-08) - rather than on My account.
+   // NOTE: Exchanged here, with the room's owner (2026-11-08) - rather than on My account.
    if( keyless === "codes" )
    {
       do_open_contact_dialog( g_room_owner );
@@ -2338,7 +2338,7 @@ function selected_request( )
 }
 
 // NOTE: A decline cannot be taken back - the server refuses any later invitation to that
-// room for this user (Ian, 2026-09-26) - so the first click only arms it, and says so.
+// room for this user (2026-09-26) - so the first click only arms it, and says so.
 const c_decline_confirm_ms = 5000;
 
 var g_decline_armed = 0;
@@ -2424,7 +2424,7 @@ function do_join_invitation( )
    if( invite === null )
       return;
 
-   // NOTE: The inviter's direct message with this person, if one is waiting to be accepted, is accepted with it (Damon, 2026-11-03:
+   // NOTE: The inviter's direct message with this person, if one is waiting to be accepted, is accepted with it (2026-11-03:
    // a room's key comes in a direct message from its owner, so an invitation to a keyed room was two to accept - and the key waited
    // until the second was found).
    var dm = parse_dm_name( invite.name ) ? null : dm_existing( [ invite.inviter ], ciyam.username, g_rooms, g_invitations, dm_waiting_rooms( ) );
@@ -2439,7 +2439,7 @@ function do_join_invitation( )
 
    load_rooms( );
 
-   // NOTE: Contact codes exchanged with whoever invited them as it is joined, if theirs is not here (Damon, 2026-11-08: members far
+   // NOTE: Contact codes exchanged with whoever invited them as it is joined, if theirs is not here (2026-11-08: members far
    // apart had no prompt to, and the room's key waited on it) - each sends theirs another way and pastes the other's.
    if( chat_contact_missing( invite.inviter ) )
       do_open_contact_dialog( invite.inviter );
@@ -2464,7 +2464,7 @@ function join_quietly( invite )
 //
 // NOTE: Whole ("from=0") the first time; after that only what is new - no "from" - added to
 // what is held, and whole again only when "needs_full_read( )" says a read of what is new
-// cannot be trusted (Ian, 2026-09-27: reading it whole every time was wasteful).
+// cannot be trusted (2026-09-27: reading it whole every time was wasteful).
 var g_invite_read_whole = false;
 
 function check_invitations( whole )
@@ -2566,7 +2566,7 @@ function do_open_create_room( )
    invite_picker( ).reset( );
    invite_picker( ).set_single( false );
 
-   // NOTE: "Everyone" - its maker is the room's owner (Damon, 2026-09-28: "Invite everyone").
+   // NOTE: "Everyone" - its maker is the room's owner (2026-09-28: "Invite everyone").
    invite_picker( ).set_everyone( true );
 
    document.getElementById( "room_dialog" ).hidden = false;
@@ -2577,7 +2577,7 @@ function do_open_create_room( )
    refresh_known_users( );
 }
 
-// NOTE: The people picker in the room dialog (Damon, 2026-10-27) - the list it draws keeps the old id, so what is ticked is
+// NOTE: The people picker in the room dialog (2026-10-27) - the list it draws keeps the old id, so what is ticked is
 // read as before ("ticked_invitees( )"). Choosing in New message says what each choice would open ("mark_new_message( )").
 function invite_picker( )
 {
@@ -2613,7 +2613,7 @@ function load_invitees( )
 }
 
 // NOTE: Pick the person; the chat opens the conversation with them, starting it if there is none - see "open_dm( )". One
-// person only (Ian, 2026-10-30: "for Direct Messages you should only choose the one user - otherwise it's a normal room"); a
+// person only (2026-10-30: "for Direct Messages you should only choose the one user - otherwise it's a normal room"); a
 // group made before then still opens.
 function do_open_new_message( )
 {
@@ -2646,7 +2646,7 @@ function do_open_new_message( )
 }
 
 // NOTE: Beside each person, what already exists between you - nobody is hidden, since the same
-// list picks the people for a group (Ian, 2026-09-30: people already in a conversation showed
+// list picks the people for a group (2026-09-30: people already in a conversation showed
 // as if they were not). And the button says what it will do: open what exists, or start one.
 const c_dm_existing_notes = { open: "conversation open", waiting: "waiting for them to accept", request: "wants to message you" };
 
@@ -2717,7 +2717,7 @@ async function open_dm( people )
    if( others.length === 0 )
       return;
 
-   // NOTE: Not with admin, nor for admin - the server refuses it (Ian, 2026-10-05).
+   // NOTE: Not with admin, nor for admin - the server refuses it (2026-10-05).
    if( !others.every( function( person ) { return dm_allowed( dm_me( ), person ); } ) )
    {
       show_alert( dm_allowed( dm_me( ) ) ? "Admin is for administration - there are no direct messages with admin."
@@ -2758,8 +2758,8 @@ async function open_dm( people )
 
    await open_new_room( started.reply );
 
-   // NOTE: A group is encrypted from the start when it can be - a room key made for it and sent to each of them (Damon,
-   // 2026-10-27). Not asked: with everyone's public key here, nothing is lost, and the line under it says so.
+   // NOTE: A group is encrypted from the start when it can be - a room key made for it and sent to each of them
+   // (2026-10-27). Not asked: with everyone's public key here, nothing is lost, and the line under it says so.
    if( ( others.length > 1 ) && chat_can_encrypt_for( others ) )
       chat_encrypt_group( started.room, others );
 }
@@ -2770,7 +2770,7 @@ async function start_dm( others )
 {
    var everyone = others.concat( [ ciyam.username ] );
 
-   // NOTE: Two people - Ian's server direct message, ".<the other>"; a group - the prototype's room
+   // NOTE: Two people - the server's direct message, ".<the other>"; a group - the prototype's room
    // ("dm_create_text( )"), until the server has groups.
    var name = dm_create_text( everyone, ciyam.username );
 
@@ -3356,7 +3356,7 @@ function do_dismiss_announcement( unique )
 }
 
 // NOTE: Invites to the room already open, using the "for" option on a messages PUT that
-// Ian added on 2026-09-24. Reuses the create dialog without its name field, and offers
+// Added to the server on 2026-09-24. Reuses the create dialog without its name field, and offers
 // only people who are not already members - inviting a member again would just issue a
 // token they have no use for.
 function do_open_invite( )
@@ -3381,7 +3381,7 @@ function do_open_invite( )
    invite_picker( ).reset( );
    invite_picker( ).set_single( false );
 
-   // NOTE: "Everyone" not in the room or invited already - for its owner or admin (Damon, 2026-09-28: "Invite everyone"); those
+   // NOTE: "Everyone" not in the room or invited already - for its owner or admin (2026-09-28: "Invite everyone"); those
    // in it were left out of the list, and it is offered once those invited are greyed, as their receipts arrive - before that it
    // would tick them too (found by review, 2026-11-02; "mark_already_invited( )").
    invite_picker( ).set_everyone( false );
@@ -3554,7 +3554,7 @@ async function submit_invite( )
    else if( !answered )
       set_error( "room_dialog_error", "The node didn't answer - check whether they were invited, then try again." );
 
-   // NOTE: Those invited to a room with a key are sent it too (Ian, 2026-10-28) - after the invitation, as it queues its own.
+   // NOTE: Those invited to a room with a key are sent it too (2026-10-28) - after the invitation, as it queues its own.
    if( invited !== "" )
    {
       var sent = await chat_send_key_to_invited( room, names );
@@ -3618,7 +3618,7 @@ function do_clear_room_name_error( )
 }
 
 // NOTE: The room dialog's parts and where each says what it lacks ("room_dialog_problems( )") - the poll dialog's pattern
-// (Damon, 2026-11-04).
+// (2026-11-04).
 const c_room_dialog_parts = [
    { key: "name", error: "room_dialog_name_error", field: "room_dialog_name" },
    { key: "people", error: "room_dialog_people_error", field: "room_dialog_picker_add" } ];
@@ -3779,7 +3779,7 @@ async function do_submit_room_dialog( )
    else if( !answered )
       set_error( "room_dialog_error", "The node didn't answer - check whether the room was made, then try again." );
 
-   // NOTE: Opened once the create has answered - then keyed, the key sent to those invited (Ian, 2026-10-28), which queues its own.
+   // NOTE: Opened once the create has answered - then keyed, the key sent to those invited (2026-10-28), which queues its own.
    if( created !== null )
    {
       var room = await open_new_room( created );
@@ -3795,12 +3795,12 @@ async function do_submit_room_dialog( )
 // There is deliberately no "room created" dialog any more. It showed the token and a QR
 // code and said anyone holding it could enter - but tokens are now derived per user, so
 // that token was the owner's own and should never have been shared. Invitations are how
-// people get in. Removed at Ian's suggestion, 2026-09-24.
+// people get in. Removed as suggested, 2026-09-24.
 async function open_new_room( response )
 {
    var value = String( response ).trim( );
 
-   // NOTE: ":" and a space before it since Ian's three-character prefixes (2026-11-05).
+   // NOTE: ":" and a space before it since the server's three-character prefixes (2026-11-05).
    value = value.replace( /^:\s*/, "" );
 
    var pos = value.indexOf( "-" );
@@ -3834,7 +3834,7 @@ function load_messages( options, replace, again )
    var asked_for = g_room;
 
    // NOTE: "extra=ENTIRE" puts each member's read point on the member line - the read markers - and the room key id they hold
-   // ("chat_key_ids_read( )", Ian, 2026-11-11).
+   // ("chat_key_ids_read( )", 2026-11-11).
    var asked = ( options ? options + ";" : "" ) + "extra=ENTIRE";
 
    return serialised( function( )
@@ -3948,7 +3948,7 @@ function on_messages_response( response, asked_for, replace, again )
 }
 
 // NOTE: "Seen by" at the end of the last row each other member has read, from their read points ("seen_by( )" in
-// "chat_parse.js") - their initials, the first three and how many more (Damon, 2026-10-28: a line of its own between messages was
+// "chat_parse.js") - their initials, the first three and how many more (2026-10-28: a line of its own between messages was
 // clutter); the names said for a screen reader and on hover. A row folded into a run of notices gives its mark to the run's line.
 // Redrawn on every read of the room, as read points only move forward and a mark moves down with them. The initials are drawn
 // from the marks' attributes, so a row's text is still only what was said.
@@ -4032,7 +4032,7 @@ function render_seen_markers( )
       list.scrollTop = list.scrollHeight;
 }
 
-// ---- A quieter conversation (Damon, 2026-10-28: centred notices among left-aligned messages, every message with its own time and
+// ---- A quieter conversation (2026-10-28: centred notices among left-aligned messages, every message with its own time and
 // name, "Seen by" lines between them - cluttered)
 
 // NOTE: The notices folded into a run, by what happened - a join or a leaving.
@@ -4099,7 +4099,7 @@ function regroup_thread( )
    band_notices( list );
 }
 
-// NOTE: A poll started - the room's close, then reactions only, one after the other from its owner (Ian's order, "do_start_poll( )")
+// NOTE: A poll started - the room's close, then reactions only, one after the other from its owner (the server's order, "do_start_poll( )")
 // - said as one line, "started a poll - voting closes ..." ("poll_start_notice( )"), the close's own row folded away.
 function fold_poll_notices( list )
 {
@@ -4124,7 +4124,7 @@ function fold_poll_notices( list )
 }
 
 // NOTE: Each block of notices one after another is drawn on a light band, so what happened in the room sits apart from the
-// conversation (Damon, 2026-10-28) - the first and last rows drawn round its ends; a folded row is not drawn, so is none of it.
+// conversation (2026-10-28) - the first and last rows drawn round its ends; a folded row is not drawn, so is none of it.
 function band_notices( list )
 {
    var block = [ ];
@@ -4251,7 +4251,7 @@ function last_rendered_day( list )
 // earlier "from" - so it returns that same message and it gets appended twice. Rather
 // than trying to order the two, appending is made idempotent: a unique already on screen
 // is skipped. The DOM is asked directly so this cannot drift out of step with a separate
-// record of what has been drawn. Reported by Ian, 2026-09-23.
+// record of what has been drawn. Reported by 2026-09-23.
 function already_rendered( list, unique )
 {
    if( !unique )
@@ -4345,7 +4345,7 @@ function build_message( entry )
 
    var time = row.querySelector( ".chat-message-time" );
 
-   // NOTE: Hours and minutes (Damon, 2026-10-28) - the seconds were noise.
+   // NOTE: Hours and minutes (2026-10-28) - the seconds were noise.
    time.textContent = unique_to_time( entry.unique ).substring( 0, 5 );
 
    // NOTE: The row shows the time only - the divider above it carries the day. The full
@@ -4379,11 +4379,11 @@ function build_message( entry )
 
    body.dataset.text = entry.text;
 
-   // NOTE: Deleted - nothing left to edit, pin or delete (Ian, 2026-10-15).
+   // NOTE: Deleted - nothing left to edit, pin or delete (2026-10-15).
    row.classList.toggle( "is-deleted", !!entry.deleted );
 
-   // NOTE: Deleted is an edit too, but says only that it was deleted (Ian, 2026-10-15). "edited" alone says it - the "*"
-   // after the name went (Ian, 2026-10-16).
+   // NOTE: Deleted is an edit too, but says only that it was deleted (2026-10-15). "edited" alone says it - the "*"
+   // after the name went (2026-10-16).
    if( entry.edited && !entry.deleted )
       row.querySelector( ".chat-edit-tag" ).hidden = false;
 
@@ -4405,7 +4405,7 @@ function build_message( entry )
 
    // NOTE: Private messages too, since 2026-09-28 - the edit says it is private
    // ("edit_for_value( )"), and the server keeps it so. An encrypted one too, edited as it reads ("begin_edit( )"); not one of a
-   // kind the chat cannot read - an edit would send it as words. Nor one between two as a direct message is (Ian, 2026-11-06).
+   // kind the chat cannot read - an edit would send it as words. Nor one between two as a direct message is (2026-11-06).
    if( ( entry.sender === ciyam.username ) && !entry.deleted && !entry.pair
     && ( ( message_unreadable_label( entry.text ) === "" ) || ( message_prefix( entry.text ) === "X" ) ) )
    {
@@ -4441,7 +4441,7 @@ function build_message( entry )
    }
 
    // NOTE: Delete - the sender's own, public or private: an edit to two spaces ("delete_options( )"), two clicks as Decline
-   // is, since what was said is gone (Ian's idea, 2026-10-15). Not one between two as a direct message is (Ian, 2026-11-06) - a room
+   // is, since what was said is gone (2026-10-15). Not one between two as a direct message is (2026-11-06) - a room
    // key's note or receipt: the node lets its sender delete one, but the owner's chat does that as the receipt arrives, and one
    // deleted by hand before then would only be passed again ("chat_owner_send_keys( )").
    if( ( entry.kind === "chat" ) && ( entry.sender === ciyam.username ) && !entry.deleted && !entry.pair )
@@ -4456,7 +4456,7 @@ function build_message( entry )
       remove.addEventListener( "click", function( event ) { do_delete_message( event.currentTarget ); } );
    }
 
-   // NOTE: React - to someone else's message ("can_react( )"), one of the ten (Ian, 2026-10-28).
+   // NOTE: React - to someone else's message ("can_react( )"), one of the ten (2026-10-28).
    var may_react = can_react( entry, ciyam.username );
 
    // NOTE: An encrypted one only once it is open here, as for edit ("chat_offer_sealed_actions( )").
@@ -4475,7 +4475,7 @@ function build_message( entry )
       react.addEventListener( "click", function( event ) { open_react_menu( event.currentTarget ); } );
    }
 
-   // NOTE: Encrypted, and not readable here - offered as a QR code for the offline device (Ian, 2026-10-30), its own or anyone's.
+   // NOTE: Encrypted, and not readable here - offered as a QR code for the offline device (2026-10-30), its own or anyone's.
    if( !entry.deleted && ( sealed_qr_text( entry.text ) !== "" ) )
    {
       var qr = row.querySelector( ".chat-message-qr" );
@@ -4491,7 +4491,7 @@ function build_message( entry )
    return node;
 }
 
-// NOTE: Each member's six hex as reactions name them - the SHA-256 of the name from the eleventh character (Ian, 2026-10-29).
+// NOTE: Each member's six hex as reactions name them - the SHA-256 of the name from the eleventh character (2026-10-29).
 var g_reaction_shorts = { };
 
 function reaction_short( name )
@@ -4548,7 +4548,7 @@ function redraw_polls( )
    document.querySelectorAll( "#pinned .chat-pinned.is-poll" ).forEach( function( node ) { draw_pinned_reactions( node ); } );
 }
 
-// NOTE: A poll (Ian, 2026-10-31) - its question as the message, and its options beneath with the votes for each in place of the
+// NOTE: A poll (2026-10-31) - its question as the message, and its options beneath with the votes for each in place of the
 // reactions; an option clicked votes for it (a reaction), again takes the vote back. Only the words as text.
 function mark_poll( element, text )
 {
@@ -4857,14 +4857,14 @@ function do_react( unique, code )
 
    var row = unique ? document.querySelector( "#message_list > .chat-message[data-unique=\"" + unique + "\"]" ) : null;
 
-   // NOTE: Voted on in the pinned strip, the poll perhaps no longer in the conversation (Ian, 2026-11-01).
+   // NOTE: Voted on in the pinned strip, the poll perhaps no longer in the conversation (2026-11-01).
    if( unique && ( row === null ) )
       row = document.querySelector( "#pinned .chat-pinned[data-unique=\"" + unique + "\"]" );
 
    if( ( room === "" ) || ( row === null ) || g_react_in_flight || room_has_closed( ) || row.classList.contains( "is-unopened" ) )
       return;
 
-   // NOTE: A reactions only room's owner may not react (Ian, 2026-10-31).
+   // NOTE: A reactions only room's owner may not react (2026-10-31).
    if( posting_status( room, find_room( room ), ciyam.username, ciyam.is_admin ).no_react )
       return;
 
@@ -4964,7 +4964,7 @@ function do_delete_message( button )
 }
 
 // ====================================================================
-// Pinned messages (Ian's server, 2026-10-14)
+// Pinned messages (the server, 2026-10-14)
 // ====================================================================
 
 // NOTE: A read of the room says which of its messages are pinned - all of them, every time - so the strip, the marks in
@@ -4985,7 +4985,7 @@ function apply_pinned( list )
    mark_pinned_rows( );
 }
 
-// NOTE: Open unless this account shut the room's strip on this browser (Ian, 2026-10-14: they should stand out).
+// NOTE: Open unless this account shut the room's strip on this browser (2026-10-14: they should stand out).
 function pinned_shut_key( )
 {
    return account_storage_key( c_storage_pinned_shut_by_name, ciyam.username, ciyam.is_admin );
@@ -5040,7 +5040,7 @@ function render_pinned( )
 
    host.textContent = "";
 
-   // NOTE: Open, the pinned stand out (Ian, 2026-10-14 - a to-do list, room guidelines); shut, the strip is one line - how
+   // NOTE: Open, the pinned stand out (2026-10-14 - a to-do list, room guidelines); shut, the strip is one line - how
    // many, and the first. The line opens and shuts it, kept for the room on this browser.
    if( g_pinned.length > 0 )
    {
@@ -5152,7 +5152,7 @@ function mark_pinned_rows( )
 }
 
 // NOTE: Opened from the strip - the message in its place, lit up a moment. Its original gone - a full room drops its
-// oldest, and a pinned one stays until unpinned (Ian, 2026-10-14) - the card shows it whole instead.
+// oldest, and a pinned one stays until unpinned (2026-10-14) - the card shows it whole instead.
 function show_pinned_message( unique, card )
 {
    var row = document.querySelector( "#message_list > [data-unique=\"" + unique + "\"]" );
@@ -5472,7 +5472,7 @@ function apply_posting_rules( )
    scope.disabled = !status.can_post;
 
    // NOTE: Closed - the messages stay to read, without edit, pin, delete or react, and the pinned without Unpin ("chat.css").
-   // Reactions only (Ian, 2026-10-31) - the same but for reacting, which its owner may not either.
+   // Reactions only (2026-10-31) - the same but for reacting, which its owner may not either.
    var no_change = !!status.closed || !!status.no_react;
 
    document.getElementById( "message_list" ).classList.toggle( "is-closed", no_change );
@@ -5615,7 +5615,7 @@ function update_thread_meta( )
    if( closable )
       prepare_close_input( entry );
 
-   // NOTE: A poll (Ian, 2026-10-31) - from a room that can close, has no close time yet, and still takes posts.
+   // NOTE: A poll (2026-10-31) - from a room that can close, has no close time yet, and still takes posts.
    document.getElementById( "owner_poll" ).hidden = !closable || ( typeof entry.closes === "number" ) || ( entry.posts === "react" );
 
    document.getElementById( "room_fact_inviter_row" ).hidden = !invite;
@@ -5647,7 +5647,7 @@ function update_thread_meta( )
 
    // NOTE: Nobody can be invited to or removed from the Admin room - it is
    // joined automatically - so the control is absent there rather than present and
-   // failing. Ian raised this against 0000001 specifically.
+   // failing. Raised against 0000001 specifically.
    document.getElementById( "owner_invite" ).hidden = is_reserved_room( g_room );
 
    // NOTE: The room key, if it can have one ("chat_keys.js") - not for an invitation not yet taken.
@@ -5663,7 +5663,7 @@ function update_thread_meta( )
 }
 
 // NOTE: Leaving the open room - asked again in place, as removing a person is. Gone from the rail at once; the server's
-// ":left" notice is the room's to keep. To come back someone must invite them, General included (Ian, 2026-10-12).
+// ":left" notice is the room's to keep. To come back someone must invite them, General included (2026-10-12).
 var g_leave_armed = "";
 
 function do_arm_leave( )
@@ -5817,7 +5817,7 @@ function close_when( )
    return g_close_when;
 }
 
-// NOTE: Set only once a day and time is selected (Damon, 2026-10-31), and not while a change is on its way.
+// NOTE: Set only once a day and time is selected (2026-10-31), and not while a change is on its way.
 function sync_close_set( )
 {
    var input = document.getElementById( "room_close_input" );
@@ -5837,7 +5837,7 @@ function local_input_time( when )
     + "T" + pad( when.getHours( ) ) + ":" + pad( when.getMinutes( ) );
 }
 
-// NOTE: Sets the open room's close time (Ian, 2026-10-30: "update message <room> closes=<unix_time>"). The listing then
+// NOTE: Sets the open room's close time (2026-10-30: "update message <room> closes=<unix_time>"). The listing then
 // carries it as "@<unix>" after the counts.
 async function do_set_room_close( )
 {
@@ -5873,7 +5873,7 @@ async function do_set_room_close( )
       return;
    }
 
-   // NOTE: Asked first, as it cannot be undone (Damon, 2026-10-31) - and the time checked again after, in case it passed meanwhile.
+   // NOTE: Asked first, as it cannot be undone (2026-10-31) - and the time checked again after, in case it passed meanwhile.
    if( !await ask_dialog( { title: "Close " + entry.name + "?", text: "It will close " + room_close_label( closes ).replace( /^Closes /, "" )
     + " (" + when_label( input.value ) + "). From then nothing can be posted, edited or reacted to, and nobody can join. This"
     + " can't be undone - the time can only be brought forward.", yes: "Set the close", no: "Not now", danger: true } ) || ( g_room !== room ) )
@@ -5934,7 +5934,7 @@ async function do_set_room_close( )
 var g_poll_when = null;
 
 // NOTE: Who can vote in the open room - its members but its owner, as a room that takes only reactions takes none from its owner
-// (Ian, 2026-10-31).
+// (2026-10-31).
 function poll_voters( )
 {
    return g_members.filter( function( member ) { return member.name !== g_room_owner; } ).length;
@@ -6003,7 +6003,7 @@ function do_open_new_poll( )
    } ).map( function( person ) { return { name: person.name }; } ), "No other users to invite." );
 }
 
-// NOTE: Starting a poll (Ian, 2026-10-31) - from Room Details, in a room that can close, has no close time yet and still takes
+// NOTE: Starting a poll (2026-10-31) - from Room Details, in a room that can close, has no close time yet and still takes
 // posts. Two options to start with, up to one for each reaction.
 function do_open_poll_dialog( )
 {
@@ -6099,7 +6099,7 @@ function draw_poll_close_choices( )
 
          poll_close_chosen( choice.key );
 
-         // NOTE: Pick a time opens the month straight away (Damon, 2026-11-04: it needed a second click, on the field).
+         // NOTE: Pick a time opens the month straight away (2026-11-04: it needed a second click, on the field).
          if( choice.key === "pick" )
             g_poll_when.open( );
       } );
@@ -6288,7 +6288,7 @@ function clear_poll_problem( key )
    } );
 }
 
-// NOTE: The question grows a line at a time as it wraps, as the message box does, to four lines (Damon, 2026-11-04: a fixed box,
+// NOTE: The question grows a line at a time as it wraps, as the message box does, to four lines (2026-11-04: a fixed box,
 // its words at its top).
 function resize_poll_question( )
 {
@@ -6322,7 +6322,7 @@ function poll_step( request )
    } );
 }
 
-// NOTE: In Ian's order (2026-10-31): the poll posted - sealed in a room with a key - and pinned, the close set, then reactions
+// NOTE: In the server's order (2026-10-31): the poll posted - sealed in a room with a key - and pinned, the close set, then reactions
 // only. The owner can post nothing once it is reactions only, so the pin goes first. A step that fails stops it, and says which.
 async function do_start_poll( )
 {
@@ -6494,18 +6494,18 @@ function send_arrow( )
 }
 
 // ====================================================================
-// Formatting - colour and style (Ian, 2026-10-15; "Message Formatting Design")
+// Formatting - colour and style (2026-10-15; "Message Formatting Design")
 // ====================================================================
 
-// NOTE: Ian's colour letters, named for the palette's buttons - "ansi.cin" calls blue azure and yellow orange.
+// NOTE: The console's colour letters, named for the palette's buttons - "ansi.cin" calls blue azure and yellow orange.
 const c_format_colour_names = { K: "black", R: "red", G: "green", O: "orange", A: "azure", P: "purple", C: "cyan", W: "white" };
 
 // NOTE: The selected words in the box, kept - a tap on the bar can take the focus, and the selection with it, on a phone.
 var g_format_selection = { start: 0, end: 0 };
 
-// NOTE: The styled box (Ian, 2026-10-18) - with Codes off the box holds the words alone and these are their styles, a character
-// each ("format_styled_edit( )" in "chat_parse.js"); with Codes on the box holds Ian's codes, as before. This browser remembers
-// which (Damon, 2026-10-18).
+// NOTE: The styled box (2026-10-18) - with Codes off the box holds the words alone and these are their styles, a character
+// each ("format_styled_edit( )" in "chat_parse.js"); with Codes on the box holds the console's codes, as before. This browser remembers
+// which (2026-10-18).
 const c_storage_format_codes = "cws.format_codes";
 
 var g_composer_chars = [ ];
@@ -6566,7 +6566,7 @@ function show_composer_codes( )
    document.getElementById( "composer_codes" ).checked = g_composer_codes;
 }
 
-// NOTE: Codes ticked or not - the box turned into Ian's shorthand, or read back into words and styles.
+// NOTE: Codes ticked or not - the box turned into the console's shorthand, or read back into words and styles.
 function do_toggle_codes( on )
 {
    var input = document.getElementById( "composer_input" );
@@ -6631,7 +6631,7 @@ function composer_message( untrimmed )
    return format_styled_to_ansi( untrimmed ? g_composer_chars : format_styled_trim( g_composer_chars ) );
 }
 
-// NOTE: A message into the box, as it is sent - one to edit, or one put back - shown with its formatting, or as Ian's codes.
+// NOTE: A message into the box, as it is sent - one to edit, or one put back - shown with its formatting, or as the console's codes.
 function set_composer_message( text )
 {
    var input = document.getElementById( "composer_input" );
@@ -6690,9 +6690,9 @@ function render_composer_mirror( )
    mirror.scrollTop = input.scrollTop;
 }
 
-// NOTE: A stored message, drawn - one the chat cannot read (an encrypted one, "X\r" - Ian, 2026-10-20) says so in place of its
+// NOTE: A stored message, drawn - one the chat cannot read (an encrypted one, "X\r" - 2026-10-20) says so in place of its
 // ciphertext ("message_unreadable_label( )"). "room", for a message in the open room's list, marks one that isn't encrypted
-// (Ian, 2026-10-26 - "is_unencrypted_message( )"); the padlock is only for an encrypted one that can't be read.
+// (2026-10-26 - "is_unencrypted_message( )"); the padlock is only for an encrypted one that can't be read.
 function draw_message_text( element, text, room )
 {
    element.classList.toggle( "chat-unencrypted", ( room !== undefined ) && is_unencrypted_message( text, room, chat_secret_for_room( room ) !== "" ) );
@@ -6722,7 +6722,7 @@ function draw_message_text( element, text, room )
 }
 
 // NOTE: A message's words with their colour and style - a span each run ("format_pieces( )"), the words always as text and
-// the class names only from Ian's codes, never from the message. With "links" its web addresses are links too ("links_here( )").
+// the class names only from the console's codes, never from the message. With "links" its web addresses are links too ("links_here( )").
 function draw_formatted( element, pieces, links )
 {
    element.replaceChildren( );
@@ -6790,14 +6790,14 @@ function links_here( element )
    return element.closest( "button" ) === null;
 }
 
-// NOTE: The preview above the box - while what is typed holds one of Ian's codes. Not in the Admin room while its
+// NOTE: The preview above the box - while what is typed holds one of the console's codes. Not in the Admin room while its
 // announcement preview shows, which draws the colour itself.
 function update_format_preview( )
 {
    var input = document.getElementById( "composer_input" );
    var body = document.getElementById( "format_preview_body" );
 
-   // NOTE: Only with Codes on - with it off the box is the preview (Damon, 2026-10-18).
+   // NOTE: Only with Codes on - with it off the box is the preview (2026-10-18).
    var showing = g_composer_codes && !input.disabled && has_shorthand_codes( input.value )
     && document.getElementById( "announcement_preview" ).hidden;
 
@@ -6823,7 +6823,7 @@ function remember_format_selection( )
 }
 
 // NOTE: The bar while words are selected in the box - floating over them on a computer, docked under the box on a phone,
-// where the phone's own menu comes up over the selection (Damon, 2026-10-15) and covered it above the box (Ian, Vanadium).
+// where the phone's own menu comes up over the selection (2026-10-15) and covered it above the box (Vanadium).
 function update_format_bar( )
 {
    var input = document.getElementById( "composer_input" );
@@ -6995,7 +6995,7 @@ function apply_format( change )
    update_format_bar( );
 }
 
-// NOTE: The colours - Ian's 8 and 8 lighter, or his 8 backgrounds - as buttons above the bar. The same button again shuts it.
+// NOTE: The colours - the console's 8 and 8 lighter, or its 8 backgrounds - as buttons above the bar. The same button again shuts it.
 function do_format_palette( kind )
 {
    var button = document.getElementById( ( kind === "bg" ) ? "format_background" : "format_colour" );
@@ -7190,7 +7190,7 @@ function do_composer_key( event )
       return false;
    }
 
-   // NOTE: Up in an empty box edits your last message (Ian, 2026-10-15 - as Element does); not while editing already, nor
+   // NOTE: Up in an empty box edits your last message (2026-10-15 - as Element does); not while editing already, nor
    // with a modifier, so the box's own Up is untouched once anything is typed.
    if( ( event.key === "ArrowUp" ) && !event.shiftKey && !event.ctrlKey && !event.altKey && !event.metaKey
     && ( event.target.value === "" ) && ( g_edit_unique === "" ) && edit_last_message( ) )
@@ -7260,7 +7260,7 @@ async function do_send( )
       return;
    }
 
-   // NOTE: An edit saved as it was - nothing to send, so the edit is just closed (Ian, 2026-10-31).
+   // NOTE: An edit saved as it was - nothing to send, so the edit is just closed (2026-10-31).
    if( ( g_edit_unique !== "" ) && edit_unchanged( g_edit_original, text ) )
    {
       do_abandon_edit( );
@@ -7268,7 +7268,7 @@ async function do_send( )
       return;
    }
 
-   // NOTE: A member without the key of a room that is encrypted - nothing sent in the clear there (Damon, 2026-11-05). The text is
+   // NOTE: A member without the key of a room that is encrypted - nothing sent in the clear there (2026-11-05). The text is
    // left in the box, and the bar over it says what is wanted ("chat_member_keyless( )").
    if( chat_member_keyless( ) )
    {
@@ -7313,8 +7313,8 @@ async function do_send( )
    var sent = escape_message_text( text );
 
    // NOTE: Sealed in a direct message with a key for the other person, or in a room with a room key ("chat_keys.js", 2026-10-25
-   // and 26) - as it is, CRs and all, as nothing in it needs escaping. A message for some only too, as the console seals them (Ian's
-   // "d18eb1e2", 2026-10-27: kept as "!X\r..."). An edit too, as "irc.cin" seals one (Ian, 2026-10-29: encrypted messages could not
+   // and 26) - as it is, CRs and all, as nothing in it needs escaping. A message for some only too, as the console seals them (commit
+   // "d18eb1e2", 2026-10-27: kept as "!X\r..."). An edit too, as "irc.cin" seals one (2026-10-29: encrypted messages could not
    // be edited).
    var sealing = await chat_seal_with( chat_secret_for_room( room ), text );
 
@@ -7602,7 +7602,7 @@ function begin_edit( unique, text, is_private )
    g_edit_unique = unique;
    g_edit_private = !!is_private;
 
-   // NOTE: Its formatting in the box, or Ian's shorthand with Codes on - never an escape.
+   // NOTE: Its formatting in the box, or the console's shorthand with Codes on - never an escape.
    set_composer_message( text );
 
    g_edit_original = composer_message( );
@@ -7647,7 +7647,7 @@ function restore_edit_draft( )
    set_composer_message( g_edit_draft );
 }
 
-// NOTE: Escape, or Cancel edit - the edit dropped and the box as it was before it (Ian, 2026-10-15: as Element does).
+// NOTE: Escape, or Cancel edit - the edit dropped and the box as it was before it (2026-10-15: as Element does).
 function do_abandon_edit( )
 {
    var input = document.getElementById( "composer_input" );
@@ -7773,7 +7773,7 @@ function render_composer( )
 
    short.className = "chat-send-short";
 
-   // NOTE: Send as an arrow on a phone, so the box keeps the width (Damon, 2026-10-15); "Save edit" stays in words.
+   // NOTE: Send as an arrow on a phone, so the box keeps the width (2026-10-15); "Save edit" stays in words.
    if( mode.send_short === "Send" )
       short.appendChild( send_arrow( ) );
    else
@@ -7786,7 +7786,7 @@ function render_composer( )
 
    send.setAttribute( "aria-label", mode.send );
 
-   // NOTE: Scanning in an encrypted message from the offline device (Ian, 2026-11-01) - where a message can be encrypted, and not
+   // NOTE: Scanning in an encrypted message from the offline device (2026-11-01) - where a message can be encrypted, and not
    // while editing or sending privately, as it is posted for everyone (found by review).
    document.getElementById( "composer_scan" ).hidden = ( g_edit_unique !== "" ) || ( g_recipients.length > 0 )
     || !( ( chat_dm_other( ) !== "" ) || can_have_room_key( g_room, g_room_name ) );
@@ -7937,7 +7937,7 @@ async function poll_once( )
    if( poll_ended( ) )
       return;
 
-   // NOTE: A member in a room without its key looks again once the owner's direct message has something new (Damon, 2026-11-04:
+   // NOTE: A member in a room without its key looks again once the owner's direct message has something new (2026-11-04:
    // the room accepted first, the key came a moment later and waited for the room to be opened again) - "chat_look_for_owner_key(
    // )". Not the owner's side, which sends as the room is opened or joined.
    await chat_look_for_owner_key( true );
@@ -7965,7 +7965,7 @@ async function poll_once( )
    if( poll_ended( ) )
       return;
 
-   // NOTE: Now and then the room read whole again (Ian's suggestion, 2026-10-29) - a poll brings only new messages, so someone
+   // NOTE: Now and then the room read whole again (suggested 2026-10-29) - a poll brings only new messages, so someone
    // else's reaction, edit or deletion on an older one waits for it ("append_messages( )" draws again only what changed).
    if( ( g_room !== "" ) && ( Date.now( ) - g_last_whole_read >= g_whole_read_wait ) )
    {
@@ -8093,12 +8093,12 @@ function install_request_log( )
 // Time-outs (ISS-020)
 // ====================================================================
 
-// NOTE: The server gives up on a request after about 5.5 seconds, but may still finish it - and Ian
-// warns its late answer could reach the next request on the session. So after a time-out the
+// NOTE: The server gives up on a request after about 5.5 seconds, but may still finish it - and
+// its late answer could reach the next request on the session. So after a time-out the
 // chat sends one request only to absorb a late answer, then re-reads the room list and the
 // open room whole, so nothing wrongly added stays on screen. A send that timed out may have
 // been sent: the re-read says whether it was. Three time-outs in a row and the session ends -
-// the server or the connection is in trouble. Agreed with Damon, 2026-09-28.
+// the server or the connection is in trouble. Agreed with 2026-09-28.
 var g_timeouts_in_row = 0;
 var g_resyncing = false;
 var g_uncertain_send = null;
@@ -8123,7 +8123,7 @@ function watch_timeouts( )
 
          await original( url, arg, take );
 
-         // NOTE: A message, edit or reaction refused as the node handled another (Ian's "@irc_lock", 2026-10-30) is tried once more
+         // NOTE: A message, edit or reaction refused as the node handled another (the server's "@irc_lock", 2026-10-30) is tried once more
          // after a moment - awaited here, so the queue sends nothing else meanwhile (ISS-005); refused again, it is said as before.
          if( ( name === "fetch" ) && ( arg === "POST" ) && ( String( url ).indexOf( "/messages/" ) >= 0 ) && is_irc_lock_refusal( answer ) )
          {
@@ -8429,7 +8429,7 @@ function is_dialog_open( )
 }
 
 // NOTE: "from_loading" marks an error raised by loading rooms or messages. The next load
-// that succeeds clears it - Ian saw "IRC not available" stay up after IRC had come back and
+// that succeeds clears it - "IRC not available" was seen to stay up after IRC had come back and
 // the rooms had appeared. Errors from something the user did stay until dismissed.
 function show_alert( text, kind, from_loading )
 {

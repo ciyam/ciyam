@@ -3,7 +3,7 @@
 // Distributed under the MIT/X11 software license, please refer to the file license.txt
 // in the root project directory or http://www.opensource.org/licenses/mit-license.php.
 
-// NOTE: Desktop notifications, shared by the chat (which sends them) and My account (Damon, 2026-10-20) - the setting, kept
+// NOTE: Desktop notifications, shared by the chat (which sends them) and My account (2026-10-20) - the setting, kept
 // per account on this browser ("c_storage_notify_by_name" in "chat_parse.js"), what the browser allows, and turning them
 // on, which has to come from a click, as only then will a browser ask. Needs "chat_parse.js" and the page's "ciyam".
 

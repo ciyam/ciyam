@@ -27,7 +27,7 @@ ok   synonym verb
 ok   singular noun
 ok   options keep their spaces
 ok   invite
-ok   a record's fields changed (Ian's PUT, 2026-11-04)
+ok   a record's fields changed (the PUT, 2026-11-04)
 ok   users create secret
 ok   users create nominated
 ok   unlock keys
@@ -51,7 +51,7 @@ ok   local var
 ok   local help
 ok   local is case blind
 ok   quit
-ok   term - quit too (Ian, 2026-10-13)
+ok   term - quit too (2026-10-13)
 ok   init - whom to sign in as, after it
 ok   the node's own requests, no session needed
 ok   - not with more after it

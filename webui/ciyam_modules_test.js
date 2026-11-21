@@ -4,7 +4,7 @@
 // in the root project directory or http://www.opensource.org/licenses/mit-license.php.
 
 // NOTE: Exercises the modules ("Modules" in "ciyam.js") and the modules themselves against fixed inputs, and prints a
-// deterministic transcript. No server and no browser are needed. The answers through the old globals are those Ian's
+// deterministic transcript. No server and no browser are needed. The answers through the old globals are those the
 // original modules gave, compared step by step when they were converted (2026-10-16).
 //
 // Run with:  node ciyam_modules_test.js
@@ -137,7 +137,7 @@ async function steps( module_class, list )
    check( "an instance keeps its running result", [ await instance.run( "01020304" ), await instance.run( "ff" ), instance.result ],
     [ "01020304", "010203fb", "010203fb" ] );
 
-   // NOTE: As Ian's original answered - the same steps, the same answers (compared 2026-10-16).
+   // NOTE: As the original answered - the same steps, the same answers (compared 2026-10-16).
    check( "through the old globals - as the original answered", await steps( xor_module, [ { load: null, hints: true }, { exec: "01020304", hints: true },
     { exec: "ff", hints: true }, { exec: "abc" }, { exec: "" }, { load: "0f0f" }, { exec: "f0f0f0" } ] ),
     [ [ "(xor_hex_data loaded)\nemploy javascript xor_hex_data 01020304", null ], [ "01020304\n(i.e. XORs the prior result with hex input)", "01020304" ],
@@ -169,7 +169,7 @@ async function steps( module_class, list )
    } ), [ true, true, true ] );
 
    // NOTE: The sign in's hash of PIN and password - in a page through "sha2.min.js", from the command line through Node - the
-   // same for a password not plain ASCII (Ian, 2026-10-22). Version 0 is the one SHA-256 sent until 2026-10-23.
+   // same for a password not plain ASCII (2026-10-22). Version 0 is the one SHA-256 sent until 2026-10-23.
    var node_sha = require( "crypto" );
    var sha_hex = function( text ) { return node_sha.createHash( "sha256" ).update( text, "utf8" ).digest( "hex" ); };
 
@@ -187,7 +187,7 @@ async function steps( module_class, list )
    check( "the sign in's hash, version 0 - a page's as the command line's, as UTF-8", signin_hashes,
     passwords.map( function( p ) { return sha_hex( "12345" + p ); } ) );
 
-   // NOTE: Version 1 (Ian, 2026-10-23: hardened before it is sent) - worked out here without "ciyam.js": one SHA-256 of the PIN
+   // NOTE: Version 1 (2026-10-23: hardened before it is sent) - worked out here without "ciyam.js": one SHA-256 of the PIN
    // and password, then each round after the SHA-256 of what there is with the two after it - as the server's "crypto_hash -x"
    // does; the floor for twelve or more UTF-8 bytes, twice it for nine to eleven, three times for fewer. In a page and through
    // Node alike - and as the node's own "crypto_hash -x=<rounds - 1>" gives it (2026-10-23), so "init_web_access" can make it.
@@ -206,7 +206,7 @@ async function steps( module_class, list )
     m.password_hash_rounds( "nine99999" ), m.password_hash_rounds( "elevenchars" ), m.password_hash_rounds( "twelve-chars" ),
     m.password_hash_rounds( "pässwörd" ), m.password_hash_rounds( "pässwörd-läng" ) ], [ 300000, 300000, 200000, 200000, 100000, 200000, 100000 ] );
 
-   // NOTE: 40 or more UTF-8 bytes, no extra rounds (Ian, 2026-10-25) - so version 1 is version 0 for it.
+   // NOTE: 40 or more UTF-8 bytes, no extra rounds (2026-10-25) - so version 1 is version 0 for it.
    var long_password = "a-password-of-forty-bytes-from-a-manager";
 
    check( "- one round for 40 or more UTF-8 bytes", [ m.password_hash_rounds( long_password.slice( 0, 39 ) ),
@@ -229,9 +229,9 @@ async function steps( module_class, list )
    check( "- an unknown version refused", await m.password_hash( "12345", "p", 2, node_sha ).catch( function( e ) { return e.message; } ),
     "There is no password hash version 2." );
 
-   // NOTE: The version a browser guesses (Ian, 2026-10-23) - as kept for the PIN; none kept, the first if the browser keeps
+   // NOTE: The version a browser guesses (2026-10-23) - as kept for the PIN; none kept, the first if the browser keeps
    // things for the node but no versions; the current one otherwise, and on the command line.
-   // NOTE: In a page, through "window" - the command line never touches Node's own "localStorage", which warns (Ian, 2026-10-25).
+   // NOTE: In a page, through "window" - the command line never touches Node's own "localStorage", which warns (2026-10-25).
    var fake_storage = function( entries )
    {
       return { get length( ) { return Object.keys( entries ).length; }, key: function( i ) { return Object.keys( entries )[ i ]; },
@@ -257,7 +257,7 @@ async function steps( module_class, list )
    check( "the version guessed - none kept: current; kept for the node but no versions: 0; another's kept: current; as kept",
     guessed, [ 1, 1, 0, 1, 0, 1, 1 ] );
 
-   // NOTE: "_" before a PIN, as "cws.hashed_<pin>" (Ian, 2026-10-25) - one kept the first days' way, with "@", read and moved.
+   // NOTE: "_" before a PIN, as "cws.hashed_<pin>" (2026-10-25) - one kept the first days' way, with "@", read and moved.
    var moved = { "cws.hashed_20401": "x", "cws.hash_version@20401": "0" };
 
    var moved_version = in_window( moved, function( ) { return in_page.hash_version_for( "20401" ); } );
@@ -344,7 +344,7 @@ async function steps( module_class, list )
 
    var harden = m.ciyam_module_named( "harden" );
 
-   // NOTE: As Ian's original answered, with the browser's own SHA-256 and with "sha2.min.js" alike (compared 2026-10-16).
+   // NOTE: As the original answered, with the browser's own SHA-256 and with "sha2.min.js" alike (compared 2026-10-16).
    var host_steps = await steps( harden, [ { load: null }, { exec: "abc", hints: true }, { exec: "3" }, { exec: "2:3" }, { exec: "+1:2" },
     { exec: "", hints: true } ] );
 
@@ -440,7 +440,7 @@ async function steps( module_class, list )
    var chacha = m.ciyam_module_named( "chacha20" );
    var digest = require( "crypto" );
 
-   // NOTE: From Ian's own "crypt -cc" (built in the test node, 2026-10-16) - a file of zeros under "test key" comes back as
+   // NOTE: From the server's own "crypt -cc" (built in the test node, 2026-10-16) - a file of zeros under "test key" comes back as
    // the keystream itself; a message under "pass"; 70000 bytes under "k", past "crypt_stream.cpp"'s 32768-byte buffer.
    check( "as crypt -cc - 200 zero bytes, the keystream itself", chacha.hex_of( await chacha.crypt( "test key", new Uint8Array( 200 ) ) ),
     "f0a96087d5413adfe34ca592275ff992e9cc47512976820a5a3d0668a50a83ea976fc51e738d8f93329768481b7ca7ed2856d04b6f89c9548274e0ea76a1"
@@ -506,14 +506,14 @@ async function steps( module_class, list )
     "That public key cannot give a shared secret." );
 
    // NOTE: A secret read as "private_key" reads it, so the same words give the same key - each from the console's "@secret:ed"
-   // and "@public" (2026-10-20): 32 hex digits (as Ian's ".secret" holds - read as base64), a short test secret, base64.
+   // and "@public" (2026-10-20): 32 hex digits (as the server's ".secret" holds - read as base64), a short test secret, base64.
    check( "secrets read as the console reads them", [ ed.public_key( ed.seed_of( "0123456789abcdef0123456789abcdef" ) ),
     ed.public_key( ed.seed_of( "hello" ) ), ed.public_key( ed.seed_of( "nWGxne/9WmC6hEr0kuwsxERJxWl7MmkZcDusAxyuf2A=" ) ) ],
     [ "0028b35f26edb6ffe44d3d2cc597906f4065bd550d5009c4d62c422c789493e0", "06bd950857006e5cf4610e6f9569881bf52c34aa21f57a03940c3d7ff2040849",
     "d75a980182b10ab7d54bfed3c964073a0ee172f3daa62325af021a68f707511a" ] );
    check( "- and a shared secret between two of them, as the console's", ed.shared_secret( ed.seed_of( "0123456789abcdef0123456789abcdef" ),
     "06bd950857006e5cf4610e6f9569881bf52c34aa21f57a03940c3d7ff2040849" ), "812788dd5c3c15a6470e406315ec6e49551767cd9b11af795ec48bf93caa407c" );
-   // NOTE: Base64 as "base64.cpp" reads it since Ian's rework (2026-10-20, ISS-049) - a length a multiple of four, only the last
+   // NOTE: Base64 as "base64.cpp" reads it since the rework (2026-10-20, ISS-049) - a length a multiple of four, only the last
    // two "=" filler - and non-ASCII refused there too (found by review). Each answer, a key or a refusal, the console's own.
    check( "- what the console refuses, refused", [ "", "x".repeat( 52 ), "ab".repeat( 33 ), "A".repeat( 45 ), "é".repeat( 16 ),
     "ABCDEFGH" + "=".repeat( 22 ), "0123456789abcdef0123456789abcdef01", "QUJDREVGR0hJSktMTU5PUFFSU1RVVldYWVpBQkNERUY====",
@@ -613,7 +613,7 @@ async function steps( module_class, list )
     "That is not a sealed message.", "That is not a sealed message.", "That message is too long to seal - at most 1000 bytes.",
     "A secret is 64 hex digits - the own secret, or one with another person - or a room key's 32.",
     "A salt is 32 lower-case hex digits, and the padding has no CR." ] );
-   // NOTE: The padding (Ian, 2026-10-29) - the padded message always 1,000 bytes and two CRs: a message of 1,000 bytes with none;
+   // NOTE: The padding (2026-10-29) - the padded message always 1,000 bytes and two CRs: a message of 1,000 bytes with none;
    // up to 5 left over all before it; more than that half before (rounded down) and the rest after. Each opened again.
    var padding_of = async function( message )
    {
@@ -640,7 +640,7 @@ async function steps( module_class, list )
     Array.from( { length: 200 }, function( ) { return sm.random_below( 3 ); } ).every( function( v ) { return v >= 0 && v < 3; } ) ],
     [ 0, 5, 3, 255, true ] );
 
-   // NOTE: Under a room key (Ian, 2026-10-25) - "irc_extra.cin"'s steps for a room that is not direct: its 32 hex digits are the
+   // NOTE: Under a room key (2026-10-25) - "irc_extra.cin"'s steps for a room that is not direct: its 32 hex digits are the
    // secret as they are - ChaCha20 under them and the salt, the HMAC (Node's own) keyed "mac", them and the salt.
    var room_secret = "00112233445566778899aabbccddeeff";
    var under_room = await sm.seal( room_secret, "To the room" );
@@ -653,7 +653,7 @@ async function steps( module_class, list )
     === room_parts[ 2 ], await sm.open( room_secret, under_room ), await refused( sm.seal( room_secret + "0", "hi" ) ) ],
     [ "To the room", true, "To the room", "A secret is 64 hex digits - the own secret, or one with another person - or a room key's 32." ] );
 
-   // NOTE: To another person, as "x" now does (Ian, 2026-10-22) - from the console (2026-10-22): each one's public key, as
+   // NOTE: To another person, as "x" now does (2026-10-22) - from the console (2026-10-22): each one's public key, as
    // "irc.cin" shows it to scan, and "@shared" between one's key and the other's public key, the same from either side.
    var other = "0123456789abcdef0123456789abcdef";
    var mine_public = "c14540b4da0eff751f41a87ed680a843efe46d35dd13e84caef04f0ce526ac6b";
@@ -690,7 +690,7 @@ async function steps( module_class, list )
    var uk = m.ciyam_module_named( "user_keys" );
    var node_crypto = require( "crypto" );
 
-   // NOTE: The node's test words (Ian's, public - "rebuild-container.sh") and their entropy, both ways; BIP39's all-zero vector.
+   // NOTE: The node's test words (public - "rebuild-container.sh") and their entropy, both ways; BIP39's all-zero vector.
    var test_entropy = "de604cee0755a3d81944ea96aed12681";
    var test_words = "taxi act describe attitude focus ugly govern outer note isolate endless act";
 
@@ -704,7 +704,7 @@ async function steps( module_class, list )
    } ), [ "Those are not the words - check each is spelt right and in its place.", "Those are not the words - check each is spelt right and in its place.",
     "Those are not the words - check each is spelt right and in its place." ] );
 
-   // NOTE: One set of words for a node (Ian, 2026-11-11) - worked out here with Node's own SHA-256: the people key that of
+   // NOTE: One set of words for a node (2026-11-11) - worked out here with Node's own SHA-256: the people key that of
    // "people_key:" and the node's entropy, which the node is never given (it is given the entropy's own SHA-256); a person's
    // entropy the first 32 hex digits of that of "person_entropy:", the people key, ":" and their PIN.
    var sha_hex = function( text ) { return node_crypto.createHash( "sha256" ).update( text ).digest( "hex" ); };
@@ -722,7 +722,7 @@ async function steps( module_class, list )
    check( "- through run", [ await new uk( { } ).run( "people " + test_entropy ), await new uk( { } ).run( "person " + test_people + " 12345" ) ],
     [ test_people, sha_hex( "person_entropy:" + test_people + ":12345" ).substr( 0, 32 ) ] );
 
-   // NOTE: Admin's from the people key and "admin" (Ian, 2026-11-12 - a recovery changes admin's PIN), and new keys made from an
+   // NOTE: Admin's from the people key and "admin" (2026-11-12 - a recovery changes admin's PIN), and new keys made from an
    // entropy in one call - opened by the access key that comes with them, guarded with the same rounds.
    check( "admin's entropy from the people key and \"admin\", not a PIN", await uk.person_entropy( test_people, "admin" ),
     sha_hex( "person_entropy:" + test_people + ":admin" ).substr( 0, 32 ) );
@@ -732,13 +732,13 @@ async function steps( module_class, list )
     test_entropy, 1000 ), made_opened.primary === uk.seeds_of( test_entropy ).primary, made_opened.rounds, /^UK#:1000:/.test( made_opened.guard ),
     Object.keys( made_opened.contacts ).length ], [ true, true, 1000, true, 0 ] );
 
-   // NOTE: New keys with the people key kept in them (Damon, 2026-11-16 - as setting up or recovering makes admin's), as it is - their
-   // lock alone guards it (Ian, 2026-11-16: Give keys without the password).
+   // NOTE: New keys with the people key kept in them (2026-11-16 - as setting up or recovering makes admin's), as it is - their
+   // lock alone guards it (2026-11-16: Give keys without the password).
    var made_with = await uk.kept_keys( test_entropy, 1000, test_people );
    var made_people = await uk.unlock( made_with.access, made_with.kept ).catch( function( e ) { return { people: e.message }; } );
    check( "- with the people key kept in them; none without", [ made_people.people === test_people, made_opened.people ], [ true, "" ] );
 
-   // NOTE: The people key kept with admin's keys (Damon, 2026-11-11), sealed - worked out here with Node's own: the lock "harden"'s
+   // NOTE: The people key kept with admin's keys (2026-11-11), sealed - worked out here with Node's own: the lock "harden"'s
    // rounds of "people_lock:", the salt, the PIN, ":" and the password; the key XORed with the HMAC of "people_pad" under it; the
    // check the first 16 hex digits of the HMAC of "people_check" and the key.
    var people_salt = "00112233445566778899aabbccddeeff";
@@ -774,7 +774,7 @@ async function steps( module_class, list )
    } )( ), [ uk.is_people_key( test_people ), uk.is_people_key( people_sealed ), uk.is_people_key( test_people.toUpperCase( ) ) ] ],
     [ people_sealed, test_people, false, "A people key is 64 hex digits, or one sealed (\"PK1\").", [ true, false, false ] ] );
 
-   // NOTE: Worked out here without the module (Ian, 2026-10-25: a hash of the entropy kept by the browser, the keys on the node
+   // NOTE: Worked out here without the module (2026-10-25: a hash of the entropy kept by the browser, the keys on the node
    // locked under it) - the access key "harden"'s rounds of "user_keys" and the entropy (each round the SHA-256 of what there is
    // with that after it); the lock's key the SHA-256 of the salt, "user_keys" and the access key; ChaCha20 under the key's
    // SHA-256 with a zero nonce and counter ("crypt -cc"); HMAC-SHA256 keyed "mac" and the key.
@@ -832,7 +832,7 @@ async function steps( module_class, list )
     await uk.access_key( test_entropy, 1000001 ).catch( function( e ) { return e.message; } ) ],
     [ "Those are not locked keys.", "The rounds are a whole number from 1 to 1000000." ] );
 
-   // NOTE: The guard (Ian, 2026-10-27) - worked out here without the module: the SHA-256 of "user_keys_check" and the entropy, then
+   // NOTE: The guard (2026-10-27) - worked out here without the module: the SHA-256 of "user_keys_check" and the entropy, then
    // hashed again once a round. The node hashes one with fewer rounds on to its own, as here, to see that it came from the words.
    var known_check = node_crypto.createHash( "sha256" ).update( "user_keys_check" + test_entropy, "utf8" ).digest( "hex" );
    var check_at = { };
@@ -874,7 +874,7 @@ async function steps( module_class, list )
     contacts: { someone: "abc" } } ) ],
     [ "An access key is 64 hex digits.", "The keys are two of 64 hex digits.", "A public key is 64 hex digits, kept by a name." ] );
 
-   // NOTE: Room keys (Ian, 2026-10-25) - 32 hex digits by the room's number, locked with the keys; none, and nothing is added.
+   // NOTE: Room keys (2026-10-25) - 32 hex digits by the room's number, locked with the keys; none, and nothing is added.
    var room_key = "0123456789abcdef0123456789abcdef";
    var with_rooms = await uk.lock( known_access, Object.assign( { }, known_contents, { rooms: { "0000004": room_key.toUpperCase( ) } } ) );
 

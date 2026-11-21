@@ -117,16 +117,16 @@ http://www.opensource.org/licenses/mit-license.php.
                <div class="console-list-scroll is-saved" id="saved_scripts"></div>
                <button type="button" class="console-item is-new" onclick="do_new_script( )">+ New script</button>
 
-               <!-- NOTE: Ian's ".list" files (webcmdlists) - any account can read them. One opens
+               <!-- NOTE: the server's ".list" files (webcmdlists) - any account can read them. One opens
                     in the editor as a copy: Run runs it, Save keeps it in this browser. -->
                <span class="console-listhead">Lists on the server</span>
                <div class="console-list-scroll is-lists" id="server_lists"></div>
                <p class="console-more" id="server_lists_note"></p>
 
                <!-- NOTE: The server's javascripts - "review javascripts". Everyone sees those not named after
-                    a PIN, and their own; admin sees every account's too (Ian, 2026-10-05). The CIYAM scripts
+                    a PIN, and their own; admin sees every account's too (2026-10-05). The CIYAM scripts
                     "~run_script *" lists are not here: many are only for the server itself to run
-                    (Ian, 2026-10-04). -->
+                    (2026-10-04). -->
                <div class="console-list-group" id="javascripts_group">
                   <span class="console-listhead">JavaScripts on the server</span>
                   <div class="console-list-scroll is-javascripts" id="server_javascripts"></div>

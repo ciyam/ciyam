@@ -3,7 +3,7 @@
 // Distributed under the MIT/X11 software license, please refer to the file license.txt
 // in the root project directory or http://www.opensource.org/licenses/mit-license.php.
 
-// NOTE: The Home app - the node's starting point (Ian, 2026-10-03; "Home App Scope" in the vault). Before
+// NOTE: The Home app - the node's starting point (2026-10-03; "Home App Scope" in the vault). Before
 // anyone signs in, "/system" decides the screen: the sign in, Unlock, or Set up. The logic is in
 // "home_parse.js", with its tests; the sign in is the shared one in "signin.js".
 
@@ -137,7 +137,7 @@ async function fetch_text( path )
 }
 
 // NOTE: How long a read of "/system" or "/uptime" is used again rather than asked anew - Home's opening had read "/system" three
-// times and "/uptime" twice within seconds, each a round trip on a phone (Ian, 2026-11-14, over 4G).
+// times and "/uptime" twice within seconds, each a round trip on a phone (2026-11-14, over 4G).
 const c_recent_ms = 5000;
 
 var g_system_at = 0;
@@ -247,15 +247,15 @@ async function after_sign_in( )
 }
 
 // ====================================================================
-// Setting up a new node (Damon and Ian, 2026-10-12 - "Home App Scope", Setting up a new node)
+// Setting up a new node (2026-10-12 - "Home App Scope", Setting up a new node)
 // ====================================================================
 
 // NOTE: The node takes two requests: "access=admin" answers admin's PIN and the entropy it suggests, then the PIN with the
 // master password's hash and the entropy chosen answers admin's first device. A second first request is refused, so between
 // the two the page must finish - the password is asked before the first is sent, and the PIN and the suggestion are kept for
 // the tab ("setup_kept( )") so a reload can still finish, with new words. The words are the node's suggestion mixed with the
-// person's randomness by Ian's "xor_hex_data" - never words they type: the twelfth is a checksum, and people choose poor
-// words (Ian, 2026-10-12) - typing them is for restoring.
+// person's randomness by the server's "xor_hex_data" - never words they type: the twelfth is a checksum, and people choose poor
+// words (2026-10-12) - typing them is for restoring.
 const c_setup_views = [ "setup_intro", "setup_new", "setup_random", "setup_password", "setup_words", "setup_check", "setup_done", "setup_resume",
  "setup_elsewhere", "setup_expired" ];
 
@@ -271,7 +271,7 @@ const c_setup_entropy_length = 32;
 
 const c_setup_most_bubbles = 16;
 
-// NOTE: How long "Check again" waits on a node someone else is setting up (Ian, 2026-11-12) - the five minutes the node waits after
+// NOTE: How long "Check again" waits on a node someone else is setting up (2026-11-12) - the five minutes the node waits after
 // it last heard from them, in full, as when that was is not known here.
 const c_setup_retry_wait_ms = 5 * 60 * 1000;
 
@@ -280,7 +280,7 @@ var g_setup_retry_timer = null;
 var g_setup = null;
 
 // NOTE: The node waits five minutes from its last word with this tab, then lets admin's PIN go so setting up can start
-// over ("@utm_web_reset", Ian, 2026-10-12). "/ip-addr?token=<PIN>", from the address the PIN was given to, gives it another
+// over ("@utm_web_reset", 2026-10-12). "/ip-addr?token=<PIN>", from the address the PIN was given to, gives it another
 // five ("2a99baee") - sent when the PIN comes, at each step, every minute and on coming back to the tab, so an open tab
 // never runs out. It answers this browser's address either way: whether it was in time is known only at the end.
 const c_setup_alive_ms = 60 * 1000;
@@ -340,7 +340,7 @@ async function setup_keep_alive( )
    if( ( g_setup === null ) || ( g_setup.pin === "" ) || ( setup_alive_token( g_setup.pin, g_setup.suggested, hex_sha256 ) !== token ) )
       return;
 
-   // NOTE: The node no longer waiting - said now, not at Finish (Ian's answer, 2026-10-13): a tab back after too long, or a
+   // NOTE: The node no longer waiting - said now, not at Finish (2026-10-13): a tab back after too long, or a
    // node restarted. Only while still being kept alive - not once Finish is under way, when the token is let go.
    if( ( setup_alive_answer( reply ) === "gone" ) && ( g_setup_alive_timer !== null ) )
    {
@@ -421,14 +421,14 @@ function setup_show( view )
    if( view === "setup_password" )
       document.getElementById( "setup_http_warning" ).hidden = !warns_master_password( g_system.security );
 
-   // NOTE: The master password's own field, for typing straight away (Damon, 2026-10-13); elsewhere the view's heading.
+   // NOTE: The master password's own field, for typing straight away (2026-10-13); elsewhere the view's heading.
    var first = ( view === "setup_password" ) ? document.getElementById( "setup_password_new" ) : document.querySelector( "#" + view + " h2" );
 
    if( first !== null )
       first.focus( { preventScroll: true } );
 }
 
-// NOTE: Recovering a node onto this one, from its twelve words (Damon, 2026-10-13) - the shared recovery, worded for a
+// NOTE: Recovering a node onto this one, from its twelve words (2026-10-13) - the shared recovery, worded for a
 // node not set up; recovered, on into Home signed in as admin, as after a sign in. Back comes back here.
 function setup_recover( )
 {
@@ -524,7 +524,7 @@ function setup_retry_stop( )
    g_setup_retry_timer = null;
 }
 
-// NOTE: The node's first request - as soon as the bubbles are done (Ian, 2026-11-12: that it was already being set up was found only
+// NOTE: The node's first request - as soon as the bubbles are done (2026-11-12: that it was already being set up was found only
 // after the master password had been typed), so someone setting it up elsewhere is said before anything more is asked. Not again
 // after a reload, which kept what it answered ("setup_kept_write( )"). True once the node is setting up for this tab.
 async function setup_start_node( )
@@ -609,7 +609,7 @@ function setup_update_strength( )
    set_text( "setup_strength_label", strength.text );
 }
 
-// NOTE: Ian's "xor_hex_data" - the node's suggestion with the person's randomness, through the module's own "xor( )"
+// NOTE: the server's "xor_hex_data" - the node's suggestion with the person's randomness, through the module's own "xor( )"
 // ("ciyam_module_named( )") rather than setting its global and calling into it.
 function setup_mix( suggested, mine )
 {
@@ -710,7 +710,7 @@ function setup_draw_words( )
       list.appendChild( item );
    } );
 
-   // NOTE: No countdown (Damon, 2026-10-12) - an open tab keeps the node waiting by itself, so a clock would only add pressure.
+   // NOTE: No countdown (2026-10-12) - an open tab keeps the node waiting by itself, so a clock would only add pressure.
    set_text( "setup_words_note", "Made from your bubbles and the node's own suggestion together. The node waits for you while this tab"
     + " is open - take your time, and finish here." );
 
@@ -810,10 +810,10 @@ async function setup_finish( )
    set_text( "setup_finish_error", "" );
    set_text( "setup_finish_status", "Setting the node up..." );
 
-   // NOTE: No still-alive while the node takes its identity - it lets the token go as it does (Ian, "637f4e60").
+   // NOTE: No still-alive while the node takes its identity - it lets the token go as it does (commit "637f4e60").
    setup_alive_stop( );
 
-   // NOTE: The password is hardened before it is sent, a second or two - said as it goes (Ian, 2026-10-25).
+   // NOTE: The password is hardened before it is sent, a second or two - said as it goes (2026-10-25).
    ciyam.on_progress = function( stage, value ) { set_text( "setup_finish_status", sign_in_progress( stage, value ).text ); };
 
    var combined;
@@ -834,7 +834,7 @@ async function setup_finish( )
    // NOTE: Set up with the current hash, so the sign in after uses it at once.
    ciyam.keep_hash_version( g_setup.pin, c_password_hash_version );
 
-   // NOTE: The node is given the hash of the words' entropy, not the entropy - the same identity (Ian, 2026-11-11: "cdd681cc"
+   // NOTE: The node is given the hash of the words' entropy, not the entropy - the same identity (2026-11-11: "cdd681cc"
    // takes either), but what the people key is made from never reaches it.
    var send = async function( )
    {
@@ -915,7 +915,7 @@ async function setup_finish( )
       signin_remember_device( );
       signin_keep_session( );
 
-      // NOTE: Admin's keys from the node's words, while they are still here (Damon and Ian, 2026-11-12) - so Give keys in People
+      // NOTE: Admin's keys from the node's words, while they are still here (2026-11-12) - so Give keys in People
       // works at once ("signin_admin_keys( )").
       set_text( "setup_finish_status", "Making admin's keys from the words..." );
 
@@ -1424,7 +1424,7 @@ function health_badge( )
    return badge;
 }
 
-// NOTE: In this tab, as the switcher opens it (Damon, 2026-10-09) - a new one when the event asks.
+// NOTE: In this tab, as the switcher opens it (2026-10-09) - a new one when the event asks.
 function open_app( app, event )
 {
    shell_close_rail( );
@@ -1472,8 +1472,8 @@ function build_shell( )
 
    var name = account_display_name( ciyam.username, ciyam.is_admin );
 
-   // NOTE: The rail's only - a phone's top bar had one too, looking like the chat's account menu but not one, so it went (Ian,
-   // 2026-10-16); Home's menu there is the hamburger.
+   // NOTE: The rail's only - a phone's top bar had one too, looking like the chat's account menu but not one, so it went
+   // (2026-10-16); Home's menu there is the hamburger.
    shell_show_user( name, role_text( ciyam.is_admin ) );
    set_text( "top_sub", name + " · " + role_text( ciyam.is_admin ) );
 }
@@ -1559,7 +1559,7 @@ async function enter_app( )
 
    apps_refresh( );
 
-   // NOTE: The console drawer, as in the chat and the accounts page - admin's, and not on a phone (Damon, 2026-10-08).
+   // NOTE: The console drawer, as in the chat and the accounts page - admin's, and not on a phone (2026-10-08).
    document.getElementById( "console_toggle" ).hidden = !ciyam.is_admin;
 
    var name = account_display_name( ciyam.username, ciyam.is_admin );
@@ -1608,7 +1608,7 @@ const c_lobby_reuse_ms = 30000;
 
 var g_lobby = null;
 
-// NOTE: Whether the account's keys are not set up - asked at each look until they are (Damon, 2026-10-28: a reminder in Needs
+// NOTE: Whether the account's keys are not set up - asked at each look until they are (2026-10-28: a reminder in Needs
 // you, keys being skippable as the last step of joining).
 var g_no_keys = false;
 var g_keys_known = false;
@@ -1619,7 +1619,7 @@ function devices_url( )
 }
 
 // NOTE: The key the chat keeps a person's dismissed announcements under, so dismissing on Home dismisses in the
-// chat too (Damon, 2026-10-08: one dismissal for both) - the chat hears it through the "storage" event. By the
+// chat too (2026-10-08: one dismissal for both) - the chat hears it through the "storage" event. By the
 // account's name, not its PIN ("account_storage_key( )" in "chat_parse.js").
 function dismissed_key( )
 {
@@ -1677,7 +1677,7 @@ async function load_member_home( )
    // NOTE: Not one that failed - the Overview asks again for itself (found by review).
    g_lobby = is_error_response( answer ) ? null : { at: Date.now( ), access: asked_for, answer: answer };
 
-   // NOTE: The chat not turned on - the Chat tile says so, rather than "Nothing new" (Ian, 2026-10-13).
+   // NOTE: The chat not turned on - the Chat tile says so, rather than "Nothing new" (2026-10-13).
    g_chat_off = irc_unavailable( answer );
 
    if( listing.error === "" )
@@ -1918,7 +1918,7 @@ function read_uptime( fresh )
    return g_uptime.read;
 }
 
-// NOTE: "Home node · CIYAM 0.0.0 · up 11 minutes" - kept up to date with the minute, as Uptime is (Ian, 2026-10-13: it stayed
+// NOTE: "Home node · CIYAM 0.0.0 · up 11 minutes" - kept up to date with the minute, as Uptime is (2026-10-13: it stayed
 // as it was at sign in).
 async function refresh_node_line( )
 {
@@ -1940,7 +1940,7 @@ function start_refresh( )
       load_member_home( );
       refresh_node_line( );
 
-      // NOTE: Admin's Overview or Health too, while shown - a page left open is a way to watch the node (Ian, 2026-10-11).
+      // NOTE: Admin's Overview or Health too, while shown - a page left open is a way to watch the node (2026-10-11).
       if( ciyam.is_admin && ( ( g_section === "overview" ) || ( g_section === "health" ) ) )
          load_overview( );
    }, c_refresh_ms );
@@ -1962,7 +1962,7 @@ function install_member_home( )
 
    app_address( document.getElementById( "tile_chat" ), { key: "chat", page: "chat.html" } );
 
-   // NOTE: The accounts page - in this tab now, as every app opens (Damon, 2026-10-09; in its own tab until then).
+   // NOTE: The accounts page - in this tab now, as every app opens (2026-10-09; in its own tab until then).
    shell_bind_link( document.getElementById( "manage_account" ), function( event ) { open_app_by_key( "account", "#mine", event ); } );
 
    app_address( document.getElementById( "manage_account" ), { key: "account", page: "account.html" }, "#mine" );
@@ -2004,7 +2004,7 @@ function admin_url( path )
    return ciyam.get_cws_url( ) + path + "?access=" + ciyam.access + "&device=" + ciyam.device + "&format=text&session=" + ciyam.sessid;
 }
 
-// NOTE: How many unlock keys the node holds - asked of the node, so every browser says the same (Ian, 2026-10-10). The
+// NOTE: How many unlock keys the node holds - asked of the node, so every browser says the same (2026-10-10). The
 // count this browser used to keep is let go.
 async function read_key_count( )
 {
@@ -2074,7 +2074,7 @@ async function read_node_flags( )
    return flags;
 }
 
-// NOTE: Whether the node's identity is held encrypted - without it, no unlock keys (Ian, 2026-10-12).
+// NOTE: Whether the node's identity is held encrypted - without it, no unlock keys (2026-10-12).
 async function read_secure( )
 {
    return parse_secure( await ask_node( c_home_secure_request ) );
@@ -2097,7 +2097,7 @@ function set_health_pill( id, level, text )
    pill.textContent = text;
 }
 
-// NOTE: A log's last "count" lines - every line for none. The node gives ten unless asked (Ian, "3d6a5820"), so
+// NOTE: A log's last "count" lines - every line for none. The node gives ten unless asked (commit "3d6a5820"), so
 // Home always says how many it wants.
 async function read_log( name, count )
 {
@@ -2179,7 +2179,7 @@ async function load_overview( fresh )
 
    show_key_unlock( server ? last_key_unlock( server ) : null );
 
-   // NOTE: Who is connected, what runs by itself, and where the node listens - allowed admin on any node (Ian, "136d4815"). The
+   // NOTE: Who is connected, what runs by itself, and where the node listens - allowed admin on any node (commit "136d4815"). The
    // schedule and the ports are Health's alone, so not asked while the Overview is shown (Health asks again when it is opened).
    var health = ( g_section === "health" );
 
@@ -2218,7 +2218,7 @@ function health_time( unique )
    return ( unique === "" ) ? "-" : day_label( unique ) + " " + unique_to_time( unique ).substring( 0, 5 );
 }
 
-// NOTE: Health's sessions card - by person, yours marked; "null", the node did not answer (one before Ian's "136d4815").
+// NOTE: Health's sessions card - by person, yours marked; "null", the node did not answer (one before commit "136d4815").
 function show_sessions( reply )
 {
    var rows = document.getElementById( "sessions_rows" );
@@ -2378,7 +2378,7 @@ function show_node_facts( uptime, secure, devt, demo )
 }
 
 // NOTE: How this browser's connection is encrypted, as the node sees it. Plain HTTP is normal on the node's own network
-// (Ian, 2026-10-03) - worth knowing, not a problem, so it is not among what needs you.
+// (2026-10-03) - worth knowing, not a problem, so it is not among what needs you.
 function show_connection( )
 {
    var security = security_text( g_system.security );
@@ -2559,7 +2559,7 @@ function show_problems_in_logs( event )
    go( "logs" );
 }
 
-// NOTE: The rooms near the number of messages a room keeps - a full one drops its oldest (Ian's "@qs_pf_irc",
+// NOTE: The rooms near the number of messages a room keeps - a full one drops its oldest (the server's "@qs_pf_irc",
 // 2026-10-11) - and Health's bars for the fullest, filling or not. Only the rooms admin is in: the listing has no others.
 // Returns the rooms filling up, or null when the listing could not be read.
 function show_filling( rooms, chat_off )
@@ -2688,7 +2688,7 @@ async function do_make_key( )
 
    show_keys( );
 
-   // NOTE: Health's "no unlock keys left" goes at once, its count and the Overview with it (Ian, 2026-10-13).
+   // NOTE: Health's "no unlock keys left" goes at once, its count and the Overview with it (2026-10-13).
    load_overview( );
 }
 
@@ -2716,7 +2716,7 @@ function forget_shown_key( )
    document.getElementById( "key_make" ).hidden = false;
 }
 
-// ---- Alerts (Damon, 2026-10-12)
+// ---- Alerts (2026-10-12)
 
 // NOTE: The node's own topic, as it last said - "" where it would not say.
 var g_alerts_topic = "";
@@ -2725,7 +2725,7 @@ var g_alerts_topic = "";
 // second ("No usable data" for the first, 2026-10-06); the page shows the topic, to copy into the app.
 var g_alerts_web = false;
 
-// NOTE: The node's ntfy server as the phones reach it - its "ntfy_server" setting (Ian, 2026-11-16), which its alerts go to
+// NOTE: The node's ntfy server as the phones reach it - its "ntfy_server" setting (2026-11-16), which its alerts go to
 // too - "" for none.
 var g_alerts_server = "";
 
@@ -3238,7 +3238,7 @@ function close_console( )
 }
 
 // ====================================================================
-// People - adding, handing over and removing accounts, moved here from the accounts page (Damon, 2026-10-11)
+// People - adding, handing over and removing accounts, moved here from the accounts page (2026-10-11)
 // ====================================================================
 
 // NOTE: As the accounts page had them: four views in the one section - the list, Add a person, the code to hand over
@@ -3251,7 +3251,7 @@ const c_people_copied_ms = 2000;
 
 const c_people_qr_size = 176;
 
-// NOTE: A PIN is for its user and the administrator (Ian, 2026-10-10), and Home may be left open to watch the node
+// NOTE: A PIN is for its user and the administrator (2026-10-10), and Home may be left open to watch the node
 // (2026-10-11) - so People hides each PIN until "Show" is chosen for its row.
 const c_hidden_pin = "•••••";
 
@@ -3263,7 +3263,7 @@ var g_people_shown = { };
 var g_people_query = "";
 var g_people_page = 1;
 
-// NOTE: Show inactive ticked - the disabled listed too (Ian, 2026-11-09: hidden unless asked for).
+// NOTE: Show inactive ticked - the disabled listed too (2026-11-09: hidden unless asked for).
 var g_people_inactive = false;
 var g_handover_code = "";
 var g_ready = null;
@@ -3408,7 +3408,7 @@ function render_people( )
 
          name.textContent = person.name;
 
-         // NOTE: Their keys as the node says (Ian, 2026-11-07) - none yet, to back up, or backed up as they are; the disabled's not
+         // NOTE: Their keys as the node says (2026-11-07) - none yet, to back up, or backed up as they are; the disabled's not
          // said by it.
          row.querySelector( ".account-sub" ).textContent = ( person.status === "inactive" ) ? "Disabled - can't sign in"
           : people_keys_text( person.keys );
@@ -3454,7 +3454,7 @@ function render_people( )
          button.onclick = function( ) { close_person_menu( false ); act( ); };
       };
 
-      // NOTE: Their keys given, from the node's words and their PIN (Damon, 2026-11-11) - to someone else who has claimed theirs.
+      // NOTE: Their keys given, from the node's words and their PIN (2026-11-11) - to someone else who has claimed theirs.
       if( ( person.status === "active" ) && !person.you && ( person.name !== "" ) )
          item( ".account-give", "Give keys to " + person.name, function( ) { do_give_keys( person ); } );
 
@@ -3492,7 +3492,7 @@ function render_people( )
       else if( person.status === "active" )
       {
          // NOTE: Only for someone who has claimed their account - one not yet claimed has no password to forget. Disabled, not
-         // removed (Ian, 2026-11-09): a PIN removed could be given out again, and its new holder would have the old one's rooms.
+         // removed (2026-11-09): a PIN removed could be given out again, and its new holder would have the old one's rooms.
          item( ".account-reset", "Reset the password of " + person.name, function( ) { do_reset_password( person ); } );
          item( ".account-disable", "Disable " + called, function( ) { arm_remove( person.pin ); } );
       }
@@ -3554,7 +3554,7 @@ function toggle_pin( pin )
    render_people( );
 }
 
-// NOTE: A person's menu (Damon, 2026-11-08) - one open at a time, its row's. Placed against the window under its button, or over it
+// NOTE: A person's menu (2026-11-08) - one open at a time, its row's. Placed against the window under its button, or over it
 // where there is no room below, as the table's own box scrolls sideways and would cut it off; closed by a click elsewhere, Escape,
 // Tab, or the page moving.
 var g_person_menu = null;
@@ -3651,7 +3651,7 @@ function arm_remove( pin )
    render_people( );
 }
 
-// NOTE: A password hash of all zeroes (Ian, 2026-11-09 - "d6ef2fe2"), sent as it is, so no sign in matches it; the users review
+// NOTE: A password hash of all zeroes (2026-11-09 - "d6ef2fe2"), sent as it is, so no sign in matches it; the users review
 // then ends their name with "~". Undone by a reset of the password ("do_reset_password( )"). The node refuses it for a PIN nobody
 // has claimed - one of those is removed, as nothing is yet tied to it.
 async function do_disable( person )
@@ -3701,7 +3701,7 @@ async function do_remove( pin )
    load_people( );
 }
 
-// NOTE: Give keys (Damon, 2026-11-11) - done under Your keys on My account, which has admin's keys and the exchange of two codes
+// NOTE: Give keys (2026-11-11) - done under Your keys on My account, which has admin's keys and the exchange of two codes
 // with the person's device: who to is held for the tab ("c_signin_give_keys_name"), not put in the address.
 function do_give_keys( person )
 {
@@ -3719,11 +3719,11 @@ function do_give_keys( person )
    open_app_by_key( "account", "#give", null );
 }
 
-// NOTE: A forgotten password (Damon and Ian, 2026-10-29) - the account made again as a nominated one with its own PIN and username,
+// NOTE: A forgotten password (2026-10-29) - the account made again as a nominated one with its own PIN and username,
 // in one request ("nominated=!<pin>:<name>"): the password gone, admin never knowing the new one; its rooms, messages and keys
 // kept. The person sets it up again with the PIN, as a new household member does.
 // NOTE: The node keeps one backup of each person's keys - their own, their contacts' and their room keys, locked as My account
-// keeps them, so admin never sees them ("keys=REPLACE|RESTORE", Ian's "0592816e", 2026-11-04). Backing up replaces that backup
+// keeps them, so admin never sees them ("keys=REPLACE|RESTORE", commit "0592816e", 2026-11-04). Backing up replaces that backup
 // with the keys as they are now; restoring puts it back, for keys changed by someone who got into the account.
 async function do_user_keys( person )
 {
@@ -3769,7 +3769,7 @@ async function do_user_keys( person )
       load_people( );
 }
 
-// NOTE: Enabling someone disabled is the same reset (Ian, 2026-11-09: "a reset brings them back") - said as enabling.
+// NOTE: Enabling someone disabled is the same reset (2026-11-09: "a reset brings them back") - said as enabling.
 async function do_reset_password( person )
 {
    var enabling = ( person.status === "inactive" );
@@ -4077,7 +4077,7 @@ function install_people( )
    } );
 
    // NOTE: Enter on the code or the PIN made, while its heading has the focus (as it does when shown), is "Done" - so
-   // a person is added with Enter twice (Ian, 2026-11-01). An Enter held down from creating it is not taken as well.
+   // a person is added with Enter twice (2026-11-01). An Enter held down from creating it is not taken as well.
    [ "handover", "ready" ].forEach( function( view )
    {
       document.getElementById( view + "_section" ).addEventListener( "keydown", function( event )

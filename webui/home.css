@@ -846,7 +846,7 @@
    font-variant-numeric: tabular-nums;
 }
 
-/* NOTE: What Health cannot say yet - greyed, kept in sight as the gap Ian's R2 figures would fill. */
+/* NOTE: What Health cannot say yet - greyed, kept in sight as the gap the R2 figures would fill. */
 .home-health-gap
 {
    box-sizing: border-box;
@@ -914,7 +914,7 @@
    display: none;
 }
 
-/* NOTE: As tall as the field beside it (Damon, 2026-10-12). */
+/* NOTE: As tall as the field beside it (2026-10-12). */
 .home-alerts-server .chat-btn
 {
    height: 46px;
@@ -977,7 +977,7 @@
 }
 
 /* NOTE: Beside a primary button, the others stand as tall - "Copy" and "I've stored it", "Copy topic" and "Send a test
-   alert" (Damon, 2026-10-13). */
+   alert" (2026-10-13). */
 .home-card-actions:has( .chat-btn--primary ) .chat-btn
 {
    height: 44px;
@@ -1303,7 +1303,7 @@
 }
 
 /* NOTE: Setting up's question - a new node, or one recovered from its twelve words - each answer a button that goes
-   straight on (Ian, 2026-10-13). */
+   straight on (2026-10-13). */
 .home-setup-answers
 {
    display: flex;
@@ -1401,7 +1401,7 @@
 }
 
 /* ====================================================================
-   People's search and pages (Damon, 2026-10-28)
+   People's search and pages (2026-10-28)
    ==================================================================== */
 
 .home-people-tools

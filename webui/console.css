@@ -57,7 +57,7 @@ body
    font-size: var(--font-size-chat-small);
    line-height: 1.55;
    /* NOTE: JetBrains Mono joins some runs of symbols into one shape - "***", a PIN's own list or script,
-      showed with its middle asterisk raised (Ian, 2026-10-07). A console shows exactly what was typed. */
+      showed with its middle asterisk raised (2026-10-07). A console shows exactly what was typed. */
    font-variant-ligatures: none;
    font-feature-settings: "liga" 0, "calt" 0;
 }
@@ -132,7 +132,7 @@ code
    color: var(--color-console-text-bright);
 }
 
-/* NOTE: Its highlight the console's own - the chat's light one left its light words unreadable (Damon, 2026-10-09). */
+/* NOTE: Its highlight the console's own - the chat's light one left its light words unreadable (2026-10-09). */
 .console-apps .apps-trigger:hover,
 .console-apps .apps-trigger[aria-expanded="true"]
 {
@@ -903,7 +903,7 @@ code
    flex-direction: column;
 }
 
-/* NOTE: The editor reaches the bottom of the console (Ian, 2026-10-04) - the script box takes what
+/* NOTE: The editor reaches the bottom of the console (2026-10-04) - the script box takes what
    the notes, the name and the buttons leave. */
 .console-editor
 {

@@ -21,7 +21,7 @@ const c_console_max_response_chars = 20000;
 const c_console_short_key_length = 17;
 
 // NOTE: Whether the raw protocol ("~") can be used - on a development node only. Admin may now ask a few system variables
-// on any node (Ian, 2026-10-10), so the probe asks whether the node is for development rather than whether a request is
+// on any node (2026-10-10), so the probe asks whether the node is for development rather than whether a request is
 // answered: "1" (the server's true) only there, nothing or an error everywhere else. It used to be "run_script *".
 const c_console_raw_probe = "system_variable @system_is_for_devt";
 
@@ -79,7 +79,7 @@ const c_console_routes =
    "users|delete": { method: "DELETE", name: true, options: false },
    "users|update": { method: "PUT", name: true, options: true },
 
-   // NOTE: Ian, 2026-10-06 - this PIN's own devices, with a session: the list, or one removed (and its
+   // NOTE: 2026-10-06 - this PIN's own devices, with a session: the list, or one removed (and its
    // session ended) - never the one asking.
    "devices|review": { method: "GET", name: false, options: false },
    "devices|delete": { method: "DELETE", name: true, options: false },
@@ -99,14 +99,14 @@ const c_console_routes =
    "stylesheets|review": { method: "GET", name: "optional", options: false },
    "webcmdlists|review": { method: "GET", name: "optional", options: false },
 
-   // NOTE: Ian, 2026-10-03 - admin only on the server: the log names, or one whole log.
+   // NOTE: 2026-10-03 - admin only on the server: the log names, or one whole log.
    "logs|review": { method: "GET", name: "optional", options: false },
 
    "javascripts|delete": { method: "DELETE", name: false, options: false },
    "stylesheets|delete": { method: "DELETE", name: false, options: false },
    "webcmdlists|delete": { method: "DELETE", name: false, options: false },
 
-   // NOTE: Ian, 2026-10-22 - this account's own keys, encrypted before they are sent: no name, as only the owner reaches
+   // NOTE: 2026-10-22 - this account's own keys, encrypted before they are sent: no name, as only the owner reaches
    // them. "retain user-keys <data>" sends the rest of the line as the payload - only keys already locked ("UK3:", as
    // "ciyam_user_keys.js" locks them), so nothing typed goes to the node in the clear (found by review, 2026-10-23).
    "user-keys|review": { method: "GET", name: false, options: false },
@@ -116,10 +116,10 @@ const c_console_routes =
    "storage-modules|review": { method: "GET", name: "optional", options: false },
    "storage-instances|review": { method: "GET", name: true, options: true },
 
-   // NOTE: Ian's "348b4803" (2026-11-04) - fields of one record changed: "update storage-instance <id>/<cid>/<key> assigns=..."
+   // NOTE: commit "348b4803" (2026-11-04) - fields of one record changed: "update storage-instance <id>/<cid>/<key> assigns=..."
    "storage-instances|update": { method: "PUT", name: true, options: true },
 
-   // NOTE: Ian's "3b9f0923" (2026-11-16) - the node's settings: "review settings", one by name, "update setting <name> value=..."
+   // NOTE: commit "3b9f0923" (2026-11-16) - the node's settings: "review settings", one by name, "update setting <name> value=..."
    // (admin only).
    "settings|review": { method: "GET", name: "optional", options: false },
    "settings|update": { method: "PUT", name: true, options: true }
@@ -127,13 +127,13 @@ const c_console_routes =
 
 const c_console_local_commands = [ "help", "clear", "vars", "var", "unset", "echo", "seed", "history", "wait", "run", "exec", "ntfy" ];
 
-// NOTE: Where the ntfy server was kept in the browser until it was the node's own setting (Ian, 2026-11-16 - "ntfy_server",
+// NOTE: Where the ntfy server was kept in the browser until it was the node's own setting (2026-11-16 - "ntfy_server",
 // one value for the node and the phones) - only removed now.
 const c_ntfy_server_key = "cws.ntfy_server";
 
 const c_console_quit_names = [ "quit", "exit", "finish", "term" ];
 
-// NOTE: The node's own requests that need no session (Ian, 2026-10-13) - its state, how long it has been up, its time,
+// NOTE: The node's own requests that need no session (2026-10-13) - its state, how long it has been up, its time,
 // this browser's address as it sees it, and the most an upload may be. Sent as "GET /<name>".
 const c_console_open_endpoints = [ "system", "uptime", "unix-now", "ip-addr", "post-limit" ];
 
@@ -332,7 +332,7 @@ function resolve_command( line )
    if( c_console_quit_names.indexOf( first ) >= 0 )
       return { kind: "quit" };
 
-   // NOTE: Signing in from the prompt - the console opened on its own (Ian, 2026-10-13): "init" and an account saved on
+   // NOTE: Signing in from the prompt - the console opened on its own (2026-10-13): "init" and an account saved on
    // this browser, by name, or a PIN ("init_target( )").
    if( first === "init" )
       return { kind: "init", target: words.slice( 1 ).join( " " ) };
@@ -659,7 +659,7 @@ function split_script( body )
 }
 
 // ====================================================================
-// The list language - Ian's ".list" files, as "test_web_session.js" runs them
+// The list language - the server's ".list" files, as "test_web_session.js" runs them
 // ====================================================================
 
 // NOTE: A line is substituted first ("ciyam.replace_variables"), so "?{name} ..." has become
@@ -801,7 +801,7 @@ function is_javascript_line( text )
 // NOTE: The harness's verbs for a server javascript, by what each does: "load" puts the script
 // in the page and calls its "_at_load", "eval" calls its "_execute", "result" shows its
 // "_result" and "unload" takes it out again. "about" and "loaded" are ours - what a module says
-// of itself, and which are in the page now (Ian, 2026-10-22).
+// of itself, and which are in the page now (2026-10-22).
 const c_console_script_verbs = {
    load: "load", reload: "load",
    eval: "eval", exec: "eval", employ: "eval", execute: "eval",
@@ -862,7 +862,7 @@ function loaded_scripts_lines( entries, access )
    } );
 }
 
-// NOTE: Whether this account may run a server javascript (Ian, 2026-10-05): anyone runs those not named
+// NOTE: Whether this account may run a server javascript (2026-10-05): anyone runs those not named
 // after a PIN, and their own; another account's - all digits, as the server tells a PIN - is admin's
 // alone. The server already keeps them from the listing and "review javascript"; this keeps "load
 // script", which fetches the file itself, to the same rule.
@@ -889,7 +889,7 @@ function normalise_ntfy_server( text )
    return ( match === null ) ? "" : match[ 1 ].toLowerCase( ) + "://" + match[ 2 ];
 }
 
-// NOTE: The ntfy server as the node keeps it (Ian's "ntfy_server" setting, 2026-11-16) - a host, with a port if need be: the
+// NOTE: The ntfy server as the node keeps it (the server's "ntfy_server" setting, 2026-11-16) - a host, with a port if need be: the
 // node sends to "https://<it>/<topic>", and the phones subscribe to the same. Typed with "https://" or without; "" if it is not
 // one - plain "http://" included, as the node sends only over https.
 function ntfy_setting_of( text )
@@ -1112,10 +1112,10 @@ function summarise_storage_value( key, value )
 // otherwise left out so they do not bury what was asked for. For diagnostics; off by default.
 //
 // "echo_list_lines" prints each line of a list as it runs, before what it answers. Off by default, as
-// in the harness - the output is much cleaner without (Ian, 2026-10-07).
+// in the harness - the output is much cleaner without (2026-10-07).
 const c_console_prefs_key = "cws.prefs";
 
-// NOTE: "log_session_only" on to begin with (Damon, 2026-11-13, after a security review) - off, a console linking after one account signed
+// NOTE: "log_session_only" on to begin with (2026-11-13, after a security review) - off, a console linking after one account signed
 // out and another in was given the first account's requests: its rooms, and messages sent where there is no room key.
 const c_console_prefs = { log_session_only: true, log_polling: false, echo_list_lines: false };
 
@@ -1305,7 +1305,7 @@ function mask_device_sessions( text )
    return String( text || "" ).replace( /^(\s*[A-Za-z0-9]+\s+)[A-Za-z0-9]+(\*?)\s*$/gm, "$1(session)$2" );
 }
 
-// NOTE: The whole query for a logged request, to copy and try again (Ian, 2026-10-06 - he still opened
+// NOTE: The whole query for a logged request, to copy and try again (2026-10-06 - the harness still opened
 // "test_web_session.html" for it). An entry keeps no credentials, so they are put back from "session" -
 // this tab's own, which a linked console shares with the chat - in the harness's order, where the
 // request had them. A password hash is never put back: a sign in's comes back as "passwd=PASSWORD_HASH".

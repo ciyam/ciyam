@@ -30,8 +30,8 @@ http://www.opensource.org/licenses/mit-license.php.
 
 <div class="chat-signin" id="welcome_view" hidden>
    <form class="chat-signin-form" onsubmit="do_join( event )" novalidate>
-      <!-- NOTE: Joining in three steps (Damon, 2026-10-28) - the account, writing it down, then your keys; said in the brand's
-           row, so the card is no taller (Ian, 2026-10-27: Firefox scrolled to reach Verify). -->
+      <!-- NOTE: Joining in three steps (2026-10-28) - the account, writing it down, then your keys; said in the brand's
+           row, so the card is no taller (2026-10-27: Firefox scrolled to reach Verify). -->
       <div class="chat-brand">
          <span class="chat-logo"></span>
          <span class="chat-wordmark">CIYAM</span>
@@ -39,7 +39,7 @@ http://www.opensource.org/licenses/mit-license.php.
          <span class="account-step">Step 1 of 3</span>
       </div>
 
-      <!-- NOTE: No lede - the tabs say what to use - so the card stays on one screen with a password suggested (Damon, 2026-10-28). -->
+      <!-- NOTE: No lede - the tabs say what to use - so the card stays on one screen with a password suggested (2026-10-28). -->
       <h2 tabindex="-1">Welcome</h2>
 
       <div class="account-tabs" role="tablist" aria-label="What you were given">
@@ -82,8 +82,8 @@ http://www.opensource.org/licenses/mit-license.php.
          <label class="chat-label" for="join_confirm">Type it again</label>
          <input type="password" id="join_confirm" class="chat-field" autocomplete="new-password">
 
-         <!-- NOTE: As on the sign in - you are signed in once the account is made (Damon, 2026-10-05). Both remembered to begin
-              with (Ian, 2026-11-01: friendlier for someone new - those who know better change it). -->
+         <!-- NOTE: As on the sign in - you are signed in once the account is made (2026-10-05). Both remembered to begin
+              with (2026-11-01: friendlier for someone new - those who know better change it). -->
          <label class="chat-label" for="join_retain">Remember on this browser</label>
          <select id="join_retain" class="chat-field">
             <option value="none">Nothing &mdash; forget this account</option>
@@ -151,9 +151,9 @@ http://www.opensource.org/licenses/mit-license.php.
 </div>
 
 <!-- ================================================================ your keys, the last step -->
-<!-- NOTE: Keys as the last step of joining (Damon, 2026-10-28: in the same card as making the account, not My account) - Your keys'
+<!-- NOTE: Keys as the last step of joining (2026-10-28: in the same card as making the account, not My account) - Your keys'
      card is brought in to "keys_step_host" for it ("do_written_next( )"), with its own choices - the administrator's first, then
-     words of their own, as on My account (Damon, 2026-11-15) - and Skip; its last part left out for Go to Home. -->
+     words of their own, as on My account (2026-11-15) - and Skip; its last part left out for Go to Home. -->
 <div class="chat-signin" id="keys_step_view" hidden>
    <div class="chat-signin-form">
       <div class="chat-brand">
@@ -178,7 +178,7 @@ http://www.opensource.org/licenses/mit-license.php.
 </div>
 
 <!-- ================================================================ signed in -->
-<!-- NOTE: Home's shell ("shell.css", "shell.js" - Damon, 2026-10-26): a side menu of the apps and My account's sections, who is
+<!-- NOTE: Home's shell ("shell.css", "shell.js" - 2026-10-26): a side menu of the apps and My account's sections, who is
      signed in and Sign out; on a phone the menu a drawer, the sections chips under the top bar and the apps a bar along the
      bottom. A section at a time ("show_section( )"), each "#<key>" in the address. -->
 <div class="shell-app account-app" id="app_view" hidden>
@@ -238,7 +238,7 @@ http://www.opensource.org/licenses/mit-license.php.
                <p class="account-lede">How you appear to others on this node.</p>
             </div>
 
-            <!-- NOTE: What needs you (Damon, 2026-10-28) - keys skipped while joining, or never set up - as Home shows admin what
+            <!-- NOTE: What needs you (2026-10-28) - keys skipped while joining, or never set up - as Home shows admin what
                  needs them, and counted by Your keys' badge ("onboard_draw( )"). -->
             <section class="home-attention" id="keys_reminder" aria-labelledby="keys_reminder_heading" hidden>
                <div class="home-attention-head">
@@ -256,7 +256,7 @@ http://www.opensource.org/licenses/mit-license.php.
                </ul>
             </section>
 
-            <!-- NOTE: Two columns as Home's (Damon, 2026-10-26 - the page as wide as Home's), one under the other when narrow. -->
+            <!-- NOTE: Two columns as Home's (2026-10-26 - the page as wide as Home's), one under the other when narrow. -->
             <div class="account-columns">
                <div class="account-column-main">
                   <div class="account-card account-identity">
@@ -269,7 +269,7 @@ http://www.opensource.org/licenses/mit-license.php.
                </div>
 
                <div class="account-column-side">
-                  <!-- NOTE: Room for what is to come (Damon, 2026-10-26) - where it is kept on the node is Ian's to say. -->
+                  <!-- NOTE: Room for what is to come (2026-10-26) - where it is kept on the node is still to be decided. -->
                   <div class="account-card account-form account-later">
                      <div>
                         <h2>About you <span class="account-later-badge">Later</span></h2>
@@ -283,7 +283,7 @@ http://www.opensource.org/licenses/mit-license.php.
          </section>
 
          <!-- ------------------------------------------------------------ Your keys -->
-         <!-- NOTE: Your keys (Ian, 2026-10-23 and 2026-10-25) - for encrypted messages, from twelve words of the account's own,
+         <!-- NOTE: Your keys (2026-10-23 and 2026-10-25) - for encrypted messages, from twelve words of the account's own,
               locked under them before they go to the node ("user-keys"). One part shown at a time, by "keys_show( )" in
               "account_keys.js"; Contacts and Add another device have sections of their own, shown once the keys are here. -->
          <section class="account-section" id="section_keys" hidden>
@@ -298,9 +298,9 @@ http://www.opensource.org/licenses/mit-license.php.
                   <div class="account-card account-form" id="mine_keys">
                      <div class="account-keys-part" id="keys_loading" role="status">Looking for your keys…</div>
 
-                     <!-- NOTE: Admin's keys come only from the node's twelve words (Ian, 2026-11-11); everyone else is offered their
-                          administrator's first, then words of their own - never the node's, which make everyone's keys (Damon,
-                          2026-11-14). -->
+                     <!-- NOTE: Admin's keys come only from the node's twelve words (2026-11-11); everyone else is offered their
+                          administrator's first, then words of their own - never the node's, which make everyone's keys
+                          (2026-11-14). -->
                      <div class="account-keys-part" id="keys_none" hidden>
                         <p class="account-lede" id="keys_none_lede"></p>
                         <div class="account-actions-row" id="keys_none_admin">
@@ -363,7 +363,7 @@ http://www.opensource.org/licenses/mit-license.php.
                      </div>
 
                      <!-- NOTE: On a browser new to them, getting them comes first - most here have them from their administrator, with
-                          no words of their own - and the words only on "I have my words" (Damon, 2026-11-16) ("keys_show_enter( )"). -->
+                          no words of their own - and the words only on "I have my words" (2026-11-16) ("keys_show_enter( )"). -->
                      <div class="account-keys-part" id="keys_enter" hidden>
                         <p class="account-lede" id="keys_enter_lede">Your keys are set up. To use them on this browser, type your
                          twelve words.</p>
@@ -384,17 +384,17 @@ http://www.opensource.org/licenses/mit-license.php.
                         </div>
                      </div>
 
-                     <!-- NOTE: Your keys from another device by Ian's exchange (Damon, 2026-11-05) - this browser's code for one that has
+                     <!-- NOTE: Your keys from another device by the exchange of two codes (2026-11-05) - this browser's code for one that has
                           them, and the code it shows back read here: by its address opened with this device's camera, scanned in the
                           page, or pasted. "keys_ask_start( )". -->
-                     <!-- NOTE: In two steps, each on its own (Damon, 2026-11-17) - this device's code shown, then the other's
+                     <!-- NOTE: In two steps, each on its own (2026-11-17) - this device's code shown, then the other's
                           scanned, said the same as on the other device ("keys_ask_step( )"). -->
                      <div class="account-keys-part" id="keys_ask" hidden>
                         <ol class="account-exchange-steps" id="keys_ask_steps" aria-label="Steps"></ol>
                         <div class="account-keys-device-step" id="keys_ask_show_part">
                            <p class="account-lede" id="keys_ask_lede"></p>
                            <div class="account-keys-qr" id="keys_ask_qr" aria-hidden="true"></div>
-                           <!-- NOTE: The addresses only for when a camera can't be used (Damon, 2026-11-16: they read as something that
+                           <!-- NOTE: The addresses only for when a camera can't be used (2026-11-16: they read as something that
                                 should have appeared) - the answer's opened by itself when this device's can't ("keys_scan_start( )"). -->
                            <details class="account-keys-manual" id="keys_ask_link_manual">
                               <summary>Can't use the camera?</summary>
@@ -443,10 +443,10 @@ http://www.opensource.org/licenses/mit-license.php.
                </div>
 
                <div class="account-column-side">
-                  <!-- NOTE: Give keys, from People (Damon, 2026-11-11) - admin gives someone their keys, made from the people key
+                  <!-- NOTE: Give keys, from People (2026-11-11) - admin gives someone their keys, made from the people key
                        kept with admin's own and the person's PIN, by the exchange of two codes with their device ("keys_give_go( )").
-                       The people key is kept with admin's keys, under their lock alone (Ian, 2026-11-16: not the password, which
-                       he hasn't with him when out) - so only their code is needed; the node's words only until it is kept, and the
+                       The people key is kept with admin's keys, under their lock alone (2026-11-16: not the password, which
+                       not to hand when out) - so only their code is needed; the node's words only until it is kept, and the
                        password only to open one sealed under it before, once. -->
                   <div class="account-card account-form account-keys-device" id="give_part" hidden>
                      <div>
@@ -491,7 +491,7 @@ http://www.opensource.org/licenses/mit-license.php.
                      </div>
                      <div class="account-keys-device-step" id="give_reply_part" hidden>
                         <p class="account-lede" id="give_reply_lede"></p>
-                        <!-- NOTE: In one scan the code shown back only if their keys don't arrive (Damon, 2026-11-20) - else open. -->
+                        <!-- NOTE: In one scan the code shown back only if their keys don't arrive (2026-11-20) - else open. -->
                         <details class="account-keys-manual" id="give_fallback">
                            <summary id="give_fallback_summary"></summary>
                            <div class="account-keys-manual-fields">
@@ -515,8 +515,8 @@ http://www.opensource.org/licenses/mit-license.php.
                   </div>
 
                   <!-- NOTE: Room keys (2026-10-26) - kept with the keys, by room number; each is made, shared and removed in the chat,
-                       under Room Details. Shown once the keys are here. Listed by the rooms' names, each number under its name (Damon,
-                       2026-11-04: only the numbers were said) - "keys_draw_rooms( )". -->
+                       under Room Details. Shown once the keys are here. Listed by the rooms' names, each number under its name
+                       (2026-11-04: only the numbers were said) - "keys_draw_rooms( )". -->
                   <div class="account-card account-form account-keys-rooms" id="keys_rooms_part" hidden>
                      <h2>Room keys</h2>
                      <ul class="account-keys-list account-room-keys" id="keys_room_list"></ul>
@@ -528,7 +528,7 @@ http://www.opensource.org/licenses/mit-license.php.
 
          <!-- ------------------------------------------------------------ Contacts -->
          <!-- NOTE: Others' public keys, by username (2026-10-25) - "keys_draw_contacts( )" makes the rows. Added by a contact code
-              each, shown and scanned or copied (Ian, 2026-11-03 - "account_keys.js"). -->
+              each, shown and scanned or copied (2026-11-03 - "account_keys.js"). -->
          <section class="account-section" id="section_contacts" hidden>
             <div>
                <h1 tabindex="-1">Contacts</h1>
@@ -543,7 +543,7 @@ http://www.opensource.org/licenses/mit-license.php.
                </div>
             </div>
 
-            <!-- NOTE: The list beside the form to add one (Damon, 2026-10-26), so a growing list never pushes the form down. -->
+            <!-- NOTE: The list beside the form to add one (2026-10-26), so a growing list never pushes the form down. -->
             <div class="account-columns">
                <div class="account-column-main">
                   <div class="account-card account-form account-keys-people" id="contacts_part" hidden>
@@ -558,13 +558,13 @@ http://www.opensource.org/licenses/mit-license.php.
                      <h2>Add a contact</h2>
                      <p class="account-lede">You each show your contact code and scan the other's - best together, where no one else
                       can see the screens.</p>
-                     <!-- NOTE: Your code shown only when asked (Ian, 2026-10-27: your public key, with quantum attacks to come) - and
+                     <!-- NOTE: Your code shown only when asked (2026-10-27: your public key, with quantum attacks to come) - and
                           taken out of the page again on Done, or on leaving Contacts ("keys_hide_public( )"). -->
                      <div class="account-actions-row" id="contacts_start_row">
                         <button type="button" class="chat-btn chat-btn--primary" id="keys_public_show">Add a new contact</button>
                      </div>
                      <div class="account-contact-add" id="keys_public_part" hidden>
-                        <!-- NOTE: Your code to scan, and theirs scanned - added once read, so no steps (Damon, 2026-11-20). The codes
+                        <!-- NOTE: Your code to scan, and theirs scanned - added once read, so no steps (2026-11-20). The codes
                              as text, and a picture of theirs, only for when a camera can't be used - opened by itself then, as the
                              keys' exchanges ("keys_manual_open( )"). -->
                         <div class="account-contact-own">
@@ -616,7 +616,7 @@ http://www.opensource.org/licenses/mit-license.php.
 
             <div class="account-columns">
                <div class="account-column-main">
-                  <!-- NOTE: This account's devices (Ian, 2026-10-06) - "GET /cws/devices". Rows are made in "render_devices( )". -->
+                  <!-- NOTE: This account's devices (2026-10-06) - "GET /cws/devices". Rows are made in "render_devices( )". -->
                   <div class="account-card account-form" id="mine_devices">
                      <h2>Signed in from</h2>
 
@@ -627,8 +627,8 @@ http://www.opensource.org/licenses/mit-license.php.
                </div>
 
                <div class="account-column-side">
-                  <!-- NOTE: Another device (Ian, 2026-10-25: the access key "passed via QR code for simplicity rather than needing to
-                       provide the twelve words for every device"), by his exchange since 2026-11-05 - its code read here, and this
+                  <!-- NOTE: Another device (2026-10-25: the access key "passed via QR code for simplicity rather than needing to
+                       provide the twelve words for every device"), by the exchange of two codes since 2026-11-05 - its code read here, and this
                        browser's answer shown for it alone ("keys_device_answer( )"). Only once the keys are on this browser. -->
                   <div class="account-card account-form account-keys-device" id="device_add_part" hidden>
                      <div>
@@ -657,7 +657,7 @@ http://www.opensource.org/licenses/mit-license.php.
                         </div>
                         <div class="account-keys-device-step" id="keys_device_reply_part" hidden>
                            <p class="account-lede" id="keys_device_reply_lede"></p>
-                           <!-- NOTE: In one scan the code shown back only if the keys don't arrive (Damon, 2026-11-20) - else open. -->
+                           <!-- NOTE: In one scan the code shown back only if the keys don't arrive (2026-11-20) - else open. -->
                            <details class="account-keys-manual" id="keys_device_fallback">
                               <summary id="keys_device_fallback_summary"></summary>
                               <div class="account-keys-manual-fields">
@@ -690,7 +690,7 @@ http://www.opensource.org/licenses/mit-license.php.
          </section>
 
          <!-- ------------------------------------------------------------ Notifications -->
-         <!-- NOTE: Desktop notifications from the chat (Damon, 2026-10-20) - the same switch as in the chat's account menu
+         <!-- NOTE: Desktop notifications from the chat (2026-10-20) - the same switch as in the chat's account menu
               ("notify.js"); here so that, as more kinds come, they are set in one place. -->
          <section class="account-section" id="section_notify" hidden>
             <div>
@@ -715,7 +715,7 @@ http://www.opensource.org/licenses/mit-license.php.
                      <p class="account-lede" id="mine_notify_status" aria-live="polite"></p>
                   </div>
 
-                  <!-- NOTE: Your own alerts on a phone (Damon, 2026-11-17) - the node's "alerts": a topic of your own, which a call
+                  <!-- NOTE: Your own alerts on a phone (2026-11-17) - the node's "alerts": a topic of your own, which a call
                        rings with the chat closed. The topic is a secret (anyone with it could read what is sent to it), so shown
                        only when asked for, and taken off the page again on Hide or on leaving ("mine_alerts_hide( )"). -->
                   <div class="account-card account-form" id="mine_alerts">

@@ -4,7 +4,7 @@
    license.txt in the root project directory or
    http://www.opensource.org/licenses/mit-license.php. */
 
-/* NOTE: The shell an app's pages share (Damon, 2026-10-26: consistency across the apps) - a side menu of the apps and the
+/* NOTE: The shell an app's pages share (2026-10-26: consistency across the apps) - a side menu of the apps and the
    page's own sections, who is signed in and Sign out; a top bar; on a phone the menu a drawer, the sections chips beneath
    the top bar and the apps a bar along the bottom. Moved out of Home's "home.css" for My account; "shell.js" builds it. */
 

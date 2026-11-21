@@ -3,11 +3,11 @@
 // Distributed under the MIT/X11 software license, please refer to the file license.txt
 // in the root project directory or http://www.opensource.org/licenses/mit-license.php.
 
-// NOTE: Your keys, on My account (Ian, 2026-10-23 and 2026-10-25). An account's keys come from twelve words of its own - made
+// NOTE: Your keys, on My account (2026-10-23 and 2026-10-25). An account's keys come from twelve words of its own - made
 // from popped bubbles and the browser's randomness, as a node's are, written down and some checked back. The words go nowhere:
 // from them come the keys, kept on the node ("user-keys") with others' public keys, locked under an access key - many rounds of
-// a hash of the words - which is what each browser keeps ("ciyam_user_keys.js"; Ian: a hash "won't help anyone trying to crack
-// the actual twelve words"). Another browser gets the access key from this one by Ian's exchange of two codes ("keys_ask_start( )",
+// a hash of the words - which is what each browser keeps ("ciyam_user_keys.js"; a hash "won't help anyone trying to crack
+// the actual twelve words"). Another browser gets the access key from this one by the exchange of two codes ("keys_ask_start( )",
 // "keys_device_answer( )"), or makes it from the words typed.
 // It is kept while the account is remembered here, for the tab only when it is not, and goes with "Reset this browser" or the
 // account forgotten at a sign in.
@@ -30,7 +30,7 @@ const c_keys_device_qr_size = 168;
 // account's keys are known.
 const c_keys_pending_name = c_signin_pending_keys_name;
 
-// NOTE: The address that carried the access key itself, before Ian's exchange (2026-11-05) - taken out of the address, not used.
+// NOTE: The address that carried the access key itself, before the exchange of two codes (2026-11-05) - taken out of the address, not used.
 const c_keys_old_link_prefix = "#keys=";
 
 // NOTE: Another device's code, or the answer to this one's, brought by its address ("#keys-ask=" or "#keys-reply=" - the part after
@@ -227,7 +227,7 @@ function keys_url( extra )
     + "&session=" + ciyam.sessid;
 }
 
-// NOTE: The guard's line of the keys the node has (Ian, 2026-10-27) - "" for keys without one.
+// NOTE: The guard's line of the keys the node has (2026-10-27) - "" for keys without one.
 function keys_guard_now( )
 {
    try
@@ -310,8 +310,8 @@ function keys_unsent( )
    } );
 }
 
-// NOTE: While the keys are made or opened, nothing that would start it again can be pressed, and the words stay as typed (Ian,
-// 2026-10-31: they seemed lost meanwhile).
+// NOTE: While the keys are made or opened, nothing that would start it again can be pressed, and the words stay as typed
+// (2026-10-31: they seemed lost meanwhile).
 function keys_busy( text )
 {
    document.getElementById( "keys_busy" ).hidden = !text;
@@ -395,7 +395,7 @@ async function render_keys( )
 
    g_keys_give_waiting = null;
 
-   // NOTE: Said plainly (Damon and Ian, 2026-11-11) - the node's twelve words make everyone's keys here.
+   // NOTE: Said plainly (2026-11-11) - the node's twelve words make everyone's keys here.
    document.getElementById( "keys_words_lede" ).textContent = keys_words_text( ciyam.is_admin );
    document.getElementById( "keys_words_lede" ).hidden = ( keys_words_text( ciyam.is_admin ) === "" );
    keys_show( "keys_loading" );
@@ -476,7 +476,7 @@ async function render_keys( )
    {
       keys_forget_here( );
 
-      // NOTE: Admin is the node (Ian, 2026-11-11) - its keys come only from the node's twelve words; anyone wanting words of their
+      // NOTE: Admin is the node (2026-11-11) - its keys come only from the node's twelve words; anyone wanting words of their
       // own uses an account of their own.
       var node_only = ciyam.is_admin;
 
@@ -490,7 +490,7 @@ async function render_keys( )
           ? "Your keys are no longer on the node, and this browser can't make them again by itself." : "";
 
       // NOTE: Everyone else - their administrator's, then words of their own; not the node's twelve words, which make everyone's keys
-      // here and are admin's to keep (Damon, 2026-11-14).
+      // here and are admin's to keep (2026-11-14).
       document.getElementById( "keys_none_admin" ).hidden = !node_only;
       document.getElementById( "keys_none_person" ).hidden = node_only;
       document.getElementById( "keys_none_lede" ).hidden = ( document.getElementById( "keys_none_lede" ).textContent === "" );
@@ -526,7 +526,7 @@ async function render_keys( )
        + " People, then scan it there." : "That code is for your administrator to scan - in People, with Give keys." );
 
    // NOTE: Give keys, from People - only admin's, once admin's own keys are here (the people key is kept with them). Not here, and
-   // it waits for them, said where they are asked for, and follows once they are (Damon, 2026-11-16: the keys made again elsewhere,
+   // it waits for them, said where they are asked for, and follows once they are (2026-11-16: the keys made again elsewhere,
    // Give keys seemed to do nothing).
    var give = keys_give_taken( );
 
@@ -577,8 +577,8 @@ function keys_enter_have( )
 
 // NOTE: The words asked for - "elsewhere": on a browser new to the keys; "other": what this browser kept does not open the
 // node's (set up again from another browser, or a new access key, say); "restore": nothing on the node, the keys made again
-// from the words; "change": a new access key (Ian, 2026-10-27: a round fewer each time); "node": nothing on the node, the keys made
-// from the node's own twelve words and the PIN (Ian, 2026-11-11). Guarded keys (Ian, 2026-10-27) the node replaces only from the
+// from the words; "change": a new access key (2026-10-27: a round fewer each time); "node": nothing on the node, the keys made
+// from the node's own twelve words and the PIN (2026-11-11). Guarded keys (2026-10-27) the node replaces only from the
 // words they were set up with, so new words are not offered for them - the admin clears them. Words typed to open keys or change
 // the access key may be the person's own or the node's - whichever the keys were made from.
 function keys_show_enter( mode )
@@ -598,8 +598,8 @@ function keys_show_enter( mode )
       other: ciyam.is_admin ? "The keys on the node were locked by another browser since. Type the twelve words they were set up with."
        + lost : "The keys on the node were locked by another browser since. Get them again from a device that has them, or from your"
        + " administrator." + lost,
-      // NOTE: One's own - not offered to admin, whose keys come from the node's (Ian, 2026-11-11); and only admin is offered those
-      // (Damon, 2026-11-14).
+      // NOTE: One's own - not offered to admin, whose keys come from the node's (2026-11-11); and only admin is offered those
+      // (2026-11-14).
       restore: "Type the twelve words you set your keys up with, and they're made again from them.",
       change: "Type your twelve words for a new access key. Use it if a browser or phone with your keys is lost: any other browser"
        + " that has them will then need your words, or to get them from this one, again.",
@@ -857,7 +857,7 @@ async function keys_node_now( )
 // public keys yet: new keys, or made again when the node had lost them.
 //
 // The node read again first: what this page read on opening may be gone by now - keys set up meanwhile on another device, with
-// contacts, would be replaced by these, which have none, as the node takes keys made from the same words again (Damon, 2026-11-20:
+// contacts, would be replaced by these, which have none, as the node takes keys made from the same words again (2026-11-20:
 // a contact added on the laptop gone once the phone, opened before, took its keys from the administrator). Those opened instead,
 // if these words make them; else said, and nothing sent.
 //
@@ -970,7 +970,7 @@ async function keys_make_and_save( entropy, lede, people, given )
 
 // ---- Adding another device
 
-// NOTE: Ian's exchange (2026-10-26; Damon, 2026-11-05 - in place of an address that carried the access key itself): the new device
+// NOTE: The exchange of two codes (2026-10-26; 2026-11-05 - in place of an address that carried the access key itself): the new device
 // shows the public key of a pair it makes for this once; this one, which has the keys, makes a pair of its own and shows its public
 // key with the access key sealed under the X25519 secret between the two ("device_reply_link( )"). Both private keys are thrown away
 // once used, so a photo of either code opens nothing; nothing goes to the node. Sealed as a one-time pad - an HMAC of the secret,
@@ -1000,7 +1000,7 @@ function keys_draw_steps( id, flow, side, step, name, ticked, one_scan )
 
    list.replaceChildren( );
 
-   // NOTE: None in one scan - nothing is left to do after it (Damon, 2026-11-20).
+   // NOTE: None in one scan - nothing is left to do after it (2026-11-20).
    list.hidden = ( steps.labels.length === 0 );
 
    steps.labels.forEach( function( label, index )
@@ -1033,7 +1033,7 @@ function keys_draw_steps( id, flow, side, step, name, ticked, one_scan )
 }
 
 // NOTE: The giving side once the code is scanned ("prefix" "give" or "keys_device") - in one scan ("handed") it says the keys were
-// sent, the code to scan back closed behind their not arriving on "where" (Damon, 2026-11-20); else that code open, as the thing to
+// sent, the code to scan back closed behind their not arriving on "where" (2026-11-20); else that code open, as the thing to
 // do. No steps either way - not the two of the fallback appearing only now, the first already ticked (found by review, 2026-11-19).
 function keys_draw_reply( prefix, ledes, handed, where )
 {
@@ -1158,7 +1158,7 @@ async function keys_device_answer( device )
    seed = "";
    secret = "";
 
-   // NOTE: Left on the node for the other device as well, so it needn't scan the code shown back (Damon, 2026-11-18).
+   // NOTE: Left on the node for the other device as well, so it needn't scan the code shown back (2026-11-18).
    if( turn !== g_keys_device_turn )
       return;
 
@@ -1255,7 +1255,7 @@ function keys_ask_start( kind )
    keys_ask_watch( key );
 }
 
-// NOTE: How often the device showing its code asks the node for the answer left for it (Damon, 2026-11-18: in one scan). Not logged
+// NOTE: How often the device showing its code asks the node for the answer left for it (2026-11-18: in one scan). Not logged
 // in the console's request log unless it is logging polling, as the chat's polls aren't.
 const c_keys_ask_watch_ms = 2500;
 
@@ -1314,7 +1314,7 @@ function keys_ask_watch( key )
 }
 
 // NOTE: Step 1, this device's code shown for the other to scan; step 2, the other's answer scanned - the camera started at once, as
-// Next is the press a browser asks for before it will (Damon, 2026-11-17). The code stays as it was, for Back.
+// Next is the press a browser asks for before it will (2026-11-17). The code stays as it was, for Back.
 function keys_ask_step( step )
 {
    var ledes = keys_draw_steps( "keys_ask_steps", ( g_keys_ask && ( g_keys_ask.kind === "give" ) ) ? "give" : "device", "asking", step, "",
@@ -1455,7 +1455,7 @@ async function keys_ask_take( device, handed )
 
 // ---- Keys from the administrator - Give keys, from People
 
-// NOTE: The same exchange (Damon, 2026-11-11), the person's entropy sealed in place of an access key - 32 hex digits, the pad cut to
+// NOTE: The same exchange (2026-11-11), the person's entropy sealed in place of an access key - 32 hex digits, the pad cut to
 // that - with the check made with their username too, so an answer for someone else is refused on their device, not taken.
 const c_keys_give_pad = "ciyam give person entropy";
 const c_keys_give_check = "ciyam give person check ";
@@ -1710,7 +1710,7 @@ function keys_show_give( give )
    document.getElementById( "give_words_note" ).textContent = "Asked only this once. What they make is then kept with your keys.";
    document.getElementById( "give_part" ).hidden = false;
 
-   // NOTE: The first thing to do - with nothing to type, scanning their code: the camera started at once (Damon, 2026-11-16), and
+   // NOTE: The first thing to do - with nothing to type, scanning their code: the camera started at once (2026-11-16), and
    // without one, or without https, the address to paste said ("keys_scan_start( )").
    if( !document.getElementById( "give_password_part" ).hidden )
       document.getElementById( "give_password" ).focus( );
@@ -1737,7 +1737,7 @@ function keys_give_close( )
 }
 
 // NOTE: The people key - kept with admin's keys, or one sealed there before opened with the password, or made from the node's words
-// typed - or "" with the problem said. Either of the last two is then kept as it is, so nothing is asked again (Ian, 2026-11-16).
+// typed - or "" with the problem said. Either of the last two is then kept as it is, so nothing is asked again (2026-11-16).
 // The words are taken as the node's only if they make admin's own keys, so wrong ones are said rather than used to make keys no
 // one else could make (admin's keys come from "Use the node's twelve words").
 async function keys_give_people_key( password, latest )
@@ -1860,7 +1860,7 @@ async function keys_give_go( )
    if( give === null )
       return;
 
-   // NOTE: Never nothing said after a scan (Damon, 2026-11-16).
+   // NOTE: Never nothing said after a scan (2026-11-16).
    if( g_keys.access === "" )
    {
       set_error( "give_error", "Your own keys aren't open on this browser - open Your keys, type the node's twelve words, then choose"
@@ -1877,8 +1877,8 @@ async function keys_give_go( )
 
    if( !keys_give_problems( give_field_problems( password, asking_words ? document.getElementById( "give_words" ).value : null, device ) ) )
    {
-      // NOTE: Their code scanned before the rest was filled in - said where the camera was, not only under the fields above it (Damon,
-      // 2026-11-16: scanning seemed to do nothing).
+      // NOTE: Their code scanned before the rest was filled in - said where the camera was, not only under the fields above it
+      // (2026-11-16: scanning seemed to do nothing).
       if( device && ( device.kind === "give" ) )
          document.getElementById( "give_scan_status" ).textContent = "Got " + give.name + "'s code. Fill in what's marked, then press Give keys.";
 
@@ -1933,7 +1933,7 @@ async function keys_give_go( )
       return;
    }
 
-   // NOTE: Left on the node for their device too, so they needn't scan the code shown back (Damon, 2026-11-18, Ian agreeing) - for
+   // NOTE: Left on the node for their device too, so they needn't scan the code shown back (2026-11-18) - for
    // them alone to collect, and of no use to the node, which can't open it.
    keys_give_busy( "Sending it to " + give.name + "'s device…" );
 
@@ -1993,8 +1993,8 @@ function keys_draw_contacts( )
    document.getElementById( "keys_contacts" ).hidden = ( rows.length > 0 );
 }
 
-// NOTE: Your contact code - your username and public key ("contact_code( )") - as text and a QR code, only when asked (Ian,
-// 2026-10-27: with quantum attacks to come, shown only when it is known to be safe; 2026-11-03: shown on adding a contact, for
+// NOTE: Your contact code - your username and public key ("contact_code( )") - as text and a QR code, only when asked
+// (2026-10-27: with quantum attacks to come, shown only when it is known to be safe; 2026-11-03: shown on adding a contact, for
 // each to scan the other's) - and taken out of the page again on Done, or on leaving Contacts.
 function keys_show_public( )
 {
@@ -2499,7 +2499,7 @@ async function keys_enter_go( )
       return;
    }
 
-   // NOTE: The node's words (Ian, 2026-11-11) - this person's keys made from them and their PIN.
+   // NOTE: The node's words (2026-11-11) - this person's keys made from them and their PIN.
    if( g_keys.entering === "node" )
    {
       var people = "";
@@ -2517,7 +2517,7 @@ async function keys_enter_go( )
       }
 
       // NOTE: Admin's with the people key kept in them, as setting up the node keeps it - so Give keys doesn't ask for the words
-      // again (Damon, 2026-11-16).
+      // again (2026-11-16).
       await keys_make_and_save( entropy, "Your keys are made from the node's words, and on this browser.", people );
 
       return;
@@ -2602,7 +2602,7 @@ async function keys_enter_go( )
 
    await keys_show_here( access, "Your keys are on this browser.", false );
 
-   // NOTE: Kept with them unless it is there already, so Give keys doesn't ask for the words again (Damon, 2026-11-16) - not kept,
+   // NOTE: Kept with them unless it is there already, so Give keys doesn't ask for the words again (2026-11-16) - not kept,
    // and it asks for them once, as before.
    if( people !== "" )
    {
@@ -2615,9 +2615,9 @@ async function keys_enter_go( )
    keys_give_follow( waiting );
 }
 
-// NOTE: This person's entropy from the entropy of the node's twelve words (Ian, 2026-11-11 - one set of words for the node and
+// NOTE: This person's entropy from the entropy of the node's twelve words (2026-11-11 - one set of words for the node and
 // everyone on it): the people key, and from it and their PIN theirs - admin's from it and "admin", as a recovery changes admin's
-// PIN (Ian, 2026-11-12) ("ciyam_user_keys.js").
+// PIN (2026-11-12) ("ciyam_user_keys.js").
 async function keys_person_entropy( node_entropy )
 {
    var uk = keys_module( "user_keys" );
@@ -2685,7 +2685,7 @@ async function keys_add_guard( entropy )
    keys_busy( "" );
 }
 
-// NOTE: A new access key, a round fewer (Ian, 2026-10-27) - the words seen to be these keys' (the new key a round on is the one
+// NOTE: A new access key, a round fewer (2026-10-27) - the words seen to be these keys' (the new key a round on is the one
 // this browser has), the keys locked again under it with a guard the node hashes on to its own, and kept here. Any other browser
 // with the old key can no longer open them, and cannot make the new one without the words.
 // NOTE: "made" - the access key a round fewer, if already made from these words ("" to make it here).
@@ -2792,7 +2792,7 @@ function install_keys( )
 
    g_keys_installed = true;
 
-   // NOTE: The twelve words typed with help, as "test_bip39.html" (Ian, 2026-10-31) - Enter as "Use my keys here".
+   // NOTE: The twelve words typed with help, as "test_bip39.html" (2026-10-31) - Enter as "Use my keys here".
    g_keys_words_entry = words_entry( document.getElementById( "keys_enter_words" ), { wordlist: recover_wordlist, on_enter: keys_enter_go } );
 
    document.getElementById( "keys_start" ).addEventListener( "click", keys_start );

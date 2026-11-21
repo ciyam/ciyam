@@ -36,7 +36,7 @@ http://www.opensource.org/licenses/mit-license.php.
                <div class="chat-user-menu-head">
                   <span class="chat-avatar chat-avatar--large" id="user_menu_initial" aria-hidden="true"></span>
                   <b class="chat-user-menu-name" id="user_menu_name"></b>
-                  <!-- NOTE: "Session type" is Ian's term - "c_session_type_admin" and
+                  <!-- NOTE: "Session type" is the server's term - "c_session_type_admin" and
                        "c_session_type_standard" in "ciyam.js". It belongs to the session: one
                        opened with the admin PIN is "[adm]", any other "[std]". -->
                   <dl class="chat-user-menu-facts">
@@ -52,7 +52,7 @@ http://www.opensource.org/licenses/mit-license.php.
                </div>
                <button type="button" class="chat-user-menu-item" role="menuitem" onclick="do_menu_account_settings( event )"
                 title="Opens your account here - ctrl or cmd and click for a new tab">Account settings&hellip;</button>
-               <!-- NOTE: Desktop notifications, on or off - here and on My account (Damon, 2026-10-20); "notify.js". After Account
+               <!-- NOTE: Desktop notifications, on or off - here and on My account (2026-10-20); "notify.js". After Account
                     settings, which the menu opens on. -->
                <button type="button" class="chat-user-menu-item chat-notify-item" role="menuitemcheckbox" id="menu_notify"
                 aria-checked="false" onclick="do_menu_notify( )">
@@ -70,7 +70,7 @@ http://www.opensource.org/licenses/mit-license.php.
       <button type="button" onclick="do_dismiss_alert( )" aria-label="Dismiss">&times;</button>
    </div>
 
-   <!-- NOTE: Desktop notifications offered once (Damon, 2026-10-20) - a browser asks its permission only from a click. Either
+   <!-- NOTE: Desktop notifications offered once (2026-10-20) - a browser asks its permission only from a click. Either
         answer is kept; the account menu and My account switch them after. -->
    <div id="notify_bar" class="chat-alert is-info chat-notify-bar" role="region" aria-label="Desktop notifications" hidden>
       <span class="chat-alert-text">A notification on this computer when a message arrives and the chat is in the background -
@@ -152,14 +152,14 @@ http://www.opensource.org/licenses/mit-license.php.
                <h1 id="thread_name">&mdash;</h1>
                <p class="chat-thread-sub" id="thread_sub" hidden></p>
             </div>
-            <!-- NOTE: A call, in an encrypted direct message (Ian, 2026-11-13) - "chat_call.js". -->
+            <!-- NOTE: A call, in an encrypted direct message (2026-11-13) - "chat_call.js". -->
             <button type="button" class="chat-call-start" id="thread_call" aria-label="Call" title="Call" onclick="do_start_call( )" hidden>
                <svg viewBox="0 0 16 16" width="16" height="16" aria-hidden="true" focusable="false">
                   <path d="M4.2 1.8l1.9 2.6-1.2 1.6a8.6 8.6 0 0 0 5.1 5.1l1.6-1.2 2.6 1.9-.9 2.2c-.3.6-1 .9-1.7.7A12.4 12.4 0 0 1 1.3 4.6c-.2-.7.1-1.4.7-1.7z"
                    fill="currentColor"/>
                </svg>
             </button>
-            <!-- NOTE: Whether the room is encrypted (Damon, 2026-11-02: in the line under the name it was too easily missed) - a
+            <!-- NOTE: Whether the room is encrypted (2026-11-02: in the line under the name it was too easily missed) - a
                  padlock shut or open, and what it means in the details it opens ("show_encryption( )"). -->
             <button type="button" class="chat-encryption-badge" id="encryption_badge" onclick="do_show_encryption( )" hidden>
                <svg class="chat-padlock" viewBox="0 0 16 16" width="14" height="14" aria-hidden="true" focusable="false">
@@ -179,7 +179,7 @@ http://www.opensource.org/licenses/mit-license.php.
             </button>
          </div>
 
-         <!-- NOTE: A call - ringing, being set up, or going (Ian, 2026-11-13; "chat_call.js"). Stays while other rooms are opened. -->
+         <!-- NOTE: A call - ringing, being set up, or going (2026-11-13; "chat_call.js"). Stays while other rooms are opened. -->
          <section class="chat-call" id="call_panel" aria-label="Call" aria-live="polite" hidden>
             <div class="chat-call-videos">
                <video class="chat-call-remote" id="call_remote" autoplay playsinline></video>
@@ -204,7 +204,7 @@ http://www.opensource.org/licenses/mit-license.php.
               "pending_announcements( )" in "chat_parse.js". Not shown to admin. -->
          <section class="chat-announcements" id="announcements" aria-label="Announcements" hidden></section>
 
-         <!-- NOTE: The room's pinned messages (Ian's server, 2026-10-14) - in the order they were said, the first two until
+         <!-- NOTE: The room's pinned messages (the server, 2026-10-14) - in the order they were said, the first two until
               more are asked for. Each opens its place in the conversation; the sender's own can be unpinned here. -->
          <section class="chat-pinned-strip" id="pinned" aria-label="Pinned messages" hidden></section>
 
@@ -227,8 +227,8 @@ http://www.opensource.org/licenses/mit-license.php.
             <p>Loading your rooms&hellip;</p>
          </div>
 
-         <!-- NOTE: The node's chat (IRC) not turned on - the session is good, but there are no rooms to show (Ian,
-              2026-10-13: the default on his development node). -->
+         <!-- NOTE: The node's chat (IRC) not turned on - the session is good, but there are no rooms to show
+              (2026-10-13: the default on a development node). -->
          <div class="chat-empty" id="thread_off" hidden>
             <h2>The chat isn't turned on for this node</h2>
             <p id="thread_off_text"></p>
@@ -244,7 +244,7 @@ http://www.opensource.org/licenses/mit-license.php.
 
          <div class="chat-messages" id="message_list" hidden></div>
 
-         <!-- NOTE: The ten reactions, opened by a message's "react" (Ian, 2026-10-28) - one at a time, beside it. -->
+         <!-- NOTE: The ten reactions, opened by a message's "react" (2026-10-28) - one at a time, beside it. -->
          <div class="chat-react-menu" id="react_menu" role="dialog" aria-label="React" hidden></div>
 
          <!-- NOTE: A new conversation's first messages, held until the others accept - a member
@@ -252,8 +252,8 @@ http://www.opensource.org/licenses/mit-license.php.
          <div class="chat-held" id="held_list" hidden></div>
 
          <div class="chat-composer" id="composer" hidden>
-            <!-- NOTE: A direct message not encrypted for want of keys or a contact code - the way to it on My account offered (Damon,
-                 2026-11-05), "Not now" leaving it off for the room until the next sign in. "show_encryption( )". -->
+            <!-- NOTE: A direct message not encrypted for want of keys or a contact code - the way to it on My account offered
+                 (2026-11-05), "Not now" leaving it off for the room until the next sign in. "show_encryption( )". -->
             <div class="chat-composer-keys" id="composer_keys" role="region" aria-label="Encryption" hidden>
                <span id="composer_keys_text"></span>
                <button type="button" class="chat-btn chat-btn--small chat-btn--primary" id="composer_keys_go"
@@ -285,7 +285,7 @@ http://www.opensource.org/licenses/mit-license.php.
                </div>
                <div id="announcement_preview_card"></div>
             </div>
-            <!-- NOTE: Colour and style (Ian, 2026-10-15) - what is typed, as everyone will see it, while it holds one of Ian's
+            <!-- NOTE: Colour and style (2026-10-15) - what is typed, as everyone will see it, while it holds one of the console's codes
                  codes ("%R%" and the like). Above the box, as messages can run to several lines. -->
             <div class="chat-format-preview" id="format_preview" hidden>
                <div class="chat-announcement-preview-head">
@@ -313,7 +313,7 @@ http://www.opensource.org/licenses/mit-license.php.
                <div class="chat-recipients" id="recipient_row"></div>
             </div>
             <div class="chat-composer-row">
-               <!-- NOTE: The styled box (Ian, 2026-10-18) - with Codes off the box shows the formatting itself: the text box
+               <!-- NOTE: The styled box (2026-10-18) - with Codes off the box shows the formatting itself: the text box
                     holds the words, drawn clear over a copy behind it that has their colour and style ("render_composer_mirror( )").
                     Still a real text box, so a phone's keyboard, its menu and pasting work as they always have. -->
                <div class="chat-input-wrap" id="composer_input_wrap">
@@ -335,8 +335,8 @@ http://www.opensource.org/licenses/mit-license.php.
                <button type="button" class="chat-btn chat-btn--primary" id="composer_send" onclick="do_send( )">Send</button>
             </div>
             <!-- NOTE: The format bar, while words are selected - floating over them on a computer, docked here under the box
-                 on a phone, where the phone's own menu has the selection (Damon, 2026-10-15) and, above the box, covered it
-                 (Ian, 2026-10-16, Vanadium). Each button restyles the selected words and writes the codes again
+                 on a phone, where the phone's own menu has the selection (2026-10-15) and, above the box, covered it
+                 (2026-10-16, Vanadium). Each button restyles the selected words and writes the codes again
                  ("format_restyle( )"). -->
             <div class="chat-format-bar" id="format_bar" role="toolbar" aria-label="Format" hidden>
                <button type="button" class="chat-format-tool" data-format="b" title="Bold (Ctrl+B)" aria-label="Bold"
@@ -379,11 +379,11 @@ http://www.opensource.org/licenses/mit-license.php.
                 title="Post an encrypted message made on your offline device, from its QR code">Scan a code&hellip;</button>
                <span class="chat-composer-note" id="composer_note">Ordinary chat only &mdash; system and slash messages are server-side.</span>
                <span class="chat-format-hint">Select words to format them</span>
-               <!-- NOTE: Codes, under Send - Ian's "%R%" codes in the box instead of the formatting, as before; this browser
-                    remembers the choice (Damon, 2026-10-18). -->
+               <!-- NOTE: Codes, under Send - the console's "%R%" codes in the box instead of the formatting, as before; this browser
+                    remembers the choice (2026-10-18). -->
                <span class="chat-composer-end">
                   <span class="chat-composer-count" id="composer_count" aria-live="polite" hidden></span>
-                  <label class="chat-format-codes" title="Show Ian's format codes (%R% and the like) in the box instead of the formatting">
+                  <label class="chat-format-codes" title="Show the console's format codes (%R% and the like) in the box instead of the formatting">
                      <input type="checkbox" id="composer_codes" onchange="do_toggle_codes( this.checked )"> Codes
                   </label>
                </span>
@@ -425,11 +425,11 @@ http://www.opensource.org/licenses/mit-license.php.
                      <option value="any">Anyone</option>
                      <option value="own">Owner only</option>
                      <option value="none">Locked</option>
-                     <!-- NOTE: Reactions only (Ian, 2026-10-31: "REACT") - for a poll; its owner can no longer post or react. -->
+                     <!-- NOTE: Reactions only (2026-10-31: "REACT") - for a poll; its owner can no longer post or react. -->
                      <option value="react">Reactions only</option>
                   </select>
                </dd></div>
-               <!-- NOTE: A room's close time (Ian, 2026-10-30) - once set, for everyone to see. -->
+               <!-- NOTE: A room's close time (2026-10-30) - once set, for everyone to see. -->
                <div class="chat-room-fact" id="room_fact_closes_row" hidden><dt>Closes</dt><dd id="room_fact_closes"></dd></div>
                <div class="chat-room-fact" id="room_fact_messages_row"><dt>Messages</dt><dd id="room_fact_messages"></dd></div>
                <div class="chat-room-fact" id="room_fact_inviter_row" hidden><dt>Invited by</dt><dd id="room_fact_inviter"></dd></div>
@@ -450,8 +450,8 @@ http://www.opensource.org/licenses/mit-license.php.
                <p class="chat-room-key-note" id="room_close_note">After that time nothing can be posted, edited or reacted to, and nobody can join.
                 Once set it can only be brought forward.</p>
             </div>
-            <!-- NOTE: A room key (Ian, 2026-10-25: "irc.cin"'s "k" and "r") - made with every new room and sent to whoever is invited
-                 (Ian, 2026-10-28), so here only what it is; made, added, sent, shared and removed in the Room key dialog. -->
+            <!-- NOTE: A room key (2026-10-25: "irc.cin"'s "k" and "r") - made with every new room and sent to whoever is invited
+                 (2026-10-28), so here only what it is; made, added, sent, shared and removed in the Room key dialog. -->
             <div class="chat-room-key" id="room_key_part" hidden>
                <div class="chat-room-key-head">Room key</div>
                <div class="chat-room-key-state" id="room_key_state"></div>
@@ -459,7 +459,7 @@ http://www.opensource.org/licenses/mit-license.php.
                   <button type="button" class="chat-btn chat-btn--small" id="room_key_open" onclick="do_open_room_key_dialog( )">Room key…</button>
                </div>
             </div>
-            <!-- NOTE: Leaving a room - asked again in place (Ian, 2026-10-12). -->
+            <!-- NOTE: Leaving a room - asked again in place (2026-10-12). -->
             <div class="chat-room-leave" id="room_leave_row" hidden>
                <button type="button" class="chat-btn chat-btn--small" id="room_leave" onclick="do_arm_leave( )">Leave this room</button>
                <div class="chat-room-leave-confirm" id="room_leave_confirm" hidden>
@@ -508,7 +508,7 @@ http://www.opensource.org/licenses/mit-license.php.
          <h2 id="room_dialog_title">Create a room</h2>
          <span class="chat-form-needed" aria-hidden="true"><span class="chat-needed">*</span> needed</span>
       </div>
-      <!-- NOTE: As the poll dialog (Damon, 2026-11-04) - what is needed marked, what each part lacks said under it, the rule a name
+      <!-- NOTE: As the poll dialog (2026-11-04) - what is needed marked, what each part lacks said under it, the rule a name
            breaks said in plain words ("room_dialog_problems( )"), and the parts evenly spaced. -->
       <div class="chat-form-field" id="room_dialog_name_row">
          <label class="chat-label" for="room_dialog_name">Room name <span class="chat-needed" aria-hidden="true">*</span></label>
@@ -535,7 +535,7 @@ http://www.opensource.org/licenses/mit-license.php.
    </form>
 </div>
 
-<!-- NOTE: Starting a poll (Ian, 2026-10-31: the question pinned, a close set, then reactions only) - the question, an option for
+<!-- NOTE: Starting a poll (2026-10-31: the question pinned, a close set, then reactions only) - the question, an option for
      each reaction drawn beside it, and when voting closes. Made plainer after the poll review (2026-11-03): quick choices for the
      close, the calendar only when asked ("when_picker.js"), an option removed or the next added with Enter, one plain line on
      what happens to the room, and no second asking. Its rows are made by "chat.js". -->
@@ -547,8 +547,8 @@ http://www.opensource.org/licenses/mit-license.php.
          <span class="chat-form-needed" aria-hidden="true"><span class="chat-needed">*</span> needed</span>
       </div>
       <p class="chat-dialog-note" id="poll_dialog_where"></p>
-      <!-- NOTE: Each part with its label, what is needed marked, and what it lacks said under it once Start is pressed (Damon,
-           2026-11-04: nothing said which were needed, not every one said what it lacked, and the spacing was uneven). -->
+      <!-- NOTE: Each part with its label, what is needed marked, and what it lacks said under it once Start is pressed
+           (2026-11-04: nothing said which were needed, not every one said what it lacked, and the spacing was uneven). -->
       <div class="chat-form-field">
          <label class="chat-label" for="poll_question">Question <span class="chat-needed" aria-hidden="true">*</span></label>
          <textarea id="poll_question" class="chat-field chat-poll-question" rows="1" maxlength="200" autocomplete="off" aria-required="true"
@@ -597,7 +597,7 @@ http://www.opensource.org/licenses/mit-license.php.
    </form>
 </div>
 
-<!-- NOTE: An encrypted message that cannot be read here, as a QR code (Ian, 2026-10-30) - for a device with the keys for it,
+<!-- NOTE: An encrypted message that cannot be read here, as a QR code (2026-10-30) - for a device with the keys for it,
      the offline one. Base45 in the code's alphanumeric mode ("sealed_qr_text( )"); drawn here, sent nowhere. -->
 <div id="qr_dialog" class="chat-scrim" hidden onclick="if( event.target === this ) do_close_qr_dialog( );">
    <div class="chat-dialog chat-qr-dialog" role="dialog" aria-modal="true" aria-labelledby="qr_dialog_title">
@@ -612,7 +612,7 @@ http://www.opensource.org/licenses/mit-license.php.
    </div>
 </div>
 
-<!-- NOTE: The other way (Ian, 2026-11-01) - an encrypted message made on the offline device, scanned in from its QR code and
+<!-- NOTE: The other way (2026-11-01) - an encrypted message made on the offline device, scanned in from its QR code and
      posted in the open room as it is ("do_open_scan_dialog( )"). The camera's picture goes in the reader; a picture of the code
      can be chosen instead - on a phone that can be a photo taken there and then. -->
 <div id="scan_dialog" class="chat-scrim" hidden onclick="if( event.target === this ) do_close_scan_dialog( );">
@@ -633,7 +633,7 @@ http://www.opensource.org/licenses/mit-license.php.
    </div>
 </div>
 
-<!-- NOTE: The Room key dialog (Ian, 2026-10-28: "Make" and "Add" rarely needed once every room has a key, so tucked away) - the
+<!-- NOTE: The Room key dialog (2026-10-28: "Make" and "Add" rarely needed once every room has a key, so tucked away) - the
      owner makes, sends and shares it, anyone adds or removes it ("chat_keys.js"). -->
 <div id="room_key_dialog" class="chat-scrim" hidden onclick="if( event.target === this ) do_close_room_key_dialog( );">
    <div class="chat-dialog chat-room-key-dialog" role="dialog" aria-modal="true" aria-labelledby="room_key_dialog_title">
@@ -644,7 +644,7 @@ http://www.opensource.org/licenses/mit-license.php.
          <button type="button" class="chat-btn" id="room_key_add_open" onclick="do_open_add_room_key( )">Add a room key</button>
       </div>
       <div class="chat-room-key-add" id="room_key_add_part" hidden>
-         <!-- NOTE: A box that wraps, so all of a key is seen as it is pasted (Ian, 2026-10-26: the field was too small);
+         <!-- NOTE: A box that wraps, so all of a key is seen as it is pasted (2026-10-26: the field was too small);
               Enter adds it. -->
          <label class="chat-label" for="room_key_add_input">The room key, or the whole message it came in</label>
          <textarea class="chat-field chat-mono chat-room-key-input" id="room_key_add_input" rows="3" autocomplete="off"
@@ -662,7 +662,7 @@ http://www.opensource.org/licenses/mit-license.php.
       </div>
       <!-- NOTE: What came of sending the key to the members ("chat_send_room_key( )", 2026-10-27). -->
       <div class="chat-room-key-note chat-room-key-sent" id="room_key_sent" role="status"></div>
-      <!-- NOTE: Each member as the owner's chat last found them (Damon, 2026-11-05) - "chat_render_member_key_states( )". -->
+      <!-- NOTE: Each member as the owner's chat last found them (2026-11-05) - "chat_render_member_key_states( )". -->
       <ul class="chat-room-key-members" id="room_key_members" aria-label="Members and the room key" hidden></ul>
       <div class="chat-room-key-share" id="room_key_share_part" hidden>
          <p class="chat-room-key-note">Send to members passes it to each in a note in this room that only they can open. Or send it
@@ -679,9 +679,9 @@ http://www.opensource.org/licenses/mit-license.php.
    </div>
 </div>
 
-<!-- NOTE: Contact codes exchanged with one person in the chat (Damon, 2026-11-08: members far apart could not meet to scan each
+<!-- NOTE: Contact codes exchanged with one person in the chat (2026-11-08: members far apart could not meet to scan each
      other's) - yours to copy or show, theirs pasted - as an invitation is joined, from the bar over the message box, or from a
-     member's row in Room key ("do_open_contact_dialog( )"). Your code is in the page only while it is open (Ian, 2026-10-27). -->
+     member's row in Room key ("do_open_contact_dialog( )"). Your code is in the page only while it is open (2026-10-27). -->
 <div id="contact_dialog" class="chat-scrim" hidden onclick="if( event.target === this ) do_close_contact_dialog( );">
    <div class="chat-dialog chat-room-key-dialog" role="dialog" aria-modal="true" aria-labelledby="contact_dialog_title">
       <h2 id="contact_dialog_title" tabindex="-1">Exchange contact codes</h2>
@@ -779,7 +779,7 @@ http://www.opensource.org/licenses/mit-license.php.
          </span>
          <span class="chat-message-body"></span>
          <span class="chat-edit-tag" hidden>edited</span>
-         <!-- NOTE: Pinned, where it was said - just a faint pin after it (Ian, 2026-10-14: "less visible"). -->
+         <!-- NOTE: Pinned, where it was said - just a faint pin after it (2026-10-14: "less visible"). -->
          <span class="chat-pin-mark" role="img" aria-label="Pinned" title="Pinned to the top of the room" hidden>
             <svg viewBox="0 0 16 16" width="11" height="11" aria-hidden="true" focusable="false">
                <path d="M6 1.75h4l-.6 3.9 2.6 2.6v1.1H4v-1.1l2.6-2.6z" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/>
@@ -790,15 +790,15 @@ http://www.opensource.org/licenses/mit-license.php.
          <button type="button" class="chat-message-pin" hidden>pin</button>
          <button type="button" class="chat-message-delete" hidden>delete</button>
          <button type="button" class="chat-message-react" aria-haspopup="dialog" hidden>react</button>
-         <!-- NOTE: An encrypted message that cannot be read here, as a QR code - for the offline device (Ian, 2026-10-30). -->
+         <!-- NOTE: An encrypted message that cannot be read here, as a QR code - for the offline device (2026-10-30). -->
          <button type="button" class="chat-message-qr" aria-haspopup="dialog" hidden>qr code</button>
       </span>
-      <!-- NOTE: Reactions, beneath the message (Ian, 2026-10-29) - "draw_reactions( )". -->
+      <!-- NOTE: Reactions, beneath the message (2026-10-29) - "draw_reactions( )". -->
       <div class="chat-reactions" hidden></div>
    </div>
 </template>
 
-<!-- NOTE: The strip shut is one line - how many, and the first (Ian, 2026-10-14); a click opens them all. -->
+<!-- NOTE: The strip shut is one line - how many, and the first (2026-10-14); a click opens them all. -->
 <template id="tpl_pinned_line">
    <button type="button" class="chat-pinned-line">
       <svg viewBox="0 0 16 16" width="12" height="12" aria-hidden="true" focusable="false">
@@ -823,17 +823,17 @@ http://www.opensource.org/licenses/mit-license.php.
             <span class="chat-pinned-when"></span>
          </span>
          <span class="chat-pinned-text"></span>
-         <!-- NOTE: Its reactions, saying who - to react, the message is opened in the conversation (Damon, 2026-10-29). -->
+         <!-- NOTE: Its reactions, saying who - to react, the message is opened in the conversation (2026-10-29). -->
          <span class="chat-reactions" hidden></span>
       </button>
-      <!-- NOTE: A poll's options and votes in their place, voted on here (Ian, 2026-11-01: with more than one poll a room, the pinned
+      <!-- NOTE: A poll's options and votes in their place, voted on here (2026-11-01: with more than one poll a room, the pinned
            one must carry its options) - outside the button, as they are buttons themselves. -->
       <div class="chat-pinned-poll" hidden></div>
       <button type="button" class="chat-btn chat-btn--small chat-pinned-unpin" hidden>Unpin</button>
    </div>
 </template>
 
-<!-- NOTE: A notice in the time column, as a message is (Damon, 2026-10-28) - quiet, with an icon for what happened; only a day
+<!-- NOTE: A notice in the time column, as a message is (2026-10-28) - quiet, with an icon for what happened; only a day
      is centred. -->
 <template id="tpl_notice">
    <div class="chat-notice">

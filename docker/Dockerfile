@@ -20,7 +20,7 @@
 # "attach storage Meta" and use the "storage-modules" and "storage-instances" endpoints - for trying those and the
 # Software Manufacturing work. Empty, the build is as before. "rebuild-container.sh -meta" builds one.
 
-# NOTE: Ubuntu 26.04 since 2026-10-02, as Ian's nodes - its OpenSSL 3.5 offers ML-KEM, the
+# NOTE: Ubuntu 26.04 since 2026-10-02, as the CIYAM nodes - its OpenSSL 3.5 offers ML-KEM, the
 # post-quantum key exchange, for TLS.
 FROM ubuntu:26.04
 
@@ -49,7 +49,7 @@ RUN if [ -n "$CIYAM_META" ]; then \
        apt-get update && apt-get install -y --no-install-recommends mariadb-server procps && rm -rf /var/lib/apt/lists/*; \
     fi
 
-# NOTE: "--build-arg CIYAM_CPP_OPTS=-g" builds with debug information, as Ian builds his development system, so a
+# NOTE: "--build-arg CIYAM_CPP_OPTS=-g" builds with debug information, as a development system is built, so a
 # crash's core dump gives a stack with source lines - and adds gdb to read one. Empty, the build is as before.
 ARG CIYAM_CPP_OPTS=
 RUN if [ -n "$CIYAM_CPP_OPTS" ]; then \
@@ -86,14 +86,14 @@ RUN mkdir -p /tmp/ciyam "$WEBDIR" /ciyam/src/.files \
 
 # NOTE: The server watches "<user_home_path>/backup" and ".../shared" ("backup.cin", "shared.cin"), and the default
 # "ciyam_server.sio" has "/home/$USER" - with no "$USER" in the container every start logged "system variable not found
-# for '/home//shared' notifier" (Ian, 2026-10-10). It is set to the path "at_init" uses, "/home/$CIYAM_USER", and the
+# for '/home//shared' notifier" (2026-10-10). It is set to the path "at_init" uses, "/home/$CIYAM_USER", and the
 # folders made.
 RUN sed -i "s|^\( *\)<user_home_path>.*|\1<user_home_path>/home/$CIYAM_USER|" ciyam_server.sio \
  && grep -q "^ *<user_home_path>/home/$CIYAM_USER$" ciyam_server.sio \
  && mkdir -p "/home/$CIYAM_USER/backup" "/home/$CIYAM_USER/opened" "/home/$CIYAM_USER/shared"
 
 # NOTE: The node takes the call relay's settings from the "CIYAM_TURN_" variables "entrypoint.sh" gives it only when
-# "ciyam_server.sio" has no "turn" section (Ian, 2026-11-19). The default has one, its attributes commented out, so the
+# "ciyam_server.sio" has no "turn" section (2026-11-19). The default has one, its attributes commented out, so the
 # section itself is commented out too.
 RUN sed -i "s|^\( *\)<turn/>$|#\1<turn/>|; s|^\( *\)</turn>$|#\1</turn>|" ciyam_server.sio \
  && ! grep -qE "^ *</?turn/?>" ciyam_server.sio
@@ -106,7 +106,7 @@ RUN sed -i "s|^\( *\)<turn/>$|#\1<turn/>|; s|^\( *\)</turn>$|#\1</turn>|" ciyam_
 # "system_variable" tool along with it.
 #
 # The file name is read both in "class_base.cpp" and in the "set_password" script,
-# and is keyed on CIYAM_USER. Confirmed with Ian on 2026-09-20 as the supported way
+# and is keyed on CIYAM_USER. Confirmed on 2026-09-20 as the supported way
 # to run where the Linux account password cannot be set.
 RUN touch "/ciyam/src/.${CIYAM_USER}_password_protected"
 
@@ -114,7 +114,7 @@ RUN touch "/ciyam/src/.${CIYAM_USER}_password_protected"
 # "autoscript.sio.default" ships it commented out so that a new development
 # environment starts minimal. The "install" script uncomments every entry; only this
 # one is enabled here, because "auto_update" and "ciyam_ddns_ip_updates" have no
-# place in a container. Confirmed with Ian on 2026-09-20.
+# place in a container. Confirmed on 2026-09-20.
 COPY docker/enable_autoscript.sh /usr/local/bin/enable_autoscript.sh
 RUN chmod +x /usr/local/bin/enable_autoscript.sh && dos2unix -q /usr/local/bin/enable_autoscript.sh && /usr/local/bin/enable_autoscript.sh /ciyam/src/autoscript.sio irc_store_or_restore
 

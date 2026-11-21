@@ -11,7 +11,7 @@
 
 const c_account_pin_pattern = /^[0-9]{5}$/;
 
-// NOTE: A code - Ian's "secret" - is 12 characters: three, four and three lower case letters
+// NOTE: A code - the server's "secret" - is 12 characters: three, four and three lower case letters
 // with a hyphen between each ("qiu-ddxb-cht"), from "create_access_token( )" in
 // "ciyam_web_session.cpp".
 const c_account_code_pattern = /^[a-z]{3}-[a-z]{4}-[a-z]{3}$/;
@@ -89,12 +89,12 @@ function parse_join_reply( reply )
    return result;
 }
 
-// NOTE: The keys state ending a name in the users review (Ian, 2026-11-07 - "7dc5cf6d"): "?" none on the node, "!" not backed up
+// NOTE: The keys state ending a name in the users review (2026-11-07 - "7dc5cf6d"): "?" none on the node, "!" not backed up
 // or changed since the backup; nothing after it, backed up as they are.
 const c_people_keys_none = "?";
 const c_people_keys_unsaved = "!";
 
-// NOTE: Ending the name in place of the keys state when disabled (Ian, 2026-11-09 - "d6ef2fe2"): the password hash all zeroes, so
+// NOTE: Ending the name in place of the keys state when disabled (2026-11-09 - "d6ef2fe2"): the password hash all zeroes, so
 // no sign in matches. Brought back by a reset of the password.
 const c_people_inactive = "~";
 const c_people_disabled_hash = "0".repeat( 64 );
@@ -102,7 +102,7 @@ const c_people_disabled_hash = "0".repeat( 64 );
 // NOTE: The users review, as text - a line per account, "<pin> <username>", with nothing after
 // the space for an account nobody has claimed. admin's own PIN is not in it - admin is not an
 // account in the system ODS - so it is added, as "own_name". admin comes first, then everyone
-// by name - the inactive (disabled) in their place among them (Damon, 2026-11-09: seen where
+// by name - the inactive (disabled) in their place among them (2026-11-09: seen where
 // they are once shown) - then the unclaimed by PIN. Each row's "keys" - "none", "unsaved" or
 // "saved" from the name's end, or "" for one unclaimed or inactive and for admin added.
 function parse_people( text, own_pin, own_name )
@@ -158,7 +158,7 @@ function parse_people( text, own_pin, own_name )
    return rows;
 }
 
-// NOTE: Under a person's name in People - their keys as the users review says (Ian, 2026-11-07), "" if it says nothing.
+// NOTE: Under a person's name in People - their keys as the users review says (2026-11-07), "" if it says nothing.
 function people_keys_text( keys )
 {
    return { none: "No keys yet", unsaved: "Keys need backing up", saved: "Keys backed up" }[ keys ] || "";
@@ -269,7 +269,7 @@ function parse_account_hash( hash )
    return { view: "", code: "" };
 }
 
-// NOTE: "GET /cws/devices" (Ian, 2026-10-06) - this PIN's devices, one per line, "<device> <session>",
+// NOTE: "GET /cws/devices" (2026-10-06) - this PIN's devices, one per line, "<device> <session>",
 // with "*" after a session the server treats as active. "current" is this browser's own device, which
 // cannot be removed from here. Anything not of that shape is left out; this browser comes first.
 //
@@ -286,7 +286,7 @@ function parse_devices( text, current )
          return;
 
       // NOTE: A device that has signed in as this PIN before but has no session now is listed with twenty zeros for its session
-      // (Ian, 2026-10-26 - "known devices", kept in ".devices") - "signed_out".
+      // (2026-10-26 - "known devices", kept in ".devices") - "signed_out".
       devices.push( { device: match[ 1 ], session: match[ 2 ], active: ( match[ 3 ] === "*" ), current: ( match[ 1 ] === current ),
        signed_out: /^0+$/.test( match[ 2 ] ) } );
    } );
@@ -294,10 +294,10 @@ function parse_devices( text, current )
    return devices.filter( function( d ) { return d.current; } ).concat( devices.filter( function( d ) { return !d.current; } ) );
 }
 
-// NOTE: What a device's row says, and what can be done to it (Ian, 2026-10-26): a DELETE of one with a session signs it out - it is
+// NOTE: What a device's row says, and what can be done to it (2026-10-26): a DELETE of one with a session signs it out - it is
 // listed as signed out then; of one signed out, it blocks it, for this account, for good - its sign in refused, and it leaves the
 // list. A browser still open was made one of the account's devices again by its next request, so Block only signed it out again
-// (ISS-053) - so Block sends "block" ("options"), which blocks whatever its state (Ian, "d370affc"), and is offered for a device
+// (ISS-053) - so Block sends "block" ("options"), which blocks whatever its state (commit "d370affc"), and is offered for a device
 // signed in too: a lost phone that is on. This browser is neither.
 function device_choice( entry )
 {
@@ -327,7 +327,7 @@ function short_device( device )
    return ( text.length > 12 ) ? text.substr( 0, 6 ) + "…" + text.substr( -4 ) : text;
 }
 
-// NOTE: Your keys (Ian, 2026-10-25: locked under a hash of the twelve words, which each browser keeps) - which of the card's
+// NOTE: Your keys (2026-10-25: locked under a hash of the twelve words, which each browser keeps) - which of the card's
 // states, from whether this browser keeps that ("here") and what "GET /cws/user-keys" answered: "none" - nothing anywhere, to
 // set up; "lost" - kept here but gone from the node, where the keys were (what a browser keeps cannot make them again - the
 // words can); "elsewhere" - on the node but not here; "here"; or "unreadable" - an error, or something that is not locked keys.
@@ -352,7 +352,7 @@ function keys_state( here, node_text )
 }
 
 // NOTE: Which of the twelve words to check back after setting up - "count" of them, different, in order, "random( )" (0 to 1)
-// choosing. Some, not all twelve as setting up a node does (Ian, 2026-10-23: "some checked back").
+// choosing. Some, not all twelve as setting up a node does (2026-10-23: "some checked back").
 function keys_check_indexes( random, count )
 {
    var all = [ 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11 ];
@@ -373,7 +373,7 @@ function normalise_public_key( text )
    return /^[0-9a-f]{64}$/.test( key ) ? key : "";
 }
 
-// NOTE: A contact code - a username and its public key together, as the console shows and reads one (Ian, 2026-11-03,
+// NOTE: A contact code - a username and its public key together, as the console shows and reads one (2026-11-03,
 // "irc.cin"): "<name>:<key>", the name as hex of its letters, then an "I", then random hex digits to make it 25 characters
 // long - always that size, and the name a little hidden. "padding" - random hex digits, at least 25 of them. "" if the name or
 // the key cannot be one.
@@ -411,7 +411,7 @@ function parse_contact_code( text )
 }
 
 // NOTE: What is wrong with adding "contact" ("parse_contact_code( )") - "" if nothing. "contacts" - those kept; "own_key" and
-// "own_name" - this account's own (Ian, 2026-11-03: your own name could be added).
+// "own_name" - this account's own (2026-11-03: your own name could be added).
 function contact_problem( contact, contacts, own_key, own_name )
 {
    var kept = contacts || { };
@@ -436,7 +436,7 @@ function contact_problem( contact, contacts, own_key, own_name )
    return "";
 }
 
-// NOTE: What is wrong with adding "contact" as "person"'s, in the chat's exchange with them (Damon, 2026-11-08) - as for any contact
+// NOTE: What is wrong with adding "contact" as "person"'s, in the chat's exchange with them (2026-11-08) - as for any contact
 // ("contact_problem( )"), and someone else's code said as that.
 function exchange_contact_problem( contact, person, contacts, own_key, own_name )
 {
@@ -463,7 +463,7 @@ function short_public_key( key )
    return ( text.length > 16 ) ? text.substr( 0, 8 ) + "…" + text.substr( -8 ) : text;
 }
 
-// NOTE: My account's sections, in the side menu's order (Damon, 2026-10-26 - one card each had made the page long, and the
+// NOTE: My account's sections, in the side menu's order (2026-10-26 - one card each had made the page long, and the
 // profile's fields to come have a place now). Each is "#<key>" in the address.
 const c_account_sections = [
    { key: "profile", title: "Profile" },
@@ -500,7 +500,7 @@ function room_keys_text( rooms )
    return "Made, shared and removed in the chat, with Room key in Room Details.";
 }
 
-// NOTE: The rooms with a key kept, as Your keys lists them (Damon, 2026-11-04: only their numbers were said) - each { room, name },
+// NOTE: The rooms with a key kept, as Your keys lists them (2026-11-04: only their numbers were said) - each { room, name },
 // by name and then number; "names" the rooms' names by number from the listing, "" for one not in it (left since, say), last.
 function room_key_rows( rooms, names )
 {
@@ -520,7 +520,7 @@ function room_key_rows( rooms, names )
    } );
 }
 
-// NOTE: Keys as the last step of joining (Damon, 2026-10-28) - after "Write these down", in the same card: what they are for, then
+// NOTE: Keys as the last step of joining (2026-10-28) - after "Write these down", in the same card: what they are for, then
 // Your keys' own choices or Skip (2026-11-15); once set up ("have"), on to Home - "given", by the administrator, who has no words to
 // keep (found by review). Skipped, My account and Home say they need setting up until they are.
 function keys_step_text( have, given )
@@ -537,7 +537,7 @@ function keys_step_text( have, given )
     + " read. You can skip this and set them up later on My account." };
 }
 
-// NOTE: Your keys to another device by Ian's exchange (2026-10-26; Damon, 2026-11-05 - in place of an address that carried the
+// NOTE: Your keys to another device by the exchange of two codes (2026-10-26; 2026-11-05 - in place of an address that carried the
 // access key itself). The new device makes a key pair for this once and shows its public key - an "ask"; one with the keys scans
 // it, makes a pair of its own, and shows that public key with the access key sealed under the secret between the two - a
 // "reply", as an address the new device's own camera can open. Both pairs are thrown away, so a photo of either code is no use.
@@ -545,13 +545,13 @@ function keys_step_text( have, given )
 const c_device_ask_prefix = "keys-ask=";
 const c_device_reply_prefix = "keys-reply=";
 
-// NOTE: The same exchange for keys from the administrator (Damon, 2026-11-11) - Give keys in People - each kind its own, so a device
+// NOTE: The same exchange for keys from the administrator (2026-11-11) - Give keys in People - each kind its own, so a device
 // with the keys never answers one asking the administrator with its own access key, nor takes the administrator's answer for
 // another device's: a "give" asks, and a "given" answers with the person's entropy (32 hex digits) sealed.
 const c_device_give_prefix = "keys-give=";
 const c_device_given_prefix = "keys-given=";
 
-// NOTE: In one scan (Damon, 2026-11-18, Ian agreeing) - the answer left on the node for the device to collect, so it needn't scan one
+// NOTE: In one scan (2026-11-18) - the answer left on the node for the device to collect, so it needn't scan one
 // back. Each code then carries a one-off secret of its own ("pick", 32 hex digits) after its public key, which only the camera passes
 // on: the answer's check is made with it, so the node, which could make an answer of its own to a public key, can't make one the
 // device would take. A code without one (an older page's) is answered as before, by a code shown back.
@@ -592,7 +592,7 @@ function device_given_link( page, public_key, sealed, check )
 }
 
 // NOTE: The page an answer is to open at - the address the other device's own code was made on ("text", scanned or pasted), so it
-// opens there with that device's camera, the same page reached by another address (Damon, 2026-11-16: admin's "localhost" opened
+// opens there with that device's camera, the same page reached by another address (2026-11-16: admin's "localhost" opened
 // nothing on a phone that reaches the node by its LAN address). "own" - this page - for a code without one, or another page or
 // scheme.
 function device_page_of( text, own )
@@ -607,14 +607,14 @@ function device_page_of( text, own )
    return match[ 1 ] + match[ 2 ];
 }
 
-// NOTE: The exchange as the two steps it is, said the same on both devices, each for whoever holds it (Damon, 2026-11-17: said as one,
+// NOTE: The exchange as the two steps it is, said the same on both devices, each for whoever holds it (2026-11-17: said as one,
 // it wasn't clear a second code was to come) - "give", keys from the administrator, or "device", from another of one's own; "asking",
 // the device getting them, which shows its code then scans the answer, or "giving", which scans then shows. "name" - who is given
 // them, for the administrator's side. { labels, ledes }, one of each per step. (Contact codes have no steps since 2026-11-20 - each
 // added once scanned, the card itself saying the rest.)
 //
-// "one_scan" - in one scan (Damon, 2026-11-18): the answer left on the node, so the device getting the keys takes it by itself - the
-// code shown back said only as what to scan if it doesn't come. No steps then (Damon, 2026-11-20: a second one that only happens by
+// "one_scan" - in one scan (2026-11-18): the answer left on the node, so the device getting the keys takes it by itself - the
+// code shown back said only as what to scan if it doesn't come. No steps then (2026-11-20: a second one that only happens by
 // itself read as one more thing to do), so no labels; the giving side's ledes the scan, it sent, and the code if it doesn't come.
 function exchange_steps( flow, side, name, one_scan )
 {
@@ -711,7 +711,7 @@ function parse_device_link( text )
    return null;
 }
 
-// NOTE: Under "Write these down" when the claim's own sign in did not work (Ian, 2026-11-07: "Open the chat" with nothing said) - the
+// NOTE: Under "Write these down" when the claim's own sign in did not work (2026-11-07: "Open the chat" with nothing said) - the
 // account is made all the same; the node's words for why, if it gave any.
 function written_signin_text( error )
 {
@@ -741,17 +741,17 @@ function admin_keys_text( result )
    return "Admin's keys couldn't be made just now - on My account, choose Use the node's twelve words under Your keys.";
 }
 
-// NOTE: Said plainly under Your keys (Damon and Ian, 2026-11-11) - the node's twelve words make everyone's keys here.
+// NOTE: Said plainly under Your keys (2026-11-11) - the node's twelve words make everyone's keys here.
 function keys_words_text( is_admin )
 {
    if( is_admin )
       return "Yours come from the node's twelve words - which make everyone's keys here, so keep them like the house keys.";
 
-   // NOTE: Not for everyone else (Damon, 2026-11-14) - the choices under it say what each gives up, without the node's words.
+   // NOTE: Not for everyone else (2026-11-14) - the choices under it say what each gives up, without the node's words.
    return "";
 }
 
-// NOTE: What Give keys lacks, field by field (Damon, 2026-11-11) - the password always; the node's words only when asked ("words" null
+// NOTE: What Give keys lacks, field by field (2026-11-11) - the password always; the node's words only when asked ("words" null
 // when they are not); and their device's code, read ("parse_device_link( )"), as the code from Get them from your administrator.
 function give_field_problems( password, words, device )
 {
@@ -771,7 +771,7 @@ function give_field_problems( password, words, device )
    return problems;
 }
 
-// NOTE: The node's answer to "alerts" - this person's own ntfy topic and the ntfy server, a line each (Damon, 2026-11-17) - as
+// NOTE: The node's answer to "alerts" - this person's own ntfy topic and the ntfy server, a line each (2026-11-17) - as
 // { topic, server } with the server as an address ("https://" before it, as the node sends to it), { none: true } if the node has
 // no ntfy server ("[none]"), or null for anything else. The topic as ntfy takes one, the server a host with a port if need be.
 function parse_alerts_reply( text )

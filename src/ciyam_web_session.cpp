@@ -83,11 +83,11 @@ const size_t c_cws_max_sessions_default = 100;
 const size_t c_cws_max_sessions_allowed = 1000;
 
 // NOTE: How long a session must have been idle before a new one (other than for "admin") can replace it when
-// the maximum number of sessions already exist (Ian, 2026-11-17: "at least 10 minutes" - see ISS-039).
+// the maximum number of sessions already exist (2026-11-17: "at least 10 minutes" - see ISS-039).
 const int64_t c_cws_session_idle_seconds = 600;
 
 // NOTE: A person's own key for their alerts - a random value kept on the node (persistent), from which their ntfy topic is made
-// ("ntfy_topic"). Not their name: the topic made from it would then be known to anyone who knew the identity (Damon, 2026-11-17).
+// ("ntfy_topic"). Not their name: the topic made from it would then be known to anyone who knew the identity (2026-11-17).
 constexpr const char* c_cws_alerts_key_prefix = "@cws_alerts_key_";
 
 // NOTE: How often one person may ring another in a conversation - a call rings for 45 seconds, so a ring now and then is plenty, and
@@ -96,7 +96,7 @@ const int64_t c_cws_ring_seconds = 20;
 
 constexpr const char* c_cws_request_ring_options_room = "room";
 
-// NOTE: An answer to a key exchange left for the device it is for (Damon, 2026-11-18: Give keys in one scan, Ian agreeing) - kept in
+// NOTE: An answer to a key exchange left for the device it is for (2026-11-18: Give keys in one scan) - kept in
 // memory only, for at most ten minutes, handed over once; no more than a hundred waiting at once.
 const int64_t c_cws_handover_seconds = 600;
 
@@ -970,7 +970,7 @@ struct cws_active_command
    }
 };
 
-// NOTE: The key for a person's alerts, made if they have none yet and "make" - or empty (Damon, 2026-11-17: calls ringing a phone).
+// NOTE: The key for a person's alerts, made if they have none yet and "make" - or empty (2026-11-17: calls ringing a phone).
 // None for a name with anything but letters, digits, "." "_" and "-" - a "*" or "?" would match other variables (found by review).
 string get_alerts_key( const string& username, bool make )
 {
@@ -1953,7 +1953,7 @@ bool get_keys_guard( const string& keys_data, size_t& rounds, string& check )
 }
 
 // NOTE: Once keys are guarded they can only be replaced with the same guard, or one with fewer rounds
-// whose check (when hashed on to the old rounds) matches (Ian's suggestion, 2026-10-27). They can only
+// whose check (when hashed on to the old rounds) matches (suggested 2026-10-27). They can only
 // be erased with the latter, as the guard itself can be read by anyone holding the access key (so then
 // a new guard could otherwise be created after erasing).
 bool is_permitted_by_keys_guard( const string& file_name, const string& new_data, bool is_erase = false )
@@ -3417,7 +3417,7 @@ bool process_cws_request( http_request_type request_type, const string& uri_suff
                   }
                }
                // NOTE: The signed-in person's own ntfy topic, and the ntfy server - for their phone to subscribe to, so the
-               // node can reach them with the chat closed (Damon, 2026-11-17: a call ringing a phone, Ian agreeing). Made from a
+               // node can reach them with the chat closed (2026-11-17: a call ringing a phone). Made from a
                // key of their own, made the first time they ask. "[none]" if the node has no ntfy server.
                else if( is_get_request && ( uri_suffix == c_cws_uri_suffix_alerts ) )
                {
@@ -3486,8 +3486,8 @@ bool process_cws_request( http_request_type request_type, const string& uri_suff
                      }
                   }
                }
-               // NOTE: A key exchange's answer left for the device it is for, so that device needn't scan it (Damon, 2026-11-18: Give
-               // keys in one scan, Ian agreeing) - under the id the device asks with, for one person: the administrator may leave one
+               // NOTE: A key exchange's answer left for the device it is for, so that device needn't scan it (2026-11-18: Give
+               // keys in one scan) - under the id the device asks with, for one person: the administrator may leave one
                // for anyone (Give keys), anyone else only for themselves (Add another device). The answer is sealed on the device that
                // made it, for the other alone - the node can neither open it nor make one the other would take (while the pages it
                // serves are as they are).
@@ -4102,7 +4102,7 @@ bool process_cws_request( http_request_type request_type, const string& uri_suff
                   if( is_put_request && ( access != g_cws_admin_token ) )
                      // FUTURE: This message should be handled as a server string message.
                      error = "Settings can only be changed by the administrator.";
-                  // NOTE: The relay's secret, even encrypted, only for the administrator (Ian, 2026-11-17).
+                  // NOTE: The relay's secret, even encrypted, only for the administrator (2026-11-17).
                   else if( ( var_name == get_special_var_name( e_special_var_system_setting_turn_secret ) ) && ( access != g_cws_admin_token ) )
                      // FUTURE: This message should be handled as a server string message.
                      error = "This setting can only be read by the administrator.";
@@ -4166,7 +4166,7 @@ bool process_cws_request( http_request_type request_type, const string& uri_suff
                               }
                               else if( var_name == get_special_var_name( e_special_var_system_setting_turn_secret ) )
                                  value = encrypt_data( value, false, true );
-                              // NOTE: "@ip_ext_addr" too - the default, and better than an address as it follows any change (Ian).
+                              // NOTE: "@ip_ext_addr" too - the default, and better than an address as it follows any change.
                               else if( ( var_name == get_special_var_name( e_special_var_system_setting_turn_ip_addr ) )
                                && ( value != get_special_var_name( e_special_var_ip_ext_addr ) ) )
                               {

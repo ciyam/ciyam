@@ -54,7 +54,7 @@ http://www.opensource.org/licenses/mit-license.php.
    <!--
    NOTE: Asked for at once, alongside the files above. What the page loads once it has loaded - its form, then its scripts, in
    order - comes from what has already arrived: asked for one after another, each had waited for the last, four waits in a row
-   on a phone (Ian, 2026-11-14, over 4G - Chat to Home and back took ten seconds or more).
+   on a phone (2026-11-14, over 4G - Chat to Home and back took ten seconds or more).
    -->
    <link rel="preload" href="chat.form" as="fetch" crossorigin="anonymous">
    <link rel="preload" href="console_parse.js" as="script">
@@ -67,7 +67,7 @@ http://www.opensource.org/licenses/mit-license.php.
    "form" content dynamically, matching the
    pattern used by "test_web_session.html".
    -->
-   <!-- NOTE: Said while the chat's scripts arrive - on a slow connection some seconds (Ian, 2026-11-11, over 4G) - and gone once
+   <!-- NOTE: Said while the chat's scripts arrive - on a slow connection some seconds (2026-11-11, over 4G) - and gone once
         "chat.js" runs. -->
    <div class="chat-empty" id="chat_page_loading" role="status">Loading the chat…</div>
    <div id="chat_content"></div>
@@ -184,7 +184,7 @@ http://www.opensource.org/licenses/mit-license.php.
    }
 
    // NOTE: No cache keys. The server sends "Cache-Control: no-cache" for ".html", ".form",
-   // ".js" and ".css" (Ian, 2026-09-27 - ISS-021), so the browser checks each file every time
+   // ".js" and ".css" (2026-09-27 - ISS-021), so the browser checks each file every time
    // and an edited one arrives with a plain reload. Before that the chat keyed each file by
    // its "Last-Modified", at the cost of a HEAD request per file.
    function load_form( name )
@@ -197,7 +197,7 @@ http://www.opensource.org/licenses/mit-license.php.
        } );
    }
 
-   // NOTE: Run from the script's own load, however long it takes to arrive (Ian, 2026-11-11: on 4G "chat.js" took longer than the
+   // NOTE: Run from the script's own load, however long it takes to arrive (2026-11-11: on 4G "chat.js" took longer than the
    // five seconds the page used to wait for it, and "failed to load"); one that could not be loaded is said.
    function load_main_js( name, loaded )
    {
@@ -252,7 +252,7 @@ http://www.opensource.org/licenses/mit-license.php.
    // NOTE: The scripts are loaded only once the markup is in place. They used to start 100ms
    // after the markup was requested, whether or not it had arrived - and a "chat.js" served
    // from the browser's memory cache could then run first. The sign in (then "populate_accounts( )")
-   // found no select and threw, so the saved accounts vanished: Ian saw it in Firefox after F5, and
+   // found no select and threw, so the saved accounts vanished: seen in Firefox after F5, and
    // only restarting Firefox, which empties that cache, brought them back.
    function load( )
    {

@@ -19,7 +19,7 @@ const c_home_security_none = "none";
 const c_home_security_encrypted = "encrypted";
 const c_home_security_quantum = "quantum";
 
-// NOTE: How "/system" names the node before its version (Ian, "c1e553a5") - "*CIYAM*" has no
+// NOTE: How "/system" names the node before its version (commit "c1e553a5") - "*CIYAM*" has no
 // identity yet, ":CIYAM:" has one but is locked, "CIYAM" is ready.
 const c_home_system_names = { "CIYAM": c_home_state_ready, ":CIYAM:": c_home_state_locked, "*CIYAM*": c_home_state_new };
 
@@ -117,7 +117,7 @@ function security_text( security )
    return { pill: "", heading: "" };
 }
 
-// NOTE: The master password is a rescue for someone on the node's own network (Ian, 2026-10-03), so an
+// NOTE: The master password is a rescue for someone on the node's own network (2026-10-03), so an
 // unencrypted connection is said plainly before it is typed. An unknown one is not called unencrypted.
 function warns_master_password( security )
 {
@@ -155,7 +155,7 @@ function normalise_unlock_key( text )
    return match[ 1 ] + "-" + match[ 2 ] + "-" + match[ 3 ];
 }
 
-// NOTE: How many unlock keys the node holds - "system_variable @num_unlock_keys", which admin may ask on any node (Ian,
+// NOTE: How many unlock keys the node holds - "system_variable @num_unlock_keys", which admin may ask on any node (commit
 // "889b160f", 2026-10-10). Counted by the node, so it is the same in every browser and goes down as keys are used - it
 // replaced a count this browser kept of the keys it had made. null for anything that is not a count.
 const c_home_keys_request = "system_variable @num_unlock_keys";
@@ -201,7 +201,7 @@ function node_line( version, uptime )
 }
 
 // NOTE: The uptime as the Overview says it - the two largest parts that are not nothing, in words, to the minute: seconds
-// are left out, as Home refreshes once a minute (Ian, 2026-10-11). "1w 0d 3h 4m 5s" is "1 week 3 hours", "41m 45s" is
+// are left out, as Home refreshes once a minute (2026-10-11). "1w 0d 3h 4m 5s" is "1 week 3 hours", "41m 45s" is
 // "41 minutes", under a minute "just started". "" for anything else.
 function uptime_words( text )
 {
@@ -239,7 +239,7 @@ function parse_log_names( text )
    return names;
 }
 
-// NOTE: "GET /cws/logs/<name>" as text - its last lines ("lines=<n>", ten unless asked; "lines=0" all of it - Ian,
+// NOTE: "GET /cws/logs/<name>" as text - its last lines ("lines=<n>", ten unless asked; "lines=0" all of it -
 // "3d6a5820"), a line each; the last line's break leaves no line. An empty log answers "[none]".
 function parse_log_lines( text )
 {
@@ -290,7 +290,7 @@ function key_error_text( error )
    return text;
 }
 
-// NOTE: Whether the node's identity is held encrypted - "system_variable @sid_secure", which admin may ask on any node (Ian,
+// NOTE: Whether the node's identity is held encrypted - "system_variable @sid_secure", which admin may ask on any node (commit
 // "e50db383", 2026-10-12): "1" if it is, nothing if not. Without it there are no unlock keys - a pure development or
 // demo-only node. null when the node did not answer, which is not taken as either.
 const c_home_secure_request = "system_variable @sid_secure";
@@ -299,7 +299,7 @@ const c_home_keys_unavailable = "This node's identity isn't held encrypted - a d
  + " keys: there is nothing to unlock.";
 
 // NOTE: A variable with nothing in it is answered "[okay]", not an empty reply - so on a node without a secure identity
-// "[okay]" is the "no" (Ian, 2026-10-13: unlock keys were offered there, and failed).
+// "[okay]" is the "no" (2026-10-13: unlock keys were offered there, and failed).
 function parse_secure( reply )
 {
    if( ( reply === null ) || ( reply === undefined ) )
@@ -313,7 +313,7 @@ function parse_secure( reply )
    return ( ( value === "" ) || ( value === "[okay]" ) ) ? false : null;
 }
 
-// NOTE: The node's last unlock with a key, from the server log - Ian's "*** system identity unlock has occurred ***" ("588a95d2",
+// NOTE: The node's last unlock with a key, from the server log - the server's "*** system identity unlock has occurred ***" ("588a95d2",
 // 2026-11-05; "unlock occurred" from "ef17cb98", 2026-10-15, so a log written before then is still read), which key never said.
 // The newest one among the lines read: its time as the log has it (the node's own clock, not UTC), and whether it came after
 // the last "server starting" - this run unlocked with a key. null when none was read.
@@ -390,7 +390,7 @@ function log_line_parts( line )
 }
 
 // NOTE: The errors and warnings in a log since the server last started - its last "server starting" line - for the
-// Overview (Damon, 2026-10-09: what can be shown of R2's warnings before Ian's combined request). "since_start" is
+// Overview (2026-10-09: what can be shown of R2's warnings before the server's combined request). "since_start" is
 // false when no start is among the lines read, so the count is only of those. "latest" is the newest of them.
 function log_problems( lines )
 {
@@ -448,7 +448,7 @@ function log_problems_text( problems )
 }
 
 // NOTE: How many messages a room keeps - its queue's limit, the node's default as rooms set none of their own (3,000 since
-// 2026-11-15, Ian - 9,000 before). A full room drops its oldest for each new one since "@qs_pf_irc" (2026-10-11, "IRC Domain
+// 2026-11-15 - 9,000 before). A full room drops its oldest for each new one since "@qs_pf_irc" (2026-10-11, "IRC Domain
 // Model"). The node does not report the limit to a page, so it is named here.
 const c_home_room_limit = 3000;
 
@@ -490,7 +490,7 @@ function room_filling_line( room )
 {
    var of = room.total.toLocaleString( "en-AU" ) + " of " + c_home_room_limit.toLocaleString( "en-AU" ) + " messages";
 
-   // NOTE: A full room drops its oldest message for each new one since Ian's "@qs_pf_irc" (2026-10-11) - it refused them.
+   // NOTE: A full room drops its oldest message for each new one since the server's "@qs_pf_irc" (2026-10-11) - it refused them.
    return room.name + " - " + ( room.total >= c_home_room_limit ? "full, " + of + " - the oldest make way for new ones" : of + " (" + room.percent + "%)" );
 }
 
@@ -610,7 +610,7 @@ function chat_summary_text( summary )
 }
 
 // NOTE: "Needs you" - each invitation waiting, said as the chat says it, a message request first by
-// kind. They are answered in the chat. First, keys not set up ("no_keys" - skipped while joining, say; Damon,
+// kind. They are answered in the chat. First, keys not set up ("no_keys" - skipped while joining, say;
 // 2026-10-28), set up on My account.
 function needs_you( invitations, me, no_keys )
 {
@@ -656,7 +656,7 @@ function device_rows( devices )
 }
 
 // NOTE: How many devices My account lists - this browser and three more; the rest are a count, the whole list
-// a link away (Damon, 2026-10-08: test runs had left fifteen).
+// a link away (2026-10-08: test runs had left fifteen).
 const c_home_devices_shown = 4;
 
 // NOTE: The devices My account lists, from "device_rows( )" - this browser first, then those signed in now, then
@@ -679,11 +679,11 @@ function more_devices_text( more )
 }
 
 // ====================================================================
-// Health (Damon, 2026-10-12 - "Home App Scope", Health): the Overview shows only what needs you, Health the detail
+// Health (2026-10-12 - "Home App Scope", Health): the Overview shows only what needs you, Health the detail
 // ====================================================================
 
 // NOTE: Whether the node says it is for development or demo - "system_variable @system_is_for_devt" and "..._demo", which
-// admin may ask on any node (Ian, "fe66af9d"): "1" or nothing. null when not answered.
+// admin may ask on any node (commit "fe66af9d"): "1" or nothing. null when not answered.
 const c_home_devt_request = "system_variable @system_is_for_devt";
 const c_home_demo_request = "system_variable @system_is_for_demo";
 
@@ -751,17 +751,17 @@ function health_heading( issues )
 }
 
 // ====================================================================
-// Alerts (Damon, 2026-10-12 - "Home App Scope", Notifications): ntfy on admin's phone
+// Alerts (2026-10-12 - "Home App Scope", Notifications): ntfy on admin's phone
 // ====================================================================
 
-// NOTE: The node's own ntfy topic - where it sends its alerts - and a test sent to it. Both are raw protocol (Ian's
-// "ntfy_topic" and "ntfy_send"), so a development node only until he lets admin ask for them on any node. The title is
+// NOTE: The node's own ntfy topic - where it sends its alerts - and a test sent to it. Both are raw protocol (the server's
+// "ntfy_topic" and "ntfy_send"), so a development node only until the node lets admin ask for them on any node. The title is
 // quoted whole - quoted after the "=" it is cut short and the request times out (2026-10-07).
 const c_home_ntfy_topic_request = "ntfy_topic";
 const c_home_ntfy_test_request = "ntfy_send \"-title=Test alert\" -tags=white_check_mark \"From Home - this phone gets the node alerts.\"";
 
 // ====================================================================
-// Health - from the commands Ian allowed admin on any node (2026-10-14, "136d4815")
+// Health - from the commands allowed admin on any node (2026-10-14, "136d4815")
 // ====================================================================
 
 const c_home_sessions_request = "system_web_sessions";
@@ -769,7 +769,7 @@ const c_home_schedule_request = "system_schedule";
 const c_home_listeners_request = "system_listeners";
 
 // NOTE: An hour without a request - idle. The node keeps a session until it signs out, letting the longest unused go only
-// at its limit (Ian, 2026-10-14) - so idle ones are the leftovers of closed tabs (ISS-039).
+// at its limit (2026-10-14) - so idle ones are the leftovers of closed tabs (ISS-039).
 const c_session_idle_ms = 60 * 60 * 1000;
 
 // NOTE: A time as the node gives it - "2026-10-15 04:03:42", in UTC - as a unique, "<unix seconds>000", so the chat's own
@@ -785,7 +785,7 @@ function node_time_unique( text )
 }
 
 // NOTE: "system_web_sessions" - a heading and a rule, then a line each: the session, its PIN, its device, its first and its
-// last request, and "<username> (<address>)". Redacted unless asked "-full" on a development node (Ian, "af67621d",
+// last request, and "<username> (<address>)". Redacted unless asked "-full" on a development node (commit "af67621d",
 // 2026-10-15): the PIN all X's, and the first ten characters of the session and the device too.
 function parse_web_sessions( text )
 {
@@ -816,7 +816,7 @@ function is_same_session( listed, mine )
 
 // NOTE: The sessions as Health shows them - how many, how many idle ("c_session_idle_ms"), and by person, the most recently
 // seen first: their sessions, when last seen (a unique), from where, and whether this tab's ("mine") is among them. A
-// person is their PIN - shown by name only, PINs being kept out of sight (Ian, 2026-10-10) - or, the PIN redacted, their
+// person is their PIN - shown by name only, PINs being kept out of sight (2026-10-10) - or, the PIN redacted, their
 // name; sessions not signed in yet, with neither, are one row.
 function sessions_summary( sessions, now_ms, mine )
 {
@@ -921,13 +921,13 @@ function ntfy_server_example( hostname )
 }
 
 // ====================================================================
-// Setting up a new node (Damon and Ian, 2026-10-12 - "Home App Scope", Setting up a new node)
+// Setting up a new node (2026-10-12 - "Home App Scope", Setting up a new node)
 // ====================================================================
 
-// NOTE: What Enter does in setting up's two password fields (Damon, 2026-10-13): from the first, on to "Type it again" once
+// NOTE: What Enter does in setting up's two password fields (2026-10-13): from the first, on to "Type it again" once
 // the password is long enough; from the second, once the two match, it makes the words ("make") - as "Make my twelve
 // words" would. Only moving the focus there left nothing seeming to happen, so it looked as if Enter sometimes worked
-// (Ian, 2026-10-13). Otherwise what is wrong: "short" or "different".
+// (2026-10-13). Otherwise what is wrong: "short" or "different".
 function setup_password_enter( field, password, again, long_enough )
 {
    if( !long_enough )
@@ -942,7 +942,7 @@ function setup_password_enter( field, password, again, long_enough )
    return { focus: "", problem: "", make: true };
 }
 
-// NOTE: The still-alive token (Ian, 2026-10-13 - "637f4e60", "944901f7"): the first twelve hex of the SHA-256 of admin's
+// NOTE: The still-alive token (2026-10-13 - "637f4e60", "944901f7"): the first twelve hex of the SHA-256 of admin's
 // PIN and the entropy the node suggested with it - nobody else could make it, none of the entropy is in the URL, and it
 // is as long as a DDNS token. "sha256" is the page's own ("hex_sha256").
 function setup_alive_token( pin, suggested, sha256 )
@@ -970,10 +970,10 @@ function setup_refused( text )
    return /not valid|has expired/i.test( String( text || "" ) );
 }
 
-// NOTE: The node refusing the second, its PIN gone - it waits five minutes from its last word with the tab that has it (Ian,
-// 2026-10-12). Then it answers "System is currently locked for administration." - as it also does, for a moment, while
+// NOTE: The node refusing the second, its PIN gone - it waits five minutes from its last word with the tab that has it
+// (2026-10-12). Then it answers "System is currently locked for administration." - as it also does, for a moment, while
 // another admin command runs, so the page asks again before believing it. A node that has restarted since - or been made
-// new again - never gave that PIN: "User credentials are either invalid or incorrect." (Damon, 2026-10-13, carrying on
+// new again - never gave that PIN: "User credentials are either invalid or incorrect." (2026-10-13, carrying on
 // in a tab kept from before). The password is the page's own, so only the PIN can be wrong.
 function setup_pin_gone( text )
 {
@@ -1007,7 +1007,7 @@ function setup_kept( stored )
    return null;
 }
 
-// NOTE: A bubble's colour from three random bytes (Ian, 2026-10-13: "different colors ... randomised RGB values") - the
+// NOTE: A bubble's colour from three random bytes (2026-10-13: "different colors ... randomised RGB values") - the
 // first two choose the hue anywhere round the wheel, the third how vivid and how light, within a band every bubble can be
 // seen in, on a light page or a dark one. "rgb" for its style, "hex" for its pop's sample.
 function bubble_colour( bytes )
@@ -1074,15 +1074,15 @@ function word_choices( words, index, wordlist, random )
    return choices;
 }
 
-// ---- People's search and pages (Damon, 2026-10-28: the list had grown long enough to scroll)
+// ---- People's search and pages (2026-10-28: the list had grown long enough to scroll)
 
 // NOTE: How many people a page shows - and the search is offered only when there are more than this.
 const c_people_page_size = 10;
 
 const c_people_status_words = { admin: "administrator", active: "active", unclaimed: "not yet claimed no username", inactive: "inactive disabled" };
 
-// NOTE: Those of "people" (from "parse_people( )") People lists - the inactive (disabled) only when "inactive" is ticked (Ian,
-// 2026-11-09: hidden unless asked for).
+// NOTE: Those of "people" (from "parse_people( )") People lists - the inactive (disabled) only when "inactive" is ticked
+// (2026-11-09: hidden unless asked for).
 function people_shown( people, inactive )
 {
    return ( people || [ ] ).filter( function( person ) { return inactive || ( person.status !== "inactive" ); } );
@@ -1128,7 +1128,7 @@ function people_count_text( total, matched, searching, shown )
    return ( ranged !== "" ) ? ranged + matched + " matching" : matched + " of " + total + " match";
 }
 
-// NOTE: Backing up or restoring a person's keys refused ("keys=REPLACE|RESTORE", Ian's "0592816e", 2026-11-04), in words - the
+// NOTE: Backing up or restoring a person's keys refused ("keys=REPLACE|RESTORE", commit "0592816e", 2026-11-04), in words - the
 // node's own for anything else. "Current keys" - none to back up; "Restore keys" - no backup to restore.
 function user_keys_problem_text( problem )
 {
@@ -1141,7 +1141,7 @@ function user_keys_problem_text( problem )
    return problem;
 }
 
-// NOTE: Under "This node is already being set up" (Ian, 2026-11-12: "a countdown before you do Check again ... a full five minutes
+// NOTE: Under "This node is already being set up" (2026-11-12: "a countdown before you do Check again ... a full five minutes
 // just to be sure") - "seconds" still to wait as minutes and seconds, or "" once there are none.
 function setup_retry_wait_text( seconds )
 {

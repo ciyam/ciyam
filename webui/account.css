@@ -40,7 +40,7 @@
    margin-top: 18px;
 }
 
-/* NOTE: Welcome on one screen (Ian, 2026-10-27: Firefox scrolled to reach the password's "type it again") - the card and its
+/* NOTE: Welcome on one screen (2026-10-27: Firefox scrolled to reach the password's "type it again") - the card and its
    gaps tighter than the sign in's, which has fewer fields. */
 #welcome_view
 {
@@ -53,7 +53,7 @@
    padding: 24px 48px 20px;
 }
 
-/* NOTE: And with a password suggested (Damon, 2026-10-28: it pushed the card past the bottom) - its note one line, close under the
+/* NOTE: And with a password suggested (2026-10-28: it pushed the card past the bottom) - its note one line, close under the
    checkbox. */
 #welcome_view .chat-suggested
 {
@@ -264,7 +264,7 @@
    color: var(--color-chat-warning-text);
 }
 
-/* NOTE: Disabled (Ian, 2026-11-09) - no longer able to sign in, so quieter than the rest. */
+/* NOTE: Disabled (2026-11-09) - no longer able to sign in, so quieter than the rest. */
 .account-pill--inactive
 {
    background: var(--color-chat-bg-band);
@@ -385,7 +385,7 @@ h2[tabindex="-1"]:focus
    margin-top: 16px;
 }
 
-/* NOTE: Which step of joining (Damon, 2026-10-28) - at the end of the brand's row. */
+/* NOTE: Which step of joining (2026-10-28) - at the end of the brand's row. */
 .account-step
 {
    display: block;
@@ -490,7 +490,7 @@ h2[tabindex="-1"]:focus
    gap: 16px;
 }
 
-/* NOTE: As wide as Home's sections (Damon, 2026-10-26) - in two columns as Home's are, one under the other when narrow. */
+/* NOTE: As wide as Home's sections (2026-10-26) - in two columns as Home's are, one under the other when narrow. */
 .account-main > .account-section
 {
    max-width: none;
@@ -616,7 +616,7 @@ h2[tabindex="-1"]:focus
    display: none;
 }
 
-/* NOTE: A button beside the main one is as big as it (Damon, 2026-10-26) - a row's buttons the same size. */
+/* NOTE: A button beside the main one is as big as it (2026-10-26) - a row's buttons the same size. */
 .account-actions-row .chat-btn
 {
    display: inline-flex;
@@ -788,7 +788,7 @@ button.account-back,
    white-space: nowrap;
 }
 
-/* NOTE: A person's menu in People (Damon, 2026-11-08) - "toggle_person_menu( )" places it; Remove said as what it is. */
+/* NOTE: A person's menu in People (2026-11-08) - "toggle_person_menu( )" places it; Remove said as what it is. */
 .account-more
 {
    min-width: 36px;
@@ -1031,7 +1031,7 @@ button.account-back,
       padding: 12px 14px;
    }
 
-   /* NOTE: On a phone the four columns did not fit, and People scrolled sideways (Damon, 2026-10-11) - each person is a
+   /* NOTE: On a phone the four columns did not fit, and People scrolled sideways (2026-10-11) - each person is a
       card of two rows instead: who and their status, then the PIN and Remove. A Remove being confirmed takes the row. */
    .account-table thead
    {
@@ -1184,7 +1184,7 @@ button.account-back,
    gap: 12px;
 }
 
-/* NOTE: The exchange's two steps, the same on both devices (Damon, 2026-11-17) - the one now marked, those done ticked; side by side,
+/* NOTE: The exchange's two steps, the same on both devices (2026-11-17) - the one now marked, those done ticked; side by side,
    one above the other where there isn't room. */
 .account-exchange-steps
 {
@@ -1257,7 +1257,7 @@ button.account-back,
    display: none;
 }
 
-/* NOTE: The addresses for when a camera can't be used, folded away (Damon, 2026-11-16). */
+/* NOTE: The addresses for when a camera can't be used, folded away (2026-11-16). */
 .account-keys-manual summary
 {
    cursor: pointer;
@@ -1427,7 +1427,7 @@ button.account-back,
    outline-offset: 2px;
 }
 
-/* NOTE: All twelve popped - nothing left to catch, so no clicks either (Damon, 2026-10-13). */
+/* NOTE: All twelve popped - nothing left to catch, so no clicks either (2026-10-13). */
 .home-bubbles.is-done
 {
    pointer-events: none;
@@ -1724,7 +1724,7 @@ button.account-back,
    }
 }
 
-/* NOTE: Your keys' choices for everyone but admin (Damon, 2026-11-14) - their administrator's first, each with what it gives up. */
+/* NOTE: Your keys' choices for everyone but admin (2026-11-14) - their administrator's first, each with what it gives up. */
 .account-keys-choices
 {
    display: flex;

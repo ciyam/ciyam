@@ -5,9 +5,9 @@
  */
 
 /* ====================================================================
-   Formatting - colour and style in messages (Ian, 2026-10-15).
+   Formatting - colour and style in messages (2026-10-15).
 
-   Ian's 16 text colours and 8 backgrounds ("ansi.cin"), each tuned to
+   The console's 16 text colours and 8 backgrounds ("ansi.cin"), each tuned to
    read on the chat's light and dark backgrounds - "K" (black) and "W"
    (white) follow the theme so neither disappears. Then the format bar,
    its colour palette and the preview above the message box.
@@ -174,7 +174,7 @@
    position: absolute;
 }
 
-/* NOTE: Under the box on a phone - above it, the browser's own clipboard menu covered it (Ian, 2026-10-16, Vanadium). */
+/* NOTE: Under the box on a phone - above it, the browser's own clipboard menu covered it (2026-10-16, Vanadium). */
 .chat-format-bar.is-docked
 {
    margin-top: 8px;
@@ -332,7 +332,7 @@
 }
 
 /* ====================================================================
-   The styled box (Ian, 2026-10-18) - with Codes off the box shows the
+   The styled box (2026-10-18) - with Codes off the box shows the
    formatting itself. The text box's words are drawn clear over a copy
    behind it ("render_composer_mirror( )"), which takes the box's font,
    spacing, padding and borders. Kerning and joined letters are off in
@@ -474,7 +474,7 @@
    }
 }
 
-/* NOTE: A message the chat cannot read - an encrypted one, until it can decrypt (Ian's "X" prefix, 2026-10-20) - said so,
+/* NOTE: A message the chat cannot read - an encrypted one, until it can decrypt (the server's "X" prefix, 2026-10-20) - said so,
    quietly, in place of its ciphertext. */
 .chat-unreadable
 {
@@ -482,7 +482,7 @@
    color: var(--color-chat-text-meta);
 }
 
-/* NOTE: Only the exception is marked (Ian, 2026-10-26, as "irc.cin" does): an encrypted message opened has nothing before it
+/* NOTE: Only the exception is marked (2026-10-26, as "irc.cin" does): an encrypted message opened has nothing before it
    ("chat-encrypted"); one that can't be read - corrupt, or no key for it - a small padlock; one that isn't encrypted a warning
    sign. Drawn before the words, so neither is copied with them. */
 .chat-locked::before,

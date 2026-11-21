@@ -91,8 +91,8 @@ function bubble_field( field, options )
       if( options.on_count )
          options.on_count( );
 
-      // NOTE: The last - the rest burst too (Ian, 2026-10-13), not counted: the randomness is the twelve. The box stops taking
-      // clicks, and the page moves the focus on (Damon).
+      // NOTE: The last - the rest burst too (2026-10-13), not counted: the randomness is the twelve. The box stops taking
+      // clicks, and the page moves the focus on.
       if( kept.pops === options.pops )
       {
          bubbles.forEach( burst );
@@ -113,7 +113,7 @@ function bubble_field( field, options )
       var height = field.clientHeight || 300;
       var size = 26 + Math.random( ) * 22;
 
-      // NOTE: Each its own colour, from the browser's secure random numbers - kept with its pop (Ian, 2026-10-13).
+      // NOTE: Each its own colour, from the browser's secure random numbers - kept with its pop (2026-10-13).
       var bytes = new Uint8Array( 3 );
 
       window.crypto.getRandomValues( bytes );
@@ -129,7 +129,7 @@ function bubble_field( field, options )
       button.style.height = size + "px";
       button.style.setProperty( "--bubble-colour", colour.rgb );
 
-      // NOTE: Livelier since 2026-10-13 (Ian: "move around a more and a little faster") - a drift sideways that wanders, as
+      // NOTE: Livelier since 2026-10-13 ("move around a more and a little faster") - a drift sideways that wanders, as
       // well as a wider, quicker sway.
       var bubble = { id: ++next_id, element: button, size: size, width: width,
        x: 8 + Math.random( ) * Math.max( 1, width - size - 16 ),
@@ -188,7 +188,7 @@ function bubble_field( field, options )
          return true;
       } );
 
-      // NOTE: More of them since 2026-10-13 (Ian) - up to sixteen, so popping is picking some out here and there, not every
+      // NOTE: More of them since 2026-10-13 - up to sixteen, so popping is picking some out here and there, not every
       // one that rises - and sooner still with only a few in the box.
       var chance = ( 0.07 * speed + ( bubbles.length < 6 ? 0.08 : 0 ) ) * elapsed / 40;
 
@@ -203,7 +203,7 @@ function bubble_field( field, options )
       if( frame !== 0 )
          return;
 
-      // NOTE: All popped - none to pop, and the box no longer a click target, which took the focus off Next (Damon).
+      // NOTE: All popped - none to pop, and the box no longer a click target, which took the focus off Next.
       field.classList.toggle( "is-done", state( ).pops >= options.pops );
 
       if( ( bubbles.length === 0 ) && ( state( ).pops < options.pops ) )

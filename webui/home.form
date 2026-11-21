@@ -40,8 +40,8 @@ http://www.opensource.org/licenses/mit-license.php.
    </div>
 </div>
 
-<!-- NOTE: Setting up a new node from here (Damon and Ian, 2026-10-12 - "Home App Scope", Setting up a new node). One card,
-     a view at a time: before you start, the person's randomness (bubbles - never their own words: Ian, 2026-10-12, the
+<!-- NOTE: Setting up a new node from here (2026-10-12 - "Home App Scope", Setting up a new node). One card,
+     a view at a time: before you start, the person's randomness (bubbles - never their own words: 2026-10-12, the
      twelfth word is a checksum and people choose poor words; typing words is for restoring), the master password,
      the twelve words, checking them, done - and, when something goes wrong, carrying on after a reload or a node already
      being set up. Nothing is sent before the words; between the node's two set up requests the page must finish. -->
@@ -60,7 +60,7 @@ http://www.opensource.org/licenses/mit-license.php.
          </span>
       </div>
 
-      <!-- NOTE: The start asks one question, and each answer goes straight on (Ian, 2026-10-13 - all on one screen, Start
+      <!-- NOTE: The start asks one question, and each answer goes straight on (2026-10-13 - all on one screen, Start
            was below the fold). A new node gets a screen of its own; recovering goes to the shared recovery, worded for a
            node not set up ("recover_show( { fresh } )"), which says the rest itself. -->
       <section id="setup_intro">
@@ -191,7 +191,7 @@ http://www.opensource.org/licenses/mit-license.php.
          <p class="recover-note" id="setup_keys_note"></p>
          <p class="recover-note"><b>Next, in Home:</b> make an unlock key or two, so a restart doesn't need the master password -
           then add the people who'll use the node.</p>
-         <!-- NOTE: Saved here as a sign in would, so the next visit needn't type them (Ian, 2026-10-13) - the sign in's own
+         <!-- NOTE: Saved here as a sign in would, so the next visit needn't type them (2026-10-13) - the sign in's own
               choices; only when signed in. -->
          <div class="home-setup-retain" id="setup_retain_box">
             <label class="chat-label" for="setup_retain">Remember on this browser</label>
@@ -238,7 +238,7 @@ http://www.opensource.org/licenses/mit-license.php.
          </div>
       </section>
 
-      <!-- NOTE: The node waits five minutes from its last word with this tab (Ian, 2026-10-12), and the tab keeps it waiting
+      <!-- NOTE: The node waits five minutes from its last word with this tab (2026-10-12), and the tab keeps it waiting
            while it is open - so this is a tab that slept, or was set aside, for longer. -->
       <section id="setup_expired" hidden>
          <h2 tabindex="-1">The node stopped waiting</h2>
@@ -254,7 +254,7 @@ http://www.opensource.org/licenses/mit-license.php.
 </div>
 
 <!-- NOTE: Unlocking needs a session - the unlock key is used on one ("employ_unlock_key( )") - so a locked
-     node is signed in to first, then unlocked. Anyone with a key may unlock, not only admin (Ian, 2026-10-03). -->
+     node is signed in to first, then unlocked. Anyone with a key may unlock, not only admin (2026-10-03). -->
 <div class="chat-signin" id="unlock_view" hidden>
    <div class="home-unlock">
       <form class="chat-signin-form" id="unlock_form" novalidate>
@@ -283,7 +283,7 @@ http://www.opensource.org/licenses/mit-license.php.
       </form>
 
       <!-- NOTE: The master password is a rescue - for someone on the node's own network with no keys left
-           (Ian, 2026-10-03). Over a connection the node sees as unencrypted that is said before it is typed. -->
+           (2026-10-03). Over a connection the node sees as unencrypted that is said before it is typed. -->
       <details class="home-rescue" id="rescue_panel">
          <summary>No keys left? Use the master password</summary>
 
@@ -375,7 +375,7 @@ http://www.opensource.org/licenses/mit-license.php.
             <p class="home-note" id="app_node"></p>
 
             <!-- NOTE: "My account" first - who you are and your devices, with the accounts page a link away; it was
-                 a tile and a card saying much the same (Damon, 2026-10-08). Then the chat. -->
+                 a tile and a card saying much the same (2026-10-08). Then the chat. -->
             <div class="home-tiles">
                <section class="home-card home-account-card" aria-labelledby="account_heading">
                   <h2 id="account_heading">My account</h2>
@@ -417,7 +417,7 @@ http://www.opensource.org/licenses/mit-license.php.
             </div>
          </section>
 
-         <!-- NOTE: Admin's sections (build step 6) - what the web API gives today. Sessions open since Ian allowed
+         <!-- NOTE: Admin's sections (build step 6) - what the web API gives today. Sessions open since the node allowed
               "system_web_sessions" (2026-10-14); the limits still wait on the node. -->
          <section class="home-section" id="section_overview" hidden>
             <div class="home-section-head">
@@ -452,7 +452,7 @@ http://www.opensource.org/licenses/mit-license.php.
                </div>
             </div>
 
-            <!-- NOTE: Only what needs you (Damon, 2026-10-12) - each a line with its way to act, from the same rules as Health
+            <!-- NOTE: Only what needs you (2026-10-12) - each a line with its way to act, from the same rules as Health
                  ("health_issues( )"), so the two always agree; nothing wrong, it says so. The detail is Health's. -->
             <section class="home-attention" id="attention_card" aria-labelledby="attention_heading" hidden>
                <div class="home-attention-head">
@@ -503,8 +503,8 @@ http://www.opensource.org/licenses/mit-license.php.
             </section>
          </section>
 
-         <!-- NOTE: Health (Damon, 2026-10-12) - every check the node allows a page today, in detail, each card saying whether
-              it needs you; its rail item carries how many do. The greyed card at the foot is what Ian's R2 figures would add -
+         <!-- NOTE: Health (2026-10-12) - every check the node allows a page today, in detail, each card saying whether
+              it needs you; its rail item carries how many do. The greyed card at the foot is what the R2 figures would add -
               kept in sight as the gap. -->
          <section class="home-section" id="section_health" hidden>
             <div class="home-section-head">
@@ -574,7 +574,7 @@ http://www.opensource.org/licenses/mit-license.php.
                   </div>
                </section>
 
-               <!-- NOTE: From the commands Ian allowed admin on any node (2026-10-14) - who is connected, what the node runs by
+               <!-- NOTE: From the commands allowed admin on any node (2026-10-14) - who is connected, what the node runs by
                     itself, and where it takes connections. Read every minute with the rest. -->
                <section class="home-card home-health-card home-health-wide" id="health_sessions_card" aria-labelledby="health_sessions_heading">
                   <div class="home-health-head">
@@ -632,7 +632,7 @@ http://www.opensource.org/licenses/mit-license.php.
          <!-- NOTE: Unlock keys - made by admin while the node is unlocked, each shown once and used once. The node
               cannot list them, so Home counts the ones made on this browser (the design's known limit). -->
          <!-- NOTE: People - adding, handing over and removing accounts - moved here from the accounts page, which keeps My
-              account and Welcome (Damon, 2026-10-11: the node's administration in Home). Its look is "account.css", which
+              account and Welcome (2026-10-11: the node's administration in Home). Its look is "account.css", which
               the accounts page shares. Four views in the one section, as on the accounts page - the list, Add a person,
               the code to hand over and the PIN ready - the last two shown once. -->
          <section class="home-section" id="section_people" hidden>
@@ -647,8 +647,8 @@ http://www.opensource.org/licenses/mit-license.php.
                   <button type="button" class="chat-btn chat-btn--primary" id="people_add">Add a person</button>
                </div>
 
-               <!-- NOTE: Search and pages (Damon, 2026-10-28: the list scrolled) - offered once there is more than a page ("render_people( )").
-                    Show inactive only while someone is disabled (Ian, 2026-11-09: hidden unless asked for). -->
+               <!-- NOTE: Search and pages (2026-10-28: the list scrolled) - offered once there is more than a page ("render_people( )").
+                    Show inactive only while someone is disabled (2026-11-09: hidden unless asked for). -->
                <div class="home-people-tools" id="people_tools" hidden>
                   <input type="search" class="chat-field home-people-search" id="people_search" placeholder="Search by name, PIN or status"
                    aria-label="Search people" autocomplete="off" spellcheck="false">
@@ -836,7 +836,7 @@ http://www.opensource.org/licenses/mit-license.php.
                   <td><span class="account-pill"></span></td>
                   <td class="account-row-actions">
                      <span class="account-you" hidden>You</span>
-                     <!-- NOTE: A person's actions in a menu of their own (Damon, 2026-11-08: three buttons a row crowded it, a phone's
+                     <!-- NOTE: A person's actions in a menu of their own (2026-11-08: three buttons a row crowded it, a phone's
                           most) - "toggle_person_menu( )"; each item shown only where it can be done. -->
                      <button type="button" class="chat-btn account-more" aria-haspopup="menu" aria-expanded="false" hidden>&#x22EF;</button>
                      <div class="chat-new-menu account-more-menu" role="menu" hidden>
@@ -887,9 +887,9 @@ http://www.opensource.org/licenses/mit-license.php.
             </section>
          </section>
 
-         <!-- NOTE: Alerts (Damon, 2026-10-12 - "Home App Scope", Notifications) - ntfy on a phone. Three kinds: the node's
+         <!-- NOTE: Alerts (2026-10-12 - "Home App Scope", Notifications) - ntfy on a phone. Three kinds: the node's
               notices for everyone, admin's own, and each person's - every one sent to that person's own topic, never a shared
-              one. Admin's is the node's own topic, readable today only on a development node; each person's waits on Ian. -->
+              one. Admin's is the node's own topic, readable today only on a development node; each person's waits on the node. -->
          <section class="home-section" id="section_alerts" hidden>
             <h1>Alerts</h1>
             <p class="home-note">Notifications on a phone, through the ntfy app - the node's alerts for admin now, and later
@@ -897,7 +897,7 @@ http://www.opensource.org/licenses/mit-license.php.
 
             <section class="home-card" aria-labelledby="alerts_server_heading">
                <h2 id="alerts_server_heading">ntfy server</h2>
-               <!-- NOTE: The node's own setting (Ian, 2026-11-16 - "ntfy_server"): where it sends its alerts, and the phones
+               <!-- NOTE: The node's own setting (2026-11-16 - "ntfy_server"): where it sends its alerts, and the phones
                     subscribe - so the same address for both, over https. Emptied, back to the node's configuration. -->
                <p class="home-note home-empty">Where the node sends its alerts, and the phones subscribe - kept on the node. Empty
                 it to go back to the node's own configuration.</p>
@@ -950,7 +950,7 @@ http://www.opensource.org/licenses/mit-license.php.
             </section>
          </section>
 
-         <!-- NOTE: The node's logs, read only - admin's (Ian, 2026-10-03). The newest at the end, as in the file. -->
+         <!-- NOTE: The node's logs, read only - admin's (2026-10-03). The newest at the end, as in the file. -->
          <section class="home-section" id="section_logs" hidden>
             <div class="home-section-head">
                <h1>Logs</h1>
@@ -981,7 +981,7 @@ http://www.opensource.org/licenses/mit-license.php.
    </div>
 </div>
 
-<!-- NOTE: The console drawer - as in the chat and the accounts page, handed Home's session (Damon, 2026-10-08). -->
+<!-- NOTE: The console drawer - as in the chat and the accounts page, handed Home's session (2026-10-08). -->
 <div id="console_drawer" class="chat-console" hidden>
    <div class="chat-console-bar">
       <span class="chat-console-label">Console</span>

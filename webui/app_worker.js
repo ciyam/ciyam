@@ -3,7 +3,7 @@
 // Distributed under the MIT/X11 software license, please refer to the file license.txt
 // in the root project directory or http://www.opensource.org/licenses/mit-license.php.
 
-// NOTE: The apps' own files from a copy kept in this browser (Damon, 2026-11-17: switching apps over a slow 4G connection took 4.3 s,
+// NOTE: The apps' own files from a copy kept in this browser (2026-11-17: switching apps over a slow 4G connection took 4.3 s,
 // nearly all of it asking the node whether each of 27 unchanged files had changed - it sends "Cache-Control: no-cache", so that a
 // page doesn't run old scripts with new markup, ISS-021). An app page and the files it loads come from a set kept here, so opening one
 // asks the node nothing for them. Each time an app page opens, the set is checked against the node in the background - at most once a
@@ -16,7 +16,7 @@
 // until the next one. Anything the browser's storage refuses, and the page is served from the node instead, as if this were not here.
 //
 // Only the apps' own pages ("c_app_pages") and the files they load, and only files: never the node's requests ("/cws/..."), nothing
-// with a query, nothing from another origin. Any other page - Ian's harness - is left to the network, as before. A browser runs this
+// with a query, nothing from another origin. Any other page - the harness - is left to the network, as before. A browser runs this
 // only for a secure page - HTTPS, or "localhost", so the development container too. A hard reload passes it by, as it does any cache;
 // "Reset this browser" throws away what it kept, and it starts again empty ("signin_forget_kept_files( )"); "cws.app_worker" set to
 // "off" in a browser's storage turns it off there ("apps_keep_files( )").
@@ -235,7 +235,7 @@ self.addEventListener( "fetch", function( event )
    if( ( url.search !== "" ) || ( url.pathname === c_worker_path ) || !c_file_pattern.test( url.pathname ) )
       return;
 
-   // NOTE: Only for an app page. Another page that says it asked (its referrer - Ian's harness) is left alone at once, never taken
+   // NOTE: Only for an app page. Another page that says it asked (its referrer - the harness) is left alone at once, never taken
    // by the worker (found by "app_worker", 2026-11-17); one that says nothing - the chat sends no referrer, so a link in a message
    // doesn't give its address away - is told apart by its client ("serve_file_kept( )").
    if( request.referrer && !is_app_page( request.referrer ) )

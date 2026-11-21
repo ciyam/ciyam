@@ -3,7 +3,7 @@
 // Distributed under the MIT/X11 software license, please refer to the file license.txt
 // in the root project directory or http://www.opensource.org/licenses/mit-license.php.
 
-// NOTE: Styled dialogs in place of the browser's "confirm( )" and "alert( )" (Damon, 2026-10-27) - drawn as the page's own
+// NOTE: Styled dialogs in place of the browser's "confirm( )" and "alert( )" (2026-10-27) - drawn as the page's own
 // dialogs are ("chat.css"'s ".chat-scrim" and ".chat-dialog"), for every page of the node. "ask_dialog( )" resolves true for its
 // yes, and false for its no, Escape or a click outside it - or "other" for a third choice, when it has one ("other" in its options,
 // the button's words); "tell_dialog( )" resolves once it is dismissed. One at a time - a second

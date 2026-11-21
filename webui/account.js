@@ -34,7 +34,7 @@ var g_join_code = "";
 
 var g_alert_timer = null;
 
-// NOTE: Sharing a session with the chat and the console, over the channel the chat and Ian's
+// NOTE: Sharing a session with the chat and the console, over the channel the chat and the
 // harness already speak - see "chat.html" and "parse_channel_message( )" in "console_parse.js":
 //
 //   "<owner>:<viewer>"   a viewer asks the page that opened it for its session
@@ -190,8 +190,8 @@ function unsent_work( )
    if( ciyam.sessid === "" )
       return "";
 
-   // NOTE: Not the current password alone - a password manager fills that in by itself, and nothing is lost with it (Damon,
-   // 2026-10-25: warned on leaving after setting up keys).
+   // NOTE: Not the current password alone - a password manager fills that in by itself, and nothing is lost with it
+   // (2026-10-25: warned on leaving after setting up keys).
    var filled = [ "mine_password", "mine_confirm" ].some( function( id )
    {
       var field = document.getElementById( id );
@@ -486,7 +486,7 @@ function route( )
       {
          show_view( "signin_view" );
 
-         // NOTE: As the shared sign in does - a node not set up says so, and points to Home (Ian, 2026-10-13).
+         // NOTE: As the shared sign in does - a node not set up says so, and points to Home (2026-10-13).
          signin_check_locked( );
       }
 
@@ -542,7 +542,7 @@ function show_section( name )
 
    shell_mark( [ "account", name ] );
 
-   // NOTE: What is shown only when asked is hidden again on leaving its section (Ian, 2026-10-27) - the contact code, and the
+   // NOTE: What is shown only when asked is hidden again on leaving its section (2026-10-27) - the contact code, and the
    // answer to another device's code; the camera let go.
    if( ( name !== "contacts" ) && ( typeof keys_hide_public === "function" ) )
       keys_hide_public( );
@@ -832,7 +832,7 @@ function render_mine( )
    document.getElementById( "mine_username" ).value = name || ciyam.access;
 
    // NOTE: admin's password is the node's master password, which also unlocks the node after a
-   // restart - not something to change from a web page (an open question for Ian).
+   // restart - not something to change from a web page (an open question for the server).
    document.getElementById( "mine_password_form" ).hidden = ciyam.is_admin;
    document.getElementById( "mine_admin_note" ).hidden = !ciyam.is_admin;
 
@@ -854,7 +854,7 @@ function render_mine( )
       render_keys( );
 }
 
-// NOTE: Desktop notifications from the chat (Damon, 2026-10-20) - the switch here and in the chat's account menu are one
+// NOTE: Desktop notifications from the chat (2026-10-20) - the switch here and in the chat's account menu are one
 // ("notify.js"). Where the browser cannot give them, the switch is off and says why.
 function show_mine_notify( )
 {
@@ -883,7 +883,7 @@ async function do_mine_notify( on )
 // (found by review, 2026-11-17).
 var g_mine_alerts_asks = 0;
 
-// NOTE: Your own alerts on a phone (Damon, 2026-11-17) - the node's "alerts": this person's ntfy topic and the server, made the first
+// NOTE: Your own alerts on a phone (2026-11-17) - the node's "alerts": this person's ntfy topic and the server, made the first
 // time they are asked for ("parse_alerts_reply( )"). The code opens the ntfy app on the subscription ("ntfy_subscribe_link( )").
 async function do_mine_alerts_show( )
 {
@@ -954,7 +954,7 @@ function mine_alerts_hide( )
 }
 
 // ====================================================================
-// My devices - Ian, 2026-10-06
+// My devices - 2026-10-06
 // ====================================================================
 
 // NOTE: "GET /cws/devices" with this session - this PIN's devices, an active session marked.
@@ -1100,8 +1100,8 @@ function arm_remove_device( device, action )
    render_devices( );
 }
 
-// NOTE: One request for both (Ian, 2026-10-26) - a Block says so ("options=block", "d370affc"), and blocks whatever the device's
-// state; without it (Ian's "54d1f99b", 2026-10-28) a DELETE only ever signs out, so a Sign out no longer reads the list again
+// NOTE: One request for both (2026-10-26) - a Block says so ("options=block", "d370affc"), and blocks whatever the device's
+// state; without it (commit "54d1f99b", 2026-10-28) a DELETE only ever signs out, so a Sign out no longer reads the list again
 // first. "action" is one of "device_choice( )"'s.
 async function do_remove_device( entry, action )
 {
@@ -1122,7 +1122,7 @@ async function do_remove_device( entry, action )
 }
 
 // NOTE: What hardening a password (and signing in) is doing while "work" runs, under the form's button - "join" or "mine"
-// ("sign_in_progress( )" in "chat_parse.js"; Ian, 2026-10-25: a progress whilst it is hashing).
+// ("sign_in_progress( )" in "chat_parse.js"; 2026-10-25: a progress whilst it is hashing).
 async function with_progress( prefix, work )
 {
    var box = document.getElementById( prefix + "_busy" );
@@ -1529,7 +1529,7 @@ async function do_join( event )
       ciyam.keep_hash_version( pin, c_password_hash_version );
 
       // NOTE: Signed in at once with what was just chosen, then the Remember choice saved, as on the
-      // sign in (Damon, 2026-10-05) - Ian found the chat's sign in waiting, on another PIN. A device
+      // sign in (2026-10-05) - the chat's sign in was found waiting, on another PIN. A device
       // token from before the node was set up again is replaced, as the sign in does ("signin.js"). Should the
       // sign in fail, the PIN is still remembered, so the account can be found.
       await with_progress( "join", function( ) { return connect_as( pin, "", password ); } );
@@ -1543,7 +1543,7 @@ async function do_join( event )
 
       // NOTE: A node that has only just started - after a rebuild, say - can miss the five seconds it gives a sign in ("Timed out
       // waiting for web session response."), and the claim went on not signed in: "Open the chat" where "Next: your keys" was due
-      // (Ian, 2026-11-07). Signing in is safe to ask again, so it is - twice more, past the node's three seconds between sign ins
+      // (2026-11-07). Signing in is safe to ask again, so it is - twice more, past the node's three seconds between sign ins
       // on a PIN (found by review) - as setting up a node does.
       for( var tries = 0; ( tries < 2 ) && /Timed out waiting for web session response/.test( ciyam.error ); tries++ )
       {
@@ -1593,7 +1593,7 @@ function remember_pin( pin )
    }
 }
 
-// NOTE: Keys as the last step of joining (Damon, 2026-10-28) - set after "Write these down", until the step is ended (Skip, or Go
+// NOTE: Keys as the last step of joining (2026-10-28) - set after "Write these down", until the step is ended (Skip, or Go
 // to Home), or the account signs out. Your keys' card is brought into the step meanwhile - "g_keys_card_home" where it goes back.
 var g_onboarding = false;
 var g_keys_card_home = null;
@@ -1601,7 +1601,7 @@ var g_keys_card_home = null;
 function show_written( pin, username, signin_error )
 {
    // NOTE: Both given by the person who added them - the PIN typed, the name fixed - so nothing new to write down: ticked to begin
-   // with (Ian, 2026-11-07).
+   // with (2026-11-07).
    var given = ( g_join_mode === "pin" ) && document.getElementById( "join_username" ).readOnly;
 
    [ "join_code", "join_pin", "join_username", "join_password", "join_confirm" ].forEach( function( id )
@@ -1621,7 +1621,7 @@ function show_written( pin, username, signin_error )
    document.getElementById( "written_check" ).checked = given;
 
    // NOTE: Not signed in by the claim - no keys to set up here, so two steps, and on to the chat's own sign in - said why, not left
-   // to the button alone (Ian, 2026-11-07).
+   // to the button alone (2026-11-07).
    var signed_in = ( ciyam.sessid !== "" );
 
    document.getElementById( "written_signin_note" ).textContent = signed_in ? "" : written_signin_text( signin_error );
@@ -1680,7 +1680,7 @@ function keys_card_return( )
    g_keys_card_home = null;
 }
 
-// NOTE: Skip, or Go to Home once they are set up - Home, in this tab on this session, being the hub (Damon, 2026-10-28: rather than
+// NOTE: Skip, or Go to Home once they are set up - Home, in this tab on this session, being the hub (2026-10-28: rather than
 // the chat); its Needs you, and My account, say if the keys still need setting up.
 function do_keys_step_end( )
 {

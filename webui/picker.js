@@ -3,7 +3,7 @@
 // Distributed under the MIT/X11 software license, please refer to the file license.txt
 // in the root project directory or http://www.opensource.org/licenses/mit-license.php.
 
-// NOTE: The people picker (Damon, 2026-10-27: the invitee list had grown cluttered) - one chooser of people for any page: those
+// NOTE: The people picker (2026-10-27: the invitee list had grown cluttered) - one chooser of people for any page: those
 // chosen shown as chips in a field, and a popup list of everyone below it, a search at the top and a tick for each. In the
 // search, Enter with the list narrowed to one person chooses them and closes it; the arrow keys move down into the list and
 // through it; Space ticks; Enter on the list, Done or Escape close it. Each row is a "label.chat-recipient" holding an
@@ -14,7 +14,7 @@
 //    var picker = people_picker( host, { list_id: "...", add_id: "...", none_text: "...", done_id: "...", on_change: f } );
 //    picker.set_people( [ { name: "verify-a", note: "conversation open" } ] );  picker.chosen( );  picker.reset( );
 //
-// "picker.set_single( true )" makes it a choice of one person (Ian, 2026-10-30: a direct message is with one person - "otherwise
+// "picker.set_single( true )" makes it a choice of one person (2026-10-30: a direct message is with one person - "otherwise
 // it's a normal room"): choosing someone replaces whoever was chosen, and closes the list.
 const c_picker_hint = "↑ ↓ move · Space ticks · Enter done";
 const c_picker_single_hint = "↑ ↓ move · Space or Enter chooses";
@@ -122,7 +122,7 @@ function people_picker( host, options )
       return picker.boxes( ).filter( function( box ) { return box.checked; } ).map( function( box ) { return box.value; } );
    };
 
-   // NOTE: "Everyone" offered - ticking everyone who can be chosen, those the search hides too (Damon, 2026-09-28: "Invite
+   // NOTE: "Everyone" offered - ticking everyone who can be chosen, those the search hides too (2026-09-28: "Invite
    // everyone"). Only in a choice of any number, and only while someone is left to tick.
    picker.set_everyone = function( offer )
    {

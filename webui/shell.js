@@ -4,11 +4,11 @@
 // license.txt in the root project directory or
 // http://www.opensource.org/licenses/mit-license.php.
 
-// NOTE: The shell an app's pages share (Damon, 2026-10-26: consistency across the apps) - "shell.css". Each page builds its own
+// NOTE: The shell an app's pages share (2026-10-26: consistency across the apps) - "shell.css". Each page builds its own
 // into the same markup: a side menu ("shell_rail") of the apps and the page's sections, with who is signed in; a top bar with the
 // menu's button ("rail_open"); on a phone the menu a drawer over a scrim ("rail_scrim"), its button marked when a section in it needs
 // you ("shell_attention( )"), and the apps a bar along the bottom ("shell_bottombar"). Moved out of Home for My account. The sections
-// were chips under a phone's top bar too, until they scrolled sideways (Damon, 2026-10-28) - the menu has them.
+// were chips under a phone's top bar too, until they scrolled sideways (2026-10-28) - the menu has them.
 
 const c_shell_icons = {
    home: "M3 10.5 12 3l9 7.5V20a1 1 0 0 1-1 1h-5v-6h-6v6H4a1 1 0 0 1-1-1z",
@@ -175,7 +175,7 @@ function shell_close_rail( )
 }
 
 // NOTE: The menu's button on a phone marked while a section in the menu has a badge - Your keys, Health - as the sections are seen
-// only in the menu there (Damon, 2026-10-28): amber, red when one is a problem, and said to a screen reader. The apps' badges are
+// only in the menu there (2026-10-28): amber, red when one is a problem, and said to a screen reader. The apps' badges are
 // left out - the chat's count is in the bottom bar. Kept up by watching the badges, so nothing showing one need say so.
 function shell_attention( )
 {

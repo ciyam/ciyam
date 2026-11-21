@@ -24,7 +24,7 @@ const c_edited_marker = "*";
 
 const c_private_marker = "!";
 
-// NOTE: Pinned messages (Ian, 2026-10-14) - the sender with "!" in front; at most eight in a room.
+// NOTE: Pinned messages (2026-10-14) - the sender with "!" in front; at most eight in a room.
 const c_pinned_marker = "!";
 const c_most_pinned = 8;
 
@@ -33,7 +33,7 @@ const c_posts_any = "any";
 const c_posts_own = "own";
 const c_posts_none = "none";
 
-// NOTE: Reactions only (Ian, 2026-10-31: "REACT" - how a poll would be opened): nothing posted but reactions, and those not by
+// NOTE: Reactions only (2026-10-31: "REACT" - how a poll would be opened): nothing posted but reactions, and those not by
 // the owner - "?" after the total.
 const c_posts_react = "react";
 
@@ -48,8 +48,8 @@ const c_room_closed = "closed";
 
 const c_room_closing_seconds = 3600;
 
-// NOTE: Room 0000001 - Ian's RESERVED_ROOM, named "Admin" (until 2026-10-11 "Administration", and here the "starting
-// room"): invitations and admin's messages; only admin sees it as a room. Ian's STARTING_ROOM is now General, 0000002,
+// NOTE: Room 0000001 - the server's RESERVED_ROOM, named "Admin" (until 2026-10-11 "Administration", and here the "starting
+// room"): invitations and admin's messages; only admin sees it as a room. The server's STARTING_ROOM is now General, 0000002,
 // which everyone joins - an ordinary room to the client.
 const c_reserved_room = "0000001";
 const c_starting_room = "0000002";
@@ -106,7 +106,7 @@ function parse_members( line )
 
       // NOTE: With "extra=TIME" the count is followed by ".<unique>" - the last message this
       // user's reads have returned, so everything up to and including it has reached them.
-      // With "extra=ENTIRE" (Ian, 2026-11-11) that is followed by "#<keyid>" - the first eight
+      // With "extra=ENTIRE" (2026-11-11) that is followed by "#<keyid>" - the first eight
       // hex digits of the SHA-256 of "room_key:" and the room key they last read with - or is
       // ".#<keyid>" alone when there is no read point yet.
       var dot = entry.indexOf( ".", pos );
@@ -189,7 +189,7 @@ function parse_system_event( text )
    }
    // NOTE: Once an invitation is joined or declined the server rewrites it as ":ignore (invite
    // for <room> was processed)", and a decline also posts ":reject (invite for <room> was
-   // rejected)" - Ian, 2026-09-26. Both keep the room number, so it is picked out here.
+   // rejected)" - 2026-09-26. Both keep the room number, so it is picked out here.
    else if( ( event.verb === "ignore" ) || ( event.verb === "reject" ) )
    {
       var about = event.detail.match( /invite for (\d{7})/ );
@@ -231,7 +231,7 @@ function parse_system_event( text )
    return event;
 }
 
-// NOTE: Ian's three-character prefixes (2026-11-05, "prefixes.cin"): after the "_" the server takes off, a message's kind - " "
+// NOTE: the server's three-character prefixes (2026-11-05, "prefixes.cin"): after the "_" the server takes off, a message's kind - " "
 // ordinary, "!" private, ":" system, "?" a prompt, "/" reserved - and then " ", or "X" when it is encrypted, where there was the
 // kind alone before. Read back to that one character, an encrypted message's text starting "X\r" as the chat seals it
 // ("chat_seal_with( )", the server taking the "X\r" off as it is posted), so nothing after the reading changes. A prompt is read
@@ -251,7 +251,7 @@ function unprefixed_remainder( remainder )
    return kind + ( ( flag === "X" ) ? "X\r" : "" ) + value.substring( 2 );
 }
 
-// NOTE: A sender "_<sender>_<other>_" (Ian, 2026-11-06 - a private message posted "for=~<other>") as { sender, other }, or null.
+// NOTE: A sender "_<sender>_<other>_" (2026-11-06 - a private message posted "for=~<other>") as { sender, other }, or null.
 // No username has an underscore ("c_username_pattern"), so the two cannot be mistaken.
 const c_paired_sender = /^_([a-z][-a-z0-9]*)_([a-z][-a-z0-9]*)_$/;
 
@@ -273,8 +273,8 @@ function paired_for( person )
 
 // NOTE: Every non-member line is "<unique> <sender> <remainder>". The first
 // character of the remainder says what kind of line it is - a space for
-// ordinary chat (the stripped "_" marker), "!" for a private message (Ian,
-// 2026-09-27 - before then a private message had a space too), a colon for a
+// ordinary chat (the stripped "_" marker), "!" for a private message
+// (2026-09-27 - before then a private message had a space too), a colon for a
 // system event and a hash for an entrance room listing.
 function parse_message_line( line )
 {
@@ -302,7 +302,7 @@ function parse_message_line( line )
 
    var remainder = rest.substring( pos + 1 );
 
-   // NOTE: Pinned (Ian, 2026-10-14) - "!" before the sender, and "*" after it as well when it was edited too ("!name*").
+   // NOTE: Pinned (2026-10-14) - "!" before the sender, and "*" after it as well when it was edited too ("!name*").
    var pinned = false;
 
    if( sender.charAt( 0 ) === c_pinned_marker )
@@ -319,14 +319,14 @@ function parse_message_line( line )
       sender = sender.substring( 0, sender.length - 1 );
    }
 
-   // NOTE: Between two, as a direct message is, in the room (Ian, 2026-11-06: posted "for=~<other>") - a room key's note or its
+   // NOTE: Between two, as a direct message is, in the room (2026-11-06: posted "for=~<other>") - a room key's note or its
    // receipt, the sender "_<sender>_<other>_": both kept, as the two's secret opens it.
    var pair = paired_sender( sender );
 
    if( pair )
       sender = pair.sender;
 
-   // NOTE: Reactions after a tab - a tab in the text comes as "\t", so one as it is can only be theirs (2026-10-29, with Ian);
+   // NOTE: Reactions after a tab - a tab in the text comes as "\t", so one as it is can only be theirs (2026-10-29);
    // then the text's escapes undone ("unescape_message_text( )").
    var tab = remainder.indexOf( "\t" );
 
@@ -380,7 +380,7 @@ function parse_message_line( line )
    if( pair )
       entry.pair = pair.other;
 
-   // NOTE: Only spaces - deleted (Ian, 2026-10-15): there is no deleting yet, so a message is edited to spaces, which the
+   // NOTE: Only spaces - deleted (2026-10-15): there is no deleting yet, so a message is edited to spaces, which the
    // node takes (a new one of only spaces it refuses).
    if( entry.text.trim( ) === "" )
       entry.deleted = true;
@@ -412,7 +412,7 @@ function parse_room_entry( unique, owner, remainder )
 
       var total = ( counts.length > 1 ) ? counts[ 1 ] : "";
 
-      // NOTE: A room with a close time has "@<unix seconds>" after the total and its marker (Ian, 2026-10-30):
+      // NOTE: A room with a close time has "@<unix seconds>" after the total and its marker (2026-10-30):
       // "0/5@1793341887", "3/5!@1793341887".
       var at = total.indexOf( c_room_closes_marker );
 
@@ -459,14 +459,14 @@ function parse_room_entry( unique, owner, remainder )
 // A ";" too (found 2026-10-15): the server splits a request's options on it, so "a; b" was
 // stored as "a" - every message with a semicolon was cut short there. After a backslash it is
 // kept as typed ("semicolon_probe.js").
-// A carriage return never goes: a line break goes as "\n" alone, as a CR at a message's start marks its kind (Ian,
-// 2026-10-20 - "message_prefix( )"). Browsers already give a text box's breaks as "\n"; this makes it certain.
+// A carriage return never goes: a line break goes as "\n" alone, as a CR at a message's start marks its kind
+// (2026-10-20 - "message_prefix( )"). Browsers already give a text box's breaks as "\n"; this makes it certain.
 function escape_message_text( text )
 {
    return String( text || "" ).replace( /\r\n?/g, "\n" ).replace( /[\\;]/g, "\\$&" );
 }
 
-// NOTE: A message's kind from its start - a letter and a carriage return (Ian, 2026-10-20): "X\r" an X25519 encrypted message.
+// NOTE: A message's kind from its start - a letter and a carriage return (2026-10-20): "X\r" an X25519 encrypted message.
 // A CR has no other use in a message, so more letters can follow. "" for an ordinary message.
 function message_prefix( text )
 {
@@ -475,7 +475,7 @@ function message_prefix( text )
    return m ? m[ 1 ] : "";
 }
 
-// NOTE: An encrypted message as a QR code (Ian, 2026-10-30: one that cannot be read here, for the offline device - where it may
+// NOTE: An encrypted message as a QR code (2026-10-30: one that cannot be read here, for the offline device - where it may
 // be). Its bytes - salt, ciphertext, HMAC - as Base45 (RFC 9285: two bytes as three of the 45 characters a QR code's
 // alphanumeric mode takes, so it holds about as much as raw bytes would, and reads back exactly - tried 2026-10-21, where raw
 // bytes never did), after "X:" so it is known for what it is. Read back to the message as kept, for the reverse.
@@ -587,7 +587,7 @@ function sealed_from_qr( text )
    return "X\r" + salt + "\r" + hex.substring( salt.length, hex.length - hmac.length ) + "\r" + hmac;
 }
 
-// NOTE: A QR code scanned in to be posted (Ian, 2026-11-01: one made on the offline device) - { sealed } the encrypted message as
+// NOTE: A QR code scanned in to be posted (2026-11-01: one made on the offline device) - { sealed } the encrypted message as
 // kept, or { problem } to say.
 function scanned_message( text )
 {
@@ -620,7 +620,7 @@ function message_plain_text( text )
    return message_unreadable_label( text ) || strip_format( text );
 }
 
-// NOTE: A message's words split at its web addresses (Damon, 2026-09-28; the rules in "Room Joining and Links" in the vault) -
+// NOTE: A message's words split at its web addresses (2026-09-28; the rules in "Room Joining and Links" in the vault) -
 // pieces of "{ text, url }", "url" being "" for words. Only "http" and "https", and only as "URL" reads them; a full stop, comma
 // or quote after one is not part of it, nor a closing bracket without its opening one (Wikipedia's "..._(x)" keeps its own). One
 // with a name before its host ("https://bank.example@other.example") stays words, as it reads as somewhere it is not. It is
@@ -705,10 +705,10 @@ function message_links( text )
    return pieces;
 }
 
-// NOTE: Whether a message is marked as not encrypted - a warning sign before it, as "irc.cin" marks one (Ian, 2026-10-26: as
+// NOTE: Whether a message is marked as not encrypted - a warning sign before it, as "irc.cin" marks one (2026-10-26: as
 // nearly every message should be encrypted, only those that aren't are marked, as Element does). Only where it could have been -
 // "keyed", a room with a key here, or a direct message with one for the other person: a room with none says so once, under its
-// name (Damon, 2026-10-28: a sign before every message was clutter). Not in the entrance room, nor a message of only spaces; an
+// name (2026-10-28: a sign before every message was clutter). Not in the entrance room, nor a message of only spaces; an
 // encrypted one ("X\r") or one of another kind is never marked.
 function is_unencrypted_message( text, room, keyed )
 {
@@ -722,7 +722,7 @@ function is_unencrypted_message( text, room, keyed )
 
 // NOTE: Whether the message box keeps the focus once a message is sent - so a follow-up can be typed
 // straight away, on a computer. On a phone the focus keeps the on-screen keyboard up, over half the
-// screen and the message just sent (Ian, 2026-10-07), so there it lets go. "coarse_pointer" - a touch
+// screen and the message just sent (2026-10-07), so there it lets go. "coarse_pointer" - a touch
 // screen as the main pointer, the browser's "(pointer: coarse)" - stands in for an on-screen keyboard.
 function keeps_focus_after_send( coarse_pointer )
 {
@@ -733,7 +733,7 @@ function keeps_focus_after_send( coarse_pointer )
 // 2026-10-01 ("c_default_max_deque_item_size" in "ciyam_variables.cpp", 8000 before), which
 // holds the text encoded with the sender's name - measured at 2233 bytes of text for "admin"
 // and 2230 for "verify-a", a byte less for each letter of the name, so 2226 for the longest.
-// Ian lowered it so a thousand rooms fit in memory, keeping his reserve in the figure itself,
+// The server lowered it so a thousand rooms fit in memory, keeping its reserve in the figure itself,
 // so the chat stops just under it (QST-004). It is bytes, not characters: "é" is two and most
 // emoji four.
 const c_max_message_bytes = 2200;
@@ -748,7 +748,7 @@ function message_bytes( text )
    return unescape( encodeURIComponent( value ) ).length;
 }
 
-// NOTE: A message comes as one line, its text escaped by the web session (2026-10-29, agreed with Ian - the text and JSON
+// NOTE: A message comes as one line, its text escaped by the web session (2026-10-29, agreed - the text and JSON
 // formats alike): "\\" a backslash, "\n" a line break, "\r" a carriage return and "\t" a tab. Nothing else follows a backslash;
 // were it to, it is kept as it came.
 const c_message_escapes = { "\\": "\\", "n": "\n", "r": "\r", "t": "\t" };
@@ -800,7 +800,7 @@ function parse_fetch_response( response )
       {
          result.messages.push( entry );
 
-         // NOTE: Every read of a room returns its pinned messages first (Ian, 2026-10-14) - the room's whole pinned set,
+         // NOTE: Every read of a room returns its pinned messages first (2026-10-14) - the room's whole pinned set,
          // each time, so they are not news.
          if( entry.pinned )
             result.pinned.push( entry );
@@ -852,7 +852,7 @@ function pair_private_copies( messages )
 
 // NOTE: The small label on a private message. A copy the user sent says who it went to;
 // one they received can only say it was sent to them - the server does not say who else.
-// NOTE: Who it is to, beside the crossed-out eye - the amber and the eye say private (Damon, 2026-10-28: "private ·" said it twice).
+// NOTE: Who it is to, beside the crossed-out eye - the amber and the eye say private (2026-10-28: "private ·" said it twice).
 function private_label( entry )
 {
    if( entry.recipients && entry.recipients.length )
@@ -862,12 +862,12 @@ function private_label( entry )
    return { text: "to you", title: "Private - sent to you, not to the whole room" };
 }
 
-// NOTE: What the message box says about who will see what is typed - Damon, 2026-09-28: a
+// NOTE: What the message box says about who will see what is typed - 2026-09-28: a
 // private mode that stays on after sending is only safe if it cannot be missed. Private is
 // shown by colour and by words together - "Private to" and "Send privately" - never colour
 // alone. Editing a private message is private too, and keeps "Save edit".
 //
-// "send_short" is for a phone, where "Send privately" would squeeze the box - Damon,
+// "send_short" is for a phone, where "Send privately" would squeeze the box -
 // 2026-09-28: there it is just "Send", the amber and the heading still saying private.
 function composer_mode( recipients, editing, edit_private )
 {
@@ -909,7 +909,7 @@ function arrived_after_timeout( rows, pending )
 }
 
 // NOTE: The message Up edits from an empty message box - the newest of the person's own the conversation shows, as
-// Element does (Ian, 2026-10-15). "rows" are { unique, editable, text, private }, oldest first; null when there is none.
+// Element does (2026-10-15). "rows" are { unique, editable, text, private }, oldest first; null when there is none.
 function last_editable( rows )
 {
    for( var i = ( rows || [ ] ).length - 1; i >= 0; i-- )
@@ -921,7 +921,7 @@ function last_editable( rows )
    return null;
 }
 
-// NOTE: An edit saved as it was opened - both as they would be sent - so nothing need be (Ian, 2026-10-31). Space at either end
+// NOTE: An edit saved as it was opened - both as they would be sent - so nothing need be (2026-10-31). Space at either end
 // does not count, as the box's own is not sent.
 function edit_unchanged( original, text )
 {
@@ -929,15 +929,15 @@ function edit_unchanged( original, text )
 }
 
 // NOTE: The "for" value that edits a message: its unique, with "!" in front for a private one
-// (Ian, 2026-09-28). The server keeps public and private apart - an edit must say which, and
+// (2026-09-28). The server keeps public and private apart - an edit must say which, and
 // the wrong one is refused ("Source message must not be modified to or from private.").
 function edit_for_value( unique, is_private )
 {
    return ( is_private ? c_private_marker : "" ) + unique;
 }
 
-// NOTE: Adding the sender to "for" is how they keep a copy of what they sent (Ian,
-// 2026-09-27) - otherwise they get only the ":issued" receipt.
+// NOTE: Adding the sender to "for" is how they keep a copy of what they sent
+// (2026-09-27) - otherwise they get only the ":issued" receipt.
 function with_sender( recipients, sender )
 {
    var list = ( recipients || [ ] ).slice( );
@@ -1109,7 +1109,7 @@ function day_label( unique, p_now )
    return c_weekdays_long[ when.getDay( ) ] + " " + date_text( when );
 }
 
-// NOTE: Days as Ian prefers them (2026-10-31: yyyy-mm-dd, "becoming a more widely accepted global standard") - the same
+// NOTE: Days as yyyy-mm-dd (2026-10-31: "becoming a more widely accepted global standard") - the same
 // wherever the browser is, its weekdays included.
 const c_weekdays_long = [ "Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday" ];
 const c_weekdays_short = [ "Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat" ];
@@ -1127,7 +1127,7 @@ function unix_label( seconds )
    return date_text( when ) + " " + when_pad( when.getHours( ) ) + ":" + when_pad( when.getMinutes( ) );
 }
 
-// NOTE: A room's close time (Unix seconds) against now - "" when it has none, "closing" in its last hour (as Ian's
+// NOTE: A room's close time (Unix seconds) against now - "" when it has none, "closing" in its last hour (as the console's
 // "irc.cin" shows "[CLOSING]"), "closed" from then on. "p_now" is injectable for the tests.
 function room_close_state( closes, p_now )
 {
@@ -1197,9 +1197,9 @@ function close_time_from_input( value )
    return Math.floor( when.getTime( ) / 1000 );
 }
 
-// NOTE: The day and time picker ("when_picker.js" - Damon, 2026-10-31: the browser's own could not take the Select Ian asked
+// NOTE: The day and time picker ("when_picker.js" - 2026-10-31: the browser's own could not take the Select asked
 // for). Its value is a "datetime-local" field's ("2026-11-06T17:00", local time), so "close_time_from_input( )" reads it; it
-// shows days as Ian prefers (2026-10-31: yyyy-mm-dd, "becoming a more widely accepted global standard"); weeks start on Monday.
+// shows days as yyyy-mm-dd (2026-10-31: "becoming a more widely accepted global standard"); weeks start on Monday.
 const c_when_weekdays = [ "Mo", "Tu", "We", "Th", "Fr", "Sa", "Su" ];
 
 const c_when_months = [ "January", "February", "March", "April", "May", "June", "July", "August", "September", "October",
@@ -1376,7 +1376,7 @@ function is_reserved_room( room )
 //  - the reserved room is kept for invitations and admin messages
 //  - a room may be set to owner-only or locked with the "posts" option
 //
-// And a room past its close time (Ian, 2026-10-30) takes nothing from anyone, admin included.
+// And a room past its close time (2026-10-30) takes nothing from anyone, admin included.
 function posting_status( room, entry, username, is_admin, p_now )
 {
    if( is_entrance_room( room ) )
@@ -1393,7 +1393,7 @@ function posting_status( room, entry, username, is_admin, p_now )
    if( posts === c_posts_none )
       return { can_post: false, locked: true, reason: "This room is locked - nobody can post." };
 
-   // NOTE: Nothing posted, edited or pinned - only reactions, and none by the owner, whose script refuses them (Ian, 2026-10-31).
+   // NOTE: Nothing posted, edited or pinned - only reactions, and none by the owner, whose script refuses them (2026-10-31).
    if( posts === c_posts_react )
    {
       if( ( ( entry && entry.owner ) ? entry.owner : "" ) === username )
@@ -1414,7 +1414,7 @@ function posting_status( room, entry, username, is_admin, p_now )
    return { can_post: true, reason: "" };
 }
 
-// NOTE: Read markers - which message each member has read up to, from "extra=TIME". Since Ian's
+// NOTE: Read markers - which message each member has read up to, from "extra=TIME". Since the server's
 // change of 2026-09-30 a read point is the unique of the last message that member's read returned
 // (it was the time of the read), so they have read everything up to and including it, and their
 // marker goes under the last message (or notice) at or before it. The user's own is left out, as
@@ -1450,7 +1450,7 @@ function seen_by( uniques, members, me )
    return marks;
 }
 
-// ---- A quieter conversation (Damon, 2026-10-28: centred notices among left-aligned messages, every message with its own time and
+// ---- A quieter conversation (2026-10-28: centred notices among left-aligned messages, every message with its own time and
 // name, "Seen by" lines between them - cluttered)
 
 // NOTE: How long apart two of one person's messages may be and still be drawn as one run - the name and time on the first only.
@@ -1481,7 +1481,7 @@ function notice_run( names, verb, most )
    return { shown: shown, others: others, text: text };
 }
 
-// NOTE: "Seen by" as small initials at the end of the row read up to (Damon, 2026-10-28: a line of its own between messages) - the
+// NOTE: "Seen by" as small initials at the end of the row read up to (2026-10-28: a line of its own between messages) - the
 // first "most", then how many more; the whole said in "label".
 function seen_chips( names, most )
 {
@@ -1492,7 +1492,7 @@ function seen_chips( names, most )
    return { shown: shown, more: list.length - shown.length, label: ( list.length > 0 ) ? "Seen by " + name_list( list ) : "" };
 }
 
-// NOTE: Reactions (Ian, 2026-10-28 and 29) - one of ten, one each on someone else's message: the same again takes it off, another
+// NOTE: Reactions (2026-10-28 and 29) - one of ten, one each on someone else's message: the same again takes it off, another
 // replaces it. A web session reads them as the node keeps them: a reaction's two digits, then each person who gave it as six hex of
 // the SHA-256 of their name from the eleventh character, an "x" after each, and an "o" between reactions - "014b573fx159e43xo02…".
 // Hex has no "o" and no "x", so they cannot be mistaken.
@@ -1570,18 +1570,18 @@ function apply_reaction( reactions, code, my_short )
    return kept.sort( function( a, b ) { return ( a.code < b.code ) ? -1 : ( ( a.code > b.code ) ? 1 : 0 ); } );
 }
 
-// NOTE: A reaction is an edit of someone else's message to its two digits (Ian, 2026-10-28; a space before them until his
+// NOTE: A reaction is an edit of someone else's message to its two digits (2026-10-28; a space before them until the
 // three-character prefixes, 2026-11-05 - the server knows one by its length, the prefix and the digits).
 function reaction_options( unique, code )
 {
    return "for=" + unique + ";text=" + code;
 }
 
-// NOTE: Polls (Ian, 2026-10-31: everyone joins, the question is pinned, a close set, then reactions only - the poll itself all in
+// NOTE: Polls (2026-10-31: everyone joins, the question is pinned, a close set, then reactions only - the poll itself all in
 // the client, so it can be encrypted). A poll is an ordinary message - "📊 <question>", then an option a line, "A) ...", "B) ..."
 // - so it reads as it is anywhere. A vote is a reaction to it, so one each: option A's the reaction "00", B's "01" and so on. The
-// reactions' emoji are not shown for them (Damon, 2026-10-31: a serious question would not suit them); Ian's console still shows
-// the votes as them, until there are reactions for polls of their own (keycap numbers - to suggest to him).
+// reactions' emoji are not shown for them (2026-10-31: a serious question would not suit them); the console still shows
+// the votes as them, until there are reactions for polls of their own (keycap numbers - to suggest for the server).
 const c_poll_marker = "📊";
 
 const c_poll_letters = [ "A", "B", "C", "D", "E", "F", "G", "H", "I", "J" ];
@@ -1616,7 +1616,7 @@ function poll_problem( question, options )
    return "";
 }
 
-// NOTE: What is wrong with each part of the poll dialog, in the order they are shown (Damon, 2026-11-04: filled in from the top, not
+// NOTE: What is wrong with each part of the poll dialog, in the order they are shown (2026-11-04: filled in from the top, not
 // every part said what it lacked, and a room's name taken out was never said) - { question, options, voters, name, closes }, each
 // "" if nothing. "closes" Unix seconds or null; "now" a Date; "room" null in an open room, or { chosen: <how many vote>, name } for
 // a poll with a room of its own.
@@ -1667,7 +1667,7 @@ function poll_text( question, options )
 }
 
 // NOTE: A poll as it is posted - its text as sent (escaped, or as sealed) after "P\r", which the web session takes off as it sends
-// it with Ian's prompt prefix ("_? ", or "_?X" when sealed - Ian, 2026-11-07: polls went as ordinary messages, so his console
+// it with the console's prompt prefix ("_? ", or "_?X" when sealed - 2026-11-07: polls went as ordinary messages, so the console
 // showed reactions rather than its options). Read back as an ordinary message ("unprefixed_remainder( )").
 const c_prompt_marker = "P\r";
 
@@ -1737,7 +1737,7 @@ function poll_results( poll, reactions, my_short )
    return { options: options, total: total, votes: total + ( ( total === 1 ) ? " vote" : " votes" ) };
 }
 
-// NOTE: Quick choices for when voting closes (Damon, 2026-11-03, the poll review: only a full calendar, which ran off the dialog) -
+// NOTE: Quick choices for when voting closes (2026-11-03, the poll review: only a full calendar, which ran off the dialog) -
 // in an hour, at five today while that is an hour off or more, at nine tomorrow, and in a week; "now" a Date. Each { key, label,
 // unix }, an hour and a week rounded up to five minutes.
 function poll_close_choices( now )
@@ -1871,7 +1871,7 @@ function poll_outcome( results )
     : "A tie between " + name_list( leading.map( function( option ) { return option.label; } ) );
 }
 
-// NOTE: The node refusing a message while it handles another (Ian's "@irc_lock", "a658ef5b", 2026-10-30) - one at a time, the next
+// NOTE: The node refusing a message while it handles another (the server's "@irc_lock", "a658ef5b", 2026-10-30) - one at a time, the next
 // refused rather than kept waiting; the chat tries it once more ("watch_timeouts( )").
 // The node's own error only - a message's answer brings the room's new messages, and one may say the same words (found by review).
 function is_irc_lock_refusal( response )
@@ -1880,15 +1880,15 @@ function is_irc_lock_refusal( response )
 }
 
 // NOTE: How a message is drawn, but for its reactions (drawn on their own) - so a room read whole again redraws only a message
-// someone has edited or deleted since (Ian, 2026-10-29: a poll brings only new messages).
+// someone has edited or deleted since (2026-10-29: a poll brings only new messages).
 function message_state( entry )
 {
    return ( entry.edited ? "*" : "" ) + ( entry.deleted ? "-" : "" ) + ( entry.pinned ? "!" : "" ) + " " + ( entry.text || "" );
 }
 
-// NOTE: Only someone else's ordinary message, not deleted, nor a system line. One for some only too (Damon, 2026-11-05) - the node gives
+// NOTE: Only someone else's ordinary message, not deleted, nor a system line. One for some only too (2026-11-05) - the node gives
 // its reactions only with it, so only those it is for see them ("private_react_probe.js": a third member saw neither). Not one between
-// two as a direct message is (Ian, 2026-11-06: a room key's note or receipt - neither edited nor reacted to).
+// two as a direct message is (2026-11-06: a room key's note or receipt - neither edited nor reacted to).
 function can_react( entry, me )
 {
    return !!entry && ( entry.kind === c_kind_chat ) && ( me !== "" ) && ( entry.sender !== me ) && !entry.deleted && !entry.pair;
@@ -1909,7 +1909,7 @@ function merge_new_messages( held, fresh )
 }
 
 // NOTE: When a read of only what is new is not enough, and the Admin room must be read whole
-// ("from=0") - Ian's suggestion, 2026-09-27. Two cases:
+// ("from=0") - suggested 2026-09-27. Two cases:
 //
 //   - nothing new came back, though its message count moved - something else on this device
 //     (the console, another tab) read it first and moved the server's "new" point past it
@@ -1954,7 +1954,7 @@ function can_change_posting( room, entry, username, is_admin )
 }
 
 // NOTE: Whether this user may set or bring forward a room's close time - its owner or admin, as for posting, but not for
-// General (Ian refuses "This room may not be closed.") nor a direct message ("A private messages room may not be
+// General (the server refuses "This room may not be closed.") nor a direct message ("A private messages room may not be
 // changed."), and not once it has closed.
 function can_close_room( room, entry, username, is_admin, is_dm, p_now )
 {
@@ -1964,9 +1964,9 @@ function can_close_room( room, entry, username, is_admin, is_dm, p_now )
    return room_close_state( entry.closes, p_now ) !== c_room_closed;
 }
 
-// NOTE: Whether this user may leave a room (Ian, 2026-10-12: "I can't seem to find any UI to leave a room"). Not the
-// entrance, nor the Admin room - it carries every invitation - nor a room they own: Ian thinks leaving your own room is
-// probably wrong, and it would be left with nobody to look after it. General can be left since his change of 2026-10-12.
+// NOTE: Whether this user may leave a room (2026-10-12: "I can't seem to find any UI to leave a room"). Not the
+// entrance, nor the Admin room - it carries every invitation - nor a room they own: leaving your own room is thought
+// probably wrong, and it would be left with nobody to look after it. General can be left since the server's change of 2026-10-12.
 function can_leave_room( room, entry, username )
 {
    if( !entry || is_entrance_room( room ) || is_reserved_room( room ) )
@@ -2112,7 +2112,7 @@ function describe_event( event, label )
 
       case "assign":
       {
-         // NOTE: A close before Ian's own notice for it (2026-10-31) was posted as one of these - "assign '' to '~<unix>'".
+         // NOTE: A close before the server's own notice for it (2026-10-31) was posted as one of these - "assign '' to '~<unix>'".
          var old_close = String( event.to_name || "" ).match( /^~([0-9]+)$/ );
 
          if( old_close && !event.from_name )
@@ -2121,7 +2121,7 @@ function describe_event( event, label )
          return "handed the room from '" + ( event.from_name || "" ) + "' to '" + ( event.to_name || "" ) + "'";
       }
 
-      // NOTE: "_:closes set to <unix>" (Ian, 2026-10-31).
+      // NOTE: "_:closes set to <unix>" (2026-10-31).
       case "closes":
       {
          var closes = String( event.detail || "" ).match( /^set to ([0-9]+)$/ );
@@ -2194,11 +2194,11 @@ function visible_rooms( rooms, is_admin )
 // length fit, three with short names; a bigger group is an ordinary room until the server knows
 // what a direct message is.
 //
-// "Private (...)" since 2026-10-01, at Ian's suggestion - it reads better where a room name is
+// "Private (...)" since 2026-10-01, as suggested - it reads better where a room name is
 // shown as it is, in the terminal client. The first names, "DM ...", are still read, and a
 // conversation is matched by its people, not its exact name, so either form is found.
 //
-// Since 2026-10-05 a conversation between two people is Ian's server direct message instead: made
+// Since 2026-10-05 a conversation between two people is the server's direct message instead: made
 // as "." and the other's name, it is named "/<a>/<b>" by the server - the two names in order - and
 // only those two can be in it, nor can it be renamed. A group, which the server does not have yet,
 // keeps the prototype's "Private (...)" room. Both forms are read, matched by their people.
@@ -2285,7 +2285,7 @@ function dm_create_text( usernames, me )
    return dm_room_name( people );
 }
 
-// NOTE: Whether "me" may have a conversation with "person" - Ian, 2026-10-05: admin may neither start
+// NOTE: Whether "me" may have a conversation with "person" - 2026-10-05: admin may neither start
 // a private room nor be the other person in one, admin being for administration; and a conversation
 // with yourself is none. With "person" left out, whether "me" may message anyone at all.
 const c_admin_username = "admin";
@@ -2303,7 +2303,7 @@ function dm_allowed( me, person )
 
 // NOTE: What starting a conversation sends, from "dm_create_text( )"'s name - its people named with it,
 // so the one request makes the room and invites them. The server's own room takes a name only when it
-// is the one after the dot (Ian, 2026-10-05, "7c7cc6e7"), and that is the one "dm_create_text( )" gives.
+// is the one after the dot (2026-10-05, "7c7cc6e7"), and that is the one "dm_create_text( )" gives.
 function dm_create_options( name, others )
 {
    return "for=" + ( others || [ ] ).join( "," ) + ";text=" + name;
@@ -2334,7 +2334,7 @@ function dm_create_problem( reply, others )
    return text;
 }
 
-// NOTE: Encrypted direct messages (2026-10-25), as the console has them (Ian, 2026-10-24: "irc.cin" encrypts every message in
+// NOTE: Encrypted direct messages (2026-10-25), as the console has them (2026-10-24: "irc.cin" encrypts every message in
 // a direct message whose other person's public key it has). The other person in a direct message the server named ("/a/b",
 // which the console takes as one), or "" - for any other room, a group, or one "me" is not in.
 function dm_other_person( name, me )
@@ -2367,7 +2367,7 @@ function dm_encryption_note( other, keys, theirs )
    return "encrypted";
 }
 
-// NOTE: The same for a group's direct message (Damon, 2026-10-27: it said nothing, the warning signs the only sign) - with no one
+// NOTE: The same for a group's direct message (2026-10-27: it said nothing, the warning signs the only sign) - with no one
 // other person to share a key with, it takes a room key, sent to each of them in an encrypted direct message. "keyed": whether
 // this browser has one for it.
 function group_encryption_note( keys, keyed )
@@ -2384,9 +2384,9 @@ function group_encryption_note( keys, keyed )
    return keyed ? "encrypted with the room key" : "not encrypted - encrypt it in Chat Details";
 }
 
-// NOTE: Where a member's room key comes from, for a room without one here (Damon, 2026-11-02: "If the owner has a room key, they
+// NOTE: Where a member's room key comes from, for a room without one here (2026-11-02: "If the owner has a room key, they
 // can send it to you" did not say where it comes, nor that each needs the other's public key). Since 2026-11-08 it is passed as
-// soon as the owner has their contact code, joined or not (Ian). "room_owner" its owner's name ("the owner" if not known); "known"
+// soon as the owner has their contact code, joined or not. "room_owner" its owner's name ("the owner" if not known); "known"
 // whether their public key is here.
 function member_key_hint( room_owner, known )
 {
@@ -2398,7 +2398,7 @@ function member_key_hint( room_owner, known )
    return "A room key from " + name + " is passed to you once they have your contact code too, and you are asked to accept it";
 }
 
-// NOTE: The badge at the right of a room's bar and the row at the top of its details (Damon, 2026-11-02: in the line under the
+// NOTE: The badge at the right of a room's bar and the row at the top of its details (2026-11-02: in the line under the
 // name it was too easily missed) - from what "dm_encryption_note( )" or "group_encryption_note( )" said: null for none (the keys
 // still being read, or a room that cannot be encrypted), else { locked, label, detail } - "detail" who can read it, or why it is
 // not encrypted and what would encrypt it. "others": the other people in a direct message; "kind": "dm", "group" (a group's
@@ -2430,7 +2430,7 @@ function encryption_badge( note, others, kind, owner, room_owner, known )
    return { locked: false, label: "Not encrypted", detail: reason.charAt( 0 ).toUpperCase( ) + reason.substring( 1 ) + "." };
 }
 
-// NOTE: What would encrypt a conversation, offered in it as a button (Damon, 2026-11-05: the chat offering set up at a first direct
+// NOTE: What would encrypt a conversation, offered in it as a button (2026-11-05: the chat offering set up at a first direct
 // message, as a way to My account rather than a second copy of it) - from what "dm_encryption_note( )" or "group_encryption_note( )"
 // said. null when nothing on My account would; else { label, section, text } - the button's words, the section of My account it
 // opens, and the words of the bar that offers it.
@@ -2450,7 +2450,7 @@ function encryption_action( note )
    return null;
 }
 
-// NOTE: A member's state with the room key, for the owner (Damon, 2026-11-05) - as "chat_owner_send_keys( )" found it.
+// NOTE: A member's state with the room key, for the owner (2026-11-05) - as "chat_owner_send_keys( )" found it.
 function member_key_state_text( state )
 {
    return {
@@ -2466,7 +2466,7 @@ function member_key_state_text( state )
 // not taken for the one they had, which the node would otherwise go on showing.
 const c_no_room_key_id = "00000000";
 
-// NOTE: What a member's room key id says, for the owner (Ian, 2026-11-11 - the mark of 2026-11-09: each member's id shown on the
+// NOTE: What a member's room key id says, for the owner (2026-11-11 - the mark of 2026-11-09: each member's id shown on the
 // member line, "parse_members( )") - "has" the room's key now, "older" for another, "none" for none, or "" when theirs is not known.
 function member_key_by_id( member_key_id, current_id )
 {
@@ -2491,9 +2491,9 @@ function key_id_to_tell( me, my_id )
    return ( ( shown !== "" ) && ( shown !== c_no_room_key_id ) ) ? c_no_room_key_id : "";
 }
 
-// NOTE: What the dialog to exchange contact codes with "person" says (Damon, 2026-11-08: members far apart could not meet to scan
+// NOTE: What the dialog to exchange contact codes with "person" says (2026-11-08: members far apart could not meet to scan
 // each other's) - "have_theirs" whether their code is here already, "added" whether it has just been added. Sent another way the two
-// trust, as the node is never given anyone's public key (Ian, 2026-11-03).
+// trust, as the node is never given anyone's public key (2026-11-03).
 function contact_exchange_text( person, have_theirs, added )
 {
    if( added )
@@ -2508,7 +2508,7 @@ function contact_exchange_text( person, have_theirs, added )
     + " Then paste theirs here.";
 }
 
-// NOTE: Said to a room's owner as someone is found in it without their contact code here (Damon, 2026-11-08) - the way to it. Found
+// NOTE: Said to a room's owner as someone is found in it without their contact code here (2026-11-08) - the way to it. Found
 // as they join, or at a sign in long after, so not said as joining. Each of "needed" is { person, room_name }; all of them said in one,
 // as the rooms looked through together would otherwise each replace the last.
 function owner_codes_needed_text( needed )
@@ -2537,14 +2537,14 @@ function owner_codes_needed_text( needed )
    } ).join( ", " ) + " - from Room key in each room.";
 }
 
-// NOTE: The owner's plain note to a member without their contact code (Damon, 2026-11-05) - the room is encrypted, and what its key
+// NOTE: The owner's plain note to a member without their contact code (2026-11-05) - the room is encrypted, and what its key
 // needs; the member's chat knows the room is encrypted by it ("chat_member_keyless( )").
 function keyless_note_text( owner )
 {
    return "This room is encrypted with a room key - exchange contact codes with " + owner + " to be given it.";
 }
 
-// NOTE: Over a member's message box in an encrypted room without its key (Damon, 2026-11-05) - "known" whether the owner's contact
+// NOTE: Over a member's message box in an encrypted room without its key (2026-11-05) - "known" whether the owner's contact
 // code is here, so the key can be passed to them.
 function member_keyless_text( room_owner, known )
 {
@@ -2607,20 +2607,20 @@ function room_key_sent_text( outcomes )
    if( by.failed.length > 0 )
       parts.push( "Could not send it to " + name_list( by.failed ) + " - try again." );
 
-   // NOTE: Nobody but the owner yet (Damon having pressed Send before anyone was in it, 2026-11-03, and seen nothing come of it) -
+   // NOTE: Nobody but the owner yet (Send pressed before anyone was in it, 2026-11-03, and seen nothing come of it) -
    // those invited are sent it as they are ("chat_owner_send_keys( )").
    return ( parts.length > 0 ) ? parts.join( " " ) : "No one else is in it yet - each you invite is sent it.";
 }
 
-// NOTE: Room keys (Ian, 2026-10-25) - "irc.cin"'s "k" makes "<room>#<32 hex digits>" to send each member in an encrypted direct
+// NOTE: Room keys (2026-10-25) - "irc.cin"'s "k" makes "<room>#<32 hex digits>" to send each member in an encrypted direct
 // message, and "r" with it saves it; every message in that room is then sealed with the 32 digits as they are. Not for the
 // entrance or reserved rooms, nor a direct message (named "/..."), which uses the other person's public key.
 const c_room_key_pattern = /^([0-9]{7})#([0-9a-f]{32}|[0-9a-f]{64})$/;
 
-// NOTE: "k" makes 32 hex digits; the console takes any length as the key, and one of Ian's had 64 (2026-10-26) - so 64 too.
+// NOTE: "k" makes 32 hex digits; the console takes any length as the key, and one of the console's codes had 64 (2026-10-26) - so 64 too.
 const c_room_key_digits = /^([0-9a-f]{32}|[0-9a-f]{64})$/;
 
-// NOTE: A key at the start of a message, anything after it (Ian, 2026-10-26: "Text: [room#secret] *").
+// NOTE: A key at the start of a message, anything after it (2026-10-26: "Text: [room#secret] *").
 const c_room_key_leading = /^([0-9]{7})#([0-9a-fA-F]{64}|[0-9a-fA-F]{32})(?![0-9a-fA-F])/;
 
 function can_have_room_key( room, name )
@@ -2661,7 +2661,7 @@ function parse_room_key( text, room )
 
 // NOTE: The key for "room" in the direct message with its owner, as opened here - "opened" oldest first, each { sender, text }:
 // the newest from "owner", or "" for none. One this person removed ("removed", each "<room>#<key>", or its "mark_of( )" when one is
-// given - the chat keeps only marks: found by review, 2026-11-06) is not taken back by itself (Damon, 2026-11-02: a member who joined
+// given - the chat keeps only marks: found by review, 2026-11-06) is not taken back by itself (2026-11-02: a member who joined
 // and stayed in the room never had it - it was added only as the direct message was drawn).
 function owner_room_key( opened, owner, room, removed, mark_of )
 {
@@ -2683,8 +2683,8 @@ function owner_room_key( opened, owner, room, removed, mark_of )
    return found;
 }
 
-// NOTE: A member's receipt for a room's key, sent sealed in their direct message with its owner once the key is added (Ian's idea:
-// the message that carried the key deleted once each member has it; Damon, 2026-11-05: known by a receipt rather than by its being
+// NOTE: A member's receipt for a room's key, sent sealed in their direct message with its owner once the key is added (the idea:
+// the message that carried the key deleted once each member has it; 2026-11-05: known by a receipt rather than by its being
 // seen, which a browser without the keys also does). "mark" - the key's fingerprint, so a receipt is for that key only.
 const c_room_key_receipt = /^Room key for #([0-9]{7}) added \(([0-9a-f]{8})\)\.$/;
 
@@ -2729,7 +2729,7 @@ function owner_key_delivery( opened, owner, member, room, key, mark )
 }
 
 // NOTE: Whether a member who already has the room's key ("key", its fingerprint "mark") owes the owner a receipt all the same - a
-// note from "owner" there carrying it, and none from "me" naming it (Ian, 2026-11-07: after a restore from scratch the room's
+// note from "owner" there carrying it, and none from "me" naming it (2026-11-07: after a restore from scratch the room's
 // history is gone, so the owner passes the key again, and without a receipt counts the member as without it for good).
 function member_receipt_due( opened, owner, me, room, key, mark )
 {
@@ -2751,7 +2751,7 @@ function member_receipt_due( opened, owner, me, room, key, mark )
    return carried && !answered;
 }
 
-// NOTE: A room's key note or its receipt, opened, in words for the conversation (Damon, 2026-11-05 - passed in the room as a private
+// NOTE: A room's key note or its receipt, opened, in words for the conversation (2026-11-05 - passed in the room as a private
 // message, never shown as the key itself): "sender" sent it, "me" is reading it, "other" the one it is to when "me" sent it. "" for
 // any other message.
 function key_note_text( text, sender, me, other )
@@ -2767,8 +2767,8 @@ function key_note_text( text, sender, me, other )
    return "";
 }
 
-// NOTE: A message that starts with a room key - one shared in an encrypted direct message, perhaps with words after it (Ian,
-// 2026-10-26) - as { room, key }, or null.
+// NOTE: A message that starts with a room key - one shared in an encrypted direct message, perhaps with words after it
+// (2026-10-26) - as { room, key }, or null.
 function room_key_in_message( text )
 {
    var lead = c_room_key_leading.exec( String( text || "" ).trim( ) );
@@ -2776,7 +2776,7 @@ function room_key_in_message( text )
    return lead ? { room: lead[ 1 ], key: lead[ 2 ].toLowerCase( ) } : null;
 }
 
-// NOTE: A message that starts with a room key, the key cut short - its room, and its first and last four digits (Ian, 2026-10-27:
+// NOTE: A message that starts with a room key, the key cut short - its room, and its first and last four digits (2026-10-27:
 // not left on the screen for anyone looking over a shoulder). Any other message as it is.
 function room_key_masked( text )
 {
@@ -2791,7 +2791,7 @@ function room_key_masked( text )
    return lead[ 1 ] + "#" + key.substr( 0, 4 ) + "…" + key.substr( -4 ) + value.substring( lead[ 0 ].length );
 }
 
-// NOTE: The people picker ("picker.js", Damon, 2026-10-27) - whether a person is shown for what is typed in its search: their
+// NOTE: The people picker ("picker.js", 2026-10-27) - whether a person is shown for what is typed in its search: their
 // name holding it, in any case.
 function picker_matches( name, query )
 {
@@ -2800,7 +2800,7 @@ function picker_matches( name, query )
    return ( typed === "" ) || ( String( name || "" ).toLowerCase( ).indexOf( typed ) >= 0 );
 }
 
-// NOTE: Enter in the search, the list narrowed to one person, chooses them (Damon, 2026-10-27). "shown" - those the search
+// NOTE: Enter in the search, the list narrowed to one person, chooses them (2026-10-27). "shown" - those the search
 // shows, each { name, available }; "" unless exactly one, and one who can be chosen.
 function picker_enter_choice( shown )
 {
@@ -2819,7 +2819,7 @@ function picker_count_text( chosen, total )
 }
 
 // NOTE: Whether a message can be sealed - at most 1,000 bytes of it ("ciyam_secure_message.js", as "irc_extra.cin"'s
-// "MAX_TO_ENCRYPT" - 500 until Ian's "21ae2f5f", 2026-10-29).
+// "MAX_TO_ENCRYPT" - 500 until commit "21ae2f5f", 2026-10-29).
 const c_sealed_most_bytes = 1000;
 
 function sealed_too_long( text )
@@ -3164,7 +3164,7 @@ function badge_text( count )
 }
 
 // NOTE: A page's title with what waits in front of it - "(3) CIYAM Chat" - so a tab in the background shows it, as other
-// chat apps do (Damon, 2026-10-12). The badge's own cap; nothing waiting, the title alone.
+// chat apps do (2026-10-12). The badge's own cap; nothing waiting, the title alone.
 function page_title( title, count )
 {
    var waiting = badge_text( count );
@@ -3172,7 +3172,7 @@ function page_title( title, count )
    return ( waiting !== "" ) ? "(" + waiting + ") " + title : title;
 }
 
-// NOTE: What signing in is doing, as "ciyam.js"'s "report_progress( )" says it (Ian, 2026-10-25: a progress whilst it is
+// NOTE: What signing in is doing, as "ciyam.js"'s "report_progress( )" says it (2026-10-25: a progress whilst it is
 // hashing, or waiting) - the words, and how far along it is (0 to 1) when that is known, for a bar; null for none.
 function sign_in_progress( stage, value )
 {
@@ -3202,7 +3202,7 @@ function sign_in_progress( stage, value )
 // Level 0 cannot be saved; the rest are allowed, with the rating shown.
 //
 // Where "zxcvbn.min.js" has been read in (only where a password is chosen - "signin.js"), the rating is instead by how many
-// guesses it would take (Ian, 2026-10-23: "zxcvbn seems like a good option to add to the mix") - what decides how long it
+// guesses it would take (2026-10-23: "zxcvbn seems like a good option to add to the mix") - what decides how long it
 // would last, as every guess costs the same hardening. Under 10^8 is too easy to guess and cannot be saved (at 100,000 rounds
 // one graphics card makes about 10,000 guesses a second, so hours); each band after a hundred times harder, to Very Strong
 // past 10^14; with zxcvbn's own warning ("This is a top-100 common password") where it has one. These rules stay as they
@@ -3296,7 +3296,7 @@ function password_refusal( strength )
    return "That password is too easy to guess - choose a longer one, or Suggest one.";
 }
 
-// NOTE: A passphrase to offer (Ian, 2026-10-23: "a suggested passphrase of five words seems like a good idea") - "count"
+// NOTE: A passphrase to offer (2026-10-23: "a suggested passphrase of five words seems like a good idea") - "count"
 // words from the BIP39 list, each picked by eleven bits of a random 16-bit value ("random"), as the list is 2048 words, so
 // none is likelier than another: five are 55 bits. Joined by "-", which reads well and types anywhere.
 function suggested_passphrase( words, random, count )
@@ -3322,12 +3322,12 @@ function user_initial( name )
    return ( text === "" ) ? "?" : text.charAt( 0 ).toUpperCase( );
 }
 
-// NOTE: A sign in error in plain words. Ian's "connect" says "invalid or missing connect status"
+// NOTE: A sign in error in plain words. the server's "connect" says "invalid or missing connect status"
 // when the server's answer to signing in was not a session status (ISS-029); every other error
 // is already a sentence and is shown as it is.
 const c_connect_status_error = "invalid or missing connect status";
 
-// NOTE: A locked node lets people sign in (ISS-056, Ian's "1ccd62ee": a stray "x" in "web_session.cin" had refused every
+// NOTE: A locked node lets people sign in (ISS-056, commit "1ccd62ee": a stray "x" in "web_session.cin" had refused every
 // one), so its refusals are the node's own words like any other - "unable to start a web session" is a session that did
 // not start, and nothing to do with the lock (a node waiting on its chat refuses so too, 2026-10-13).
 function sign_in_error_text( error )
@@ -3347,9 +3347,9 @@ function sign_in_error_text( error )
    return text.replace( /^Error:\s*/, "" );
 }
 
-// NOTE: Recovering a node with the twelve words written down when it was set up (Ian, 2026-10-09: how the UI must do
+// NOTE: Recovering a node with the twelve words written down when it was set up (2026-10-09: how the UI must do
 // it when a PIN and password cannot be given) - offered by the shared sign in in every part of the node ("signin.js",
-// 2026-10-10; Home's alone before). The words become the node's entropy in the page - Ian's BIP39 library, which also
+// 2026-10-10; Home's alone before). The words become the node's entropy in the page - the BIP39 library, which also
 // says whether they fit together (their checksum); these say what else is wrong with them, in words.
 const c_recovery_words = 12;
 
@@ -3382,8 +3382,8 @@ function recovery_words_problem( words, wordlist )
    return "";
 }
 
-// NOTE: The words a box offers as it is typed in - those starting with what is typed, as an autocomplete does (Damon,
-// 2026-10-10: the browser's own list matched anywhere in a word), at most "limit". None once the word is whole and the
+// NOTE: The words a box offers as it is typed in - those starting with what is typed, as an autocomplete does
+// (2026-10-10: the browser's own list matched anywhere in a word), at most "limit". None once the word is whole and the
 // only one, or for nothing typed.
 function word_completions( typed, wordlist, limit )
 {
@@ -3483,7 +3483,7 @@ function words_entry_complete( value, wordlist )
 }
 
 // NOTE: The recovery cards' words - for a locked node (the sign in's "Can't sign in?"), or, "fresh", for a node not set up
-// that takes the place of one lost, failed or moved (Damon, 2026-10-13: setting up's "Recover a node from its twelve
+// that takes the place of one lost, failed or moved (2026-10-13: setting up's "Recover a node from its twelve
 // words"). There nothing can check the words - any twelve that fit together make a node - hence "caution"; and the
 // identity comes back, not the data.
 function recovery_texts( fresh )
@@ -3531,9 +3531,9 @@ function in_time_order( messages )
    } ).map( function( item ) { return item.entry; } );
 }
 
-// NOTE: Pinning is an edit to nothing but the prefix, which pins or unpins (Ian, 2026-10-14 - to a single space until his
+// NOTE: Pinning is an edit to nothing but the prefix, which pins or unpins (2026-10-14 - to a single space until the
 // three-character prefixes, 2026-11-05). Only ordinary messages - not private
-// ones, nor system events - and only by the room's owner, of anyone's message (Damon and Ian, 2026-10-30: anyone could pin
+// ones, nor system events - and only by the room's owner, of anyone's message (2026-10-30: anyone could pin
 // their own, in any room) - "can_pin( )".
 function pin_options( unique )
 {
@@ -3546,7 +3546,7 @@ function can_pin( entry, me, owner )
 }
 
 // NOTE: Deleting one's own message - an edit to two spaces, public or private ("edit_for_value( )"); a single space would
-// pin it instead (Ian, 2026-10-15).
+// pin it instead (2026-10-15).
 function delete_options( unique, is_private )
 {
    return "for=" + edit_for_value( unique, is_private ) + ";text=  ";
@@ -3572,7 +3572,7 @@ function pin_error_text( error )
 // NOTE: What the pinned strip shows, to redraw it only when that changes.
 function pinned_signature( list )
 {
-   // NOTE: Its reactions too - shown in the strip (Damon, 2026-10-29).
+   // NOTE: Its reactions too - shown in the strip (2026-10-29).
    return ( list || [ ] ).map( function( m )
    {
       return m.unique + ( m.edited ? "*" : "" ) + m.sender + " " + m.text + "\t" + JSON.stringify( m.reactions || [ ] );
@@ -3581,7 +3581,7 @@ function pinned_signature( list )
 
 // NOTE: The node's refusals, said plainly - anything else as it came. Words that are not the node's are answered
 // "locked for administration" today - the mismatch is set, then a later check for an administration lock replaces it
-// (seen 2026-10-09, for Ian). It is also the answer while someone else is signing in as admin, which is rare.
+// (seen 2026-10-09). It is also the answer while someone else is signing in as admin, which is rare.
 // "fresh" - recovering onto a node not set up: no words can be wrong there, and it is not locked, so a refusal means
 // someone else is setting it up just now (found by review, 2026-10-13).
 function recovery_error_text( error, fresh )
@@ -3604,7 +3604,7 @@ function recovery_error_text( error, fresh )
    return text;
 }
 
-// NOTE: Which step a refusal belongs on, the recovery being two (Damon, 2026-10-13): "words" for words the node would not
+// NOTE: Which step a refusal belongs on, the recovery being two (2026-10-13): "words" for words the node would not
 // take, to be put right there - not its words, or the "locked for administration" it answered for them before; "password"
 // for anything else. Onto a node not set up no words can be wrong, so never "words" ("recovery_error_text( )").
 function recovery_error_step( error, fresh )
@@ -3623,7 +3623,7 @@ function is_no_session_error( error )
 
 const c_sign_in_no_session = "The node couldn't start a session just now - wait a moment, then try again.";
 
-// NOTE: The node's refusal of a blocked device (Ian, "d370affc", ISS-053) - its own error since, where it had "Invalid device
+// NOTE: The node's refusal of a blocked device (commit "d370affc", ISS-053) - its own error since, where it had "Invalid device
 // identity", which a sign in with a typed password takes as a node set up again and tries once more as a new device.
 const c_sign_in_blocked = "This browser has been blocked from signing in as this account, from My account on one of its devices.";
 
@@ -3633,7 +3633,7 @@ function is_blocked_device_error( error )
 }
 
 // NOTE: The node's chat (IRC) not turned on - every room and message request answered "IRC usage is not currently
-// available." (Ian, 2026-10-13: the default on his development node). The session itself is good; the chat says why.
+// available." (2026-10-13: the default on a development node). The session itself is good; the chat says why.
 function irc_unavailable( response )
 {
    return /IRC usage is not currently available/i.test( String( response || "" ) );
@@ -3683,7 +3683,7 @@ function parse_access_list( stored )
 }
 
 // NOTE: Returns null when nothing is left, so the caller removes the key rather than
-// storing an empty string. Ian: "if intending to wipe the access it should be deleted
+// storing an empty string. The server: "if intending to wipe the access it should be deleted
 // (rather than set to an empty string)".
 function format_access_list( entries )
 {
@@ -3693,13 +3693,13 @@ function format_access_list( entries )
 }
 
 // NOTE: Each page of the node keeps to one browser tab, named for it, so moving between them
-// reuses a tab rather than opening another (Damon, 2026-10-02). Lower case and hyphens - names
+// reuses a tab rather than opening another (2026-10-02). Lower case and hyphens - names
 // starting "_" are reserved by browsers.
 const c_tab_chat = "ciyam-chat";
 const c_tab_accounts = "ciyam-accounts";
 const c_tab_console = "ciyam-console";
 
-// NOTE: The app switcher - the same in every app (Damon, 2026-10-08: no "Back to", one switcher, its button the
+// NOTE: The app switcher - the same in every app (2026-10-08: no "Back to", one switcher, its button the
 // CIYAM mark and the app's name). Every app, this one marked: Home, Chat, the accounts page - "My account" for
 // everyone since People moved into Home (2026-10-11), "Accounts" for admin before - and the console, admin's and never
 // on a phone. Each with its page and its tab; Home's tab is "c_tab_home" in "home_parse.js", named here as it is,
@@ -3749,7 +3749,7 @@ function switcher_title( key, is_admin )
 }
 
 // NOTE: The session this tab is on, kept for the tab, so an app switched to in it - or a reload - carries on without a
-// second sign in (Damon, 2026-10-09: the switcher opens apps in this tab). In "sessionStorage" - one for each tab,
+// second sign in (2026-10-09: the switcher opens apps in this tab). In "sessionStorage" - one for each tab,
 // gone when it closes, and shared by every app the tab shows. Only what requests need once signed in: never the
 // hashed password, which is used only to work out the session at the sign in. Read back, anything not of that shape
 // is nothing. Home kept its own from 2026-10-08.
@@ -3928,7 +3928,7 @@ function open_app_tab( name, url, our_sessid, on_focus )
 
 // NOTE: A page's address without "source=" - the page it was linked to - keeping everything else
 // and the "#...". While linked it stays, so a reload links straight back; once the link has ended
-// it goes, so a reload does not try to link again (Damon, 2026-10-02).
+// it goes, so a reload does not try to link again (2026-10-02).
 function address_without_source( href )
 {
    var url = new URL( href );
@@ -3938,8 +3938,8 @@ function address_without_source( href )
    return url.pathname + url.search + url.hash;
 }
 
-// NOTE: "Open a linked tab" opens on the room the user is in - "#room=<number>" in its address (Ian,
-// 2026-10-02: in a linked tab opened on another room, a message typed in the first did not appear).
+// NOTE: "Open a linked tab" opens on the room the user is in - "#room=<number>" in its address
+// (2026-10-02: in a linked tab opened on another room, a message typed in the first did not appear).
 const c_room_hash_prefix = "#room=";
 
 function linked_tab_address( href, source, room )
@@ -3982,9 +3982,9 @@ function forget_source( )
 // NOTE: "Remember on this browser" - the chat's and the accounts page's sign in. "none" forgets
 // the account, "access" keeps its PIN, "full" its PIN and password hash. Three outcomes, not two:
 // the harness has had "creds retain partial" all along - keep the PIN, drop the password - which a
-// single checkbox could not express, as Ian raised.
+// single checkbox could not express.
 // NOTE: A PIN is not shown once its account is made - it is meant to be known only by its user and the administrator, and
-// on screen anyone looking over a shoulder could read it (Ian, 2026-10-10). Each PIN saved on this browser keeps its
+// on screen anyone looking over a shoulder could read it (2026-10-10). Each PIN saved on this browser keeps its
 // account's name beside it ("cws.name_<pin>"), and the sign in's list shows that in place of the PIN.
 const c_saved_name_prefix = "cws.name_";
 
@@ -4009,7 +4009,7 @@ function saved_account_label( name, n )
 }
 
 // NOTE: The saved accounts as the sign in lists them - by name, A to Z whatever the case, then any saved before names were
-// kept, in the order saved (Ian, 2026-10-11: "the ordering should probably be alphabetic"). Takes { pin, name } and gives
+// kept, in the order saved (2026-10-11: "the ordering should probably be alphabetic"). Takes { pin, name } and gives
 // each its "label" too.
 function order_saved_accounts( accounts )
 {
@@ -4032,7 +4032,7 @@ function order_saved_accounts( accounts )
 }
 
 // NOTE: Which saved account the sign in starts on - the one this tab was last signed in as, when it is saved, so signing
-// out and back in needs no choosing (Ian, 2026-10-11); otherwise the first.
+// out and back in needs no choosing (2026-10-11); otherwise the first.
 function chosen_saved_index( ordered, last_pin )
 {
    for( var i = 0; i < ( ordered || [ ] ).length; i++ )
@@ -4058,11 +4058,11 @@ function stale_saved_names( keys, stored )
 
 // NOTE: What is kept for one account on this browser whether or not it is remembered - its recent emoji, the
 // announcements it dismissed - is keyed by the account's name, not its PIN, so "Remember: Nothing" leaves no PIN behind
-// (Damon, 2026-10-11). The "@" sets these keys apart from the ones kept by PIN before.
+// (2026-10-11). The "@" sets these keys apart from the ones kept by PIN before.
 const c_storage_dismissed_by_name = "cws.dismissed@";
 const c_storage_emoji_recent_by_name = "cws.emoji_recent@";
 
-// NOTE: The rooms whose pinned strip this account shut, on this browser - open is the default (Ian, 2026-10-14: they
+// NOTE: The rooms whose pinned strip this account shut, on this browser - open is the default (2026-10-14: they
 // should stand out - a to-do list, room guidelines). A list of room numbers, read by "parse_dismissed( )".
 const c_storage_pinned_shut_by_name = "cws.pinned_shut@";
 
@@ -4078,7 +4078,7 @@ function account_storage_key( prefix, username, is_admin )
    return prefix + account_display_name( username, is_admin );
 }
 
-// NOTE: Desktop notifications (Damon, 2026-10-20) - from the chat only, while it is open but not in front; who and where,
+// NOTE: Desktop notifications (2026-10-20) - from the chat only, while it is open but not in front; who and where,
 // never what was said; switched in the chat's account menu and on My account ("notify.js"). Kept per account on this
 // browser: "on", "off", or nothing - not asked yet.
 const c_storage_notify_by_name = "cws.notify@";
@@ -4276,7 +4276,7 @@ function is_valid_room_name( name )
    return true;
 }
 
-// NOTE: Which of the rules a room's name breaks, in plain words - the first of them - or "" if none (Damon, 2026-11-04: the room
+// NOTE: Which of the rules a room's name breaks, in plain words - the first of them - or "" if none (2026-11-04: the room
 // dialog said only "That name does not satisfy the room name rules"). The same rules as "is_valid_room_name( )".
 function room_name_problem( name )
 {
@@ -4354,10 +4354,10 @@ function is_valid_username( name )
 }
 
 // ====================================================================
-// Formatting - colour and style in messages (Ian, 2026-10-15; "Message Formatting Design")
+// Formatting - colour and style in messages (2026-10-15; "Message Formatting Design")
 // ====================================================================
 
-// NOTE: Ian's shorthand, from his console IRC's "ansi.cin": "%R%" and the like typed in a message, each a change to the
+// NOTE: The console's shorthand, from its IRC's "ansi.cin": "%R%" and the like typed in a message, each a change to the
 // style in force, and "%N%" ending everything. A letter a text colour, "L" and a letter lighter, "O" and a letter a
 // background, "B" bold - with a letter, bold in that colour. The letters in ANSI order - 30 is "K", 31 "R" and so on.
 const c_format_colours = [ "K", "R", "G", "O", "A", "P", "C", "W" ];
@@ -4386,7 +4386,7 @@ function format_token_pattern( )
    return /%([A-Z]{1,2})%/g;
 }
 
-// NOTE: The escapes for one of Ian's codes, as "ansi.cin" writes them - "BR" is bold, then red.
+// NOTE: The escapes for one of the console's codes, as "ansi.cin" writes them - "BR" is bold, then red.
 function format_code_escapes( code )
 {
    var change = c_format_codes[ code ];
@@ -4421,7 +4421,7 @@ function format_code_escapes( code )
    return out;
 }
 
-// NOTE: What is typed, as it is sent - each of Ian's codes as its escapes; anything else between "%" left as typed.
+// NOTE: What is typed, as it is sent - each of the console's codes as its escapes; anything else between "%" left as typed.
 function shorthand_to_ansi( text )
 {
    return String( text || "" ).replace( format_token_pattern( ), function( whole, code )
@@ -4430,7 +4430,7 @@ function shorthand_to_ansi( text )
    } );
 }
 
-// NOTE: Whether what is typed holds any of Ian's codes - the preview shows only then.
+// NOTE: Whether what is typed holds any of the console's codes - the preview shows only then.
 function has_shorthand_codes( text )
 {
    var pattern = format_token_pattern( );
@@ -4498,7 +4498,7 @@ function format_apply_sgr( style, params )
    return next;
 }
 
-// NOTE: A message as it is stored - with real escapes, from Ian's console or from here - as characters, each with its style.
+// NOTE: A message as it is stored - with real escapes, from the console or from here - as characters, each with its style.
 // Only the colour and style sequences count; **every other escape is dropped, never drawn** - moving the cursor, clearing
 // the screen, a window's title, a link - and so is every other control character but a line break and a tab, and the
 // characters that turn text to run the other way (found by review).
@@ -4581,8 +4581,8 @@ function format_ansi_chars( text )
    return chars;
 }
 
-// NOTE: What is typed - Ian's shorthand - as characters, each with its style and where it sits in the text. A "%..%" that is
-// not one of his codes stays as text.
+// NOTE: What is typed - the console's shorthand - as characters, each with its style and where it sits in the text. A "%..%" that is
+// not one of its codes stays as text.
 function format_shorthand_chars( text )
 {
    var value = String( text || "" );
@@ -4678,7 +4678,7 @@ function format_only_adds( from, to )
    return c_format_keys.every( function( k ) { return !from[ k ] || ( from[ k ] === to[ k ] ); } );
 }
 
-// NOTE: The codes that take "base" to "style", with Ian's combined codes where they fit - bold in a colour, bold italics.
+// NOTE: The codes that take "base" to "style", with the console's combined codes where they fit - bold in a colour, bold italics.
 function format_codes_for( style, base )
 {
    var want = { };
@@ -4710,8 +4710,8 @@ function format_codes_for( style, base )
    return out.map( function( code ) { return "%" + code + "%"; } ).join( "" );
 }
 
-// NOTE: Characters written out as Ian's shorthand - codes only where the style changes, and where anything stops "%N%" and
-// the codes still wanted (his one off code - Ian, 2026-10-15); "%N%" at the end if anything is still on. "raw" is where each
+// NOTE: Characters written out as the console's shorthand - codes only where the style changes, and where anything stops "%N%" and
+// the codes still wanted (its one off code - 2026-10-15); "%N%" at the end if anything is still on. "raw" is where each
 // character landed - for keeping the same words selected.
 function format_serialise( chars )
 {
@@ -4739,7 +4739,7 @@ function format_serialise( chars )
    return { text: text, raw: raw };
 }
 
-// NOTE: A stored message as Ian's shorthand, to edit - the box never holds an escape.
+// NOTE: A stored message as the console's shorthand, to edit - the box never holds an escape.
 function ansi_to_shorthand( text )
 {
    return format_serialise( format_ansi_chars( text ) ).text;
@@ -4813,7 +4813,7 @@ function format_restyle( text, start, end, change )
 
    var out = format_serialise( chars );
 
-   // NOTE: Typed text ending in "%" and capitals can join a code written after it into one of Ian's - "x%R" then "%B%" reads
+   // NOTE: Typed text ending in "%" and capitals can join a code written after it into one of the console's codes - "x%R" then "%B%" reads
    // "%R%B%" - and the shorthand has no way round that, so the bar does nothing rather than change the message (found by
    // review).
    var reread = format_shorthand_chars( out.text );
@@ -4837,7 +4837,7 @@ function format_selection_style( text, start, end )
    return format_shared_style( chars.slice( format_plain_index( chars, start ), format_plain_index( chars, end ) ) );
 }
 
-// NOTE: The styled message box (Ian, 2026-10-18) - with Codes off the box holds the words alone, and their styles are kept
+// NOTE: The styled message box (2026-10-18) - with Codes off the box holds the words alone, and their styles are kept
 // beside them, a character each ({ ch, style }, as "format_ansi_chars( )" gives). These go between that and what is sent,
 // what Codes shows, and what a change to the box does to it. A place in the box is a place in these characters.
 
@@ -4878,7 +4878,7 @@ function format_styled_trim( chars )
    return chars.slice( from, to );
 }
 
-// NOTE: As it is sent - the escapes written from the styles, with the same codes and the same one off code as Ian's shorthand
+// NOTE: As it is sent - the escapes written from the styles, with the same codes and the same one off code as the console's shorthand
 // ("format_serialise( )"). Never through the shorthand, so words typed with a "%" stay words: a typed "%R%" is not red.
 function format_styled_to_ansi( chars )
 {
@@ -4904,7 +4904,7 @@ function format_styled_to_ansi( chars )
    return text;
 }
 
-// NOTE: What Codes shows - Ian's shorthand. A "%R%" typed as words becomes his code here, as it always has (his shorthand has
+// NOTE: What Codes shows - the console's shorthand. A "%R%" typed as words becomes its code here, as it always has (its shorthand has
 // no way to write one as words).
 function format_styled_to_shorthand( chars )
 {
@@ -4975,7 +4975,7 @@ function format_styled_shared( chars, start, end )
    return format_shared_style( chars.slice( start, end ) );
 }
 
-// NOTE: Undo in the styled box (Damon, 2026-10-18) - the browser's own undo knows only the words, so a format change was not
+// NOTE: Undo in the styled box (2026-10-18) - the browser's own undo knows only the words, so a format change was not
 // in it, and a deleted red word came back plain. The box keeps its own: each state the words, their styles and the selection,
 // "at" the one showing. Typing joins the state before it while it carries on - within a second, next to where the last
 // typing was, and not the first space or line after a word - so one undo takes back a burst, as a browser's does.
@@ -5045,10 +5045,10 @@ function format_history_redo( history )
    return { history: { states: history.states, at: history.at + 1, kind: "", time: 0 }, state: history.states[ history.at + 1 ] };
 }
 
-// ---- Calls (Ian, 2026-11-13: peer to peer, in a direct message, "the P2P style initially") - set up with sealed messages in the
+// ---- Calls (2026-11-13: peer to peer, in a direct message, "the P2P style initially") - set up with sealed messages in the
 // conversation: an offer, its answer, an end or a decline. Each a line "<marker>call <id> <at> <from> <kind> <part>/<parts>[ <data>]":
 // "id" eight hex digits, "at" the Unix seconds it was sent, "from" who sent it, "data" the call's description compressed and in base64
-// - split over as many messages as it needs (Ian: compress and split), as a sealed message is at most 1,000 bytes ("c_sealed_most_bytes").
+// - split over as many messages as it needs (compress and split), as a sealed message is at most 1,000 bytes ("c_sealed_most_bytes").
 // "busy" is a decline from someone already in a call; an end's data is how long the call lasted, in seconds - none if it never connected.
 // NOTE: "from" is sealed with the rest - either of the two could seal any of it, so the sender the node names is not enough: it could
 // name the one called as sending the caller's own offer, ringing the caller's other devices (found by review, 2026-11-14).
@@ -5063,12 +5063,12 @@ const c_call_fresh_seconds = 90;
 // NOTE: An end's data for a call that never connected - drawn as such, not as a call not answered (found by review, 2026-11-14).
 const c_call_end_failed = "failed";
 
-// NOTE: An end's data for a call given up for the other's, the two having called each other at once (Damon, 2026-11-17) - not drawn:
+// NOTE: An end's data for a call given up for the other's, the two having called each other at once (2026-11-17) - not drawn:
 // the call that went ahead has the conversation's line.
 const c_call_end_crossed = "crossed";
 
 // NOTE: "renew" and "renewed" - the caller's new description once the connection was lost (a phone moving from WiFi to 4G, say), and
-// the answer to it, keeping the call (Damon, 2026-11-17).
+// the answer to it, keeping the call (2026-11-17).
 const c_call_pattern = new RegExp( "^☎call ([0-9a-f]{8}) ([0-9]{10}) ([-a-z0-9]{3,12}) (offer|answer|end|decline|busy|renew|renewed) "
  + "([0-9]{1,2})/([0-9]{1,2})(?: ([A-Za-z0-9+/=]+))?$" );
 
@@ -5132,7 +5132,7 @@ function call_message_seconds( unique, at )
 // other of them, its end from either. Each sent by whom it says, sealed. The call "keep" - one going - is taken however long ago it
 // began (found by review, 2026-11-14: a hang up after 90 seconds went unseen).
 //
-// How long ago is by when the node posted each, not the time the sender sealed in it (Damon, 2026-11-17: two clocks more than 90 s
+// How long ago is by when the node posted each, not the time the sender sealed in it (2026-11-17: two clocks more than 90 s
 // apart, and a call never rang) - "now" is the node's time too ("call_now( )").
 function call_states( opened, me, other, now, keep )
 {
@@ -5266,7 +5266,7 @@ function call_elapsed_text( seconds )
 // address, the page's own host ("host"). None ("[none]" - the node has no relay - or anything that isn't credentials) and the call is
 // tried directly, as before. A fourth line is the relay's port, where it isn't coturn's standard (one shared with LiveKit, say),
 // the third then empty if there is no address (2026-11-17) - or "<port>:<TLS port>", the node's "turn_port" setting ("3478:5349"
-// unless set otherwise, Ian, 2026-11-18), TURN over TLS then offered too. That one at the page's own host, and only where it is a
+// unless set otherwise, 2026-11-18), TURN over TLS then offered too. That one at the page's own host, and only where it is a
 // name: a relay's certificate is for the node's name, never for an address.
 const c_call_relay_port = 3478;
 
@@ -5318,7 +5318,7 @@ function call_relay_servers( text, host )
 
    var where = host + ":" + port;
 
-   // NOTE: TURN over TCP too (Damon, 2026-11-17: a call to a Pixel never connected) - Vanadium, GrapheneOS's browser, allows WebRTC
+   // NOTE: TURN over TCP too (2026-11-17: a call to a Pixel never connected) - Vanadium, GrapheneOS's browser, allows WebRTC
    // no UDP but through a proxy by default ("Disable non-proxied UDP"), so it reaches the relay over TCP or not at all.
    var servers = [ { urls: "stun:" + where }, { urls: "turn:" + where + "?transport=udp", username: lines[ 0 ], credential: lines[ 1 ] },
     { urls: "turn:" + where + "?transport=tcp", username: lines[ 0 ], credential: lines[ 1 ] } ];

@@ -50,7 +50,7 @@ check( "three members parsed", members.length, 3 );
 check( "offline member", members[ 0 ], { name: "admin", sessions: 0, online: false } );
 check( "two sessions", members[ 2 ], { name: "test-2", sessions: 2, online: true } );
 check( "hyphenated name kept", members[ 1 ].name, "test-1" );
-// NOTE: Ian's "extra=TIME" option (46797f3a) appends ".<time>" to each member - the chat asks
+// NOTE: the server's "extra=TIME" option (46797f3a) appends ".<time>" to each member - the chat asks
 // for it for read markers since 2026-09-28. Names and counts must still read correctly.
 check( "extra=TIME suffix tolerated", cp.parse_members( "admin+2.1790313275000 verify-a+0" ).map( function( m ) { return m.name + ":" + m.sessions; } ),
  [ "admin:2", "verify-a:0" ] );
@@ -191,7 +191,7 @@ check( "after, closed", cp.room_close_state( close_at, new Date( 2026, 10, 7, 9,
 check( "label today", cp.room_close_label( close_at, new Date( 2026, 10, 6, 9, 0, 0 ) ), "Closes today 17:00" );
 check( "label tomorrow", cp.room_close_label( close_at, new Date( 2026, 10, 5, 9, 0, 0 ) ), "Closes tomorrow 17:00" );
 check( "label within the week", cp.room_close_label( close_at, new Date( 2026, 10, 2, 9, 0, 0 ) ), "Closes Fri 17:00" );
-// NOTE: Dates as yyyy-mm-dd wherever the browser is (Ian, 2026-10-31) - so the whole label is checked, not its shape.
+// NOTE: Dates as yyyy-mm-dd wherever the browser is (2026-10-31) - so the whole label is checked, not its shape.
 check( "label past the week gives the date", cp.room_close_label( close_at, new Date( 2026, 9, 28, 9, 0, 0 ) ), "Closes 2026-11-06 17:00" );
 check( "- a year on too", cp.room_close_label( close_at, new Date( 2025, 10, 6, 9, 0, 0 ) ), "Closes 2026-11-06 17:00" );
 check( "label closed", cp.room_close_label( close_at, new Date( 2026, 10, 6, 18, 0, 0 ) ), "Closed" );
@@ -289,7 +289,7 @@ check( "locked is flagged as locked",
 check( "a reason is always given when refused",
  cp.posting_status( "0000002", shut_entry, "alice", false ).reason.length > 0, true );
 
-// NOTE: Reactions only (Ian, 2026-10-31: "REACT", "?" after the total) - nothing posted, and no reacting by the owner.
+// NOTE: Reactions only (2026-10-31: "REACT", "?" after the total) - nothing posted, and no reacting by the owner.
 var react_entry = cp.parse_message_line( "1761800000000 alice #0000005 2/9?@1793341887 Lunch vote" );
 
 check( "reactions only read from the listing - with a close after it", [ react_entry.posts, react_entry.total, react_entry.closes, react_entry.name ],
@@ -376,7 +376,7 @@ check( "rejects empty parentheses", cp.is_valid_room_name( "Ledger () Ops" ), fa
 check( "rejects reversed parentheses", cp.is_valid_room_name( "Ledger )x( Ops" ), false );
 check( "rejects two open parentheses", cp.is_valid_room_name( "Ledger ((x) Ops" ), false );
 
-// NOTE: Which rule, in plain words (Damon, 2026-11-04: only "does not satisfy the room name rules" was said).
+// NOTE: Which rule, in plain words (2026-11-04: only "does not satisfy the room name rules" was said).
 check( "the rule a name breaks, said", [ "", "Ops", "x".repeat( 51 ), "1st Room", "Name_Not_Valid", "Ledger Ops -", "Ledger  Ops", "Dev && Ops",
  "Ledger () Ops", "Ledger )x( Ops", "Ledger ((x) Ops", "Private (test-1 and test-2)", "  Ledger Ops  " ].map( cp.room_name_problem ), [
  "Give the room a name.", "At least 5 characters.", "At most 50 characters.", "Start it with a letter.",
@@ -437,7 +437,7 @@ check( "assign verb", ev.verb, "assign" );
 check( "assign names the old owner", ev.from_name, "admin" );
 check( "assign names the new owner", ev.to_name, "tester-1" );
 
-// NOTE: A room's close (Ian, 2026-10-31: "_:closes set to <unix>") - and as it was posted before that, an owner change to "~<unix>".
+// NOTE: A room's close (2026-10-31: "_:closes set to <unix>") - and as it was posted before that, an owner change to "~<unix>".
 var close_notice_at = Math.floor( new Date( 2026, 10, 7, 17, 0, 0 ).getTime( ) / 1000 );
 
 ev = cp.parse_system_event( ":closes set to " + close_notice_at );
@@ -515,7 +515,7 @@ var odd = cp.parse_fetch_response( [
 
 check( "never the reserved room, never without a token", cp.pending_invitations( odd, [ ] ).length, 0 );
 
-// NOTE: Real lines, 2026-09-28 - since Ian's change that day the server no longer rewrites an
+// NOTE: Real lines, 2026-09-28 - since the server's change that day it no longer rewrites an
 // answered invitation as ":ignore" (ISS-028), so the original ":invite" stays beside the decline.
 var declined_inbox = cp.parse_fetch_response( [
  "admin+1 verify-a+1",
@@ -549,7 +549,7 @@ check( "a stored backslash comes back single", multi[ 1 ].text, "double\\slash" 
 check( "backslash then break", multi[ 2 ].text, "bs then nl\\\nnext" );
 check( "an ending backslash is only that", [ multi[ 3 ].text, multi[ 4 ].text ], [ "ends with\\", "after" ] );
 check( "a tab comes back as one", multi[ 5 ].text, "a\tb" );
-// NOTE: Ian's three-character prefixes (2026-11-05) - the kind and then " " or "X", read back to the kind alone.
+// NOTE: the server's three-character prefixes (2026-11-05) - the kind and then " " or "X", read back to the kind alone.
 check( "the prefixes - ordinary, private, a system event, a prompt read as ordinary", [ cp.parse_message_line( "1793900000000 admin   hello" ).text,
  cp.parse_message_line( "1793900000001 admin ! a note" ).text, cp.parse_message_line( "1793900000001 admin ! a note" ).private,
  cp.parse_message_line( "1793900000002 test-1 : joined" ).event.verb, cp.parse_message_line( "1793900000003 admin ? lunch?" ).text ],
@@ -558,7 +558,7 @@ check( "- encrypted, public and private, as the chat seals them", [ cp.parse_mes
  cp.parse_message_line( "1793900000005 admin !XAb" ).text, cp.parse_message_line( "1793900000005 admin !XAb" ).private ], [ "X\rAb", "X\rAb", true ] );
 check( "- an invitation, \"invite <room>\" now (no \"room\")", cp.parse_message_line( "1793900000006 test-1 : invite 0000003-abc Lunch" ).event,
  { verb: "invite", detail: "0000003-abc Lunch", name: "Lunch", room: "0000003", token: "abc" } );
-check( "a carriage return too - in an encrypted message, its \" X\" read back to \"X\\r\" (Ian's prefixes, 2026-11-05)",
+check( "a carriage return too - in an encrypted message, its \" X\" read back to \"X\\r\" (the server's prefixes, 2026-11-05)",
  cp.parse_message_line( "1790426396000 admin  XAb\\rCd" ).text, "X\rAb\rCd" );
 check( "anything else after a backslash kept as it came", cp.unescape_message_text( "a\\qb" ), "a\\qb" );
 
@@ -569,13 +569,13 @@ check( "after sending, a computer keeps the focus in the message box", cp.keeps_
 check( "a phone lets it go, so its keyboard goes away", cp.keeps_focus_after_send( true ), false );
 check( "a round trip keeps what was typed", cp.unescape_message_text( cp.escape_message_text( "C:\\temp\\x" ) ), "C:\\temp\\x" );
 
-// NOTE: A carriage return marks a message's kind at its start (Ian, 2026-10-20) - the chat never sends one.
+// NOTE: A carriage return marks a message's kind at its start (2026-10-20) - the chat never sends one.
 check( "sending turns a CR, or a CR and line feed, into a line feed", cp.escape_message_text( "one\r\ntwo\rthree\nfour" ), "one\ntwo\nthree\nfour" );
 check( "- so nothing typed can start 'X\\r'", cp.message_prefix( cp.escape_message_text( "X\r1234" ) ), "" );
 check( "a message's kind from its start - a letter and a CR", [ cp.message_prefix( "X\rab12" ), cp.message_prefix( "Q\rzz" ),
  cp.message_prefix( "X ab12" ), cp.message_prefix( "XY\rab" ), cp.message_prefix( "" ) ], [ "X", "Q", "", "", "" ] );
 
-// NOTE: An encrypted message as a QR code (Ian, 2026-10-30) - Base45, RFC 9285's own examples first.
+// NOTE: An encrypted message as a QR code (2026-10-30) - Base45, RFC 9285's own examples first.
 var b45_text = function( s ) { return cp.base45_encode( Array.from( Buffer.from( s, "utf8" ) ) ); };
 var b45_back = function( s ) { var b = cp.base45_decode( s ); return ( b === null ) ? null : Buffer.from( b ).toString( "utf8" ); };
 
@@ -604,7 +604,7 @@ check( "an encrypted message said so, not shown as its ciphertext", [ cp.message
  [ "Encrypted message - this chat cannot read it yet", "A message of a kind this chat cannot show yet", "" ] );
 check( "- and in the plain places, the pinned line and Home", [ cp.message_plain_text( "X\r9f3c" ),
  cp.message_plain_text( "\u001b[31mred\u001b[0m words" ) ], [ "Encrypted message - this chat cannot read it yet", "red words" ] );
-// NOTE: Only a message that isn't encrypted is marked (Ian, 2026-10-26) - not in the entrance room, nor one of only spaces.
+// NOTE: Only a message that isn't encrypted is marked (2026-10-26) - not in the entrance room, nor one of only spaces.
 check( "a message not encrypted is marked, as 'irc.cin' marks one", [ cp.is_unencrypted_message( "hello", "0000069", true ),
  cp.is_unencrypted_message( "X\r9f3c", "0000069", true ), cp.is_unencrypted_message( "Q\rzz", "0000069", true ),
  cp.is_unencrypted_message( "hello", "0000000", true ), cp.is_unencrypted_message( "  \n ", "0000069", true ),
@@ -720,7 +720,7 @@ check( "the read point is kept", readers.map( function( m ) { return m.name + ":
 check( "the session count is still right", readers.map( function( m ) { return m.sessions; } ), [ 1, 1, 0, 0 ] );
 check( "a line without it has none", cp.parse_members( "admin+1 verify-a+0" )[ 0 ].read, undefined );
 
-// NOTE: "extra=ENTIRE" (Ian, 2026-11-11) - the read point, then "#" and the room key id they last read with.
+// NOTE: "extra=ENTIRE" (2026-11-11) - the read point, then "#" and the room key id they last read with.
 var keyed = cp.parse_members( "admin+1.1790521522001#8e06abbc tester-1+0.#8E06ABBC verify-a+0.1790520461001 verify-e+0 bad+0.1790520461001#xyz" );
 
 check( "room key ids - after the read point, or alone, in lower case", keyed.map( function( m ) { return m.name + ":" + ( m.read || "-" )
@@ -783,7 +783,7 @@ var owned = { room: "0000004", owner: "verify-a", posts: "any" };
 check( "the owner may change it", cp.can_change_posting( "0000004", owned, "verify-a", false ), true );
 check( "admin may", cp.can_change_posting( "0000004", owned, "admin", true ), true );
 check( "another member may not", cp.can_change_posting( "0000004", owned, "verify-e", false ), false );
-// NOTE: Leaving (Ian, 2026-10-12).
+// NOTE: Leaving (2026-10-12).
 check( "a member may leave a room", cp.can_leave_room( "0000004", { room: "0000004", owner: "admin" }, "verify-a" ), true );
 check( "- General too, now", cp.can_leave_room( "0000002", { room: "0000002", owner: "admin" }, "verify-a" ), true );
 check( "- not one they own", cp.can_leave_room( "0000004", { room: "0000004", owner: "verify-a" }, "verify-a" ), false );
@@ -869,7 +869,7 @@ check( "the sender's copy and its receipt become one", sent_side.map( function( 
 check( "the copy carries who it went to, less the sender", sent_side[ 2 ].recipients, [ "verify-a" ] );
 check( "a receipt with no copy stays a notice", sent_side[ 1 ].event.recipients, [ "verify-a" ] );
 // NOTE: Real, 2026-09-28 - verify-a sent a public message and edited it; the server now marks
-// every edit with "!" (ISS-026). Fixed by Ian on 2026-09-28 - an edit keeps the original's
+// every edit with "!" (ISS-026). Fixed on 2026-09-28 - an edit keeps the original's
 // prefix, so "!" on an edit is true again. Real lines after that fix:
 var edited_public = cp.parse_message_line( "1790594242000 admin*  pub edited 1161" );
 var edited_private = cp.parse_message_line( "1790594243000 admin* !priv edited 1161" );
@@ -956,7 +956,7 @@ check( "a page's title - capped as the badge is", cp.page_title( "CIYAM Home", 2
 
 heading( "signing in - what it is doing" );
 
-// NOTE: Ian, 2026-10-25 - the password is hardened before it is sent, and a refusal tried once more the other way after a gap,
+// NOTE: 2026-10-25 - the password is hardened before it is sent, and a refusal tried once more the other way after a gap,
 // so the sign in says what it is doing rather than seem stuck.
 check( "securing the password - how far, for the bar", [ cp.sign_in_progress( "securing", 0 ), cp.sign_in_progress( "securing", 0.456 ),
  cp.sign_in_progress( "securing", 2 ) ], [ { text: "Securing your password… 0%", fraction: 0 }, { text: "Securing your password… 46%", fraction: 0.456 },
@@ -980,7 +980,7 @@ check( "three kinds with digits, ten long, is strong", rated( "Abcdefg123" ), "S
 check( "all four kinds, twelve long, is very strong", rated( "Abcdef12!@#x" ), "Very Strong" );
 check( "boundary: 7 x 7 = 49 is strong", rated( "Ab1!xyz" ), "Strong" );
 
-// NOTE: With "zxcvbn.min.js" read in (Ian, 2026-10-23) - rated by the guesses it would take, banded every hundredfold from
+// NOTE: With "zxcvbn.min.js" read in (2026-10-23) - rated by the guesses it would take, banded every hundredfold from
 // 10^8, zxcvbn's warning after; the account's own PIN and name counted as easily guessed. Read in here as a page would.
 global.zxcvbn = require( "./zxcvbn.min.js" );
 
@@ -1003,7 +1003,7 @@ delete global.zxcvbn;
 
 check( "- not read in: the rules as before", rated( "Password1!" ), "Strong" );
 
-// NOTE: A passphrase offered (Ian, 2026-10-23) - five of the 2048 BIP39 words, eleven bits each of a random 16-bit value.
+// NOTE: A passphrase offered (2026-10-23) - five of the 2048 BIP39 words, eleven bits each of a random 16-bit value.
 var word_list = Array.from( { length: 2048 }, function( v, i ) { return "w" + i; } );
 
 check( "a suggested passphrase - five words, eleven bits each", [ cp.suggested_passphrase( word_list, [ 0, 2047, 2048, 65535, 1234 ] ),
@@ -1056,7 +1056,7 @@ check( "too big a group finds nothing - not an ordinary room either",
  cp.find_dm_room( dm_rooms, [ "twelve-chars", "another-name", "third-person", "admin" ] ), null );
 
 // NOTE: The New message list marks what already exists - it does not hide anyone, since the same
-// list picks the people for a group conversation (Ian, 2026-09-30: people already in one showed).
+// list picks the people for a group conversation (2026-09-30: people already in one showed).
 var dm_invites = [ { room: "0000011", name: "Private (admin + erin)", inviter: "erin" },
  { room: "0000012", name: "Private (admin + fay)", inviter: "carol" } ];
 check( "a conversation open", cp.dm_existing( [ "bob" ], "admin", dm_rooms, dm_invites, [ ] ), { kind: "open", room: "0000004" } );
@@ -1118,7 +1118,7 @@ check( "a request for a group", cp.dm_request_text( "admin", "DM admin + bob + c
 
 heading( "direct messages on the server" );
 
-// NOTE: Ian's server direct messages - made as ".<user>", named "/<a>/<b>" by the server, two people
+// NOTE: the server's direct messages - made as ".<user>", named "/<a>/<b>" by the server, two people
 // only (2026-10-02, "." since 2026-10-05). Checked on the container with "dm_server_probe.js".
 check( "the server's name read", cp.parse_dm_name( "/admin/verify-a" ), { people: [ "admin", "verify-a" ], count: 2, server: true } );
 check( "one person twice is not a conversation", cp.parse_dm_name( "/admin/admin" ), null );
@@ -1141,7 +1141,7 @@ check( "- a group's, with a room key or without", [ cp.group_encryption_note( tr
  cp.group_encryption_note( false, false ), cp.group_encryption_note( null, true ), cp.group_encryption_note( "unread", false ) ],
  [ "encrypted with the room key", "not encrypted - encrypt it in Chat Details", "not encrypted - set up your keys on My account", "",
  "not encrypted - your keys could not be read just now; reload to try again" ] );
-// NOTE: The way to My account offered in the conversation (Damon, 2026-11-05) - only for what My account would put right.
+// NOTE: The way to My account offered in the conversation (2026-11-05) - only for what My account would put right.
 check( "what would encrypt it - your keys set up", cp.encryption_action( cp.dm_encryption_note( "verify-a", false, false ) ),
  { label: "Set up your keys", section: "keys", text: "Messages here aren't encrypted until your keys are set up on this browser." } );
 check( "- their contact code added", cp.encryption_action( cp.dm_encryption_note( "verify-a", true, false ) ),
@@ -1150,7 +1150,7 @@ check( "- their contact code added", cp.encryption_action( cp.dm_encryption_note
 check( "- a group's, your keys set up", cp.encryption_action( cp.group_encryption_note( false, false ) ).section, "keys" );
 check( "- nothing to offer: encrypted, a room key to make, keys unread, or not yet known", [ cp.dm_encryption_note( "verify-a", true, true ),
  cp.group_encryption_note( true, false ), cp.dm_encryption_note( "verify-a", "unread", false ), "" ].map( cp.encryption_action ), [ null, null, null, null ] );
-// NOTE: The badge at the right of the bar and the row in the details (Damon, 2026-11-02) - a label and a sentence from the note.
+// NOTE: The badge at the right of the bar and the row in the details (2026-11-02) - a label and a sentence from the note.
 check( "the encryption badge - none while the keys are read, or where it cannot be encrypted", cp.encryption_badge( "", [ "verify-a" ], "dm", false ),
  null );
 check( "- encrypted, and who can read it", [ cp.encryption_badge( "encrypted", [ "verify-a" ], "dm", false ),
@@ -1170,7 +1170,7 @@ check( "- a room with no key: for its owner, for anyone else, and a group's dire
  [ { locked: false, label: "Not encrypted", detail: "Messages here are sent as they are - make a room key with Room key in the details." },
  "Messages here are sent as they are. For a room key from the owner, each of you needs the other in Contacts on My account.",
  "Messages here are sent as they are - encrypt it with Room key in the details." ] );
-check( "- a member: where the owner's key comes from, and what it needs (Damon, 2026-11-02)", [
+check( "- a member: where the owner's key comes from, and what it needs (2026-11-02)", [
  cp.encryption_badge( "not encrypted - encrypt it in Chat Details", [ ], "room", false, "damon", true ).detail,
  cp.encryption_badge( "not encrypted - encrypt it in Chat Details", [ ], "room", false, "damon", false ).detail ],
  [ "Messages here are sent as they are. A room key from damon is passed to you once they have your contact code too, and you are"
@@ -1190,7 +1190,7 @@ check( "- nor one removed, known by its mark (the chat keeps only marks)", [ cp.
  cp.owner_room_key( [ { sender: "damon", text: "0000124#" + "d".repeat( 32 ) } ], "damon", "0000124", [ "0000124#" + "d".repeat( 32 ) ],
  function( s ) { return "m:" + s; } ) ], [ "", "d".repeat( 32 ) ] );
 
-// NOTE: A member's receipt for the key, and what the owner's chat does with it (Damon, 2026-11-05).
+// NOTE: A member's receipt for the key, and what the owner's chat does with it (2026-11-05).
 check( "a room key's receipt - written and read back", cp.room_key_receipt( cp.room_key_receipt_text( "0000124", "0a1b2c3d" ) ),
  { room: "0000124", mark: "0a1b2c3d" } );
 check( "- as the member sees it", cp.room_key_receipt_text( "0000124", "0a1b2c3d" ), "Room key for #0000124 added (0a1b2c3d)." );
@@ -1208,7 +1208,7 @@ check( "- a new key since: to send", cp.owner_key_delivery( delivered, "damon", 
 check( "- a receipt only from the member, not from the owner", cp.owner_key_delivery( [ { sender: "damon", text: "Room key for #0000124"
  + " added (0d0d0d0d).", unique: "u1" } ], "damon", "tester-1", "0000124", "d".repeat( 32 ), "0d0d0d0d" ), { state: "send", remove: [ ] } );
 
-// NOTE: A member with the key already, passed it again (Ian, 2026-11-07: after a restore from scratch).
+// NOTE: A member with the key already, passed it again (2026-11-07: after a restore from scratch).
 check( "a member with the key passed it again - a receipt due", cp.member_receipt_due( delivered.slice( 0, 4 ), "damon", "tester-1",
  "0000124", "d".repeat( 32 ), "0d0d0d0d" ), true );
 check( "- not once their receipt for it is there, nor for a note with another key, nor from anyone but the owner", [
@@ -1218,7 +1218,7 @@ check( "- not once their receipt for it is there, nor for a note with another ke
 check( "a member's state with the room key, for the owner", [ "has", "passed", "needs_codes", "failed", "older", "none", "other" ]
  .map( cp.member_key_state_text ), [ "has the key", "passed the key - not yet accepted", "needs each other's contact codes",
  "the key could not be passed - opening the room tries again", "has an older key", "doesn't have the key now", "" ] );
-// NOTE: Room key ids (Ian, 2026-11-11) - what a member's says to the owner, and when this browser's is told to the node.
+// NOTE: Room key ids (2026-11-11) - what a member's says to the owner, and when this browser's is told to the node.
 check( "a member's room key id - the room's now, another, none, or not known", [ cp.member_key_by_id( "8e06abbc", "8e06abbc" ),
  cp.member_key_by_id( "0d0d0d0d", "8e06abbc" ), cp.member_key_by_id( "00000000", "8e06abbc" ), cp.member_key_by_id( undefined, "8e06abbc" ),
  cp.member_key_by_id( "8e06abbc", "" ) ], [ "has", "older", "none", "", "" ] );
@@ -1227,7 +1227,7 @@ check( "- this browser's told only when the member line does not show it; having
  cp.key_id_to_tell( { name: "me" }, "8e06abbc" ), cp.key_id_to_tell( null, "8e06abbc" ), cp.key_id_to_tell( { name: "me" }, "" ),
  cp.key_id_to_tell( { name: "me", key_id: "8e06abbc" }, "" ), cp.key_id_to_tell( { name: "me", key_id: "00000000" }, "" ) ],
  [ "", "8e06abbc", "8e06abbc", "8e06abbc", "", "00000000", "" ] );
-// NOTE: Contact codes exchanged in the chat (Damon, 2026-11-08) - sent another way, theirs pasted.
+// NOTE: Contact codes exchanged in the chat (2026-11-08) - sent another way, theirs pasted.
 check( "exchanging contact codes with someone - neither, theirs here, theirs just added", [ cp.contact_exchange_text( "damon", false, false ),
  cp.contact_exchange_text( "damon", true, false ), cp.contact_exchange_text( "damon", false, true ) ], [
  "You and damon each need the other's contact code to read what is encrypted between you. Send yours another way you trust - Signal,"
@@ -1267,7 +1267,7 @@ check( "- and what came of it", [ cp.room_key_sent_text( [ { name: "tester-1", h
 check( "- a message too long to encrypt: over 1,000 bytes", [ cp.sealed_too_long( "a".repeat( 1000 ) ), cp.sealed_too_long( "a".repeat( 1001 ) ),
  cp.sealed_too_long( "ä".repeat( 500 ) ), cp.sealed_too_long( "ä".repeat( 501 ) ) ], [ false, true, false, true ] );
 
-// NOTE: Room keys (Ian, 2026-10-25) - "<room>#<32 hex digits>" as "irc.cin"'s "k" makes them.
+// NOTE: Room keys (2026-10-25) - "<room>#<32 hex digits>" as "irc.cin"'s "k" makes them.
 var room_key = "0123456789abcdef0123456789abcdef";
 check( "a room key - for a room, not the entrance or reserved ones, nor a direct message", [ cp.can_have_room_key( "0000004", "General" ),
  cp.can_have_room_key( "0000000", "Entrance" ), cp.can_have_room_key( "0000001", "Admin" ), cp.can_have_room_key( "0000016", "/admin/verify-a" ),
@@ -1282,25 +1282,25 @@ check( "- another room's, or not 32 hex digits, refused and said", [ cp.parse_ro
  "A room key is 0000004# followed by 32 or 64 letters and digits (0-9, a-f) - copy all of it.",
  "A room key is 0000004# followed by 32 or 64 letters and digits (0-9, a-f) - copy all of it.",
  "A room key is 0000004# followed by 32 or 64 letters and digits (0-9, a-f) - copy all of it." ] );
-check( "- a message that starts with one, as shared in a direct message - words after it too (Ian, 2026-10-26)", [
+check( "- a message that starts with one, as shared in a direct message - words after it too (2026-10-26)", [
  cp.room_key_in_message( " 0000004#" + room_key + " " ), cp.room_key_in_message( "0000004#" + room_key + " for General - welcome!" ),
  cp.room_key_in_message( "the key: 0000004#" + room_key ), cp.room_key_in_message( "0000004#" + room_key.toUpperCase( ) ),
  cp.room_key_in_message( "0000004#" + room_key + "0" ), cp.room_key_in_message( "0000004#" + room_key + "-x" ) ],
  [ { room: "0000004", key: room_key }, { room: "0000004", key: room_key }, null, { room: "0000004", key: room_key }, null,
  { room: "0000004", key: room_key } ] );
-// NOTE: The console takes a key of any length - one of Ian's had 64 hex digits (2026-10-26).
+// NOTE: The console takes a key of any length - one of the console's codes had 64 hex digits (2026-10-26).
 check( "- 64 hex digits taken too", [ cp.room_key_in_message( "0000004#" + room_key + room_key ),
  cp.parse_room_key( "0000004#" + room_key + room_key, "0000004" ) ], [ { room: "0000004", key: room_key + room_key },
  { key: room_key + room_key, problem: "" } ] );
 check( "- the whole message pasted, words after the key", cp.parse_room_key( "0000004#" + room_key + " for General", "0000004" ),
  { key: room_key, problem: "" } );
-// NOTE: Not left on the screen for anyone looking over a shoulder (Ian, 2026-10-27).
+// NOTE: Not left on the screen for anyone looking over a shoulder (2026-10-27).
 check( "- shown cut short in a message: its room, the first and last four digits, the words after it", [
  cp.room_key_masked( " 0000004#" + room_key.toUpperCase( ) + " for General" ), cp.room_key_masked( "0000004#" + room_key + room_key ),
  cp.room_key_masked( "the key: 0000004#" + room_key ), cp.room_key_masked( "" ) ],
  [ "0000004#0123…cdef for General", "0000004#0123…cdef", "the key: 0000004#" + room_key, "" ] );
 
-// NOTE: The people picker (Damon, 2026-10-27) - a search, and Enter with one person left choosing them.
+// NOTE: The people picker (2026-10-27) - a search, and Enter with one person left choosing them.
 check( "picker: a search shows names holding it, in any case, and nothing typed shows everyone", [ cp.picker_matches( "Verify-A", " ver" ),
  cp.picker_matches( "tester-1", "-1" ), cp.picker_matches( "admin", "ian" ), cp.picker_matches( "ian", "" ), cp.picker_matches( "ian", "   " ) ],
  [ true, true, false, true, true ] );
@@ -1328,7 +1328,7 @@ check( "a group's name taken by another room", cp.dm_create_problem( "Error: Roo
  .indexOf( "someone else already has a room called" ) > 0, true );
 check( "anything else as it came", cp.dm_create_problem( "Error: Something else.", [ "bob" ] ), "Something else." );
 
-// NOTE: Ian, 2026-10-05 - no private rooms for admin, or with admin.
+// NOTE: 2026-10-05 - no private rooms for admin, or with admin.
 check( "two people may", cp.dm_allowed( "bob", "carol" ), true );
 check( "not with admin", cp.dm_allowed( "bob", "admin" ), false );
 check( "nor admin with anyone", [ cp.dm_allowed( "admin", "bob" ), cp.dm_allowed( "admin" ) ], [ false, false ] );
@@ -1389,7 +1389,7 @@ check( "malformed decodes empty", cp.decode_channel_field( "%E0%A4%A" ), "" );
 heading( "saved account list" );
 
 // NOTE: "cws.access" is shared with "test_web_session.html", so a malformed value breaks
-// the harness as well. Ian hit exactly that - an emptied list stored as "" came back as
+// the harness as well. It hit exactly that - an emptied list stored as "" came back as
 // one blank account, and the next PIN appended to it giving ",11111".
 check( "no key yet", cp.parse_access_list( null ).length, 0 );
 check( "empty string is no accounts", cp.parse_access_list( "" ).length, 0 );
@@ -1627,14 +1627,14 @@ check( "no space at the end - left alone", cp.words_entry_complete( "taxi acti",
 check( "a line break is a space - and takes the word", cp.words_entry_complete( "taxi acti\n", completing ), "taxi action " );
 
 // NOTE: After a recovery - admin's PIN 10301, once 31324; 40311 another account, kept with its password.
-// NOTE: PINs out of sight (Ian, 2026-10-10) - names in their place.
+// NOTE: PINs out of sight (2026-10-10) - names in their place.
 check( "an account's name on screen - its username", cp.account_display_name( "damon", false ), "damon" );
 check( "- admin, with none of its own", [ cp.account_display_name( "", true ), cp.account_display_name( undefined, true ) ], [ "admin", "admin" ] );
 check( "- never a PIN", cp.account_display_name( "", false ), "Your account" );
 check( "a saved account listed by its name", cp.saved_account_label( "damon", 0 ), "damon" );
 check( "- one saved before names were kept, by its place", [ cp.saved_account_label( "", 0 ), cp.saved_account_label( null, 2 ) ],
  [ "Saved account 1", "Saved account 3" ] );
-// NOTE: In alphabetical order, the account just signed out of chosen (Ian, 2026-10-11).
+// NOTE: In alphabetical order, the account just signed out of chosen (2026-10-11).
 var saved_accounts = [ { pin: "20405", name: "verify-e" }, { pin: "31324", name: "" }, { pin: "10301", name: "admin" },
  { pin: "20401", name: "Maya" }, { pin: "40311", name: "" } ];
 var ordered_accounts = cp.order_saved_accounts( saved_accounts );
@@ -1659,7 +1659,7 @@ check( "the keys kept by PIN before - let go, nothing else",
 
 check( "the node's refusals - not its words", cp.recovery_error_text( "Error: System identity mismatch (incorrect mnemonics?)." ),
  "Those aren't this node's twelve words." );
-check( "- what it answered for words not its own, before Ian's 'a9d18319'", cp.recovery_error_text( "Error: System is currently locked for administration." ),
+check( "- what it answered for words not its own, before commit 'a9d18319'", cp.recovery_error_text( "Error: System is currently locked for administration." ),
  "The node did not accept those words - check each one, and that they are in order." );
 check( "- not locked", /isn't locked, so there is nothing to recover/.test(
  cp.recovery_error_text( "Error: System identity is not currently locked." ) ), true );
@@ -1706,10 +1706,10 @@ check( "the strip shut for a room, then open again - the others kept", [ cp.with
 check( "Up edits the newest of your own - others' and nothing to edit passed over", [ cp.last_editable( [ { unique: "1", editable: true, text: "first" },
  { unique: "2", editable: true, text: "second" }, { unique: "3", editable: false, text: "theirs" } ] ).unique,
  cp.last_editable( [ { unique: "4", editable: false, text: "theirs" } ] ), cp.last_editable( [ ] ), cp.last_editable( [ { unique: "5", editable: true, text: "  " } ] ) ], [ "2", null, null, null ] );
-// NOTE: Saved unchanged, nothing sent (Ian, 2026-10-31).
+// NOTE: Saved unchanged, nothing sent (2026-10-31).
 check( "an edit saved as it was - unchanged, space at the ends aside", [ cp.edit_unchanged( "Lunch at %B1%one%B0%", "Lunch at %B1%one%B0%" ),
  cp.edit_unchanged( "Lunch", "  Lunch\n" ), cp.edit_unchanged( "Lunch", "Lunch!" ), cp.edit_unchanged( "Lunch", "lunch" ) ], [ true, true, false, false ] );
-check( "a message edited to spaces - deleted, public or private (Ian, 2026-10-15)", [ cp.parse_message_line( "1792032681000 admin*     " ),
+check( "a message edited to spaces - deleted, public or private (2026-10-15)", [ cp.parse_message_line( "1792032681000 admin*     " ),
  cp.parse_message_line( "1792032682000 admin* !   " ).deleted ], [ { kind: "chat", unique: "1792032681000", sender: "admin", edited: true, private: false,
  text: "  ", deleted: true }, true ] );
 check( "- an ordinary one carries no deleted mark", "deleted" in cp.parse_message_line( "1792032683000 admin  still here" ), false );
@@ -1734,16 +1734,16 @@ check( "- redrawn when what it shows changes", [ cp.pinned_signature( pinned_rea
 check( "- its reactions too", cp.pinned_signature( [ { unique: "1", sender: "a", text: "t" } ] ) === cp.pinned_signature( [ { unique: "1", sender: "a",
  text: "t", reactions: [ { code: "01", people: [ "4b573f" ] } ] } ] ), false );
 
-// NOTE: Colour and style - Ian's shorthand typed, real escapes stored and drawn (Ian, 2026-10-15; "Message Formatting Design").
+// NOTE: Colour and style - the console's shorthand typed, real escapes stored and drawn (2026-10-15; "Message Formatting Design").
 heading( "formatting" );
 
 var esc = String.fromCharCode( 27 );
 var shown_escapes = function( text ) { return String( text ).split( esc ).join( "\\e" ); };
 
-check( "his codes as his console sends them - bold red is bold, then red", shown_escapes( cp.shorthand_to_ansi( "%BR%down%N% and %LA%%OK%x%N%" ) ),
+check( "the console's codes as it sends them - bold red is bold, then red", shown_escapes( cp.shorthand_to_ansi( "%BR%down%N% and %LA%%OK%x%N%" ) ),
  "\\e[1m\\e[31mdown\\e[0m and \\e[94m\\e[40mx\\e[0m" );
-check( "- a '%..%' not his left as typed", cp.shorthand_to_ansi( "100%ZZ% %r% %N" ), "100%ZZ% %r% %N" );
-check( "- every code of his", Object.keys( cp.c_format_codes ).length, 38 );
+check( "- a '%..%' not one of them left as typed", cp.shorthand_to_ansi( "100%ZZ% %r% %N" ), "100%ZZ% %r% %N" );
+check( "- every code of the console's", Object.keys( cp.c_format_codes ).length, 38 );
 check( "the preview only when there is a code", [ cp.has_shorthand_codes( "%I%x%N%" ), cp.has_shorthand_codes( "50% off %ZZ%" ),
  cp.has_shorthand_codes( "" ) ], [ true, false, false ] );
 
@@ -1771,14 +1771,15 @@ check( "- details after ':' kept with their number - no italics from a colour", 
 check( "- one with a private marker is not a style", cp.format_pieces( esc + "[>4;1mx" ), [ { text: "x", style: { } } ] );
 check( "a message with no codes - one plain run", cp.format_pieces( "just words" ), [ { text: "just words", style: { } } ] );
 
-check( "to edit - escapes back to his shorthand, plain left alone", [ cp.ansi_to_shorthand( cp.shorthand_to_ansi( "Hi %R%red %B%bold%N%%R% more%N% end" ) ),
- cp.ansi_to_shorthand( "plain 50% text" ), cp.ansi_to_shorthand( esc + "[1m" + esc + "[3mx" + esc + "[0m" ) ],
+check( "to edit - escapes back to the console's shorthand, plain left alone", [
+ cp.ansi_to_shorthand( cp.shorthand_to_ansi( "Hi %R%red %B%bold%N%%R% more%N% end" ) ), cp.ansi_to_shorthand( "plain 50% text" ),
+ cp.ansi_to_shorthand( esc + "[1m" + esc + "[3mx" + esc + "[0m" ) ],
  [ "Hi %R%red %B%bold%N%%R% more%N% end", "plain 50% text", "%BI%x%N%" ] );
 
-// NOTE: The format bar - the selected words restyled and the codes written again, with "%N%" his one off code. "start" and
+// NOTE: The format bar - the selected words restyled and the codes written again, with "%N%" its one off code. "start" and
 // "end" are places in what is typed, codes and all, as the box gives them.
 check( "bold a word", cp.format_restyle( "The node is down", 4, 8, { flag: "b" } ), { text: "The %B%node%N% is down", start: 7, end: 11 } );
-check( "- then red - his bold-red code", cp.format_restyle( "The %B%node%N% is down", 7, 11, { fg: "R" } ).text, "The %BR%node%N% is down" );
+check( "- then red - its bold-red code", cp.format_restyle( "The %B%node%N% is down", 7, 11, { fg: "R" } ).text, "The %BR%node%N% is down" );
 check( "- red again takes it off, then bold again", [ cp.format_restyle( "The %BR%node%N% is down", 8, 12, { fg: "R" } ).text,
  cp.format_restyle( "The %B%node%N% is down", 7, 11, { flag: "b" } ).text ], [ "The %B%node%N% is down", "The node is down" ] );
 check( "bold inside red - the red put back after it", cp.format_restyle( "%R%The whole node%N%", 7, 12, { flag: "b" } ),
@@ -1788,16 +1789,16 @@ check( "a selection across a code - by the words, not the codes", cp.format_rest
  "%R%The %B%whole%N%%B% node%N%" );
 check( "clear formatting on part", cp.format_restyle( "%BR%The whole node%N%", 8, 13, { clear: true } ).text, "%BR%The %N%whole%BR% node%N%" );
 check( "over several lines", cp.format_restyle( "one\ntwo", 2, 5, { bg: "OO" } ).text, "on%OO%e\nt%N%wo" );
-check( "text that would join a code into one of Ian's - nothing done rather than the message changed",
+check( "text that would join a code into one of the console's codes - nothing done rather than the message changed",
  cp.format_restyle( "x%Ry", 3, 4, { flag: "b" } ), null );
 check( "nothing selected, or only codes - nothing done", [ cp.format_restyle( "abc", 1, 1, { flag: "b" } ),
  cp.format_restyle( "%R%abc", 0, 3, { flag: "b" } ) ], [ null, null ] );
 check( "the buttons pressed - what every selected character has", [ cp.format_selection_style( "%BR%The%N% x", 4, 7 ),
  cp.format_selection_style( "%BR%The%N% x", 4, 12 ), cp.format_selection_style( "abc", 1, 1 ) ], [ { b: true, fg: "R" }, { }, { } ] );
-check( "his own codes typed by hand - drawn the same as the bar's", cp.format_shorthand_pieces( "%B%%R%x%N%y" ),
+check( "the console's own codes typed by hand - drawn the same as the bar's", cp.format_shorthand_pieces( "%B%%R%x%N%y" ),
  [ { text: "x", style: { b: true, fg: "R" } }, { text: "y", style: { } } ] );
 
-// NOTE: The styled box (Ian, 2026-10-18) - with Codes off the box holds the words, their styles kept beside them a character
+// NOTE: The styled box (2026-10-18) - with Codes off the box holds the words, their styles kept beside them a character
 // each. "sty" writes them shortly - the words and, for each run, its style - so the checks read.
 function sty( chars )
 {
@@ -1809,12 +1810,12 @@ const s_late = cp.format_styled_from_shorthand( "Backup is %LR%late%N% - %B%chec
 check( "styled - the words alone in the box", cp.format_styled_text( s_late ), "Backup is late - check it" );
 check( "- from a stored message, the same", sty( cp.format_styled_from_ansi( cp.shorthand_to_ansi( "Backup is %LR%late%N% - %B%check%N% it" ) ) ),
  sty( s_late ) );
-check( "- back to his shorthand, for Codes", cp.format_styled_to_shorthand( s_late ), "Backup is %LR%late%N% - %B%check%N% it" );
-check( "- as sent: escapes, the same as his shorthand gives", cp.format_styled_to_ansi( s_late ),
+check( "- back to the console's shorthand, for Codes", cp.format_styled_to_shorthand( s_late ), "Backup is %LR%late%N% - %B%check%N% it" );
+check( "- as sent: escapes, the same as the console's shorthand gives", cp.format_styled_to_ansi( s_late ),
  cp.shorthand_to_ansi( "Backup is %LR%late%N% - %B%check%N% it" ) );
 check( "- a '%R%' typed as words stays words when sent", cp.format_styled_to_ansi( cp.format_styled_edit( [ ], "50% %R% off" ) ), "50% %R% off" );
-check( "- with Codes on it becomes his code, as it always has", cp.format_styled_to_shorthand( cp.format_styled_edit( [ ], "a %R% b" ) ), "a %R% b" );
-check( "- bold then red together - his bold-red code, and off at the end", cp.format_styled_to_ansi(
+check( "- with Codes on it becomes its code, as it always has", cp.format_styled_to_shorthand( cp.format_styled_edit( [ ], "a %R% b" ) ), "a %R% b" );
+check( "- bold then red together - its bold-red code, and off at the end", cp.format_styled_to_ansi(
  cp.format_styled_restyle( cp.format_styled_restyle( cp.format_styled_edit( [ ], "go" ), 0, 2, { flag: "b" } ), 0, 2, { fg: "R" } ) ),
  cp.shorthand_to_ansi( "%BR%go%N%" ) );
 
@@ -1912,7 +1913,7 @@ check( "- a change that changes nothing only moves the selection", [ cp.format_h
 check( "trimmed as the words are - styles kept", [ cp.format_styled_text( cp.format_styled_trim( cp.format_styled_edit( [ ], "  hi there \n" ) ) ),
  cp.format_styled_trim( cp.format_styled_edit( [ ], " \n " ) ).length ], [ "hi there", 0 ] );
 
-// NOTE: Desktop notifications (Damon, 2026-10-20) - the chat only, who and where, never what was said.
+// NOTE: Desktop notifications (2026-10-20) - the chat only, who and where, never what was said.
 const n_rooms = [ { room: "0000004", name: "Suite Posts", unread: 0 }, { room: "0000007", name: "/admin/verify-a", unread: 1 },
  { room: "0000009", name: "Ledger Ops", unread: 0 } ];
 const n_first = cp.notifications_due( null, n_rooms, [ ], "0000009", "verify-a", true );
@@ -1973,7 +1974,7 @@ check( "- offered once: not asked yet, and the browser can", [ cp.notify_offer_b
  cp.notify_offer_bar( "", "insecure" ), cp.notify_offer_bar( "", "blocked" ) ], [ true, false, false, false ] );
 check( "kept per account, by name", cp.account_storage_key( cp.c_storage_notify_by_name, "verify-a", false ), "cws.notify@verify-a" );
 
-// NOTE: Reactions (Ian, 2026-10-28 and 29) - "ian" is 4b573f, "maya" 159e43 (six hex of the SHA-256 of the name, from the eleventh).
+// NOTE: Reactions (2026-10-28 and 29) - "ian" is 4b573f, "maya" 159e43 (six hex of the SHA-256 of the name, from the eleventh).
 check( "reactions read", cp.parse_reactions( "014b573fx159e43xo02159e43x" ), [ { code: "01", people: [ "4b573f", "159e43" ] },
  { code: "02", people: [ "159e43" ] } ] );
 check( "- only exactly their form", [ cp.parse_reactions( "" ), cp.parse_reactions( "01" ), cp.parse_reactions( "014b573f" ),
@@ -2008,17 +2009,17 @@ check( "reacting - given, the same again taken off, another replacing it", [
  [ { code: "01", people: [ "4b573f" ] }, { code: "05", people: [ "159e43" ] } ] ] );
 check( "- sent as an edit to its digits", cp.reaction_options( "1793192805000", "07" ), "for=1793192805000;text=07" );
 
-// NOTE: Polls (Ian, 2026-10-31) - an ordinary message, a vote a reaction to it.
+// NOTE: Polls (2026-10-31) - an ordinary message, a vote a reaction to it.
 heading( "polls" );
 
 var poll_written = cp.poll_text( "  Lunch on\nFriday? ", [ "Pizza", "", "  Sushi  rolls ", "Salad" ] );
 
-// NOTE: Lettered, not the reactions' emoji (Damon, 2026-10-31: a serious question would not suit them) - A votes with "00", B "01".
+// NOTE: Lettered, not the reactions' emoji (2026-10-31: a serious question would not suit them) - A votes with "00", B "01".
 check( "a poll's message - the question, then each option after its letter, one line each, empty ones left out", poll_written,
  "📊 Lunch on Friday?\nA) Pizza\nB) Sushi rolls\nC) Salad" );
 check( "- read back as a poll", cp.parse_poll( poll_written ), { question: "Lunch on Friday?", options: [ { code: "00", letter: "A", label: "Pizza" },
  { code: "01", letter: "B", label: "Sushi rolls" }, { code: "02", letter: "C", label: "Salad" } ] } );
-// NOTE: Posted with Ian's prompt prefix (2026-11-07) - after "P\r", which the web session takes off; read back as ordinary.
+// NOTE: Posted with the console's prompt prefix (2026-11-07) - after "P\r", which the web session takes off; read back as ordinary.
 check( "- posted after \"P\\r\", as written or as sealed", [ cp.poll_sent( "📊 Lunch?\nA) Pizza" ), cp.poll_sent( "X\rAb" ) ],
  [ "P\r📊 Lunch?\nA) Pizza", "P\rX\rAb" ] );
 check( "- read back with its prompt prefix as a poll, and sealed as the chat seals one", [
@@ -2079,7 +2080,7 @@ check( "a room's name from a poll's question - what a name may have, cut at a wo
  cp.poll_room_name( "Shall we meet at the Thai place, the pizza place, or somewhere else entirely this week?" ), cp.poll_room_name( "Rock & roll?" ),
  cp.poll_room_name( "??" ), cp.poll_room_name( "Hi?" ) ], [ "Where shall we go for the team lunch on Friday", "budget yes or no",
  "Shall we meet at the Thai place the pizza place or", "Rock & roll", "", "" ] );
-// NOTE: Each part of the dialog said on its own, in the order shown (Damon, 2026-11-04).
+// NOTE: Each part of the dialog said on its own, in the order shown (2026-11-04).
 var poll_t = Math.floor( poll_now.getTime( ) / 1000 );
 
 check( "the poll dialog's problems - everything missing, each said", cp.poll_field_problems( "", [ "", "" ], null, poll_now, { chosen: 0, name: "" } ), {
@@ -2107,11 +2108,11 @@ check( "- on someone else's message only, not deleted - one for some only too (2
  cp.can_react( { kind: "system", sender: "maya" }, "ian" ), cp.can_react( { kind: "chat", sender: "maya", deleted: true }, "ian" ),
  cp.can_react( { kind: "chat", sender: "maya", private: true }, "ian" ), cp.can_react( { kind: "chat", sender: "maya" }, "" ) ],
  [ true, false, false, false, true, false ] );
-check( "- nor on one between two as a direct message is (Ian, 2026-11-06)",
+check( "- nor on one between two as a direct message is (2026-11-06)",
  cp.can_react( { kind: "chat", sender: "maya", private: true, pair: "ian" }, "ian" ), false );
 
 console.log( "" );
-console.log( "Private messages between two, posted \"for=~<other>\" (Ian, 2026-11-06):" );
+console.log( "Private messages between two, posted \"for=~<other>\" (2026-11-06):" );
 
 check( "the sender \"_<sender>_<other>_\" read as the two", [ cp.paired_sender( "_admin_verify-a_" ), cp.paired_sender( "_ian_maya2_" ) ],
  [ { sender: "admin", other: "verify-a" }, { sender: "ian", other: "maya2" } ] );
@@ -2132,7 +2133,7 @@ check( "- one deleted by its sender (edited to blank)", ( function( )
 } )( ), [ "admin", "verify-a", true, true, "" ] );
 check( "posted to one person as between the two", cp.paired_for( "verify-a" ), "~verify-a" );
 
-// ---- Calls (Ian, 2026-11-13) - set up with sealed messages in a direct message, the description compressed and split
+// ---- Calls (2026-11-13) - set up with sealed messages in a direct message, the description compressed and split
 var call_data = new Array( 2141 ).join( "A" );
 var call_msg = function( at, from, kind, data ) { return cp.call_messages( "0a1b2c3d", at, from, kind, data ); };
 var call_offer = call_msg( 1794000000, "maya", "offer", call_data );
@@ -2184,7 +2185,7 @@ check( "- the call going is taken however long ago it began: its end an hour on"
 check( "- two answers, from two devices of the one called, not joined into one", cp.call_states( call_seen( "maya", call_offer ).concat( call_seen(
  "admin", call_msg( 1794000005, "admin", "answer", call_data ).slice( 0, 1 ).concat( call_msg( 1794000006, "admin", "answer", "CCCC" ) ) ) ),
  "admin", "maya", 1794000010 )[ "0a1b2c3d" ].answer, "CCCC" );
-// NOTE: When the node posted each (its unique), not the sender's clock (Damon, 2026-11-17: clocks more than 90 s apart, never rung).
+// NOTE: When the node posted each (its unique), not the sender's clock (2026-11-17: clocks more than 90 s apart, never rung).
 var call_posted = function( sender, texts, unique ) { return texts.map( function( text ) { return { sender: sender, text: text, unique: unique }; } ); };
 check( "- how long ago by the node's clock: an offer sealed an hour fast rings, one posted long ago does not", [
  Object.keys( cp.call_states( call_posted( "maya", call_msg( 1794003600, "maya", "offer", "AAAA" ), "1794000002001" ), "admin", "maya",
@@ -2238,7 +2239,7 @@ check( "- on the relay's own port when the node gives one - after its address, o
  "1794043200:maya\nAbCdEfGhIjKlMnOpQrStUvWx+/0=\n203.0.113.7\n70000", "api.ciyam.org" ).length, cp.call_relay_servers(
  "1794043200:maya\nAbCdEfGhIjKlMnOpQrStUvWx+/0=\n203.0.113.7\nx", "api.ciyam.org" ).length ],
  [ "turn:203.0.113.7:3477?transport=tcp", "stun:api.ciyam.org:3477", 0, 0 ] );
-check( "- \"3478:5349\" (Ian's turn_port) - TLS on the second, at the page's host by name only; a bad one, no relay", [
+check( "- \"3478:5349\" (the turn_port setting) - TLS on the second, at the page's host by name only; a bad one, no relay", [
  cp.call_relay_servers( "1794043200:maya\nAbCdEfGhIjKlMnOpQrStUvWx+/0=\n203.0.113.7\n3478:5349", "api.ciyam.org" ).map( s => s.urls ),
  cp.call_relay_servers( "1794043200:maya\nAbCdEfGhIjKlMnOpQrStUvWx+/0=\n\n3478:5349", "192.168.1.20" ).length,
  cp.call_relay_servers( "1794043200:maya\nAbCdEfGhIjKlMnOpQrStUvWx+/0=\n\n3478:5349", "[fd00::1]" ).length,

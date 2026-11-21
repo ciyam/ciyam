@@ -81,7 +81,7 @@ const c_palette_commands = [
    { command: "retain creds", description: "save this account's PIN and password on this browser" },
    { command: "retain creds partial", description: "save this account's PIN only - not its password" },
    { command: "~run_script *", description: "list the server scripts (admin, dev)", raw: true },
-   // NOTE: Ian's commands for watching the server work (2026-09-27). A trace level stays set, for every
+   // NOTE: The server's commands for watching it work (2026-09-27). A trace level stays set, for every
    // session, until it is set back.
    { command: "~trace", description: "the server's trace level now (admin, dev)", raw: true },
    { command: "~trace 70008", description: "trace sessions in detail - stays on until set back (admin, dev)", raw: true },
@@ -169,7 +169,7 @@ var g_channel = null;
 var g_log_channel = null;
 
 // NOTE: Opened on its own - not from another part, nor in a drawer: no sign in card, "init" at the prompt, and quitting
-// stays in the console (Ian, 2026-10-13).
+// stays in the console (2026-10-13).
 var g_started_alone = false;
 
 // NOTE: A password being asked at the prompt - the promise's resolve, or null.
@@ -238,7 +238,7 @@ function console_main( )
    document.getElementById( "apps_host" ).hidden = true;
 
    // NOTE: Opened on its own, the sign in card is a step away, and back again - Remember, Reset this browser and recovery
-   // live there (Damon, 2026-10-14).
+   // live there (2026-10-14).
    if( g_started_alone )
    {
       var actions = document.querySelector( "#signin_view .chat-signin-actions" );
@@ -579,7 +579,7 @@ async function do_disconnect( already_ended )
 
    document.getElementById( "apps_host" ).hidden = true;
 
-   // NOTE: Opened on its own, the console stays - quitting ends the session, not the console (Ian, 2026-10-13).
+   // NOTE: Opened on its own, the console stays - quitting ends the session, not the console (2026-10-13).
    if( g_started_alone )
       enter_unsigned( );
    else
@@ -590,7 +590,7 @@ async function do_disconnect( already_ended )
 // The console proper
 // ====================================================================
 
-// NOTE: The console opened on its own with no session to carry on - shown at once, with no sign in card (Ian, 2026-10-13):
+// NOTE: The console opened on its own with no session to carry on - shown at once, with no sign in card (2026-10-13):
 // what needs no session works - the console's own commands, the node's open requests - and "init" signs in.
 function enter_unsigned( )
 {
@@ -1048,11 +1048,11 @@ function session_info( )
 async function run_line( line, from_script )
 {
    // NOTE: A list's own lines are not printed unless asked - only what they answer, as in the harness
-   // ("echo_list_lines", the Scripts tab's "Show each line"; Ian, 2026-10-07).
+   // ("echo_list_lines", the Scripts tab's "Show each line"; 2026-10-07).
    if( !from_script || g_prefs.echo_list_lines )
       print_command( line );
 
-   // NOTE: "{name}" substitution is Ian's, from "ciyam.js", so a script written for the
+   // NOTE: "{name}" substitution is the harness's, from "ciyam.js", so a script written for the
    // harness runs unchanged here - including "." at the start to switch it off, and
    // "{@1}", "{@}" for the lines of the last output.
    var text = ciyam.replace_variables( String( line ).trim( ), g_output );
@@ -1066,7 +1066,7 @@ async function run_line( line, from_script )
 
    if( !guard.run )
    {
-      // NOTE: Only beside a line that was shown - unshown, a list's skipped lines print nothing, as in the harness (Ian, 2026-10-08).
+      // NOTE: Only beside a line that was shown - unshown, a list's skipped lines print nothing, as in the harness (2026-10-08).
       if( !from_script || g_prefs.echo_list_lines )
          print_line( "(skipped)", "is-dim" );
 
@@ -1264,7 +1264,7 @@ async function run_open( spec )
    return { ok: !is_error_output( response ) };
 }
 
-// NOTE: What signing in from the prompt is doing, on its own line, and the bar while the password is secured (Ian, 2026-10-25:
+// NOTE: What signing in from the prompt is doing, on its own line, and the bar while the password is secured (2026-10-25:
 // "I don't see any progress (from either the Console or Sign In form)").
 function init_progress_for( line )
 {
@@ -1295,7 +1295,7 @@ function init_progress_for( line )
    };
 }
 
-// NOTE: Signing in at the prompt, the console opened on its own (Ian, 2026-10-13) - an account saved on this browser by
+// NOTE: Signing in at the prompt, the console opened on its own (2026-10-13) - an account saved on this browser by
 // name, or a PIN; the password asked only when none is saved. Nothing new is remembered: the sign in's Remember does that.
 async function run_init( target )
 {
@@ -1391,7 +1391,7 @@ async function run_init( target )
 
    signin_remember_device( );
 
-   // NOTE: A clean screen once signed in - what was above it said this console was not (Ian, 2026-10-15).
+   // NOTE: A clean screen once signed in - what was above it said this console was not (2026-10-15).
    clear_output( );
 
    enter_console( );
@@ -1406,7 +1406,7 @@ function clear_output( )
    document.getElementById( "scrollback" ).textContent = "";
 }
 
-// NOTE: A password asked at the prompt itself, its typing hidden (Ian, 2026-10-13) - resolves to it, or null on Escape.
+// NOTE: A password asked at the prompt itself, its typing hidden (2026-10-13) - resolves to it, or null on Escape.
 function ask_password( label )
 {
    var input = document.getElementById( "prompt_input" );
@@ -1449,9 +1449,9 @@ function end_password_prompt( value )
 // Server javascripts
 // ====================================================================
 
-// NOTE: Ian's server javascripts - "ciyam_<name>.js" - run in this page, as the harness runs them,
+// NOTE: The server's javascripts - "ciyam_<name>.js" - run in this page, as the harness runs them,
 // with this account's session. Anyone runs those not named after a PIN, and their own; another
-// account's is admin's alone (Ian, 2026-10-05 - "script_allowed( )"). A fingerprint against tampering
+// account's is admin's alone (2026-10-05 - "script_allowed( )"). A fingerprint against tampering
 // is to come.
 //
 // The scripts read two page globals, as they do in the harness. "init_script_value" is the input
@@ -1581,7 +1581,7 @@ async function load_qr_library( )
    return loaded;
 }
 
-// NOTE: The node's "ntfy_server" setting (Ian, 2026-11-16) - "options" to change it (admin only).
+// NOTE: The node's "ntfy_server" setting (2026-11-16) - "options" to change it (admin only).
 function ntfy_setting_url( options )
 {
    return build_cws_url( ciyam.get_cws_url( ), { path: "/settings/ntfy_server", options: options }, session_info( ) );
@@ -1942,7 +1942,7 @@ async function run_script_line( spec, from_script )
       return { ok: false };
    }
 
-   // NOTE: "loaded scripts" - those in the page now (Ian, 2026-10-22: "it would be nice to be able to see what scripts are
+   // NOTE: "loaded scripts" - those in the page now (2026-10-22: "it would be nice to be able to see what scripts are
    // currently loaded"); their names, in order, into the output for a list.
    if( spec.verb === "loaded" )
    {
@@ -2117,11 +2117,11 @@ async function run_local( spec, from_script )
          return run_creds( spec.creds );
 
       // NOTE: "clear" empties the output and clears the screen - in a list too, as in the harness,
-      // where the output box is what is shown. Ian's demo lists clear to take hashes and a password
-      // off the screen (Ian, 2026-10-04).
+      // where the output box is what is shown. The demo lists clear to take hashes and a password
+      // off the screen (2026-10-04).
       case "clear":
          // NOTE: "clear storage" - everything this browser keeps for the node forgotten, then the page again, as the
-         // harness's "Clear Local Storage and Reload" (Ian, 2026-10-15). Only signed out, in the console opened on its
+         // harness's "Clear Local Storage and Reload" (2026-10-15). Only signed out, in the console opened on its
          // own: a session in use, or another page's, is not this console's to pull from under it. Like the harness's it
          // empties the whole of the node's storage, so a chat or Home open in another tab loses its saved device too.
          if( args.toLowerCase( ) === "storage" )
@@ -2423,7 +2423,7 @@ function print_help( )
       lines.splice( lines.indexOf( "" ), 0, g_started_alone ? "  quit, term                   sign out - the console stays"
        : "  quit                         sign out" );
 
-   // NOTE: What works without a session - the node's own requests, and, opened on its own, signing in (Ian, 2026-10-13).
+   // NOTE: What works without a session - the node's own requests, and, opened on its own, signing in (2026-10-13).
    lines.splice( lines.indexOf( "" ), 0, "  system, uptime, unix-now     the node's own - no session needed; ip-addr, post-limit too" );
 
    if( g_started_alone )
@@ -2467,7 +2467,7 @@ function print_help( )
 // NOTE: Raw protocol needs the admin PIN on a development system. Probing once, quietly,
 // means the "~" affordance is only offered when it will work - the probe asks whether the
 // node is for development ("is_devt_reply( )"), which changes nothing. The server scripts are
-// not listed: many are only for the server itself to run (Ian, 2026-10-04), and "~run_script *"
+// not listed: many are only for the server itself to run (2026-10-04), and "~run_script *"
 // lists them at the prompt.
 async function probe_raw( )
 {
@@ -2635,7 +2635,7 @@ function server_item_path( prefix, name )
 }
 
 // NOTE: "retain webcmdlist" or "retain javascript" - one of each per account, which the server names
-// after the PIN, so it replaces only this account's own (Ian, 2026-10-04: a button, not a command).
+// after the PIN, so it replaces only this account's own (2026-10-04: a button, not a command).
 // Replacing one already there takes a second click, unless it is that one being edited.
 async function do_save_to_server( )
 {
@@ -2707,7 +2707,7 @@ async function do_save_to_server( )
 }
 
 // ====================================================================
-// Lists on the server - Ian's ".list" files
+// Lists on the server - the server's ".list" files
 // ====================================================================
 
 async function load_server_lists( )
@@ -2794,7 +2794,7 @@ async function open_server_list( name, button )
 // JavaScripts on the server - "review javascripts"
 // ====================================================================
 
-// NOTE: For everyone - the server lists another account's own to admin alone (Ian, 2026-10-05).
+// NOTE: For everyone - the server lists another account's own to admin alone (2026-10-05).
 async function load_server_javascripts( )
 {
    g_server_javascripts = [ ];
@@ -3601,7 +3601,7 @@ function append_log_rows( entry )
 
    detail_cell.appendChild( pair );
 
-   // NOTE: The list keeps its pared-down look (Ian, 2026-10-06) - the whole query is copied from here, the
+   // NOTE: The list keeps its pared-down look (2026-10-06) - the whole query is copied from here, the
    // opened entry, to try again elsewhere. An entry from before this was kept has nothing to copy.
    if( entry.sent )
    {

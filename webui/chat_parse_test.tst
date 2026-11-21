@@ -258,7 +258,7 @@ ok   a tab comes back as one
 ok   the prefixes - ordinary, private, a system event, a prompt read as ordinary
 ok   - encrypted, public and private, as the chat seals them
 ok   - an invitation, "invite <room>" now (no "room")
-ok   a carriage return too - in an encrypted message, its " X" read back to "X\r" (Ian's prefixes, 2026-11-05)
+ok   a carriage return too - in an encrypted message, its " X" read back to "X\r" (the server's prefixes, 2026-11-05)
 ok   anything else after a backslash kept as it came
 ok   sending doubles a backslash
 ok   sending leaves breaks alone
@@ -576,7 +576,7 @@ ok   the encryption badge - none while the keys are read, or where it cannot be 
 ok   - encrypted, and who can read it
 ok   - not encrypted, and what would encrypt it
 ok   - a room with no key: for its owner, for anyone else, and a group's direct message
-ok   - a member: where the owner's key comes from, and what it needs (Damon, 2026-11-02)
+ok   - a member: where the owner's key comes from, and what it needs (2026-11-02)
 ok   the owner's room key in their direct message - the newest for the room, from them
 ok   - none from the owner, or none for the room
 ok   - not one this person removed
@@ -609,7 +609,7 @@ ok   a room key - for a room, not the entrance or reserved ones, nor a direct me
 ok   - shown as the console shows it
 ok   - given as the console shows it, or alone, spaces and case aside
 ok   - another room's, or not 32 hex digits, refused and said
-ok   - a message that starts with one, as shared in a direct message - words after it too (Ian, 2026-10-26)
+ok   - a message that starts with one, as shared in a direct message - words after it too (2026-10-26)
 ok   - 64 hex digits taken too
 ok   - the whole message pasted, words after the key
 ok   - shown cut short in a message: its room, the first and last four digits, the words after it
@@ -815,7 +815,7 @@ ok   dismissed announcements kept by name
 ok   recent emoji kept by name - admin's as admin
 ok   the keys kept by PIN before - let go, nothing else
 ok   the node's refusals - not its words
-ok   - what it answered for words not its own, before Ian's 'a9d18319'
+ok   - what it answered for words not its own, before commit 'a9d18319'
 ok   - not locked
 ok   - anything else as it came
 ok   a refusal's step - the words for words not taken, the password's for the rest, and never the words onto a new node
@@ -837,7 +837,7 @@ ok   the Admin room read whole when only its pinned came back - nothing new amon
 ok   the strip shut for a room, then open again - the others kept
 ok   Up edits the newest of your own - others' and nothing to edit passed over
 ok   an edit saved as it was - unchanged, space at the ends aside
-ok   a message edited to spaces - deleted, public or private (Ian, 2026-10-15)
+ok   a message edited to spaces - deleted, public or private (2026-10-15)
 ok   - an ordinary one carries no deleted mark
 ok   deleting - an edit to two spaces, private with its "!"
 ok   - not pinned, nor announced
@@ -851,9 +851,9 @@ ok   - redrawn when what it shows changes
 ok   - its reactions too
 
 == formatting ==================================================
-ok   his codes as his console sends them - bold red is bold, then red
-ok   - a '%..%' not his left as typed
-ok   - every code of his
+ok   the console's codes as it sends them - bold red is bold, then red
+ok   - a '%..%' not one of them left as typed
+ok   - every code of the console's
 ok   the preview only when there is a code
 ok   a stored message drawn - a run each style
 ok   - the ends of one style each, as other clients send them
@@ -870,26 +870,26 @@ ok   a long SGR still read
 ok   - details after ':' kept with their number - no italics from a colour
 ok   - one with a private marker is not a style
 ok   a message with no codes - one plain run
-ok   to edit - escapes back to his shorthand, plain left alone
+ok   to edit - escapes back to the console's shorthand, plain left alone
 ok   bold a word
-ok   - then red - his bold-red code
+ok   - then red - its bold-red code
 ok   - red again takes it off, then bold again
 ok   bold inside red - the red put back after it
 ok   bold off the middle of bold
 ok   a selection across a code - by the words, not the codes
 ok   clear formatting on part
 ok   over several lines
-ok   text that would join a code into one of Ian's - nothing done rather than the message changed
+ok   text that would join a code into one of the console's codes - nothing done rather than the message changed
 ok   nothing selected, or only codes - nothing done
 ok   the buttons pressed - what every selected character has
-ok   his own codes typed by hand - drawn the same as the bar's
+ok   the console's own codes typed by hand - drawn the same as the bar's
 ok   styled - the words alone in the box
 ok   - from a stored message, the same
-ok   - back to his shorthand, for Codes
-ok   - as sent: escapes, the same as his shorthand gives
+ok   - back to the console's shorthand, for Codes
+ok   - as sent: escapes, the same as the console's shorthand gives
 ok   - a '%R%' typed as words stays words when sent
-ok   - with Codes on it becomes his code, as it always has
-ok   - bold then red together - his bold-red code, and off at the end
+ok   - with Codes on it becomes its code, as it always has
+ok   - bold then red together - its bold-red code, and off at the end
 ok   typing at the end of a red word - red too
 ok   typing before it - plain, as the word before
 ok   deleting part of a styled word - the rest keeps its style
@@ -968,9 +968,9 @@ ok   the node busy with another message - tried once more
 ok   - not a room's messages that only say the same words
 ok   a message as drawn, but for its reactions - changed when edited, deleted or pinned since
 ok   - on someone else's message only, not deleted - one for some only too (2026-11-05)
-ok   - nor on one between two as a direct message is (Ian, 2026-11-06)
+ok   - nor on one between two as a direct message is (2026-11-06)
 
-Private messages between two, posted "for=~<other>" (Ian, 2026-11-06):
+Private messages between two, posted "for=~<other>" (2026-11-06):
 ok   the sender "_<sender>_<other>_" read as the two
 ok   - not any other sender
 ok   a fetched line from one - its sender, who it is between, and private
@@ -1000,7 +1000,7 @@ ok   the node's call relay - STUN and TURN on its own host, with its credentials
 ok   - an address as the page has it, IPv6 in its brackets
 ok   - at the relay's own address when the node gives one - not the page's host
 ok   - on the relay's own port when the node gives one - after its address, or after an empty line
-ok   - "3478:5349" (Ian's turn_port) - TLS on the second, at the page's host by name only; a bad one, no relay
+ok   - "3478:5349" (the turn_port setting) - TLS on the second, at the page's host by name only; a bad one, no relay
 ok   - none when the node has no relay, or answers otherwise, or the host is odd
 
 All checks passed.

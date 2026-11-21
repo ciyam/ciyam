@@ -3,12 +3,12 @@
 // Distributed under the MIT/X11 software license, please refer to the file license.txt
 // in the root project directory or http://www.opensource.org/licenses/mit-license.php.
 
-// NOTE: The app switcher, shared - the same in every app (Damon, 2026-10-08). Its button is the CIYAM mark and
+// NOTE: The app switcher, shared - the same in every app (2026-10-08). Its button is the CIYAM mark and
 // the app's name ("CIYAM · Chat"); open, it lists every app, this one marked. Choosing another opens it in this tab,
-// on the session kept for the tab (Damon, 2026-10-09) - "Back" returns as it would anywhere. The button at a row's
+// on the session kept for the tab (2026-10-09) - "Back" returns as it would anywhere. The button at a row's
 // right, or ctrl or cmd and click, opens it in a new tab instead; an app already open in another tab on this session
 // is gone to, so there are never two of one. Never "Back to", since any app may have opened any other. At its foot,
-// who is signed in and "Sign out" (Ian, 2026-10-10 - it was "Sign out of every app"), which reaches every tab on the
+// who is signed in and "Sign out" (2026-10-10 - it was "Sign out of every app"), which reaches every tab on the
 // session whichever app it is chosen in.
 // On a phone it is a sheet from the bottom. Which apps, and the sign out message, are "switcher_apps( )" and
 // "signed_out_message( )" in "chat_parse.js", with their tests.
@@ -564,8 +564,8 @@ async function apps_sign_out_everywhere( )
 }
 
 // NOTE: The console drawer's frame is made the first time the console opens and removed when the session ends. An
-// <iframe> with no "src" holds an "about:blank" with no doctype, which Firefox reports as a page in quirks mode (Ian,
-// 2026-10-10) - the frame now exists only while it holds the console.
+// <iframe> with no "src" holds an "about:blank" with no doctype, which Firefox reports as a page in quirks mode
+// (2026-10-10) - the frame now exists only while it holds the console.
 function apps_console_frame_load( drawer, src )
 {
    apps_console_frame_unload( );
@@ -587,7 +587,7 @@ function apps_console_frame_unload( )
       frame.remove( );
 }
 
-// NOTE: The apps' own files kept in this browser, so switching apps asks the node nothing for them ("app_worker.js", Damon,
+// NOTE: The apps' own files kept in this browser, so switching apps asks the node nothing for them ("app_worker.js",
 // 2026-11-17) - where the browser runs one: a secure page (HTTPS, or "localhost"). Elsewhere the apps load as they always have.
 // "cws.app_worker" set to "off" in this browser's storage turns it off here, and lets go of what it kept - for working on the apps
 // without a hard reload after each change (found by review, 2026-11-17).

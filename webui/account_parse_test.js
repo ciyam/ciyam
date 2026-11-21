@@ -86,12 +86,12 @@ check( "admin is not in the review - added from the session", ap.parse_people( "
  status: "active" } ] );
 check( "nobody, and no session", ap.parse_people( "", "" ), [ ] );
 check( "Windows line ends", ap.parse_people( "20401 alice\r\n35887 \r\n", "" ).map( function( r ) { return r.name; } ), [ "alice", "" ] );
-// NOTE: The keys state ending each name (Ian, 2026-11-07) - taken off it, and kept.
+// NOTE: The keys state ending each name (2026-11-07) - taken off it, and kept.
 check( "keys - none, not backed up, backed up; none for one unclaimed", ap.parse_people( "20401 alice?\n51093 bob!\n20202 carol\n35887 \n", "" )
  .map( function( r ) { return r.name + ":" + r.keys; } ), [ "alice:none", "bob:unsaved", "carol:saved", ":" ] );
 check( "- said under the name", [ "none", "unsaved", "saved", "" ].map( ap.people_keys_text ),
  [ "No keys yet", "Keys need backing up", "Keys backed up", "" ] );
-// NOTE: Disabled (Ian, 2026-11-09 - "d6ef2fe2"): "~" in place of the keys state - taken off, inactive, in their place by name.
+// NOTE: Disabled (2026-11-09 - "d6ef2fe2"): "~" in place of the keys state - taken off, inactive, in their place by name.
 check( "disabled - inactive, the mark taken off, no keys said, among the others by name", ap.parse_people( "20401 alice~\n51093 bob\n35887 \n20202 cara~\n",
  "" ).map( function( r ) { return r.pin + ":" + r.name + ":" + r.status + ":" + r.keys; } ),
  [ "20401:alice:inactive:", "51093:bob:active:saved", "20202:cara:inactive:", "35887::unclaimed:" ] );
@@ -164,7 +164,7 @@ check( "nothing", ap.refused_join_text( "", "pin" ), "" );
 // --------------------------------------------------------------------
 heading( "this account's devices" );
 
-// NOTE: The shape of "GET /cws/devices", from Ian's code of 2026-10-06 - "<device> <session>", "*" after an active one.
+// NOTE: The shape of "GET /cws/devices", from the server's code of 2026-10-06 - "<device> <session>", "*" after an active one.
 const devices_text = "a1b2c3d4 11111111111111111111*\ne5f6a7b8 22222222222222222222\nc9d0e1f2 33333333333333333333*\n";
 
 check( "each device, this browser first", ap.parse_devices( devices_text, "c9d0e1f2" ), [
@@ -172,10 +172,10 @@ check( "each device, this browser first", ap.parse_devices( devices_text, "c9d0e
  { device: "a1b2c3d4", session: "11111111111111111111", active: true, current: false, signed_out: false },
  { device: "e5f6a7b8", session: "22222222222222222222", active: false, current: false, signed_out: false } ] );
 
-// NOTE: Known devices (Ian, 2026-10-26) - one that signed in before, with no session now, has twenty zeros for its session.
+// NOTE: Known devices (2026-10-26) - one that signed in before, with no session now, has twenty zeros for its session.
 const known = ap.parse_devices( "a1b2c3d4e5f6a7b8 11111111111111111111*\nf0e1d2c3b4a59687 00000000000000000000\n", "zz" );
 check( "a device signed out - its session twenty zeros", known.map( function( d ) { return d.signed_out; } ), [ false, true ] );
-// NOTE: Block for one signed in too, sent with "block" so it holds while that browser is open (ISS-053, Ian's "d370affc").
+// NOTE: Block for one signed in too, sent with "block" so it holds while that browser is open (ISS-053, commit "d370affc").
 const actions_of = function( entry ) { return ap.device_choice( entry ).actions.map( function( a ) { return a.label + ":" + a.options; } ); };
 check( "- signed in: Sign out, or Block; signed out: Block; this browser neither", [ actions_of( known[ 0 ] ), actions_of( known[ 1 ] ),
  actions_of( { device: "x", current: true } ) ], [ [ "Sign out:", "Block:block" ], [ "Block:block" ], [ ] ] );
@@ -201,7 +201,7 @@ check( "- keys in an older form, as none - set up again", [ ap.keys_state( false
 check( "- an error, or not locked keys, unreadable", [ ap.keys_state( true, "Error: Unknown request." ), ap.keys_state( false, "" ),
  ap.keys_state( false, "UK4:" + locked.substring( 4 ) ), ap.keys_state( false, locked.replace( ":9a9e:", ":9a9:" ) ) ],
  [ "unreadable", "unreadable", "unreadable", "unreadable" ] );
-// NOTE: Guarded (Ian, 2026-10-27) - a line before them, "UK#:<rounds>:<check>".
+// NOTE: Guarded (2026-10-27) - a line before them, "UK#:<rounds>:<check>".
 check( "- guarded keys read as keys; a bad guard unreadable", [ ap.keys_state( false, "UK#:100000:" + "cd".repeat( 32 ) + "\n" + locked ),
  ap.keys_state( true, "UK#:100000:" + "cd".repeat( 32 ) + "\n" + locked + "\n" ), ap.keys_state( false, "UK#:100000:cd\n" + locked ) ],
  [ "elsewhere", "here", "unreadable" ] );
@@ -223,7 +223,7 @@ const own_key = "bd03d5c91f430fc9bc585d232043d781d31b61616abcf19c7333cea4ea1b6bc
 check( "a public key as pasted - capitals, spaces, broken over lines", [ ap.normalise_public_key( verify_a_key.toUpperCase( ) ),
  ap.normalise_public_key( " " + verify_a_key.substr( 0, 32 ) + "\n  " + verify_a_key.substr( 32 ) + " " ), ap.normalise_public_key( verify_a_key + "0" ),
  ap.normalise_public_key( verify_a_key.replace( "0", "g" ) ), ap.normalise_public_key( "" ) ], [ verify_a_key, verify_a_key, "", "", "" ] );
-// NOTE: A contact code (Ian, 2026-11-03) - "ian"'s from the console as he gave it, read as the console reads it.
+// NOTE: A contact code (2026-11-03) - an account's from the console as it gave it, read as the console reads it.
 const ian_code = "69616eI8f4ea05e77e9149ea7:f2db5800e0ba20fe4b8f23ea3544f115fc7aa5b5266d73566c80143ddce79b32";
 const padding = "0123456789abcdef0123456789";
 const verify_a_code = ap.contact_code( "verify-a", verify_a_key, padding );
@@ -252,7 +252,7 @@ check( "- not a code, your own key or name, one already kept, or theirs under an
  "That's your own contact code - theirs is shown on their My account, under Contacts.",
  "That's your own contact code - theirs is shown on their My account, under Contacts.",
  "You have a key for verify-a already - remove it first to change it.", "That key is saved for verify-a already." ] );
-// NOTE: The chat's exchange with one person (Damon, 2026-11-08) - their code alone.
+// NOTE: The chat's exchange with one person (2026-11-08) - their code alone.
 check( "in the chat's exchange with someone - theirs fine; another's, or not one, said", [
  ap.exchange_contact_problem( ap.parse_contact_code( verify_a_code ), "verify-a", { }, own_key, "damon" ),
  ap.exchange_contact_problem( ap.parse_contact_code( verify_a_code ), "tester-1", { }, own_key, "damon" ),
@@ -270,12 +270,12 @@ check( "- the one an address asks for, else the first", [ ap.account_section( "#
 check( "the room keys kept - said under them, or none yet", [ ap.room_keys_text( { } ), ap.room_keys_text( { "0000069": "ab" } ) ], [
  "None yet. A room gets one in the chat as it is made, and its owner sends it to each member.",
  "Made, shared and removed in the chat, with Room key in Room Details." ] );
-check( "- listed by name, then number; one not in the listing last, by number (Damon, 2026-11-04)", ap.room_key_rows(
+check( "- listed by name, then number; one not in the listing last, by number (2026-11-04)", ap.room_key_rows(
  { "0000072": "cd", "0000069": "ab", "0000070": "ef", "0000071": "gh", "0000068": "ij", "bad": "x" },
  { "0000072": "lunch", "0000069": "Budget", "0000070": "Lunch" } ), [ { room: "0000069", name: "Budget" }, { room: "0000070", name: "Lunch" },
  { room: "0000072", name: "lunch" }, { room: "0000068", name: "" }, { room: "0000071", name: "" } ] );
 
-// NOTE: Your keys to another device by Ian's exchange (Damon, 2026-11-05) - the two addresses, and reading them back.
+// NOTE: Your keys to another device by the exchange of two codes (2026-11-05) - the two addresses, and reading them back.
 var ask_key = "a1".repeat( 32 ), reply_key = "b2".repeat( 32 ), sealed_key = "c3".repeat( 32 );
 check( "another device - the ask, this page with its public key after #", ap.device_ask_link( "http://n/account.html", ask_key ),
  "http://n/account.html#keys-ask=" + ask_key );
@@ -288,7 +288,7 @@ check( "- not one: the old address with the access key, a key too short, a reply
  + ".html#keys=" + sealed_key ), ap.parse_device_link( "keys-ask=" + ask_key.substr( 2 ) ), ap.parse_device_link( "keys-reply=" + reply_key + "."
  + sealed_key ), ap.parse_device_link( "" ) ], [ null, null, null, null ] );
 
-// NOTE: Keys from the administrator (Damon, 2026-11-11) - the same exchange, each kind its own, the answer a person's entropy.
+// NOTE: Keys from the administrator (2026-11-11) - the same exchange, each kind its own, the answer a person's entropy.
 var given_entropy = "d4".repeat( 16 );
 check( "keys from the administrator - the ask and the answer, each its own kind", [ ap.device_give_link( "http://n/account.html", ask_key ),
  ap.parse_device_link( ap.device_give_link( "http://n/account.html", ask_key ) ), ap.parse_device_link( ap.device_given_link( "http://n/account.html",
@@ -307,7 +307,7 @@ check( "- an answer with an access key's length not taken as one, nor another de
  + reply_key + "." + sealed_key + ".0123456789abcdef" ), ap.parse_device_link( "keys-reply=" + reply_key + "." + given_entropy
  + ".0123456789abcdef" ) ], [ null, null ] );
 
-// NOTE: In one scan (Damon, 2026-11-18) - each code with a one-off secret after its key, and the answer left on the node without its page.
+// NOTE: In one scan (2026-11-18) - each code with a one-off secret after its key, and the answer left on the node without its page.
 var pick = "e5".repeat( 16 );
 check( "in one scan - the codes with their secret, read back; a secret of the wrong length not taken", [
  ap.device_give_link( "http://n/account.html", ask_key, pick ), ap.parse_device_link( ap.device_give_link( "http://n/account.html", ask_key, pick ) ),
@@ -341,7 +341,7 @@ check( "Give keys - everything it lacks, by field, at once", [ ap.give_field_pro
 check( "- another device's code not taken for theirs; all there, nothing", [ ap.give_field_problems( "pw", "  ", { kind: "ask", key: ask_key } ),
  ap.give_field_problems( "pw", "taxi act", { kind: "give", key: ask_key } ) ], [ { password: "", words: "Type the node's twelve words.",
  ask: "That isn't the code from Get them from your administrator - on their device, under Your keys." }, { password: "", words: "", ask: "" } ] );
-check( "- with the people key kept, only their code (Ian, 2026-11-16: no password)", [ ap.give_field_problems( null, null, null ),
+check( "- with the people key kept, only their code (2026-11-16: no password)", [ ap.give_field_problems( null, null, null ),
  ap.give_field_problems( null, null, { kind: "give", key: ask_key } ) ], [ { password: "", words: "", ask: "Scan their device's code, or"
  + " paste its address." }, { password: "", words: "", ask: "" } ] );
 check( "the exchange in two steps - the same steps on both devices, each said for whoever holds it", [ ap.exchange_steps( "give",
@@ -352,7 +352,7 @@ check( "- the person's first step says to show their code, then Next; the admini
  /^Show this code to your administrator.*press Next\.$/.test( ap.exchange_steps( "give", "asking" ).ledes[ 0 ] ),
  /^Now Ellie presses Next/.test( ap.exchange_steps( "give", "giving", "Ellie" ).ledes[ 1 ] ),
  /press Next\.$/.test( ap.exchange_steps( "device", "asking" ).ledes[ 0 ] ) ], [ true, true, true ] );
-check( "- in one scan: no steps (Damon, 2026-11-20); the keys sent, and the code shown back only if they don't arrive", [
+check( "- in one scan: no steps (2026-11-20); the keys sent, and the code shown back only if they don't arrive", [
  ap.exchange_steps( "give", "asking", "", true ).labels, ap.exchange_steps( "give", "giving", "Ellie", true ).labels,
  ap.exchange_steps( "device", "asking", "", true ).labels, ap.exchange_steps( "device", "giving", "", true ).labels,
  /arrive here by themselves\.$/.test( ap.exchange_steps( "give", "asking", "", true ).ledes[ 0 ] ),

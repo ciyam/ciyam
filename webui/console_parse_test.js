@@ -116,7 +116,7 @@ check( "options keep their spaces", cp.resolve_command( "messages create 0000000
 check( "invite", pick( cp.resolve_command( "messages update 0000004 for=tester-1,tester-2" ), keys ),
  { kind: "cws", method: "PUT", path: "/messages/0000004", options: "for=tester-1,tester-2" } );
 
-check( "a record's fields changed (Ian's PUT, 2026-11-04)", pick( cp.resolve_command( "update storage-instance 100/100100/guest assigns=100102=0" ), keys ),
+check( "a record's fields changed (the PUT, 2026-11-04)", pick( cp.resolve_command( "update storage-instance 100/100100/guest assigns=100102=0" ), keys ),
  { kind: "cws", method: "PUT", path: "/storage-instances/100/100100/guest", options: "assigns=100102=0" } );
 
 check( "users create secret", pick( cp.resolve_command( "users create secret" ), keys ),
@@ -130,7 +130,7 @@ check( "status", cp.resolve_command( "status" ).path, "/status" );
 
 check( "missing name", cp.resolve_command( "messages review" ).reason, "'messages review' needs a name" );
 
-// NOTE: Ian, 2026-10-22 - this account's own keys: no name; "retain" sends the rest of the line as the payload - only keys
+// NOTE: 2026-10-22 - this account's own keys: no name; "retain" sends the rest of the line as the payload - only keys
 // already locked ("UK3:"), so nothing typed goes to the node in the clear (found by review, 2026-10-23).
 check( "user keys - review, retain and delete", [ pick( cp.resolve_command( "review user-keys" ), keys ),
  cp.resolve_command( "retain user-keys UK3:1000:00ff:11:22" ), cp.resolve_command( "user-keys|retain UK3:abc" ).payload,
@@ -141,7 +141,7 @@ check( "- retain needs something locked, review takes no name", [ cp.resolve_com
  [ "'user-keys retain' needs what to save", "'user-keys retain' takes only what is locked first (UK3:...) - nothing in the clear",
  "'user-keys review' takes no options" ] );
 
-// NOTE: Ian, 2026-09-26 - these list what is available when given no name.
+// NOTE: 2026-09-26 - these list what is available when given no name.
 check( "view lists without a name", pick( cp.resolve_command( "view lists" ), keys ), { kind: "cws", method: "GET", path: "/webcmdlists", options: "" } );
 check( "view scripts without a name", cp.resolve_command( "view scripts" ).path, "/javascripts" );
 check( "view styles without a name", cp.resolve_command( "view styles" ).path, "/stylesheets" );
@@ -161,7 +161,7 @@ check( "local help", cp.resolve_command( "help" ), { kind: "local", name: "help"
 check( "local is case blind", cp.resolve_command( "CLEAR" ).name, "clear" );
 
 check( "quit", cp.resolve_command( "quit" ), { kind: "quit" } );
-check( "term - quit too (Ian, 2026-10-13)", cp.resolve_command( "term" ), { kind: "quit" } );
+check( "term - quit too (2026-10-13)", cp.resolve_command( "term" ), { kind: "quit" } );
 check( "init - whom to sign in as, after it", [ cp.resolve_command( "init" ), cp.resolve_command( "init 10301" ), cp.resolve_command( "init Mary Smith" ) ],
  [ { kind: "init", target: "" }, { kind: "init", target: "10301" }, { kind: "init", target: "Mary Smith" } ] );
 check( "the node's own requests, no session needed", [ cp.resolve_command( "system" ), cp.resolve_command( "uptime" ), cp.resolve_command( "unix-now" ),
@@ -337,7 +337,7 @@ check( "exec resolves to the console", cp.resolve_command( "exec" ), { kind: "lo
 // --------------------------------------------------------------------
 heading( "server javascript lines" );
 
-// NOTE: The lines of Ian's two demo lists, and the harness's other verbs.
+// NOTE: The lines of the two demo lists, and the harness's other verbs.
 check( "load with an input", cp.parse_script_line( "load script bip39 3c6eede8b0c9717370546cd446427499" ),
  { kind: "script", verb: "load", name: "bip39", arg: "3c6eede8b0c9717370546cd446427499" } );
 check( "load with none", cp.parse_script_line( "load script xor_hex_data" ), { kind: "script", verb: "load", name: "xor_hex_data", arg: null } );
@@ -485,7 +485,7 @@ check( "posted body kept", cp.make_log_entry( "chat", "POST", "http://h/cws/mess
 check( "long response cut", /truncated at 20000/.test(
  cp.make_log_entry( "chat", "GET", "http://h/cws/status", null, "x".repeat( 20100 ), t0, t1 ).response ), true );
 
-// NOTE: The whole query put back together from this tab's session, to copy (Ian, 2026-10-06).
+// NOTE: The whole query put back together from this tab's session, to copy (2026-10-06).
 var now_session = { access: "45679", device: "e0f1a2", sessid: "fff123" };
 check( "the full query, with this tab's credentials, in the harness's order", cp.full_query( "http://localhost:13031", entry, now_session ),
  "http://localhost:13031/cws/messages/0000000?access=45679&device=e0f1a2&format=text&options=text%3DDesign%20Review&session=fff123" );
@@ -518,7 +518,7 @@ check( "the apps' subscribe link - plain HTTP says so", cp.ntfy_subscribe_link( 
  "ntfy://192.168.0.15:8090/ciyam-alerts-779y5x7gy6?secure=false" );
 check( "and HTTPS does not", cp.ntfy_subscribe_link( "https://ntfy.example.org", "up2XW5ELSOW5GQ" ), "ntfy://ntfy.example.org/up2XW5ELSOW5GQ" );
 check( "no link without a server or a topic", [ cp.ntfy_subscribe_link( "", "abc" ), cp.ntfy_subscribe_link( "http://h:1", "a b" ) ], [ "", "" ] );
-// NOTE: The node's own setting (Ian, 2026-11-16) - a host with a port if need be, sent to over https by the node and the phones.
+// NOTE: The node's own setting (2026-11-16) - a host with a port if need be, sent to over https by the node and the phones.
 check( "the node's ntfy setting - a host, a port if need be, https:// taken off", [ cp.ntfy_setting_of( "https://Antares.local:8443/" ),
  cp.ntfy_setting_of( "ntfy.example.org" ), cp.ntfy_setting_of( " 192.168.0.12:8443 " ) ], [ "antares.local:8443", "ntfy.example.org", "192.168.0.12:8443" ] );
 check( "- not one: plain http, a path, a shell's characters, nothing", [ cp.ntfy_setting_of( "http://h:8090" ), cp.ntfy_setting_of( "h/topic" ),

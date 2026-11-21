@@ -3,14 +3,14 @@
 // Distributed under the MIT/X11 software license, please refer to the file license.txt
 // in the root project directory or http://www.opensource.org/licenses/mit-license.php.
 
-// NOTE: An encrypted message as the console's "x" makes one ("irc.cin", Ian 2026-10-21) - a module ("Modules" in "ciyam.js").
+// NOTE: An encrypted message as the console's "x" makes one ("irc.cin", 2026-10-21) - a module ("Modules" in "ciyam.js").
 // It is sealed under a secret: one's "own secret" - the X25519 secret between the key from one's secret entropy and the key
 // from that entropy reversed - or the secret with another person, between the key from one's entropy and their public key
-// (Ian, 2026-10-22). A message is sealed as "X", CR, a salt (16 random bytes in hex), CR, the ciphertext in hex, CR, and an
+// (2026-10-22). A message is sealed as "X", CR, a salt (16 random bytes in hex), CR, the ciphertext in hex, CR, and an
 // HMAC - "crypt -cc" (ChaCha20) under the secret with the salt after it, of: a few random letters and digits, CR, the message,
 // CR, more random letters and digits to a fixed size. The HMAC is HMAC-SHA256 of the ciphertext's hex, keyed with "mac", the
-// secret and the salt, its first 32 hex digits; opening checks it before decrypting. A prototype, as Ian's is: the sizes are
-// his test ones.
+// secret and the salt, its first 32 hex digits; opening checks it before decrypting. A prototype, as the console's is: the sizes are
+// its test ones.
 //
 // Needs "ciyam_ed25519.js" (with "ed25519.min.js") and "ciyam_chacha20.js" loaded too.
 ciyam_register_module( class extends ciyam_module
@@ -29,7 +29,7 @@ ciyam_register_module( class extends ciyam_module
    static c_salt_bytes = 16;
    static c_hmac_digits = 32;
 
-   // NOTE: As "irc_extra.cin"'s "MAX_TO_ENCRYPT" (Ian, 2026-10-29, "21ae2f5f" - 500 before) - the message padded with random
+   // NOTE: As "irc_extra.cin"'s "MAX_TO_ENCRYPT" (2026-10-29, "21ae2f5f" - 500 before) - the message padded with random
    // letters to 1,000 bytes, so every message is the same size: up to 5 left over all before it, more than that half before
    // and the rest after.
    static c_max_length = 1000;
@@ -105,7 +105,7 @@ ciyam_register_module( class extends ciyam_module
       }
    }
 
-   // NOTE: How many of the bytes left over go before the message (Ian, 2026-10-29) - all of them up to 5, otherwise half (rounded
+   // NOTE: How many of the bytes left over go before the message (2026-10-29) - all of them up to 5, otherwise half (rounded
    // down, as "irc_extra.cin" divides), the rest after it.
    static padding_before( left_over )
    {
@@ -210,7 +210,7 @@ ciyam_register_module( class extends ciyam_module
    }
 
    // NOTE: The same from a key kept as its seed ("seeds_of( )" in "ciyam_user_keys.js") - the browser keeps the keys, not the
-   // entropy (Ian, 2026-10-25).
+   // entropy (2026-10-25).
    static check_seed( seed )
    {
       var text = String( seed || "" ).toLowerCase( );
@@ -231,7 +231,7 @@ ciyam_register_module( class extends ciyam_module
       return this.ed25519( ).shared_secret( this.check_seed( seed ), String( public_key || "" ).trim( ).toLowerCase( ) );
    }
 
-   // NOTE: 64 hex digits - the own secret, or one with another person - or a room key's 32 (Ian, 2026-10-25: "irc.cin"'s "k"
+   // NOTE: 64 hex digits - the own secret, or one with another person - or a room key's 32 (2026-10-25: "irc.cin"'s "k"
    // makes one, and "irc_extra.cin" uses it as the secret as it is).
    static check_secret( secret )
    {
