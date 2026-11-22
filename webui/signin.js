@@ -1476,8 +1476,14 @@ async function recover_show( options )
 
    document.getElementById( "recover_strength" ).hidden = true;
 
-   // NOTE: Not for a reset with words - only a hash of them leaves the browser, as a sign in sends its password's.
-   document.getElementById( "recover_warning" ).hidden = !g_signin_plain || g_recover_own;
+   // NOTE: For a reset with words too (found by review, 2026-11-22) - only a hash of them leaves the browser, but over plain HTTP
+   // the page itself could be changed on its way to take them as they are typed.
+   var warning = document.getElementById( "recover_warning" );
+
+   warning.hidden = !g_signin_plain;
+   warning.lastChild.textContent = g_recover_own ? " Anyone between you and the node could change this page to take your words - only"
+    + " reset from a device on the node's own network." : " The node sees it as plain text - only recover from a device on the node's"
+    + " own network.";
    document.getElementById( "recover_form" ).hidden = false;
    document.getElementById( "recover_done" ).hidden = true;
    document.getElementById( "recover_step_words" ).hidden = false;
@@ -2154,7 +2160,7 @@ async function own_reset_submit( words, password, button )
 
    signin_set_text( "recover_status", "Checking the words with the node..." );
 
-   var error = await own_reset_send( pin, BIP39.mnemonicToEntropy( words.join( " " ) ), password );
+   var error = await own_reset_send( pin, words, password );
 
    button.disabled = false;
 
@@ -2214,10 +2220,14 @@ async function own_reset_submit( words, password, button )
 // NOTE: The reset sent as a claim's credentials are ("own_reset_credentials( )") - the check a round under the guard's own rounds,
 // taken to be the default until the node says otherwise (keys whose access key was changed, or reset before, have fewer), then
 // once more under the rounds it said. "" once the node took it, else its refusal.
-async function own_reset_send( pin, entropy, password )
+async function own_reset_send( pin, words, password )
 {
+   var entropy = "";
+
    try
    {
+      entropy = BIP39.mnemonicToEntropy( words.join( " " ) );
+
       for( var i = 0; i < c_signin_keys_scripts.length; i++ )
       {
          if( !await signin_load_script( c_signin_keys_scripts[ i ] ) )

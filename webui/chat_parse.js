@@ -3675,6 +3675,9 @@ function own_reset_error( error )
    if( /disabled/i.test( text ) )
       return { step: "words", text: "This account has been disabled - ask your administrator." };
 
+   if( /credentials are either invalid or incorrect/i.test( text ) )
+      return { step: "words", text: "There's no account with that PIN here - check it." };
+
    if( /no password to reset/i.test( text ) )
       return { step: "words", text: "Your administrator has reset this account - set it up again with its PIN, from New here?" };
 
