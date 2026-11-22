@@ -1530,17 +1530,10 @@ bool has_web_session_access_token( const string& token,
                name = credentials.substr( 0, pos );
                password = credentials.substr( pos + 1 );
 
-               // NOTE: Credentials for a reset with words ("reset_password_with_words( )") claim
-               // an account without a password (such as one just reset) with the password alone
-               // but only if they include the user name (as an account must be claimed with it).
+               // NOTE: Credentials for a reset with words cannot claim an account that has no password
+               // (such as one just reset) but its check is still verified and used up before refusing.
                if( password.find( ':' ) != string::npos )
-               {
-                  if( name.empty( ) )
-                     // FUTURE: This message should be handled as a server string message.
-                     throw runtime_error( "Account has no password to reset (it must be claimed)." );
-
-                  password.erase( password.find( ':' ) );
-               }
+                  reset_password_with_words( token, credentials );
 
                if( ( name != c_admin ) && has_user_name( name ) )
                   throw runtime_error( "user name '" + name + "' has been taken" );
@@ -2016,11 +2009,13 @@ bool is_permitted_by_keys_guard( const string& file_name, const string& new_data
 }
 
 // NOTE: A password reset by the twelve words an account's keys were made from (2026-11-22) with the credentials
-// being "<user>:<password>:<rounds>:<check>" where the "rounds" and "check" are those of a keys guard for fewer
-// rounds than the guard of the account's keys (which only the words can produce). The keys guard then becomes
-// the one provided (so that the same check cannot be used again), the password is replaced and all sessions of
-// the account are ended. A check for too many rounds is refused with the number the guard has so the next one
-// can be provided. Not possible for "admin" (whose password is the system's) or for a disabled account.
+// being "<user>:<password>:<rounds>:<check>" where the "rounds" and "check" are those of a keys guard for one
+// round fewer than the guard of the account's keys (which only the words can produce). The user name is just
+// ignored (as the PIN identifies the account). Once the check has been verified the keys guard becomes the one
+// provided (so the same check cannot be used again even if the reset is then refused) after which the password
+// is replaced and all sessions of the account are ended. A check for any other number of rounds is refused with
+// the number the guard has (so the right one can then be provided). Not possible for "admin" (whose password is
+// the system's), for a disabled account or for one without a password (which must be claimed instead).
 void reset_password_with_words( const string& pin, const string& credentials )
 {
    vector< string > parts;
@@ -2030,14 +2025,14 @@ void reset_password_with_words( const string& pin, const string& credentials )
    if( parts.size( ) != 4 )
       throw runtime_error( "requires 'passwd=<user>:<password>:<rounds>:<check>' (in base64) for a reset" );
 
-   // NOTE: The user name is optional (as the PIN identifies the account) but must match if provided.
-   if( ( pin == g_cws_admin_token ) || ( !parts[ 0 ].empty( ) && ( parts[ 0 ] != get_user_name( pin ) ) ) )
+   if( pin == g_cws_admin_token )
       // FUTURE: This message should be handled as a server string message.
       throw runtime_error( "Password cannot be reset with words for this account." );
 
-   if( get_user_pwd_hash( pin ) == c_web_session_dummy_pwd_hash )
+   if( ( parts[ 1 ].length( ) != ( c_sha256_digest_size * 2 ) )
+    || ( parts[ 1 ].find_first_not_of( "0123456789abcdef" ) != string::npos ) )
       // FUTURE: This message should be handled as a server string message.
-      throw runtime_error( "This account has been disabled." );
+      throw runtime_error( "Invalid password hash for a password reset." );
 
    string file_name( g_cws_artifacts_dir + '/' + c_ciyam_prefix + pin + c_keys_suffix );
 
@@ -2053,30 +2048,39 @@ void reset_password_with_words( const string& pin, const string& credentials )
    size_t new_rounds = 0;
    string new_check;
 
-   string new_guard( c_keys_guard_prefix + parts[ 2 ] + ':' + parts[ 3 ] );
-
-   if( !get_keys_guard( new_guard, new_rounds, new_check ) )
+   // NOTE: As only the first line is read by "get_keys_guard" the check cannot contain a line feed.
+   if( ( parts[ 3 ].find( '\n' ) != string::npos )
+    || !get_keys_guard( c_keys_guard_prefix + parts[ 2 ] + ':' + parts[ 3 ], new_rounds, new_check ) )
       // FUTURE: This message should be handled as a server string message.
       throw runtime_error( "Invalid keys guard for a password reset." );
 
-   if( new_rounds >= old_rounds )
+   // NOTE: Only one round fewer is accepted so that verifying the check requires just a single hash.
+   if( new_rounds != ( old_rounds - 1 ) )
       // FUTURE: This message should be handled as a server string message.
       throw runtime_error( "Keys guard has " + to_string( old_rounds ) + " rounds." );
 
-   for( size_t i = new_rounds; i < old_rounds; i++ )
-   {
-      sha256 hash( new_check );
+   string given_check( new_check );
 
-      new_check = hash.get_digest_as_string( );
-   }
+   sha256 hash( new_check );
 
-   if( new_check != old_check )
+   if( hash.get_digest_as_string( ) != old_check )
       // FUTURE: This message should be handled as a server string message.
       throw runtime_error( "Incorrect words for this account." );
 
    string::size_type pos = keys_data.find( '\n' );
 
-   write_file( file_name, new_guard + ( ( pos == string::npos ) ? string( ) : keys_data.substr( pos ) ) );
+   write_file( file_name, c_keys_guard_prefix + to_string( new_rounds ) + ':' + given_check
+    + ( ( pos == string::npos ) ? string( ) : keys_data.substr( pos ) ) );
+
+   string old_pwd_hash( get_user_pwd_hash( pin ) );
+
+   if( old_pwd_hash == c_web_session_dummy_pwd_hash )
+      // FUTURE: This message should be handled as a server string message.
+      throw runtime_error( "This account has been disabled." );
+
+   if( old_pwd_hash.empty( ) )
+      // FUTURE: This message should be handled as a server string message.
+      throw runtime_error( "Account has no password to reset (it must be claimed)." );
 
    string pwd_hash( sha256( parts[ 1 ] ).get_digest_as_string( ) );
 
@@ -2086,7 +2090,7 @@ void reset_password_with_words( const string& pin, const string& credentials )
 
    clear_key( parts[ 1 ] );
 
-   TRACE_LOG( TRACE_VERBOSE | TRACE_SESSION, "(web_session) password reset with words for " + parts[ 0 ] );
+   TRACE_LOG( TRACE_VERBOSE | TRACE_SESSION, "(web_session) password reset with words for " + get_user_name( pin ) );
 }
 
 bool ip_addr_belongs_to_a_web_session( const string& ip_addr )
