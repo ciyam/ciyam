@@ -2712,8 +2712,12 @@ async function keys_change_access( entropy, made )
    {
       access = made || await uk.access_key( entropy, rounds );
 
+      // NOTE: The guard a round under its own rounds where they are fewer than the keys' - a password reset with the words takes
+      // the guard a round lower by itself (2026-11-22).
+      var guarded = /^UK#:([0-9]+):/.exec( keys_guard_now( ) );
+
       if( await uk.next_access_key( entropy, access ) === g_keys.access )
-         guard = await uk.guard( entropy, rounds );
+         guard = await uk.guard( entropy, guarded ? Math.min( rounds, Number( guarded[ 1 ] ) - 1 ) : rounds );
    }
    catch( e )
    {

@@ -1670,6 +1670,28 @@ check( "a refusal's step - the words for words not taken, the password's for the
  cp.recovery_error_step( "Error: System is currently locked for administration.", true ),
  cp.recovery_error_step( "Error: Something else.", false ) ], [ "words", "words", "password", "password" ] );
 
+// NOTE: A person's own password reset with the words their keys were made from (2026-11-22).
+var reset_check = "ab".repeat( 32 );
+check( "a reset with words - its own words, the PIN asked, a new password for this account alone", [ cp.recovery_texts( false, true ).heading,
+ cp.recovery_texts( false, true ).back, cp.recovery_texts( false, true ).password_label, cp.recovery_texts( false, true ).submit,
+ cp.recovery_texts( false ).submit ], [ "Reset your password", "Back to sign in", "New password", "Reset and sign in", "Recover the node" ] );
+check( "- its credentials: the name, the password's hash, then the guard's rounds and check", cp.own_reset_credentials( "verify-a", "0f1e",
+ "UK#:99999:" + reset_check ), "verify-a:0f1e:99999:" + reset_check );
+check( "- without a name when this browser has none", cp.own_reset_credentials( "", "0f1e", "UK#:99999:" + reset_check ), ":0f1e:99999:" + reset_check );
+check( "- none for a guard that isn't one, a name with a colon or a hash that isn't hex", [ cp.own_reset_credentials( "a", "0f", "UK#:0:" + reset_check ),
+ cp.own_reset_credentials( "a", "0f", "UK#:99999:abc" ), cp.own_reset_credentials( "a:b", "0f", "UK#:9:" + reset_check ),
+ cp.own_reset_credentials( "a", "xyz", "UK#:9:" + reset_check ) ], [ "", "", "", "" ] );
+check( "- the rounds the node said its guard has, else 0", [ cp.own_reset_rounds_asked( "Error: Keys guard has 99998 rounds." ),
+ cp.own_reset_rounds_asked( "Error: Incorrect words for this account." ), cp.own_reset_rounds_asked( "" ) ], [ 99998, 0, 0 ] );
+check( "- its refusals, and the step each is said on", [ "Error: Incorrect words for this account.", "Error: No keys guard exists for this account.",
+ "Error: Password cannot be reset with words for this account.", "Error: This account has been disabled.",
+ "Error: Account has no password to reset (it must be claimed).", "Error: System is currently locked for administration.",
+ "Error: Something else." ].map( function( e )
+ { var r = cp.own_reset_error( e ); return r.step + ": " + r.text.split( " - " )[ 0 ]; } ), [
+ "words: Those aren't the words this account's keys were made from", "words: This account has no words of its own",
+ "words: This account's password can't be reset with words", "words: This account has been disabled",
+ "words: Your administrator has reset this account", "password: The node is locked", "password: Something else." ] );
+
 heading( "pinned messages" );
 
 // NOTE: As the node sends them, captured by "pin_probe.js" (2026-10-14) - the pinned first, author prefixed "!".

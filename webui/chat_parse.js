@@ -3486,19 +3486,37 @@ function words_entry_complete( value, wordlist )
 // that takes the place of one lost, failed or moved (2026-10-13: setting up's "Recover a node from its twelve
 // words"). There nothing can check the words - any twelve that fit together make a node - hence "caution"; and the
 // identity comes back, not the data.
-function recovery_texts( fresh )
+// NOTE: "own" - a person's own password reset with the words their keys were made from (2026-11-22: no need to ask their
+// administrator), the words' step asking their PIN too, and the password's step a new password for them alone.
+function recovery_texts( fresh, own )
 {
+   var node_password = { password_heading: "A new master password",
+    password_lede: "It takes the place of the old one - admin's password, and what unlocks the node after a restart.",
+    password_label: "New master password", submit: "Recover the node" };
+
+   if( own )
+   {
+      return { heading: "Reset your password",
+       lede: "With your PIN and the twelve words your keys were made from - the ones you chose when you set them up. Keys"
+        + " from your administrator have no words of yours: ask them to reset it instead.",
+       caution: "", back: "Back to sign in", done_heading: "", done_lede: "", done_note: "",
+       password_heading: "A new password",
+       password_lede: "It takes the place of the one you've forgotten, and you're signed in with it. Your keys stay as they are;"
+        + " anywhere else you're signed in is signed out.",
+       password_label: "New password", submit: "Reset and sign in" };
+   }
+
    if( !fresh )
    {
-      return { heading: "Recover this node",
+      return Object.assign( { heading: "Recover this node",
        lede: "With the twelve words written down when it was set up. The node checks them and takes a new master password, then"
         + " shows admin's PIN.",
        caution: "", back: "Back to sign in", done_heading: "Recovered", done_lede: "The node is unlocked, with its new master password.",
        done_note: "Write it down - it may be a new one, and only this one works now. Then make a few unlock keys, in Home, so a"
-        + " restart can be undone without the words." };
+        + " restart can be undone without the words." }, node_password );
    }
 
-   return { heading: "Recover a node from its twelve words",
+   return Object.assign( { heading: "Recover a node from its twelve words",
     lede: "This machine takes the place of one that was lost, failed or moved. With the words written down when that node was"
      + " set up, it becomes that node again - and the nodes holding its backups know it.",
     caution: "Check them against your paper. This machine has nothing to compare them with - twelve words that fit together"
@@ -3506,7 +3524,7 @@ function recovery_texts( fresh )
     back: "Back", done_heading: "Recovered - it's your node again",
     done_lede: "Its identity is back from its words, with a new master password - so the nodes holding its backups know it.",
     done_note: "Write admin's PIN down - only this one works now. The node starts without its people, rooms and messages: they"
-     + " come back when its data is restored from its backups, which isn't offered here yet." };
+     + " come back when its data is restored from its backups, which isn't offered here yet." }, node_password );
 }
 
 // NOTE: The start point only moves on (2026-10-14) - a room's pinned messages come with every read, however old, and a
@@ -3613,6 +3631,60 @@ function recovery_error_step( error, fresh )
       return "password";
 
    return /identity mismatch|locked for administration/i.test( String( error || "" ) ) ? "words" : "password";
+}
+
+// NOTE: A person's own password reset with their words (2026-11-22) - the credentials sent to "/devices" as a claim's are, the name
+// (or "" when this browser doesn't know it - the PIN says whose), the new password's hash, then the rounds and check of a guard line
+// ("UK#:<rounds>:<check>", from "guard( )" in "ciyam_user_keys.js") a round under the one on their keys, which only the words make.
+// "" for a guard line that isn't one.
+function own_reset_credentials( name, hash, guard )
+{
+   var parts = /^UK#:([1-9][0-9]{0,6}):([0-9a-f]{64})$/.exec( String( guard || "" ) );
+
+   if( !parts || ( String( name || "" ).indexOf( ":" ) >= 0 ) || !/^[0-9a-f]+$/.test( String( hash || "" ) ) )
+      return "";
+
+   return String( name || "" ) + ":" + hash + ":" + parts[ 1 ] + ":" + parts[ 2 ];
+}
+
+// NOTE: The rounds the node said the guard on the keys has, when the check sent was not under them - 0 for any other answer. The
+// page then makes the check a round under those and sends it again.
+function own_reset_rounds_asked( error )
+{
+   var found = /Keys guard has ([1-9][0-9]{0,6}) rounds/.exec( String( error || "" ) );
+
+   return found ? Number( found[ 1 ] ) : 0;
+}
+
+// NOTE: A refusal of a reset with words, in plain words - and the step it belongs on: "words" for words (or a PIN) to put right,
+// "password" for anything else.
+function own_reset_error( error )
+{
+   var text = String( error || "" ).replace( /^Error:\s*/, "" ).trim( );
+
+   if( /Incorrect words/i.test( text ) )
+      return { step: "words", text: "Those aren't the words this account's keys were made from - check each one, and that they are in order." };
+
+   if( /No keys guard/i.test( text ) )
+      return { step: "words", text: "This account has no words of its own - its keys came from your administrator, so ask them to"
+       + " reset your password." };
+
+   if( /cannot be reset with words/i.test( text ) )
+      return { step: "words", text: "This account's password can't be reset with words - ask your administrator to reset it." };
+
+   if( /disabled/i.test( text ) )
+      return { step: "words", text: "This account has been disabled - ask your administrator." };
+
+   if( /no password to reset/i.test( text ) )
+      return { step: "words", text: "Your administrator has reset this account - set it up again with its PIN, from New here?" };
+
+   if( /locked for administration/i.test( text ) )
+      return { step: "password", text: "The node is locked - a password can be reset once it has been unlocked." };
+
+   if( /Keys guard has/i.test( text ) )
+      return { step: "password", text: "The node didn't take the words just now - try again." };
+
+   return { step: "password", text: ( text !== "" ) ? text : "The password could not be reset." };
 }
 
 // NOTE: A session the node could not start - "Was unable to start a web session".
@@ -5468,6 +5540,9 @@ if( typeof module !== "undefined" )
       words_entry_complete: words_entry_complete,
       recovery_error_text: recovery_error_text,
       recovery_error_step: recovery_error_step,
+      own_reset_credentials: own_reset_credentials,
+      own_reset_rounds_asked: own_reset_rounds_asked,
+      own_reset_error: own_reset_error,
       in_time_order: in_time_order,
       last_editable: last_editable,
       edit_unchanged: edit_unchanged,

@@ -187,9 +187,18 @@ function signin_build( host, options )
       form.appendChild( signin_element( "div", { class: "chat-hint chat-signin-centred", id: "signin_setup_hint" },
        "With the code or PIN from the person who added you." ) );
 
-   // NOTE: A forgotten password is reset by admin, the account then set up again with its PIN (2026-10-29).
-   form.appendChild( signin_element( "div", { class: "chat-hint chat-signin-centred", id: "signin_forgot" },
-    "Forgotten your password? Ask your admin to reset it." ) );
+   // NOTE: A forgotten password is reset by admin, the account then set up again with its PIN (2026-10-29) - or, since 2026-11-22,
+   // by the person with the twelve words their keys were made from ("recover_show( { own } )"). Not on a locked node, which can't.
+   var forgot = signin_element( "div", { class: "chat-hint chat-signin-centred", id: "signin_forgot" } );
+   var own_reset = signin_element( "button", { type: "button", class: "chat-btn--link", id: "signin_forgot_words" }, "Use your twelve words" );
+
+   own_reset.addEventListener( "click", function( ) { recover_show( { own: true, pin: document.getElementById( "signin_pin" ).value.trim( ) } ); } );
+
+   forgot.appendChild( document.createTextNode( "Forgot your password? " ) );
+   forgot.appendChild( own_reset );
+   forgot.appendChild( signin_element( "span", { id: "signin_forgot_admin" }, ", or ask your admin." ) );
+
+   form.appendChild( forgot );
 
    // NOTE: One line (2026-10-28: the sign in scrolled) - what it forgets is said by the question it asks first.
    var foot = signin_element( "div", { class: "chat-signin-foot" } );
@@ -277,6 +286,11 @@ async function signin_check_locked( )
    document.getElementById( "signin_new_node" ).hidden = !fresh;
 
    document.getElementById( "recover_offer" ).hidden = !locked;
+
+   // NOTE: A locked node takes no password, so a reset with words is not offered there.
+   document.getElementById( "signin_forgot_words" ).hidden = locked;
+   signin_set_text( "signin_forgot_admin", locked ? "Forgotten your password? Ask your admin to reset it." : ", or ask your admin." );
+   document.getElementById( "signin_forgot" ).firstChild.textContent = locked ? "" : "Forgot your password? ";
 
    if( locked )
    {
@@ -944,6 +958,15 @@ function recover_build( )
    step_words.appendChild( signin_element( "h2", { tabindex: "-1", id: "recover_heading" }, words.heading ) );
    step_words.appendChild( signin_element( "p", { class: "chat-signin-lede", id: "recover_lede" }, words.lede ) );
 
+   // NOTE: A person's own reset asks whose account too (2026-11-22) - the PIN, from the sign in if typed there.
+   var own_pin = signin_element( "div", { id: "recover_own_pin_row", hidden: "" } );
+
+   own_pin.appendChild( signin_element( "label", { class: "chat-label", for: "recover_own_pin" }, "Your PIN" ) );
+   own_pin.appendChild( signin_element( "input", { type: "password", id: "recover_own_pin", class: "chat-field chat-field--mono",
+    inputmode: "numeric", maxlength: "5", autocomplete: "off" } ) );
+
+   step_words.appendChild( own_pin );
+
    var set = signin_element( "fieldset", { class: "recover-words-set" } );
 
    set.appendChild( signin_element( "legend", { class: "chat-label" }, "Your twelve words" ) );
@@ -997,10 +1020,10 @@ function recover_build( )
    words_actions.appendChild( next );
    step_words.appendChild( words_actions );
 
-   step_password.appendChild( signin_element( "h2", { tabindex: "-1", id: "recover_password_heading" }, "A new master password" ) );
-   step_password.appendChild( signin_element( "p", { class: "chat-signin-lede" },
-    "It takes the place of the old one - admin's password, and what unlocks the node after a restart." ) );
-   step_password.appendChild( signin_element( "label", { class: "chat-label", for: "recover_password" }, "New master password" ) );
+   step_password.appendChild( signin_element( "h2", { tabindex: "-1", id: "recover_password_heading" }, words.password_heading ) );
+   step_password.appendChild( signin_element( "p", { class: "chat-signin-lede", id: "recover_password_lede" }, words.password_lede ) );
+   step_password.appendChild( signin_element( "label", { class: "chat-label", for: "recover_password", id: "recover_password_label" },
+    words.password_label ) );
 
    var password = signin_element( "input", { type: "password", id: "recover_password", class: "chat-field", autocomplete: "new-password" } );
 
@@ -1057,7 +1080,7 @@ function recover_build( )
 
    var actions = signin_element( "div", { class: "chat-signin-actions" } );
 
-   actions.appendChild( signin_element( "button", { type: "submit", class: "chat-btn chat-btn--primary", id: "recover_submit" }, "Recover the node" ) );
+   actions.appendChild( signin_element( "button", { type: "submit", class: "chat-btn chat-btn--primary", id: "recover_submit" }, words.submit ) );
 
    var back = signin_element( "button", { type: "button", class: "chat-btn chat-signin-setup", id: "recover_back" }, words.back );
 
@@ -1080,6 +1103,8 @@ function recover_build( )
       else
       {
          recover_clear_passwords( );
+
+         g_recover_own = false;
 
          signin_show( );
       }
@@ -1153,6 +1178,9 @@ var g_recover_bip39 = null;
 
 // NOTE: Recovering onto a node not set up - { on_back } - or null for a locked node's recovery.
 var g_recover_fresh = null;
+
+// NOTE: A person's own password reset with their words (2026-11-22) rather than the node's recovery.
+var g_recover_own = false;
 
 // NOTE: The new password's hash, for Remember - "" until a recovery succeeds.
 var g_recover_hash = "";
@@ -1417,8 +1445,9 @@ async function recover_show( options )
    var fresh = !!( options && options.fresh );
 
    g_recover_fresh = fresh ? { on_back: options.on_back } : null;
+   g_recover_own = !fresh && !!( options && options.own );
 
-   var words = recovery_texts( fresh );
+   var words = recovery_texts( fresh, g_recover_own );
 
    signin_set_text( "recover_heading", words.heading );
    signin_set_text( "recover_lede", words.lede );
@@ -1427,8 +1456,15 @@ async function recover_show( options )
    signin_set_text( "recover_done_heading", words.done_heading );
    signin_set_text( "recover_done_lede", words.done_lede );
    signin_set_text( "recover_done_note", words.done_note );
+   signin_set_text( "recover_password_heading", words.password_heading );
+   signin_set_text( "recover_password_lede", words.password_lede );
+   signin_set_text( "recover_password_label", words.password_label );
+   signin_set_text( "recover_submit", words.submit );
 
    document.getElementById( "recover_caution" ).hidden = !fresh;
+   document.getElementById( "recover_own_pin_row" ).hidden = !g_recover_own;
+   document.getElementById( "recover_own_pin" ).value = g_recover_own ? String( options.pin || "" ) : "";
+   document.getElementById( "recover_own_pin" ).removeAttribute( "aria-invalid" );
 
    // NOTE: Over plain HTTP the warning shows - known from "/system", asked here when no sign in has asked yet.
    if( fresh )
@@ -1439,7 +1475,9 @@ async function recover_show( options )
    [ "recover_password", "recover_confirm" ].forEach( function( id ) { document.getElementById( id ).value = ""; } );
 
    document.getElementById( "recover_strength" ).hidden = true;
-   document.getElementById( "recover_warning" ).hidden = !g_signin_plain;
+
+   // NOTE: Not for a reset with words - only a hash of them leaves the browser, as a sign in sends its password's.
+   document.getElementById( "recover_warning" ).hidden = !g_signin_plain || g_recover_own;
    document.getElementById( "recover_form" ).hidden = false;
    document.getElementById( "recover_done" ).hidden = true;
    document.getElementById( "recover_step_words" ).hidden = false;
@@ -1456,7 +1494,11 @@ async function recover_show( options )
    document.getElementById( "signin_view" ).hidden = true;
    document.getElementById( "recover_view" ).hidden = false;
 
-   recover_inputs( )[ 0 ].focus( );
+   // NOTE: The PIN first, for a reset with words, when it wasn't typed at the sign in.
+   if( g_recover_own && ( document.getElementById( "recover_own_pin" ).value === "" ) )
+      document.getElementById( "recover_own_pin" ).focus( );
+   else
+      recover_inputs( )[ 0 ].focus( );
 
    // NOTE: Said on the words' step, which is the one showing (found by review).
    if( !await recover_load_bip39( ) )
@@ -1678,17 +1720,33 @@ async function recover_words_go( )
       return;
    }
 
-   var problem = recover_words_problem_now( );
+   // NOTE: A reset with words says what the PIN lacks first, then what the words do - both at once.
+   var problems = [ recover_own_pin_problem( ), recover_words_problem_now( ) ].filter( function( text ) { return text !== ""; } );
 
-   if( problem !== "" )
+   if( problems.length > 0 )
    {
-      signin_set_text( "recover_words_error", problem );
+      signin_set_text( "recover_words_error", problems.join( " " ) );
 
       return;
    }
 
    recover_hide_suggestions( );
    recover_show_step( "password" );
+}
+
+// NOTE: What the PIN lacks for a reset with words - "" when it is five digits, or this isn't one. Marked on the field.
+function recover_own_pin_problem( )
+{
+   var field = document.getElementById( "recover_own_pin" );
+
+   var problem = ( !g_recover_own || /^[0-9]{5}$/.test( field.value.trim( ) ) ) ? "" : "Enter your PIN - the five digits you sign in with.";
+
+   if( problem !== "" )
+      field.setAttribute( "aria-invalid", "true" );
+   else
+      field.removeAttribute( "aria-invalid" );
+
+   return problem;
 }
 
 // NOTE: Enter moves on from a box whether a word was chosen from the list or typed in full - the last box to the new
@@ -1947,8 +2005,8 @@ async function recover_submit( event )
 
    if( strength.level < 1 )
    {
-      signin_set_text( "recover_error", ( strength.text === "Unsatisfactory" )
-       ? "The master password needs at least " + c_password_min_length + " characters." : password_refusal( strength ) );
+      signin_set_text( "recover_error", ( strength.text === "Unsatisfactory" ) ? ( g_recover_own ? "The password" : "The master password" )
+       + " needs at least " + c_password_min_length + " characters." : password_refusal( strength ) );
 
       return;
    }
@@ -1961,6 +2019,13 @@ async function recover_submit( event )
    }
 
    var button = document.getElementById( "recover_submit" );
+
+   if( g_recover_own )
+   {
+      await own_reset_submit( words, password, button );
+
+      return;
+   }
 
    button.disabled = true;
 
@@ -2067,6 +2132,136 @@ async function recover_submit( event )
 
    // NOTE: The way on has the focus - not the heading, which looked strange outlined (2026-10-10).
    document.getElementById( "recover_continue" ).focus( );
+}
+
+// NOTE: A person's own password reset with the words their keys were made from (2026-11-22) - the node checks them against the guard
+// on their keys ("reset_password_with_words( )" in "ciyam_web_session.cpp"), takes the new password and signs them out everywhere;
+// then the sign in goes on with it as if typed, Remember as chosen there. What is refused is said on the step it belongs to.
+async function own_reset_submit( words, password, button )
+{
+   var pin = document.getElementById( "recover_own_pin" ).value.trim( );
+
+   if( recover_own_pin_problem( ) !== "" )
+   {
+      recover_show_step( "words" );
+
+      signin_set_text( "recover_words_error", recover_own_pin_problem( ) );
+
+      return;
+   }
+
+   button.disabled = true;
+
+   signin_set_text( "recover_status", "Checking the words with the node..." );
+
+   var error = await own_reset_send( pin, BIP39.mnemonicToEntropy( words.join( " " ) ), password );
+
+   button.disabled = false;
+
+   signin_set_text( "recover_status", "" );
+
+   if( error !== "" )
+   {
+      var refusal = own_reset_error( error );
+
+      if( refusal.step === "words" )
+      {
+         recover_show_step( "words" );
+
+         signin_set_text( "recover_words_error", refusal.text );
+      }
+      else
+         signin_set_text( "recover_error", refusal.text );
+
+      return;
+   }
+
+   // NOTE: What this browser kept for the old password goes - its hash, and the version it was hashed with, the new one hashed as
+   // now ("hash_version_for( )" in "ciyam.js").
+   try
+   {
+      localStorage.removeItem( c_signin_storage_hashed_prefix + pin );
+      localStorage.setItem( c_storage_hash_version_prefix + pin, String( c_password_hash_version ) );
+   }
+   catch( e )
+   {
+   }
+
+   recover_clear_words( );
+   recover_clear_passwords( );
+
+   g_recover_own = false;
+
+   document.getElementById( "recover_view" ).hidden = true;
+   document.getElementById( "signin_view" ).hidden = false;
+
+   document.getElementById( g_signin_ids.access ).value = "";
+
+   var pin_field = document.getElementById( "signin_pin" );
+
+   pin_field.value = pin;
+   pin_field.dispatchEvent( new Event( "input", { bubbles: true } ) );
+
+   signin_type_password( false );
+
+   document.getElementById( "signin_password" ).value = password;
+
+   password = "";
+
+   document.getElementById( "signin_form" ).requestSubmit( );
+}
+
+// NOTE: The reset sent as a claim's credentials are ("own_reset_credentials( )") - the check a round under the guard's own rounds,
+// taken to be the default until the node says otherwise (keys whose access key was changed, or reset before, have fewer), then
+// once more under the rounds it said. "" once the node took it, else its refusal.
+async function own_reset_send( pin, entropy, password )
+{
+   try
+   {
+      for( var i = 0; i < c_signin_keys_scripts.length; i++ )
+      {
+         if( !await signin_load_script( c_signin_keys_scripts[ i ] ) )
+            return "Error: The page's keys could not be read - reload the page to try again.";
+      }
+
+      var uk = ciyam_module_named( "user_keys" );
+      var hash = await ciyam.hash_combined( password, pin );
+      var name = signin_saved_name( pin ) || "";
+      var rounds = uk.c_default_rounds - 1;
+      var error = "";
+
+      for( var tries = 0; tries < 2; tries++ )
+      {
+         var credentials = own_reset_credentials( name, hash, await uk.guard( entropy, rounds ) );
+         var url = ciyam.get_cws_url( ) + "/devices?access=" + pin + "&format=text&passwd=" + CIYAM.encode_base64_url( credentials );
+
+         var reply = ( await signin_issue( function( done ) { return ciyam.fetch( url, "POST", done ); } ) ).trim( );
+
+         error = is_error_response( reply ) ? reply : ( ciyam.error || "" );
+
+         ciyam.error = "";
+
+         if( error === "" )
+            return "";
+
+         var asked = own_reset_rounds_asked( error );
+
+         if( asked < 2 )
+            break;
+
+         rounds = asked - 1;
+      }
+
+      return error;
+   }
+   catch( e )
+   {
+      return "Error: " + ( ( e && e.message ) ? e.message : "the request failed." );
+   }
+   finally
+   {
+      entropy = "";
+   }
 }
 
 // NOTE: The words are the node's secret - not left in the page once they have been used, or the sign in is shown again

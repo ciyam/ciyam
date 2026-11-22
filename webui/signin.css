@@ -91,6 +91,12 @@
    padding: 0;
 }
 
+/* NOTE: A reset with words asks the PIN above the words (2026-11-22) - the gap after a field before the next label, as elsewhere. */
+#recover_own_pin_row
+{
+   margin-bottom: 26px;
+}
+
 /* NOTE: The twelve boxes, numbered - three to a row, two on a phone. */
 .recover-words
 {

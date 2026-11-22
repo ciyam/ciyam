@@ -819,6 +819,12 @@ ok   - what it answered for words not its own, before commit 'a9d18319'
 ok   - not locked
 ok   - anything else as it came
 ok   a refusal's step - the words for words not taken, the password's for the rest, and never the words onto a new node
+ok   a reset with words - its own words, the PIN asked, a new password for this account alone
+ok   - its credentials: the name, the password's hash, then the guard's rounds and check
+ok   - without a name when this browser has none
+ok   - none for a guard that isn't one, a name with a colon or a hash that isn't hex
+ok   - the rounds the node said its guard has, else 0
+ok   - its refusals, and the step each is said on
 
 == pinned messages =============================================
 ok   a pinned message - pinned, the sender without its "!"
