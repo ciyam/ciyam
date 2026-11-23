@@ -2126,6 +2126,8 @@ void reset_password_with_words( const string& pin, const string& credentials )
 // an "admin" reset does) until words are proven again by replacing the keys with a guard of fewer rounds.
 void mark_keys_guard( const string& pin )
 {
+   guard g( g_mutex );
+
    string file_name( g_cws_artifacts_dir + '/' + c_ciyam_prefix + pin + c_keys_suffix );
 
    string keys_data( opt_buffer_file( file_name ) );
@@ -3734,23 +3736,37 @@ bool process_cws_request( http_request_type request_type, const string& uri_suff
                      error = "User keys can only be replaced using the words they were set up with.";
                   else
                   {
-                     found = true;
-
-                     // NOTE: Keeps a ".KEYS" backup of the old keys (so they can be restored if need be)
-                     // but will not overwrite an existing backup (in case the key replacement was issued
-                     // from a compromised device).
-                     if( file_exists( file_name ) )
+                     // NOTE: Checked again whilst locked so that a guard marked meanwhile (by an "admin"
+                     // reset or a password reset with words) cannot be overwritten by an older one.
+                     // Empty code block for scope purposes.
                      {
-                        string original_keys( replaced( file_name, c_keys_suffix, upper( c_keys_suffix ) ) );
+                        guard g( g_mutex );
 
-                        if( !file_exists( original_keys ) )
-                           file_rename( file_name, original_keys );
+                        if( !is_permitted_by_keys_guard( file_name, payload ) )
+                           // FUTURE: This message should be handled as a server string message.
+                           error = "User keys can only be replaced using the words they were set up with.";
+                        else
+                        {
+                           found = true;
+
+                           // NOTE: Keeps a ".KEYS" backup of the old keys (so they can be restored if need be)
+                           // but will not overwrite an existing backup (in case the key replacement was issued
+                           // from a compromised device).
+                           if( file_exists( file_name ) )
+                           {
+                              string original_keys( replaced( file_name, c_keys_suffix, upper( c_keys_suffix ) ) );
+
+                              if( !file_exists( original_keys ) )
+                                 file_rename( file_name, original_keys );
+                           }
+
+                           write_file( file_name, payload );
+                        }
                      }
 
-                     write_file( file_name, payload );
-
                      // NOTE: This delay is used to reduce possible I/O overloading.
-                     msleep( c_save_data_delay );
+                     if( found )
+                        msleep( c_save_data_delay );
                   }
                }
                else if( is_delete_request && ( uri_suffix == c_cws_uri_suffix_user_keys ) )
@@ -3993,8 +4009,16 @@ bool process_cws_request( http_request_type request_type, const string& uri_suff
                            }
                            else
                            {
+                              // NOTE: Restored keys have their guard marked (as a reset does) so that an older
+                              // guard in the backup cannot then be used to reset the password with words.
                               if( file_exists( save_file_name ) )
+                              {
+                                 guard g( g_mutex );
+
                                  file_copy( save_file_name, keys_file_name );
+
+                                 mark_keys_guard( pin );
+                              }
                               else
                                  // FUTURE: This message should be handled as a server string message.
                                  error = "Restore keys (" + pin + ") not found for user upddate.";
