@@ -1695,7 +1695,7 @@ check( "- its refusals, and the step each is said on", [ "Error: Incorrect words
 } ), [ "words: Those aren't the words for your keys.", "words: Ask your administrator to reset your password.",
  "words: Ask your administrator to reset your password.", "words: This account is disabled.",
  "words: Set this account up again, from New here?", "words: No account has that PIN.",
- "words: Ask your administrator to reset your password.", "password: The node is locked.", "password: Try again.",
+ "words: Ask your administrator to reset your password.", "password: The node is locked.", "password: The node didn't take the words - try again.",
  "password: Something else." ] );
 
 heading( "pinned messages" );

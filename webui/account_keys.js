@@ -603,6 +603,7 @@ function keys_show_enter( mode )
       restore: "Type the twelve words you set your keys up with, and they're made again from them.",
       change: "Type your twelve words for a new access key. Use it if a browser or phone with your keys is lost: any other browser"
        + " that has them will then need your words, or to get them from this one, again.",
+      unmark: "Type the twelve words you made your keys from.",
       node: "Type the twelve words the node was set up with. Your keys are made from them and your PIN, so whoever has the node's"
        + " words can make them again for you." }[ mode ];
 
@@ -618,8 +619,9 @@ function keys_show_enter( mode )
    document.getElementById( "keys_enter_words_part" ).hidden = choosing;
 
    keys_enter_have_shown( choosing );
-   document.getElementById( "keys_enter_cancel" ).hidden = !made && ( mode !== "change" );
-   document.getElementById( "keys_enter_go" ).textContent = ( mode === "change" ) ? "Change the access key" : "Use my keys here";
+   document.getElementById( "keys_enter_cancel" ).hidden = !made && ( mode !== "change" ) && ( mode !== "unmark" );
+   document.getElementById( "keys_enter_go" ).textContent = { change: "Change the access key", unmark: "Let my words reset it" }[ mode ]
+    || "Use my keys here";
    document.getElementById( "keys_enter_words" ).value = "";
 
    keys_show( "keys_enter" );
@@ -675,6 +677,9 @@ async function keys_show_here( access, lede, from_link )
    g_keys.people = opened.people;
 
    document.getElementById( "keys_here_lede" ).textContent = lede;
+
+   // NOTE: Not for admin, whose password is the node's and never reset with words.
+   document.getElementById( "keys_marked" ).hidden = ciyam.is_admin || !keys_module( "user_keys" ).guard_marked( keys_guard_now( ) );
 
    keys_draw_contacts( );
    keys_draw_rooms( );
@@ -936,6 +941,10 @@ async function keys_make_and_save( entropy, lede, people, given )
       g_keys.given = !!given;
 
       await keys_show_here( opened_access, lede, false );
+
+      // NOTE: Keys given before the mark (found by review, 2026-11-23) marked now they are given again.
+      if( given )
+         await keys_mark_guard( );
 
       if( people )
       {
@@ -2584,21 +2593,39 @@ async function keys_enter_go( )
       return;
    }
 
+   // NOTE: Let my words reset it (2026-11-23) - only the person's own words take the administrator's mark off, never the node's
+   // (from which keys given by the administrator were made).
+   if( g_keys.entering === "unmark" )
+   {
+      document.getElementById( "keys_enter_words" ).value = "";
+
+      if( found.entropy !== entropy )
+      {
+         set_error( "keys_error", "Those aren't the words you made your keys from." );
+
+         return;
+      }
+
+      await keys_unmark_guard( entropy );
+
+      entropy = "";
+
+      await keys_show_here( found.access, uk.guard_marked( keys_guard_now( ) ) ? "Your keys are on this browser."
+       : "Your words can reset your password again.", false );
+
+      return;
+   }
+
    // NOTE: The node's words typed, not admin's own - the people key from them, to keep with admin's keys.
    var people = ( ciyam.is_admin && ( found.entropy !== entropy ) ) ? await uk.people_key( entropy ) : "";
-
-   var own_words = ( found.entropy === entropy );
 
    entropy = found.entropy;
 
    var access = found.access;
 
-   // NOTE: Keys from before the guard (2026-10-31) given one, now the words are here to make it - and a guard an administrator's
-   // reset marked made unmarked again once the person's own words open the keys (2026-11-23), never by the node's words.
+   // NOTE: Keys from before the guard (2026-10-31) given one, now the words are here to make it.
    if( keys_guard_now( ) === "" )
       await keys_add_guard( entropy );
-   else if( own_words && !ciyam.is_admin && uk.guard_marked( keys_guard_now( ) ) )
-      await keys_unmark_guard( entropy );
 
    keys_keep_here( access );
 
@@ -2692,6 +2719,34 @@ async function keys_add_guard( entropy )
    keys_busy( "" );
 }
 
+// NOTE: The guard of keys given by the administrator marked, if it isn't (2026-11-23) - the same guard with the mark, which the node
+// takes from anyone; the keys as they are. Nothing said if the node does not take it.
+async function keys_mark_guard( )
+{
+   var uk = keys_module( "user_keys" );
+
+   try
+   {
+      var latest = String( await request( function( done ) { return ciyam.fetch( keys_url( "" ), "GET", done ); } ) ).trim( );
+      var guard = uk.parts_of( latest ).guard;
+
+      if( ( guard !== "" ) && !uk.guard_marked( guard ) )
+      {
+         var kept = uk.kept_text( guard + ":A", uk.parts_of( latest ).locked );
+
+         var response = await request( function( done )
+         {
+            return ciyam.fetch_in_body( keys_url( "&payload=" + encodeURIComponent( kept ) ), "PUT", done );
+         } );
+
+         g_keys.node = ( problem_text( response ) === "" ) ? kept : latest;
+      }
+   }
+   catch( e )
+   {
+   }
+}
+
 // NOTE: A guard marked by an administrator's reset made unmarked - a round under its own rounds, which only the words make, so the
 // node takes it; the keys as they are (2026-11-23). Nothing said if the node does not take it - the keys are still as they were.
 async function keys_unmark_guard( entropy )
@@ -2759,8 +2814,9 @@ async function keys_change_access( entropy, made )
       // the guard a round lower by itself (2026-11-22).
       var guarded = /^UK#:([0-9]+):/.exec( keys_guard_now( ) );
 
+      // NOTE: An administrator's mark kept (2026-11-23) - only "Let my words reset it" takes it off.
       if( await uk.next_access_key( entropy, access ) === g_keys.access )
-         guard = await uk.guard( entropy, guarded ? Math.min( rounds, Number( guarded[ 1 ] ) - 1 ) : rounds );
+         guard = await uk.guard( entropy, guarded ? Math.min( rounds, Number( guarded[ 1 ] ) - 1 ) : rounds, uk.guard_marked( keys_guard_now( ) ) );
    }
    catch( e )
    {
@@ -2860,6 +2916,7 @@ function install_keys( )
    document.getElementById( "keys_enter_new" ).addEventListener( "click", keys_start_again );
    document.getElementById( "keys_enter_have" ).addEventListener( "click", keys_enter_have );
    document.getElementById( "keys_change" ).addEventListener( "click", function( ) { keys_show_enter( "change" ); } );
+   document.getElementById( "keys_unmark" ).addEventListener( "click", function( ) { keys_show_enter( "unmark" ); } );
    document.getElementById( "keys_enter_cancel" ).addEventListener( "click", keys_cancel );
    document.getElementById( "keys_forget" ).addEventListener( "click", keys_forget );
    document.getElementById( "keys_public_show" ).addEventListener( "click", keys_show_public );

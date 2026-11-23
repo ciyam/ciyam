@@ -205,6 +205,9 @@ check( "- an error, or not locked keys, unreadable", [ ap.keys_state( true, "Err
 check( "- guarded keys read as keys; a bad guard unreadable", [ ap.keys_state( false, "UK#:100000:" + "cd".repeat( 32 ) + "\n" + locked ),
  ap.keys_state( true, "UK#:100000:" + "cd".repeat( 32 ) + "\n" + locked + "\n" ), ap.keys_state( false, "UK#:100000:cd\n" + locked ) ],
  [ "elsewhere", "here", "unreadable" ] );
+// NOTE: Marked (2026-11-23) - keys given by the administrator, or after their reset: ":A" after the check, nothing else.
+check( "- a marked guard read as keys; any other ending unreadable", [ ap.keys_state( false, "UK#:100000:" + "cd".repeat( 32 ) + ":A\n" + locked ),
+ ap.keys_state( false, "UK#:100000:" + "cd".repeat( 32 ) + ":B\n" + locked ) ], [ "elsewhere", "unreadable" ] );
 
 check( "the last step of joining - what keys are for, then set up", [ ap.keys_step_text( false ).title, ap.keys_step_text( true ).title ],
  [ "Last step: your keys", "Your keys are set up" ] );

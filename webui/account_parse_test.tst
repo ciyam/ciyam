@@ -82,6 +82,7 @@ ok   the card's state - from this browser and the node
 ok   - keys in an older form, as none - set up again
 ok   - an error, or not locked keys, unreadable
 ok   - guarded keys read as keys; a bad guard unreadable
+ok   - a marked guard read as keys; any other ending unreadable
 ok   the last step of joining - what keys are for, then set up
 ok   - set up from the administrator: no words to keep, the administrator can make them again
 ok   words to check back - three different, in order

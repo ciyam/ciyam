@@ -435,6 +435,12 @@ http://www.opensource.org/licenses/mit-license.php.
                            <button type="button" class="chat-btn" id="keys_forget">Forget them on this browser</button>
                            <button type="button" class="chat-btn" id="keys_change">Change the access key</button>
                         </div>
+                        <!-- NOTE: A guard marked by the administrator (2026-11-23) - the words can't reset the password until the
+                             person, with them, chooses that they can ("keys_show_enter( 'unmark' )"). -->
+                        <div class="account-actions-row" id="keys_marked" hidden>
+                           <span class="chat-hint">Your twelve words can't reset your password.</span>
+                           <button type="button" class="chat-btn" id="keys_unmark">Let my words reset it</button>
+                        </div>
                      </div>
 
                      <div class="chat-error-text" id="keys_error" role="alert"></div>

@@ -3661,13 +3661,13 @@ function own_reset_error( error )
    var text = String( error || "" ).replace( /^Error:\s*/, "" ).trim( );
 
    var refusals = [
-      [ /Incorrect words/i, "words", "Those aren't the words for your keys." ],
-      [ /No keys guard|does not permit|cannot be reset with words/i, "words", "Ask your administrator to reset your password." ],
-      [ /disabled/i, "words", "This account is disabled." ],
-      [ /credentials are either invalid or incorrect/i, "words", "No account has that PIN." ],
-      [ /no password to reset/i, "words", "Set this account up again, from New here?" ],
-      [ /locked for administration/i, "password", "The node is locked." ],
-      [ /Keys guard has/i, "password", "Try again." ] ];
+    [ /Incorrect words/i, "words", "Those aren't the words for your keys." ],
+    [ /No keys guard|does not permit|cannot be reset with words/i, "words", "Ask your administrator to reset your password." ],
+    [ /disabled/i, "words", "This account is disabled." ],
+    [ /credentials are either invalid or incorrect/i, "words", "No account has that PIN." ],
+    [ /no password to reset/i, "words", "Set this account up again, from New here?" ],
+    [ /locked for administration/i, "password", "The node is locked." ],
+    [ /Keys guard has/i, "password", "The node didn't take the words - try again." ] ];
 
    for( var i = 0; i < refusals.length; i++ )
    {
