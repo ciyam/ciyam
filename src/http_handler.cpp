@@ -1225,7 +1225,23 @@ void http_request_handler::on_start( )
                            if( !nominated.empty( ) && ( nominated[ 0 ] == '?' ) )
                               nominated.erase( );
 
-                           if( !has_empty_user_hash( cws_params.access ) )
+                           // NOTE: Credentials with a keys guard check ("<user>:<password>:<rounds>:<check>") are for
+                           // a password reset with words which only needs the account to exist (as everything else is
+                           // then checked by the web session itself in "reset_password_with_words").
+                           size_t num_separators = 0;
+
+                           for( size_t i = 0; i < cws_params.passwd.length( ); i++ )
+                           {
+                              if( cws_params.passwd[ i ] == ':' )
+                                 ++num_separators;
+                           }
+
+                           if( num_separators == 3 )
+                           {
+                              if( ( cws_params.access != g_cws_admin_token ) && !has_user_info( cws_params.access ) )
+                                 bad_credentials = true;
+                           }
+                           else if( !has_empty_user_hash( cws_params.access ) )
                               bad_credentials = true;
                            else if( !nominated.empty( ) && ( name != nominated ) )
                               // FUTURE: This message should be handled as a server string message.
