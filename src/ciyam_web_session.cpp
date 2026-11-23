@@ -145,6 +145,7 @@ constexpr const char* c_keys_suffix = ".keys";
 constexpr const char* c_list_suffix = ".list";
 
 constexpr const char* c_keys_guard_prefix = "UK#:";
+constexpr const char* c_keys_guard_marker = "A";
 
 const size_t c_keys_guard_max_rounds = 1000000;
 
@@ -1941,7 +1942,10 @@ void dump_session_info( ostream& os, bool full )
 // of "user_keys_check" and the user's entropy which is then re-hashed once per round. As a hash cannot
 // be reversed only the twelve words will produce the check for fewer rounds (whereas anyone could hash
 // it on to more rounds).
-bool get_keys_guard( const string& keys_data, size_t& rounds, string& check )
+//
+// The guard can also be marked "UK#:<rounds>:<check>:A" (2026-11-23) for keys that were given by "admin" or
+// after an "admin" reset of the user, so that it cannot be used to reset the user's password with the words.
+bool get_keys_guard( const string& keys_data, size_t& rounds, string& check, bool* p_is_marked = 0 )
 {
    bool retval = false;
 
@@ -1951,7 +1955,12 @@ bool get_keys_guard( const string& keys_data, size_t& rounds, string& check )
 
       split( keys_data.substr( 0, keys_data.find( '\n' ) ), parts, ':' );
 
-      if( ( parts.size( ) == 3 ) && !parts[ 1 ].empty( ) && ( parts[ 1 ].length( ) <= 7 )
+      bool is_marked = ( ( parts.size( ) == 4 ) && ( parts[ 3 ] == c_keys_guard_marker ) );
+
+      if( p_is_marked )
+         *p_is_marked = is_marked;
+
+      if( ( ( parts.size( ) == 3 ) || is_marked ) && !parts[ 1 ].empty( ) && ( parts[ 1 ].length( ) <= 7 )
        && ( parts[ 1 ][ 0 ] != '0' ) && ( parts[ 1 ].find_first_not_of( "0123456789" ) == string::npos )
        && ( parts[ 2 ].length( ) == ( c_sha256_digest_size * 2 ) )
        && ( parts[ 2 ].find_first_not_of( "0123456789abcdef" ) == string::npos ) )
@@ -1969,7 +1978,8 @@ bool get_keys_guard( const string& keys_data, size_t& rounds, string& check )
 // NOTE: Once keys are guarded they can only be replaced with the same guard, or one with fewer rounds
 // whose check (when hashed on to the old rounds) matches (suggested 2026-10-27). They can only
 // be erased with the latter, as the guard itself can be read by anyone holding the access key (so then
-// a new guard could otherwise be created after erasing).
+// a new guard could otherwise be created after erasing). A marked guard stays marked when replaced by
+// the same guard so only one with fewer rounds (which needs the words) can remove the mark.
 bool is_permitted_by_keys_guard( const string& file_name, const string& new_data, bool is_erase = false )
 {
    bool retval = true;
@@ -1983,15 +1993,20 @@ bool is_permitted_by_keys_guard( const string& file_name, const string& new_data
       size_t old_rounds = 0;
       string old_check;
 
-      if( get_keys_guard( old_data, old_rounds, old_check ) )
+      bool old_is_marked = false;
+
+      if( get_keys_guard( old_data, old_rounds, old_check, &old_is_marked ) )
       {
          size_t new_rounds = 0;
          string new_check;
 
+         bool new_is_marked = false;
+
          retval = false;
 
-         if( get_keys_guard( new_data, new_rounds, new_check )
-          && ( ( new_rounds < old_rounds ) || ( !is_erase && ( new_rounds == old_rounds ) ) ) )
+         if( get_keys_guard( new_data, new_rounds, new_check, &new_is_marked )
+          && ( ( new_rounds < old_rounds )
+          || ( !is_erase && ( new_rounds == old_rounds ) && ( new_is_marked || !old_is_marked ) ) ) )
          {
             for( size_t i = new_rounds; i < old_rounds; i++ )
             {
@@ -2041,9 +2056,23 @@ void reset_password_with_words( const string& pin, const string& credentials )
    size_t old_rounds = 0;
    string old_check;
 
-   if( !get_keys_guard( keys_data, old_rounds, old_check ) )
+   bool is_marked = false;
+
+   if( !get_keys_guard( keys_data, old_rounds, old_check, &is_marked ) )
       // FUTURE: This message should be handled as a server string message.
       throw runtime_error( "No keys guard exists for this account." );
+
+   // NOTE: Keys given by "admin" (or after an "admin" reset) can only have their password reset by "admin"
+   // (and if just reset by "admin" then the account needs to be claimed).
+   if( is_marked )
+   {
+      if( get_user_pwd_hash( pin ).empty( ) )
+         // FUTURE: This message should be handled as a server string message.
+         throw runtime_error( "Account has no password to reset (it must be claimed)." );
+
+      // FUTURE: This message should be handled as a server string message.
+      throw runtime_error( "Keys guard does not permit a password reset." );
+   }
 
    size_t new_rounds = 0;
    string new_check;
@@ -2091,6 +2120,28 @@ void reset_password_with_words( const string& pin, const string& credentials )
    clear_key( parts[ 1 ] );
 
    TRACE_LOG( TRACE_VERBOSE | TRACE_SESSION, "(web_session) password reset with words for " + get_user_name( pin ) );
+}
+
+// NOTE: Marks the guard of a user's keys (if they have one) so that it can no longer reset the password (as
+// an "admin" reset does) until words are proven again by replacing the keys with a guard of fewer rounds.
+void mark_keys_guard( const string& pin )
+{
+   string file_name( g_cws_artifacts_dir + '/' + c_ciyam_prefix + pin + c_keys_suffix );
+
+   string keys_data( opt_buffer_file( file_name ) );
+
+   size_t rounds = 0;
+   string check;
+
+   bool is_marked = false;
+
+   if( get_keys_guard( keys_data, rounds, check, &is_marked ) && !is_marked )
+   {
+      string::size_type pos = keys_data.find( '\n' );
+
+      write_file( file_name, c_keys_guard_prefix + to_string( rounds ) + ':' + check + ':' + c_keys_guard_marker
+       + ( ( pos == string::npos ) ? string( ) : keys_data.substr( pos ) ) );
+   }
 }
 
 bool ip_addr_belongs_to_a_web_session( const string& ip_addr )
@@ -3822,8 +3873,16 @@ bool process_cws_request( http_request_type request_type, const string& uri_suff
                         {
                            found = true;
 
+                           // NOTE: A reset also stops the guard of the user's keys from resetting the password
+                           // (2026-11-23) and ends any sessions (as the password they were started with is gone).
                            if( is_reset )
+                           {
                               remove_user_info_from_storage( pin );
+
+                              mark_keys_guard( pin );
+
+                              remove_all_sessions_for_access( pin );
+                           }
 
                            temp_umask tum( 077 );
 
