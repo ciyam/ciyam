@@ -879,7 +879,9 @@ async function keys_make_and_save( entropy, lede, people, given )
    try
    {
       access = await uk.access_key( entropy, rounds );
-      guard = await uk.guard( entropy, rounds );
+
+      // NOTE: Marked when given by the administrator (2026-11-23), so the node lets only the administrator reset the password.
+      guard = await uk.guard( entropy, rounds, !!given );
       seeds = uk.seeds_of( entropy );
    }
    catch( e )
@@ -2585,13 +2587,18 @@ async function keys_enter_go( )
    // NOTE: The node's words typed, not admin's own - the people key from them, to keep with admin's keys.
    var people = ( ciyam.is_admin && ( found.entropy !== entropy ) ) ? await uk.people_key( entropy ) : "";
 
+   var own_words = ( found.entropy === entropy );
+
    entropy = found.entropy;
 
    var access = found.access;
 
-   // NOTE: Keys from before the guard (2026-10-31) given one, now the words are here to make it.
+   // NOTE: Keys from before the guard (2026-10-31) given one, now the words are here to make it - and a guard an administrator's
+   // reset marked made unmarked again once the person's own words open the keys (2026-11-23), never by the node's words.
    if( keys_guard_now( ) === "" )
       await keys_add_guard( entropy );
+   else if( own_words && !ciyam.is_admin && uk.guard_marked( keys_guard_now( ) ) )
+      await keys_unmark_guard( entropy );
 
    keys_keep_here( access );
 
@@ -2677,6 +2684,42 @@ async function keys_add_guard( entropy )
 
          g_keys.node = ( problem_text( response ) === "" ) ? kept : latest;
       }
+   }
+   catch( e )
+   {
+   }
+
+   keys_busy( "" );
+}
+
+// NOTE: A guard marked by an administrator's reset made unmarked - a round under its own rounds, which only the words make, so the
+// node takes it; the keys as they are (2026-11-23). Nothing said if the node does not take it - the keys are still as they were.
+async function keys_unmark_guard( entropy )
+{
+   var uk = keys_module( "user_keys" );
+
+   keys_busy( "Securing your keys…" );
+
+   await keys_drawn( );
+
+   try
+   {
+      var latest = String( await request( function( done ) { return ciyam.fetch( keys_url( "" ), "GET", done ); } ) ).trim( );
+      var marked = uk.parts_of( latest ).guard;
+
+      if( uk.guard_marked( marked ) && ( Number( marked.split( ":" )[ 1 ] ) > 1 ) )
+      {
+         var kept = uk.kept_text( await uk.guard( entropy, Number( marked.split( ":" )[ 1 ] ) - 1 ), uk.parts_of( latest ).locked );
+
+         var response = await request( function( done )
+         {
+            return ciyam.fetch_in_body( keys_url( "&payload=" + encodeURIComponent( kept ) ), "PUT", done );
+         } );
+
+         g_keys.node = ( problem_text( response ) === "" ) ? kept : latest;
+      }
+      else
+         g_keys.node = latest;
    }
    catch( e )
    {

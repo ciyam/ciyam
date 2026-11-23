@@ -261,8 +261,9 @@ ciyam_register_module( class extends ciyam_module
       return harden.rounds( hasher, 1, this.c_label + this.checked_entropy( entropy ), this.checked_access( access_key ) );
    }
 
-   // NOTE: The guard's line for keys locked with "rounds" - only the words make it.
-   static async guard( entropy, rounds )
+   // NOTE: The guard's line for keys locked with "rounds" - only the words make it. "marked" - for keys given by the administrator
+   // (2026-11-23), whose password the node then lets only the administrator reset (":A" after it, as an administrator's reset adds).
+   static async guard( entropy, rounds, marked )
    {
       var hasher = ( typeof ciyam_sha256_fastest === "function" ) ? await ciyam_sha256_fastest( ) : { native: true, hash: ciyam_sha256_hex };
       var count = this.checked_rounds( ( rounds !== undefined ) ? Number( rounds ) : this.c_default_rounds );
@@ -272,7 +273,13 @@ ciyam_register_module( class extends ciyam_module
       for( var i = 0; i < count; i++ )
          check = hasher.native ? await hasher.hash( check ) : hasher.hash( check );
 
-      return this.c_guard_format + ":" + count + ":" + check;
+      return this.c_guard_format + ":" + count + ":" + check + ( marked ? ":A" : "" );
+   }
+
+   // NOTE: Whether a guard's line is marked - by keys given by the administrator, or an administrator's reset.
+   static guard_marked( guard )
+   {
+      return /^UK#:[0-9]+:[0-9a-f]{64}:A$/.test( String( guard || "" ) );
    }
 
    // NOTE: New keys from the entropy, as the node keeps them - with no one else's public keys yet, guarded, locked under the access
@@ -295,7 +302,7 @@ ciyam_register_module( class extends ciyam_module
 
       if( ( lines.length === 2 ) && ( lines[ 0 ].indexOf( this.c_guard_format + ":" ) === 0 ) )
       {
-         if( !/^UK#:[1-9][0-9]{0,6}:[0-9a-f]{64}$/.test( lines[ 0 ] ) )
+         if( !/^UK#:[1-9][0-9]{0,6}:[0-9a-f]{64}(:A)?$/.test( lines[ 0 ] ) )
             throw new Error( "Those are not locked keys." );
 
          return { guard: lines[ 0 ], locked: lines[ 1 ] };
@@ -405,7 +412,8 @@ ciyam_register_module( class extends ciyam_module
    }
 
    // NOTE: The rounds locked keys were made with - so typing the words makes the same access key - or an error. With or without
-   // the guard's line, whose rounds must be theirs.
+   // the guard's line, whose rounds are theirs or fewer - a password reset with the words takes the guard a round lower by itself
+   // (2026-11-22).
    static rounds_of( kept )
    {
       var both = this.parts_of( kept );
@@ -414,7 +422,7 @@ ciyam_register_module( class extends ciyam_module
       if( ( parts.length !== 5 ) || ( parts[ 0 ] !== this.c_format ) || !/^[1-9][0-9]{0,8}$/.test( parts[ 1 ] )
        || ( Number( parts[ 1 ] ) > this.c_most_rounds ) || !/^[0-9a-f]{32}$/.test( parts[ 2 ] )
        || !/^([0-9a-f]{2})+$/.test( parts[ 3 ] ) || !/^[0-9a-f]{64}$/.test( parts[ 4 ] )
-       || ( ( both.guard !== "" ) && ( both.guard.split( ":" )[ 1 ] !== parts[ 1 ] ) ) )
+       || ( ( both.guard !== "" ) && ( Number( both.guard.split( ":" )[ 1 ] ) > Number( parts[ 1 ] ) ) ) )
          throw new Error( "Those are not locked keys." );
 
       return Number( parts[ 1 ] );

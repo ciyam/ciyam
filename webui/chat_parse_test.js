@@ -1686,14 +1686,16 @@ check( "- the rounds the node said its guard has, else 0", [ cp.own_reset_rounds
 check( "- its refusals, and the step each is said on", [ "Error: Incorrect words for this account.", "Error: No keys guard exists for this account.",
  "Error: Password cannot be reset with words for this account.", "Error: This account has been disabled.",
  "Error: Account has no password to reset (it must be claimed).", "Error: User credentials are either invalid or incorrect.",
- "Error: System is currently locked for administration.", "Error: Something else." ].map( function( e )
+ "Error: Keys guard does not permit a password reset.", "Error: System is currently locked for administration.",
+ "Error: Keys guard has 999 rounds.", "Error: Something else." ].map( function( e )
 {
    var r = cp.own_reset_error( e );
 
-   return r.step + ": " + r.text.split( " - " )[ 0 ];
-} ), [ "words: Those aren't the words this account's keys were made from", "words: This account has no words of its own",
- "words: This account's password can't be reset with words", "words: This account has been disabled",
- "words: Your administrator has reset this account", "words: There's no account with that PIN here", "password: The node is locked",
+   return r.step + ": " + r.text;
+} ), [ "words: Those aren't the words for your keys.", "words: Ask your administrator to reset your password.",
+ "words: Ask your administrator to reset your password.", "words: This account is disabled.",
+ "words: Set this account up again, from New here?", "words: No account has that PIN.",
+ "words: Ask your administrator to reset your password.", "password: The node is locked.", "password: Try again.",
  "password: Something else." ] );
 
 heading( "pinned messages" );

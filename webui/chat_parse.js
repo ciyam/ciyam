@@ -3497,12 +3497,10 @@ function recovery_texts( fresh, own )
    if( own )
    {
       return { heading: "Reset your password",
-       lede: "With your PIN and the twelve words your keys were made from - the ones you chose when you set them up. Keys"
-        + " from your administrator have no words of yours: ask them to reset it instead.",
+       lede: "With your PIN and the twelve words you made your keys from.",
        caution: "", back: "Back to sign in", done_heading: "", done_lede: "", done_note: "",
        password_heading: "A new password",
-       password_lede: "It takes the place of the one you've forgotten, and you're signed in with it. Your keys stay as they are;"
-        + " anywhere else you're signed in is signed out.",
+       password_lede: "You'll be signed in with it, and signed out everywhere else.",
        password_label: "New password", submit: "Reset and sign in" };
    }
 
@@ -3662,30 +3660,20 @@ function own_reset_error( error )
 {
    var text = String( error || "" ).replace( /^Error:\s*/, "" ).trim( );
 
-   if( /Incorrect words/i.test( text ) )
-      return { step: "words", text: "Those aren't the words this account's keys were made from - check each one, and that they are in order." };
+   var refusals = [
+      [ /Incorrect words/i, "words", "Those aren't the words for your keys." ],
+      [ /No keys guard|does not permit|cannot be reset with words/i, "words", "Ask your administrator to reset your password." ],
+      [ /disabled/i, "words", "This account is disabled." ],
+      [ /credentials are either invalid or incorrect/i, "words", "No account has that PIN." ],
+      [ /no password to reset/i, "words", "Set this account up again, from New here?" ],
+      [ /locked for administration/i, "password", "The node is locked." ],
+      [ /Keys guard has/i, "password", "Try again." ] ];
 
-   if( /No keys guard/i.test( text ) )
-      return { step: "words", text: "This account has no words of its own - its keys came from your administrator, so ask them to"
-       + " reset your password." };
-
-   if( /cannot be reset with words/i.test( text ) )
-      return { step: "words", text: "This account's password can't be reset with words - ask your administrator to reset it." };
-
-   if( /disabled/i.test( text ) )
-      return { step: "words", text: "This account has been disabled - ask your administrator." };
-
-   if( /credentials are either invalid or incorrect/i.test( text ) )
-      return { step: "words", text: "There's no account with that PIN here - check it." };
-
-   if( /no password to reset/i.test( text ) )
-      return { step: "words", text: "Your administrator has reset this account - set it up again with its PIN, from New here?" };
-
-   if( /locked for administration/i.test( text ) )
-      return { step: "password", text: "The node is locked - a password can be reset once it has been unlocked." };
-
-   if( /Keys guard has/i.test( text ) )
-      return { step: "password", text: "The node didn't take the words just now - try again." };
+   for( var i = 0; i < refusals.length; i++ )
+   {
+      if( refusals[ i ][ 0 ].test( text ) )
+         return { step: refusals[ i ][ 1 ], text: refusals[ i ][ 2 ] };
+   }
 
    return { step: "password", text: ( text !== "" ) ? text : "The password could not be reset." };
 }

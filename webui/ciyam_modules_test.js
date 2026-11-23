@@ -859,8 +859,15 @@ async function steps( module_class, list )
    check( "guarded keys - the guard's line, then the keys; read as before, the guard given back", [ guarded, uk.rounds_of( guarded ),
     ( await uk.unlock( known_access, guarded ) ).guard, uk.parts_of( known_locked ), uk.kept_text( "", known_locked ) ],
     [ guard_line + "\n" + known_locked, 1000, guard_line, { guard: "", locked: known_locked }, known_locked ] );
-   check( "- not read: a guard of other rounds than the keys', a bad guard, or a line too many", [
-    await not_opened( known_access, uk.kept_text( "UK#:999:" + check_at[ 999 ], known_locked ) ),
+   // NOTE: A guard fewer rounds than the keys' is read (2026-11-22: a password reset with the words takes it a round lower), and
+   // one marked by the administrator (2026-11-23).
+   check( "- a guard a round under the keys', and a marked one, still read", [
+    ( await uk.unlock( known_access, uk.kept_text( "UK#:999:" + check_at[ 999 ], known_locked ) ) ).guard,
+    ( await uk.unlock( known_access, uk.kept_text( await uk.guard( test_entropy, 1000, true ), known_locked ) ) ).guard,
+    uk.guard_marked( await uk.guard( test_entropy, 1000, true ) ), uk.guard_marked( guard_line ) ],
+    [ "UK#:999:" + check_at[ 999 ], "UK#:1000:" + check_at[ 1000 ] + ":A", true, false ] );
+   check( "- not read: a guard of more rounds than the keys', a bad guard, or a line too many", [
+    await not_opened( known_access, uk.kept_text( "UK#:1001:" + check_at[ 1000 ], known_locked ) ),
     await not_opened( known_access, "UK#:1000:xyz\n" + known_locked ), await not_opened( known_access, guarded + "\n" + known_locked ) ],
     [ "Those are not locked keys.", "Those are not locked keys.", "Those are not locked keys." ] );
 
