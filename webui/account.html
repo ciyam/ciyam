@@ -53,6 +53,7 @@ http://www.opensource.org/licenses/mit-license.php.
    <link rel="preload" href="account.form" as="fetch" crossorigin="anonymous">
    <link rel="preload" href="account.js" as="script">
    <link rel="preload" href="account_keys.js" as="script">
+   <link rel="preload" href="account_move.js" as="script">
 </head>
 
 <body onload="load( )">
@@ -110,6 +111,7 @@ http://www.opensource.org/licenses/mit-license.php.
       load_form( "account" )
        .then( function( ) { return load_script( "account.js" ); } )
        .then( function( ) { return load_script( "account_keys.js" ); } )
+       .then( function( ) { return load_script( "account_move.js" ); } )
        .then( function( ) { window.setTimeout( call_at_load, c_load_delay ); } )
        .catch( function( )
        {

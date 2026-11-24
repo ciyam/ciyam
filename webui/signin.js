@@ -52,6 +52,9 @@ const c_signin_pending_keys_name = "cws.pending_keys";
 // Your keys is shown.
 const c_signin_give_keys_name = "cws.give_keys";
 
+// NOTE: The accounts moved to a new phone and not cleared from here yet ("signin_moved( )").
+const c_signin_moved_name = "cws.moved";
+
 const c_signin_saved_mark = "  ·  saved password";
 
 const c_signin_title = "Sign in";
@@ -102,6 +105,18 @@ function signin_build( host, options )
    form.appendChild( brand );
    form.appendChild( signin_element( "h2", { tabindex: "-1" }, c_signin_title ) );
    form.appendChild( signin_element( "p", { class: "chat-signin-lede" }, c_signin_lede ) );
+
+   // NOTE: Accounts moved to a new phone but not cleared from here ("Not now" - "account_move.js", 2026-11-23), offered again.
+   var moved = signin_element( "div", { class: "signin-moved", id: "signin_moved", role: "status", hidden: "" } );
+   var clear_moved = signin_element( "button", { type: "button", class: "chat-btn--link", id: "signin_moved_clear" }, "Clear them from here" );
+
+   clear_moved.addEventListener( "click", signin_clear_moved );
+
+   moved.appendChild( signin_element( "span", { id: "signin_moved_text" } ) );
+   moved.appendChild( document.createTextNode( " " ) );
+   moved.appendChild( clear_moved );
+
+   form.appendChild( moved );
 
    form.appendChild( signin_element( "label", { class: "chat-label", for: g_signin_ids.access, id: "signin_access_label" }, "Account" ) );
 
@@ -394,6 +409,74 @@ function signin_forget_stale_names( )
    }
 }
 
+// NOTE: The accounts moved to a new phone and not yet cleared from here - "{ pins, names }" - or null ("account_move.js").
+function signin_moved( )
+{
+   try
+   {
+      var moved = JSON.parse( localStorage.getItem( c_signin_moved_name ) || "null" );
+
+      if( moved && Array.isArray( moved.pins ) && Array.isArray( moved.names ) )
+         return { pins: moved.pins.map( String ).filter( is_account_pin ), names: moved.names.map( String ) };
+   }
+   catch( e )
+   {
+   }
+
+   return null;
+}
+
+function signin_show_moved( )
+{
+   var moved = signin_moved( );
+   var notice = document.getElementById( "signin_moved" );
+
+   if( notice === null )
+      return;
+
+   notice.hidden = ( moved === null );
+
+   if( moved !== null )
+      signin_set_text( "signin_moved_text", move_names_text( moved.names ) + ( ( moved.names.length === 1 ) ? " is" : " are" )
+       + " on your new phone now." );
+}
+
+// NOTE: The accounts moved forgotten here - all the browser keeps for the node, its device token too (the new phone's now), once no
+// account is left.
+function signin_clear_moved( )
+{
+   var moved = signin_moved( );
+
+   try
+   {
+      if( moved !== null )
+      {
+         var keys = [ ];
+
+         for( var i = 0; i < localStorage.length; i++ )
+            keys.push( localStorage.key( i ) );
+
+         var left = parse_access_list( localStorage.getItem( c_signin_storage_access ) ).filter( function( pin )
+         {
+            return moved.pins.indexOf( pin ) < 0;
+         } );
+
+         move_forget_keys( keys, moved.pins, moved.names, left.length === 0 ).forEach( function( key ) { localStorage.removeItem( key ); } );
+
+         if( left.length > 0 )
+            localStorage.setItem( c_signin_storage_access, format_access_list( left ) );
+      }
+
+      localStorage.removeItem( c_signin_moved_name );
+   }
+   catch( e )
+   {
+   }
+
+   signin_forget_session( );
+   signin_fill_saved( );
+}
+
 // NOTE: Read each time - another app may have replaced it since this page loaded ("Reset this browser").
 function signin_stored_device( )
 {
@@ -417,6 +500,7 @@ function signin_remember_device( )
 function signin_fill_saved( )
 {
    signin_forget_stale_names( );
+   signin_show_moved( );
 
    var select = document.getElementById( g_signin_ids.access );
 

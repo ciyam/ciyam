@@ -177,6 +177,29 @@ http://www.opensource.org/licenses/mit-license.php.
    </div>
 </div>
 
+<!-- ================================================================ moving to a new phone -->
+<!-- NOTE: Both phones' side of a move ("account_move.js", 2026-11-23) - one card, drawn for each step by "move_draw( )": the old
+     phone's code and its question, the new phone waiting, signing in and done. -->
+<div class="chat-signin" id="move_view" hidden>
+   <div class="chat-signin-form">
+      <div class="chat-brand">
+         <span class="chat-logo"></span>
+         <span class="chat-wordmark">CIYAM</span>
+         <span class="chat-brand-note">accounts</span>
+      </div>
+      <h2 tabindex="-1" id="move_title"></h2>
+      <p class="chat-signin-lede" id="move_lede"></p>
+      <div class="account-keys-qr account-move-qr" id="move_qr" aria-hidden="true" hidden></div>
+      <ul class="account-move-names" id="move_names" hidden></ul>
+      <p class="account-note" id="move_note" hidden></p>
+      <div class="chat-error-text" id="move_error" role="alert"></div>
+      <div class="chat-signin-busy" id="move_busy" hidden><span class="chat-spinner"></span><span id="move_busy_text" role="status"></span></div>
+      <div class="chat-signin-actions">
+         <button type="button" class="chat-btn chat-btn--primary" id="move_go" hidden></button>
+         <button type="button" class="chat-btn chat-signin-setup" id="move_other" hidden></button>
+      </div>
+   </div>
+</div>
 <!-- ================================================================ signed in -->
 <!-- NOTE: Home's shell ("shell.css", "shell.js" - 2026-10-26): a side menu of the apps and My account's sections, who is
      signed in and Sign out; on a phone the menu a drawer, the sections chips under the top bar and the apps a bar along the
@@ -633,6 +656,19 @@ http://www.opensource.org/licenses/mit-license.php.
                </div>
 
                <div class="account-column-side">
+                  <!-- NOTE: Every account saved on this browser moved to a new phone, by one code - no passwords to type
+                       ("account_move.js", 2026-11-23). -->
+                  <div class="account-card account-form" id="move_part">
+                     <div>
+                        <h2>Move to a new phone</h2>
+                        <p class="account-lede">Your accounts on this browser, moved to another - no passwords to type.</p>
+                     </div>
+                     <div class="chat-error-text" id="move_start_error" role="alert"></div>
+                     <div class="account-actions-row">
+                        <button type="button" class="chat-btn" id="move_start" onclick="move_start( )">Move to a new phone</button>
+                     </div>
+                  </div>
+
                   <!-- NOTE: Another device (2026-10-25: the access key "passed via QR code for simplicity rather than needing to
                        provide the twelve words for every device"), by the exchange of two codes since 2026-11-05 - its code read here, and this
                        browser's answer shown for it alone ("keys_device_answer( )"). Only once the keys are on this browser. -->

@@ -211,6 +211,27 @@
    color: var(--color-chat-text-secondary);
 }
 
+/* NOTE: Accounts moved to a new phone and not cleared from here yet ("signin_show_moved( )", 2026-11-23) - a warning's colours, as
+   signing in to one here signs the new phone out of it. */
+.signin-moved
+{
+   margin: 4px 0 14px;
+   padding: 10px 14px;
+   border: 1px solid var(--color-chat-warning-border);
+   border-radius: var(--radius-md);
+   background: var(--color-chat-warning-bg);
+   color: var(--color-chat-warning-text);
+   font-size: var(--font-size-chat-small);
+   line-height: 1.45;
+}
+
+.signin-moved .chat-btn--link
+{
+   color: inherit;
+   font-weight: 600;
+   text-decoration: underline;
+}
+
 .recover-warning
 {
    margin: 12px 0 14px;

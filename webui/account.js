@@ -81,6 +81,10 @@ function account_main( )
    if( typeof keys_take_link === "function" )
       keys_take_link( );
 
+   // NOTE: The old phone's code, opened on a new one ("account_move.js", 2026-11-23) - out of the address too, the move begun by "route( )".
+   if( typeof move_take_link === "function" )
+      move_take_link( );
+
    // NOTE: The eye in each new password's field, to see it - one suggested above all (2026-10-25).
    attach_reveals( document );
 
@@ -160,6 +164,9 @@ function account_main( )
       // NOTE: A QR code's address opened in a tab already on this page changes only the part after "#" - taken up the same,
       // then Your keys drawn again to take it.
       var linked = ( typeof keys_take_link === "function" ) && keys_take_link( );
+
+      if( typeof move_take_link === "function" )
+         move_take_link( );
 
       route( );
 
@@ -476,6 +483,17 @@ function route( )
 {
    var asked = parse_account_hash( window.location.hash );
 
+   // NOTE: Moving to a new phone ("account_move.js") - its card, whoever is signed in; arrived by the code, the move begun.
+   if( ( typeof move_showing === "function" ) && move_showing( ) )
+   {
+      if( g_move_arrived !== "" )
+         move_arrive( );
+      else
+         show_view( "move_view" );
+
+      return;
+   }
+
    if( ciyam.sessid === "" )
    {
       if( is_waiting_for_link( ) )
@@ -506,7 +524,7 @@ function route( )
 
 function show_view( id )
 {
-   [ "linking_view", "signin_view", "welcome_view", "written_view", "keys_step_view", "app_view" ].forEach( function( view )
+   [ "linking_view", "signin_view", "welcome_view", "written_view", "keys_step_view", "move_view", "app_view" ].forEach( function( view )
    {
       document.getElementById( view ).hidden = ( view !== id );
    } );

@@ -1761,3 +1761,38 @@ button.account-back,
    padding: 0 20px;
    font-size: var(--font-size-chat-body);
 }
+
+/* NOTE: Moving to a new phone ("account_move.js", 2026-11-23) - the old phone's code, centred in the card and large enough for a
+   phone's camera at arm's length, and the accounts that move. */
+.account-move-qr
+{
+   align-self: center;
+   margin: 8px auto 4px;
+   width: max-content;
+}
+
+.account-move-qr[hidden],
+.account-move-names[hidden]
+{
+   display: none;
+}
+
+.account-move-names
+{
+   margin: 4px 0 8px;
+   padding: 0;
+   list-style: none;
+   font-size: var(--font-size-chat-body);
+   font-weight: 600;
+   color: var(--color-chat-text-strong);
+}
+
+.account-move-names li + li
+{
+   margin-top: 4px;
+}
+
+#move_view .account-note
+{
+   margin-bottom: 8px;
+}
