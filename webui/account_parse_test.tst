@@ -121,6 +121,7 @@ ok   a person's own alerts - their topic and the ntfy server, as an address; non
 ok   xor of two hex strings - and back
 ok   - not the same length, or not hex
 ok   moving - the old phone's code, its secret after the #, read back; anything else not one
+ok   - the check code both phones show: four digits from the hash, leading zeros kept; nothing from anything else
 ok   - the accounts that can move: saved with a password, in the order saved
 ok   - what moves with them: their own, the browser's settings; never another account's, nor the browser's own state
 ok   - as text: the device, the accounts and their keys; read back as it was

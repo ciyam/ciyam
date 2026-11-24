@@ -325,7 +325,10 @@ async function move_watch_old( turn )
       if( shown.state === "answered" )
       {
          if( !g_move.asked )
-            move_ask_old( shown.key );
+            await move_ask_old( shown.key );
+
+         if( ( turn !== g_move_turn ) || g_move.sending )
+            return;
 
          g_move.asked = true;
          g_move.until = Date.now( ) + c_move_finish_wait_ms;
@@ -359,11 +362,26 @@ function move_draw_again( lede )
     act: move_cancel } } );
 }
 
-function move_ask_old( key )
+// NOTE: Its check code first ("move_check_code( )"), so the phone answering is the one in hand.
+async function move_ask_old( key )
 {
+   var turn = g_move_turn;
    var one = ( g_move.names.length === 1 );
+   var sm = await move_secure( );
+   var code = ( sm === null ) ? "" : move_check_code( await move_sha256( sm, g_move.secret + "." + key ) );
 
-   move_draw( { title: "Your new phone is ready", lede: one ? "Move this account to it?" : "Move these accounts to it?",
+   if( turn !== g_move_turn )
+      return;
+
+   if( code === "" )
+   {
+      move_draw_again( "This browser couldn't load what moving needs - reload and try again." );
+
+      return;
+   }
+
+   move_draw( { title: "Your new phone is ready", lede: "Check it shows " + code + ", then move " + ( one ? "this account" : "these accounts" )
+    + " to it.",
     names: g_move.names, go: { text: one ? "Move it" : "Move them", act: function( ) { move_send( key ); } },
     other: { text: "Cancel", act: move_cancel } } );
 }
@@ -587,7 +605,12 @@ async function move_arrive( )
       return;
    }
 
-   move_draw( { title: "Moving to this phone", lede: "Now confirm on your old phone.", busy: "Waiting for your old phone…",
+   var code = move_check_code( await move_sha256( sm, secret + "." + sm.public_key_of_seed( g_move.seed ) ) );
+
+   if( turn !== g_move_turn )
+      return;
+
+   move_draw( { title: "Moving to this phone", lede: "Check your old phone shows " + code + ", then confirm there.", busy: "Waiting for your old phone…",
     other: { text: "Cancel", act: move_cancel } } );
 
    move_watch_new( turn, sm );
@@ -708,8 +731,13 @@ async function move_take( turn, sm, sealed )
    if( turn !== g_move_turn )
       return;
 
+   // NOTE: The session's hash version read again once kept - it was signed in before the bundle's was stored.
    if( done.length > 0 )
+   {
       move_keep_here( bundle, done );
+
+      ciyam.hash_version = ciyam.hash_version_for( ciyam.access );
+   }
 
    var report = await move_seal( sm, g_move.key, JSON.stringify( { done: done, failed: failed } ) );
 

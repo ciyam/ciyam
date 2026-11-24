@@ -384,6 +384,10 @@ check( "moving - the old phone's code, its secret after the #, read back; anythi
  move_secret.toUpperCase( ) ) ), ap.parse_move_link( "move=" + move_secret ), ap.parse_move_link( "#keys-ask=" + move_secret ),
  ap.parse_move_link( "#move=" + move_secret.substring( 2 ) ), ap.parse_move_link( null ) ],
  [ "http://node.local/account.html#move=" + move_secret, move_secret, move_secret, "", "", "" ] );
+check( "- the check code both phones show: four digits from the hash, leading zeros kept; nothing from anything else", [
+ ap.move_check_code( "000004d2" + "0".repeat( 56 ) ), ap.move_check_code( "ffffffff" + "0".repeat( 56 ) ), ap.move_check_code( move_hash ),
+ ap.move_check_code( move_hash.toUpperCase( ) ), ap.move_check_code( "ab" ), ap.move_check_code( null ) ],
+ [ "1234", "7295", String( 0xcdcdcdcd % 10000 ), "", "", "" ] );
 check( "- the accounts that can move: saved with a password, in the order saved", ap.move_pins( "20401, 20405,20409,admin",
  { "20401": move_hash, "20409": move_hash, "20405": null } ), [ "20401", "20409" ] );
 check( "- what moves with them: their own, the browser's settings; never another account's, nor the browser's own state",

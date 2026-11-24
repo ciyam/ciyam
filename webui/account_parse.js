@@ -831,6 +831,18 @@ function parse_move_link( text )
    return found ? found[ 1 ].toLowerCase( ) : "";
 }
 
+// NOTE: Four digits from a hash of the code's secret and the new phone's key, shown on both phones - so one that photographed the
+// code and answered first shows a different number from the phone in hand. "" if not a hash.
+function move_check_code( digest )
+{
+   var value = String( digest || "" );
+
+   if( !/^[0-9a-f]{64}$/.test( value ) )
+      return "";
+
+   return String( parseInt( value.substring( 0, 8 ), 16 ) % 10000 ).padStart( 4, "0" );
+}
+
 // NOTE: What stays on the old browser whatever moves - its own state, never another's: the files it keeps, a code it is showing,
 // keys on their way, desktop notifications (allowed by each browser for itself) and leftovers of earlier ways.
 const c_move_kept_keys = [ "cws.app_worker", "cws.device_ask", "cws.device_link", "cws.pending_keys", "cws.give_keys", "cws.emoji_recent" ];
@@ -1071,6 +1083,7 @@ if( typeof module !== "undefined" )
    module.exports = {
       move_link: move_link,
       parse_move_link: parse_move_link,
+      move_check_code: move_check_code,
       move_key_allowed: move_key_allowed,
       move_keys_for: move_keys_for,
       move_pins: move_pins,
