@@ -813,6 +813,8 @@ http://www.opensource.org/licenses/mit-license.php.
                      <div>
                         <label class="chat-label" for="mine_current">Current password</label>
                         <input type="password" id="mine_current" class="chat-field" autocomplete="current-password">
+                        <p class="account-hint" id="mine_forgot">Forgot it? <button type="button" class="chat-btn chat-btn--link" id="mine_forgot_words"
+                         onclick="mine_reset_with_words( )">Sign out and use your twelve words</button>, or ask your admin.</p>
                      </div>
 
                      <div>

@@ -1184,6 +1184,17 @@ async function session_hash_for( password, version )
    return ciyam.session_hash( await ciyam.hash_combined( password, null, ( version == null ) ? ciyam.hash_version : version ) );
 }
 
+// NOTE: The current password forgotten (2026-11-24) - signed out, and the reset with one's own twelve words opened for this PIN, as the
+// sign in's "Use your twelve words" opens it. Keys admin gave are refused there and said so - admin resets those.
+async function mine_reset_with_words( )
+{
+   var pin = ciyam.access;
+
+   await do_sign_out( );
+
+   recover_show( { own: true, pin: pin } );
+}
+
 async function do_change_password( event )
 {
    event.preventDefault( );
