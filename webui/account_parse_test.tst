@@ -120,5 +120,15 @@ ok   - in one scan: no steps (2026-11-20); the keys sent, and the code shown bac
 ok   a person's own alerts - their topic and the ntfy server, as an address; none; anything else not taken
 ok   xor of two hex strings - and back
 ok   - not the same length, or not hex
+ok   moving - the old phone's code, its secret after the #, read back; anything else not one
+ok   - the accounts that can move: saved with a password, in the order saved
+ok   - what moves with them: their own, the browser's settings; never another account's, nor the browser's own state
+ok   - as text: the device, the accounts and their keys; read back as it was
+ok   - the extras only as they fit; none if even what's needed doesn't; no device, or no account, nothing
+ok   - not taken: not JSON, an account without its password, a key that mustn't move, another account's, a PIN twice
+ok   - how the place on the node stands, as the old phone is told
+ok   - the new phone's report: signed in, and the rest not - only of the accounts sent
+ok   - what the old browser forgets: the moved accounts' own; with none left, all but its kept files
+ok   - names said together
 
 All checks passed.

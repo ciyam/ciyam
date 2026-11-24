@@ -17,6 +17,9 @@ const chat_parse = require( "./chat_parse.js" );
 global.is_valid_username = chat_parse.is_valid_username;
 global.password_strength = chat_parse.password_strength;
 global.password_refusal = chat_parse.password_refusal;
+global.parse_access_list = chat_parse.parse_access_list;
+global.is_error_response = chat_parse.is_error_response;
+global.error_text = chat_parse.error_text;
 
 const ap = require( "./account_parse.js" );
 
@@ -370,6 +373,61 @@ check( "a person's own alerts - their topic and the ntfy server, as an address; 
 check( "xor of two hex strings - and back", [ ap.xor_hex( "0f0f", "ffff" ), ap.xor_hex( ap.xor_hex( sealed_key, ask_key ), ask_key ) ],
  [ "f0f0", sealed_key ] );
 check( "- not the same length, or not hex", [ ap.xor_hex( "0f", "fff" ), ap.xor_hex( "zz", "00" ) ], [ "", "" ] );
+
+// NOTE: Moving to a new phone (2026-11-23).
+var move_secret = "ab".repeat( 32 );
+var move_hash = "cd".repeat( 32 );
+var move_device = "0123456789abcde";
+
+check( "moving - the old phone's code, its secret after the #, read back; anything else not one", [
+ ap.move_link( "http://node.local/account.html", move_secret ), ap.parse_move_link( ap.move_link( "http://node.local/account.html",
+ move_secret.toUpperCase( ) ) ), ap.parse_move_link( "move=" + move_secret ), ap.parse_move_link( "#keys-ask=" + move_secret ),
+ ap.parse_move_link( "#move=" + move_secret.substring( 2 ) ), ap.parse_move_link( null ) ],
+ [ "http://node.local/account.html#move=" + move_secret, move_secret, move_secret, "", "", "" ] );
+check( "- the accounts that can move: saved with a password, in the order saved", ap.move_pins( "20401, 20405,20409,admin",
+ { "20401": move_hash, "20409": move_hash, "20405": null } ), [ "20401", "20409" ] );
+check( "- what moves with them: their own, the browser's settings; never another account's, nor the browser's own state",
+ ap.move_keys_for( [ "cws.access", "cws.device", "cws.hashed_20401", "cws.name_20401", "cws.hash_version_20401", "cws.user_keys_20401",
+ "cws.hashed_20405", "cws.dismissed_20401", "cws.emoji_recent@Ann", "cws.emoji_recent@Bob", "cws.unkeyed_rooms_Ann", "cws.prefs",
+ "cws.app_worker", "cws.notify@Ann", "cws.device_ask", "cws.script_demo", "cws.moved", "ciyam.session" ], [ "20401" ], [ "Ann" ] ),
+ { needed: [ "cws.hash_version_20401", "cws.hashed_20401", "cws.name_20401", "cws.user_keys_20401" ], extra: [ "cws.dismissed_20401",
+ "cws.emoji_recent@Ann", "cws.prefs", "cws.unkeyed_rooms_Ann" ] } );
+
+var move_values = { "cws.hashed_20401": move_hash, "cws.name_20401": "Ann", "cws.hashed_20409": move_hash, "cws.name_20409": "Bob",
+ "cws.emoji_recent@Ann": "x".repeat( 200 ), "cws.prefs": "{}", "cws.hashed_20405": move_hash };
+var move_text = ap.move_bundle_text( move_device, [ "20401", "20409" ], [ "Ann", "Bob" ], move_values );
+
+check( "- as text: the device, the accounts and their keys; read back as it was", ap.parse_move_bundle( move_text ), { device: move_device,
+ pins: [ "20401", "20409" ], store: { "cws.hashed_20401": move_hash, "cws.hashed_20409": move_hash, "cws.name_20401": "Ann",
+ "cws.name_20409": "Bob", "cws.emoji_recent@Ann": "x".repeat( 200 ), "cws.prefs": "{}" } } );
+check( "- the extras only as they fit; none if even what's needed doesn't; no device, or no account, nothing", [
+ Object.keys( ap.parse_move_bundle( ap.move_bundle_text( move_device, [ "20401", "20409" ], [ "Ann", "Bob" ], move_values, 400 ) ).store ),
+ ap.move_bundle_text( move_device, [ "20401", "20409" ], [ "Ann", "Bob" ], move_values, 100 ),
+ ap.move_bundle_text( "", [ "20401" ], [ "Ann" ], move_values ), ap.move_bundle_text( move_device, [ ], [ ], move_values ) ],
+ [ [ "cws.hashed_20401", "cws.hashed_20409", "cws.name_20401", "cws.name_20409", "cws.prefs" ], "", "", "" ] );
+check( "- not taken: not JSON, an account without its password, a key that mustn't move, another account's, a PIN twice", [
+ ap.parse_move_bundle( "{" ), ap.parse_move_bundle( JSON.stringify( { device: move_device, pins: [ "20401" ], store: { } } ) ),
+ ap.parse_move_bundle( JSON.stringify( { device: move_device, pins: [ "20401" ], store: { "cws.hashed_20401": move_hash,
+ "cws.app_worker": "off" } } ) ), ap.parse_move_bundle( JSON.stringify( { device: move_device, pins: [ "20401" ], store: {
+ "cws.hashed_20401": move_hash, "cws.hashed_20405": move_hash } } ) ), ap.parse_move_bundle( JSON.stringify( { device: move_device,
+ pins: [ "20401", "20401" ], store: { "cws.hashed_20401": move_hash } } ) ), ap.parse_move_bundle( JSON.stringify( { device: "x",
+ pins: [ "20401" ], store: { "cws.hashed_20401": move_hash } } ) ) ], [ null, null, null, null, null, null ] );
+check( "- how the place on the node stands, as the old phone is told", [ ap.parse_move_state( "waiting" ),
+ ap.parse_move_state( "answered " + move_hash ), ap.parse_move_state( "moving" ), ap.parse_move_state( "taken" ),
+ ap.parse_move_state( "contested" ), ap.parse_move_state( "done ab.cd" ), ap.parse_move_state( "Error: That code has lapsed." ),
+ ap.parse_move_state( "answered xyz" ), ap.parse_move_state( null ) ], [ { state: "waiting" }, { state: "answered", key: move_hash },
+ { state: "moving" }, { state: "taken" }, { state: "contested" }, { state: "done", report: "ab.cd" }, { state: "error",
+ error: "That code has lapsed." }, { state: "error", error: "" }, { state: "error", error: "" } ] );
+check( "- the new phone's report: signed in, and the rest not - only of the accounts sent", [ ap.parse_move_report( JSON.stringify( {
+ done: [ "20401", "20405" ], failed: [ "20409" ] } ), [ "20401", "20409" ] ), ap.parse_move_report( "[", [ "20401" ] ),
+ ap.parse_move_report( "{}", [ "20401" ] ) ], [ { done: [ "20401" ], failed: [ "20409" ] }, null, null ] );
+check( "- what the old browser forgets: the moved accounts' own; with none left, all but its kept files", [
+ ap.move_forget_keys( [ "cws.access", "cws.device", "cws.hashed_20401", "cws.hashed_20409", "cws.emoji_recent@Ann", "cws.notify@Ann",
+ "cws.dismissed@Bob", "cws.unkeyed_rooms_Ann", "cws.prefs", "ciyam.session" ], [ "20401" ], [ "Ann" ], false ),
+ ap.move_forget_keys( [ "cws.access", "cws.device", "cws.prefs", "cws.app_worker", "ciyam.session" ], [ "20401" ], [ "Ann" ], true ) ],
+ [ [ "cws.hashed_20401", "cws.emoji_recent@Ann", "cws.notify@Ann", "cws.unkeyed_rooms_Ann" ], [ "cws.access", "cws.device", "cws.prefs" ] ] );
+check( "- names said together", [ ap.move_names_text( [ ] ), ap.move_names_text( [ "Ann" ] ), ap.move_names_text( [ "Ann", "Bob" ] ),
+ ap.move_names_text( [ "Ann", "Bob", "Cy" ] ) ], [ "", "Ann", "Ann and Bob", "Ann, Bob and Cy" ] );
 
 console.log( "" );
 console.log( failures === 0 ? "All checks passed." : ( failures + " check(s) FAILED." ) );

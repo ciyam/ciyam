@@ -807,9 +807,279 @@ function xor_hex( a, b )
    return out;
 }
 
+// ---- Moving to a new phone (2026-11-23) - "account_move.js"
+
+const c_move_prefix = "move=";
+
+// NOTE: What the old phone's code holds - this page, and the secret the two phones share, after "#" so the node never sees it.
+function move_link( page, secret )
+{
+   return page + "#" + c_move_prefix + secret;
+}
+
+// NOTE: The secret from a code's address (or just the part after "#") - "" if it isn't one.
+function parse_move_link( text )
+{
+   var value = String( text || "" ).replace( /\s+/g, "" );
+   var at = value.indexOf( "#" );
+
+   if( at >= 0 )
+      value = value.substring( at + 1 );
+
+   var found = /^move=([0-9a-fA-F]{64})$/.exec( value );
+
+   return found ? found[ 1 ].toLowerCase( ) : "";
+}
+
+// NOTE: What stays on the old browser whatever moves - its own state, never another's: the files it keeps, a code it is showing,
+// keys on their way, desktop notifications (allowed by each browser for itself) and leftovers of earlier ways.
+const c_move_kept_keys = [ "cws.app_worker", "cws.device_ask", "cws.device_link", "cws.pending_keys", "cws.give_keys", "cws.emoji_recent" ];
+const c_move_kept_prefixes = [ "cws.script_", "cws.notify@", "cws.user_entropy_", "cws.hash_version@", "cws.arbitrary_", "cws.moved" ];
+
+// NOTE: What moves with an account, without which it can't sign in or open its keys - the rest (recent emoji, notices put away and
+// such) only if there is room.
+const c_move_needed_prefixes = [ "cws.hashed_", "cws.name_", "cws.hash_version_", "cws.user_keys_" ];
+
+const c_move_bundle_most = 3800;
+
+const c_move_unkeyed_prefix = "cws.unkeyed_rooms_";
+
+function move_key_allowed( key )
+{
+   var text = String( key );
+
+   return ( text.indexOf( "cws." ) === 0 ) && ( c_move_kept_keys.indexOf( text ) < 0 )
+    && !c_move_kept_prefixes.some( function( prefix ) { return text.indexOf( prefix ) === 0; } );
+}
+
+// NOTE: Whether "key" is another account's - by a PIN not in "pins", or a name kept for one not in "names".
+function move_key_is_other( key, pins, names )
+{
+   var text = String( key );
+   var pin = /_([0-9]{5})$/.exec( text );
+
+   if( pin )
+      return pins.indexOf( pin[ 1 ] ) < 0;
+
+   if( text.indexOf( c_move_unkeyed_prefix ) === 0 )
+      return names.indexOf( text.substring( c_move_unkeyed_prefix.length ) ) < 0;
+
+   var at = text.indexOf( "@" );
+
+   return ( at > 0 ) && ( names.indexOf( text.substring( at + 1 ) ) < 0 );
+}
+
+// NOTE: The browser's keys ("keys") that move with the accounts "pins", named "names" - another account's stay. "needed" first.
+function move_keys_for( keys, pins, names )
+{
+   var needed = [ ];
+   var extra = [ ];
+
+   ( keys || [ ] ).forEach( function( key )
+   {
+      var text = String( key );
+      var pin = /_([0-9]{5})$/.exec( text );
+
+      if( !move_key_allowed( text ) || move_key_is_other( text, pins, names ) || ( text === "cws.access" ) || ( text === "cws.device" ) )
+         return;
+
+      if( pin && c_move_needed_prefixes.some( function( prefix ) { return text === prefix + pin[ 1 ]; } ) )
+         needed.push( text );
+      else
+         extra.push( text );
+   } );
+
+   return { needed: needed.sort( ), extra: extra.sort( ) };
+}
+
+// NOTE: The accounts that can move - saved with their password ("hashed"), in the order saved.
+function move_pins( stored, hashes )
+{
+   return parse_access_list( stored ).filter( function( pin )
+   {
+      return is_account_pin( pin ) && /^[0-9a-f]{64}$/.test( String( ( hashes || { } )[ pin ] || "" ) );
+   } );
+}
+
+// NOTE: What moves, as text - the device token, the accounts ("pins", named "names") and the browser's keys for them ("values", by
+// key), the extras only as they fit in "most" (by default "c_move_bundle_most"). "" if the device or no account can.
+function move_bundle_text( device, pins, names, values, most )
+{
+   var limit = most || c_move_bundle_most;
+
+   if( !/^[0-9a-f]{15}$/.test( String( device || "" ) ) || ( pins.length === 0 ) )
+      return "";
+
+   var keys = move_keys_for( Object.keys( values || { } ), pins, names );
+   var store = { };
+
+   keys.needed.forEach( function( key ) { store[ key ] = String( values[ key ] ); } );
+
+   var text = JSON.stringify( { device: device, pins: pins, store: store } );
+
+   if( new TextEncoder( ).encode( text ).length > limit )
+      return "";
+
+   keys.extra.forEach( function( key )
+   {
+      store[ key ] = String( values[ key ] );
+
+      var longer = JSON.stringify( { device: device, pins: pins, store: store } );
+
+      if( new TextEncoder( ).encode( longer ).length > limit )
+         delete store[ key ];
+      else
+         text = longer;
+   } );
+
+   return text;
+}
+
+// NOTE: What arrived, read - null unless it is as "move_bundle_text( )" makes it: each account with its password, and only keys that
+// may move.
+function parse_move_bundle( text )
+{
+   var bundle = null;
+
+   try
+   {
+      bundle = JSON.parse( String( text || "" ) );
+   }
+   catch( e )
+   {
+      return null;
+   }
+
+   if( !bundle || ( typeof bundle !== "object" ) || !/^[0-9a-f]{15}$/.test( String( bundle.device || "" ) ) || !Array.isArray( bundle.pins )
+    || ( bundle.pins.length === 0 ) || !bundle.store || ( typeof bundle.store !== "object" ) || Array.isArray( bundle.store ) )
+      return null;
+
+   var pins = bundle.pins.map( String );
+
+   if( pins.some( function( pin ) { return !is_account_pin( pin ); } ) || ( new Set( pins ).size !== pins.length ) )
+      return null;
+
+   var store = { };
+   var keys = Object.keys( bundle.store );
+
+   for( var i = 0; i < keys.length; i++ )
+   {
+      var value = bundle.store[ keys[ i ] ];
+      var pin = /_([0-9]{5})$/.exec( keys[ i ] );
+
+      if( !move_key_allowed( keys[ i ] ) || ( keys[ i ] === "cws.access" ) || ( keys[ i ] === "cws.device" ) || ( typeof value !== "string" )
+       || ( pin && ( pins.indexOf( pin[ 1 ] ) < 0 ) ) )
+         return null;
+
+      store[ keys[ i ] ] = value;
+   }
+
+   if( pins.some( function( pin ) { return !/^[0-9a-f]{64}$/.test( store[ "cws.hashed_" + pin ] || "" ); } ) )
+      return null;
+
+   return { device: bundle.device, pins: pins, store: store };
+}
+
+// NOTE: How the place on the node stands, as the old phone is told ("move_request( )" in "ciyam_web_session.cpp") - "error" with
+// what was said for an error, else "waiting", "answered" (with the new phone's "key"), "moving", "taken", "contested" or "done" (with
+// the sealed "report").
+function parse_move_state( response )
+{
+   var text = String( ( response === null ) || ( response === undefined ) ? "" : response ).trim( );
+
+   if( is_error_response( text ) )
+      return { state: "error", error: error_text( text ) };
+
+   var answered = /^answered ([0-9a-f]{64})$/.exec( text );
+
+   if( answered )
+      return { state: "answered", key: answered[ 1 ] };
+
+   var done = /^done ([0-9a-f.]+)$/.exec( text );
+
+   if( done )
+      return { state: "done", report: done[ 1 ] };
+
+   if( [ "waiting", "moving", "taken", "contested" ].indexOf( text ) >= 0 )
+      return { state: text };
+
+   return { state: "error", error: "" };
+}
+
+// NOTE: The new phone's report, read - the PINs it signed in with ("done") and those it couldn't ("failed"), each one of "pins".
+function parse_move_report( text, pins )
+{
+   var report = null;
+
+   try
+   {
+      report = JSON.parse( String( text || "" ) );
+   }
+   catch( e )
+   {
+      return null;
+   }
+
+   if( !report || !Array.isArray( report.done ) || !Array.isArray( report.failed ) )
+      return null;
+
+   var done = report.done.map( String ).filter( function( pin ) { return pins.indexOf( pin ) >= 0; } );
+   var failed = pins.filter( function( pin ) { return done.indexOf( pin ) < 0; } );
+
+   return { done: done, failed: failed };
+}
+
+// NOTE: What the old browser forgets for the accounts "pins", moved ("keys" those it has) - every key of theirs, by PIN or by the
+// name kept for it ("names"), and, with no account left ("all"), everything it keeps for the node but its own files.
+function move_forget_keys( keys, pins, names, all )
+{
+   return ( keys || [ ] ).filter( function( key )
+   {
+      var text = String( key );
+
+      if( text.indexOf( "cws." ) !== 0 )
+         return false;
+
+      if( all )
+         return text !== "cws.app_worker";
+
+      var pin = /_([0-9]{5})$/.exec( text );
+
+      if( pin )
+         return pins.indexOf( pin[ 1 ] ) >= 0;
+
+      if( text.indexOf( c_move_unkeyed_prefix ) === 0 )
+         return names.indexOf( text.substring( c_move_unkeyed_prefix.length ) ) >= 0;
+
+      var at = text.indexOf( "@" );
+
+      return ( at > 0 ) && ( names.indexOf( text.substring( at + 1 ) ) >= 0 );
+   } );
+}
+
+// NOTE: Names said together - "Ann", "Ann and Bob", "Ann, Bob and Cy".
+function move_names_text( names )
+{
+   if( names.length <= 1 )
+      return names.join( "" );
+
+   return names.slice( 0, -1 ).join( ", " ) + " and " + names[ names.length - 1 ];
+}
+
 if( typeof module !== "undefined" )
 {
    module.exports = {
+      move_link: move_link,
+      parse_move_link: parse_move_link,
+      move_key_allowed: move_key_allowed,
+      move_keys_for: move_keys_for,
+      move_pins: move_pins,
+      move_bundle_text: move_bundle_text,
+      parse_move_bundle: parse_move_bundle,
+      parse_move_state: parse_move_state,
+      parse_move_report: parse_move_report,
+      move_forget_keys: move_forget_keys,
+      move_names_text: move_names_text,
       c_device_ask_prefix: c_device_ask_prefix,
       c_device_reply_prefix: c_device_reply_prefix,
       device_ask_link: device_ask_link,
