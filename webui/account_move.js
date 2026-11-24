@@ -246,8 +246,7 @@ async function move_start( )
 
    if( pins.length === 0 )
    {
-      set_error( "move_start_error", "Only an account saved with its password can move - sign in with Remember set to the PIN and the"
-       + " password first." );
+      set_error( "move_start_error", "Sign in with the PIN and the password remembered first - only a saved account can move." );
 
       return;
    }
@@ -555,8 +554,7 @@ async function move_arrive( )
 
    if( signin_saved_pins( ).length > 0 )
    {
-      move_finish_new( { title: "This browser already has accounts", lede: "Move to a browser with none, or clear this one with"
-       + " Reset this browser on its sign in." } );
+      move_finish_new( { title: "This browser already has accounts", lede: "Use a browser with none, or clear this one with Reset this browser." } );
 
       return;
    }

@@ -661,7 +661,7 @@ http://www.opensource.org/licenses/mit-license.php.
                   <div class="account-card account-form" id="move_part">
                      <div>
                         <h2>Move to a new phone</h2>
-                        <p class="account-lede">Your accounts on this browser, moved to another - no passwords to type.</p>
+                        <p class="account-lede">Your accounts moved to another phone - no passwords to type.</p>
                      </div>
                      <div class="chat-error-text" id="move_start_error" role="alert"></div>
                      <div class="account-actions-row">
