@@ -110,6 +110,25 @@ constexpr const char* c_cws_request_handover_options_id = "id";
 constexpr const char* c_cws_request_handover_options_for = "for";
 constexpr const char* c_cws_request_handover_options_answer = "answer";
 
+// NOTE: A browser's accounts moved to a new phone (2026-11-23) - a meeting place on the node for the two, under an id made from the
+// secret in the old phone's code, which the node never sees. Opened by the old phone signed in; from then on neither need be (the
+// new phone has no session, and the old one's ends as the new one signs in): each answers with a secret of its own, of which the
+// node keeps only the hash. Kept in memory only - two minutes until a new phone answers, then ten - one for each account opening
+// one, and no more than twenty at once.
+const int64_t c_cws_move_open_seconds = 120;
+const int64_t c_cws_move_seconds = 600;
+
+const size_t c_cws_move_most = 20;
+const size_t c_cws_move_bundle_max = 8000;
+const size_t c_cws_move_report_max = 400;
+
+constexpr const char* c_cws_request_move_options_id = "id";
+constexpr const char* c_cws_request_move_options_key = "key";
+constexpr const char* c_cws_request_move_options_owner = "owner";
+constexpr const char* c_cws_request_move_options_proof = "proof";
+constexpr const char* c_cws_request_move_options_bundle = "bundle";
+constexpr const char* c_cws_request_move_options_report = "report";
+
 // NOTE: How long a call relay's credentials last - asked for before each call, so a call outlasts them only if it goes on
 // for longer than this (coturn checks them again as an allocation is refreshed). They end on the hour after it, so all of
 // a person's credentials asked for within one hour are the same - and coturn's allocations to a single set of credentials
@@ -185,6 +204,7 @@ constexpr const char* c_cws_uri_suffix_ring = "ring";
 constexpr const char* c_cws_uri_suffix_alerts = "alerts";
 constexpr const char* c_cws_uri_suffix_relay = "relay";
 constexpr const char* c_cws_uri_suffix_handover = "handover";
+constexpr const char* c_cws_uri_suffix_move = "move";
 constexpr const char* c_cws_uri_suffix_users = "users";
 constexpr const char* c_cws_uri_suffix_status = "status";
 constexpr const char* c_cws_uri_suffix_devices = "devices";
@@ -1151,6 +1171,219 @@ string take_handover( const string& id, const string& username, int64_t now )
    }
 
    return answer;
+}
+
+// NOTE: Where an old phone and a new one meet ("c_cws_move_open_seconds") - by the id made from the old phone's code. "owner" and
+// "proof" are the hashes of the two phones' secrets, "key" the new phone's one-off public key.
+struct move_place
+{
+   move_place( ) : is_taken( false ), is_contested( false ), until( 0 ) { }
+
+   string opened_by;
+
+   string owner;
+   string key;
+   string proof;
+
+   string bundle;
+   string report;
+
+   bool is_taken;
+   bool is_contested;
+
+   int64_t until;
+};
+
+enum move_open_result
+{
+   e_move_open_result_opened,
+   e_move_open_result_in_use,
+   e_move_open_result_too_many
+};
+
+map< string, move_place > g_cws_moves;
+
+bool is_move_hex( const string& value )
+{
+   return ( value.length( ) == 64 ) && ( value.find_first_not_of( "0123456789abcdef" ) == string::npos );
+}
+
+bool is_move_sealed( const string& value, size_t max_length )
+{
+   return !value.empty( ) && ( value.length( ) <= max_length ) && ( value.find_first_not_of( "0123456789abcdef." ) == string::npos );
+}
+
+string move_option( const map< string, string >& options, const char* name )
+{
+   map< string, string >::const_iterator i = options.find( name );
+
+   return ( i == options.end( ) ) ? string( ) : i->second;
+}
+
+// NOTE: Those lapsed let go - with "g_mutex" held.
+void prune_moves( int64_t now )
+{
+   for( auto i = g_cws_moves.begin( ); i != g_cws_moves.end( ); )
+   {
+      if( now >= i->second.until )
+         i = g_cws_moves.erase( i );
+      else
+         ++i;
+   }
+}
+
+// NOTE: A place opened by "opened_by" - any it opened before let go, as a phone shows one code at a time. One already open under
+// the id for someone else is left as it is, so a photo of another's code can't be used to take their place.
+move_open_result open_move( const string& id, const string& owner, const string& opened_by, int64_t now )
+{
+   guard g( g_mutex );
+
+   prune_moves( now );
+
+   auto found = g_cws_moves.find( id );
+
+   if( ( found != g_cws_moves.end( ) ) && ( found->second.opened_by != opened_by ) )
+      return e_move_open_result_in_use;
+
+   for( auto i = g_cws_moves.begin( ); i != g_cws_moves.end( ); )
+   {
+      if( i->second.opened_by == opened_by )
+         i = g_cws_moves.erase( i );
+      else
+         ++i;
+   }
+
+   if( g_cws_moves.size( ) >= c_cws_move_most )
+      return e_move_open_result_too_many;
+
+   move_place& place = g_cws_moves[ id ];
+
+   place.opened_by = opened_by;
+   place.owner = owner;
+   place.until = now + c_cws_move_open_seconds;
+
+   return e_move_open_result_opened;
+}
+
+// NOTE: What the two phones ask of a place, neither signed in. The old phone, with its secret ("owner"): how it stands (GET) -
+// "waiting", "answered <key>", "moving", "taken", "contested" or "done <report>" (the place then gone) - and leaving what it moves
+// (POST, "bundle"). The new phone: answering the code (POST, "key" and the hash of its secret as "proof"), collecting what was left
+// for it (GET, its secret as "proof") - handed over once - and saying how it went (POST, "proof" and "report"). A second phone
+// answering marks the place, and nothing more is handed over from it. Empty with no error - nothing (yet).
+string move_request( bool is_post, const map< string, string >& options, int64_t now, string& error )
+{
+   string response;
+
+   string id( move_option( options, c_cws_request_move_options_id ) );
+   string key( move_option( options, c_cws_request_move_options_key ) );
+   string owner( move_option( options, c_cws_request_move_options_owner ) );
+   string proof( move_option( options, c_cws_request_move_options_proof ) );
+   string bundle( move_option( options, c_cws_request_move_options_bundle ) );
+   string report( move_option( options, c_cws_request_move_options_report ) );
+
+   size_t num_options = options.size( );
+
+   // FUTURE: These messages should be handled as server string messages.
+   string invalid( "Invalid options for move." );
+   string lapsed( "That code has lapsed - show a new one on the old phone." );
+
+   if( !is_move_hex( id ) || ( !owner.empty( ) && !is_move_hex( owner ) ) || ( !key.empty( ) && !is_move_hex( key ) )
+    || ( !proof.empty( ) && !is_move_hex( proof ) ) || ( !bundle.empty( ) && !is_move_sealed( bundle, c_cws_move_bundle_max ) )
+    || ( !report.empty( ) && !is_move_sealed( report, c_cws_move_report_max ) ) )
+      error = invalid;
+   else
+   {
+      guard g( g_mutex );
+
+      prune_moves( now );
+
+      auto i = g_cws_moves.find( id );
+
+      if( i == g_cws_moves.end( ) )
+         error = lapsed;
+      else
+      {
+         move_place& place = i->second;
+
+         if( !owner.empty( ) )
+         {
+            if( sha256( owner ).get_digest_as_string( ) != place.owner )
+               error = lapsed;
+            else if( !is_post && ( num_options == 2 ) )
+            {
+               if( place.is_contested )
+                  response = "contested";
+               else if( !place.report.empty( ) )
+               {
+                  response = "done " + place.report;
+
+                  g_cws_moves.erase( i );
+               }
+               else if( place.is_taken )
+                  response = "taken";
+               else if( !place.bundle.empty( ) )
+                  response = "moving";
+               else if( !place.key.empty( ) )
+                  response = "answered " + place.key;
+               else
+                  response = "waiting";
+            }
+            else if( is_post && ( num_options == 3 ) && !bundle.empty( ) )
+            {
+               if( place.key.empty( ) || place.is_contested || place.is_taken || !place.bundle.empty( ) )
+                  // FUTURE: This message should be handled as a server string message.
+                  error = "Nothing can be moved with that code now - start again on the old phone.";
+               else
+                  place.bundle = bundle;
+            }
+            else
+               error = invalid;
+         }
+         else if( is_post && ( num_options == 3 ) && !key.empty( ) && !proof.empty( ) )
+         {
+            if( place.key.empty( ) )
+            {
+               place.key = key;
+               place.proof = proof;
+
+               place.until = now + c_cws_move_seconds;
+            }
+            else if( ( place.key != key ) || ( place.proof != proof ) )
+            {
+               place.is_contested = true;
+
+               // FUTURE: This message should be handled as a server string message.
+               error = "Another phone answered this code first - start again on the old phone.";
+            }
+         }
+         else if( !proof.empty( ) && ( place.key.empty( ) || ( sha256( proof ).get_digest_as_string( ) != place.proof ) ) )
+            error = lapsed;
+         else if( !is_post && ( num_options == 2 ) && !proof.empty( ) )
+         {
+            if( place.is_contested )
+               // FUTURE: This message should be handled as a server string message.
+               error = "Another phone answered this code too, so nothing was moved - start again on the old phone.";
+            else if( !place.bundle.empty( ) )
+            {
+               response = place.bundle;
+
+               place.bundle.erase( );
+               place.is_taken = true;
+            }
+         }
+         else if( is_post && ( num_options == 3 ) && !proof.empty( ) && !report.empty( ) )
+         {
+            if( !place.is_taken || !place.report.empty( ) )
+               error = invalid;
+            else
+               place.report = report;
+         }
+         else
+            error = invalid;
+      }
+   }
+
+   return response;
 }
 
 // NOTE: The other person in "room" if it is a direct message between "caller" and just one other - named "/<a>/<b>" (the two in
@@ -2665,7 +2898,22 @@ bool process_cws_request( http_request_type request_type, const string& uri_suff
    // no existing system identity is found.
    bool is_seed_needed = is_identity_none;
 
-   if( !error.empty( ) || access.empty( ) )
+   // NOTE: Moving to a new phone, once the old phone has opened the place - asked without a session ("move_request( )").
+   if( error.empty( ) && access.empty( ) && ( uri_suffix == c_cws_uri_suffix_move ) && ( is_get_request || is_post_request ) )
+   {
+      response = move_request( is_post_request, option_parameters, now, error );
+
+      if( error.empty( ) )
+      {
+         found = true;
+
+         if( response.empty( ) )
+            use_none_response = is_get_request;
+         else if( is_json_output )
+            response = "{\"move\":\"" + response + "\"}";
+      }
+   }
+   else if( !error.empty( ) || access.empty( ) )
    {
       if( error.empty( ) )
          // FUTURE: This message should be handled as a server string message.
@@ -3636,6 +3884,30 @@ bool process_cws_request( http_request_type request_type, const string& uri_suff
                            // FUTURE: This message should be handled as a server string message.
                            error = "This node has no ntfy server to ring with.";
                      }
+                  }
+               }
+               // NOTE: A place for moving this browser's accounts to a new phone, opened under the id made from its code, with the
+               // hash of the old phone's own secret ("move_request( )" - asked without a session from then on).
+               else if( is_post_request && ( uri_suffix == c_cws_uri_suffix_move ) )
+               {
+                  string id( move_option( option_parameters, c_cws_request_move_options_id ) );
+                  string owner( move_option( option_parameters, c_cws_request_move_options_owner ) );
+
+                  if( ( option_parameters.size( ) != 2 ) || !is_move_hex( id ) || !is_move_hex( owner ) )
+                     // FUTURE: This message should be handled as a server string message.
+                     error = "Invalid options '" + options + "' for move.";
+                  else
+                  {
+                     move_open_result result = open_move( id, owner, username, now );
+
+                     if( result == e_move_open_result_in_use )
+                        // FUTURE: This message should be handled as a server string message.
+                        error = "That code is already in use - show a new one.";
+                     else if( result == e_move_open_result_too_many )
+                        // FUTURE: This message should be handled as a server string message.
+                        error = "Too many moves are waiting - try again in a few minutes.";
+                     else
+                        found = true;
                   }
                }
                // NOTE: A key exchange's answer left for the device it is for, so that device needn't scan it (2026-11-18: Give
