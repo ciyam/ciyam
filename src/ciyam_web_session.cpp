@@ -120,7 +120,7 @@ const int64_t c_cws_move_seconds = 600;
 
 const size_t c_cws_move_most = 20;
 const size_t c_cws_move_bundle_max = 8000;
-const size_t c_cws_move_report_max = 400;
+const size_t c_cws_move_report_max = 2000;
 
 constexpr const char* c_cws_request_move_options_id = "id";
 constexpr const char* c_cws_request_move_options_key = "key";
@@ -1350,7 +1350,9 @@ string move_request( bool is_post, const map< string, string >& options, int64_t
             }
             else if( ( place.key != key ) || ( place.proof != proof ) )
             {
-               place.is_contested = true;
+               // NOTE: Not once the bundle is collected, so a late answer can't hide a move that finished.
+               if( !place.is_taken )
+                  place.is_contested = true;
 
                // FUTURE: This message should be handled as a server string message.
                error = "Another phone answered this code first - start again on the old phone.";
