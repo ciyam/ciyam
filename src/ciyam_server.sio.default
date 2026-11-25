@@ -73,6 +73,11 @@
 #   <script_name>tbitcoin
 #  </client>
 # </extern>
+ <livekit/>
+#  <url>
+#  <secret>
+#  <api_key>
+ </livekit>
  <files_area/>
 #  <path>.files
 #  <max_file_size>1M
