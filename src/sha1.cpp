@@ -375,8 +375,6 @@ void hmac_sha1( const string& key, const string& message, unsigned char* p_buffe
 
    unsigned char tk[ c_sha1_digest_size ];
    unsigned char tk2[ c_sha1_digest_size ];
-   unsigned char bufferIn[ 1024 ];
-   unsigned char bufferOut[ 1024 ];
 
    if( key_len > 64 )
    {
@@ -384,7 +382,7 @@ void hmac_sha1( const string& key, const string& message, unsigned char* p_buffe
       hash.copy_digest_to_buffer( tk );
 
       p_key = tk;
-      key_len = 64;
+      key_len = c_sha1_digest_size;
    }
  
    memset( k_ipad, 0, 65 );
@@ -399,18 +397,12 @@ void hmac_sha1( const string& key, const string& message, unsigned char* p_buffe
       k_opad[ i ] ^= 0x5c;
    }
  
-   memset( bufferIn, 0x00, 1024 );
-   memcpy( bufferIn, k_ipad, 64 );
-   memcpy( bufferIn + 64, p_msg, msg_len );
- 
-   sha1 hash1( bufferIn, 64 + msg_len );
+   sha1 hash1( k_ipad, 64 );
+   hash1.update( p_msg, msg_len );
    hash1.copy_digest_to_buffer( tk2 );
 
-   memset( bufferOut, 0x00, 1024 );
-   memcpy( bufferOut, k_opad, 64 );
-   memcpy( bufferOut + 64, tk2, c_sha1_digest_size );
- 
-   sha1 hash2( bufferOut, 64 + c_sha1_digest_size );
+   sha1 hash2( k_opad, 64 );
+   hash2.update( tk2, c_sha1_digest_size );
    hash2.copy_digest_to_buffer( p_buffer );
 }
 
