@@ -2441,7 +2441,12 @@ bool process_cws_batch( http_request_type request_type, const cws_paramaters& cw
       from = pos + 1;
    }
 
-   if( ( request_type != e_http_request_type_get ) || cws_params.session.empty( )
+   // NOTE: Refused as a lone request would be by what was found before it ("error") - and never with a password, which signs in
+   // (a claim, or a reset by words) and has no place among reads (found by review, 2026-11-25).
+   if( !error.empty( ) )
+      return false;
+
+   if( ( request_type != e_http_request_type_get ) || cws_params.session.empty( ) || !cws_params.passwd.empty( )
     || ( boundary.length( ) < c_cws_batch_boundary_min ) || ( boundary.length( ) > c_cws_batch_boundary_max )
     || !are_hex_nibbles( boundary, false ) || parts.empty( ) || ( parts.size( ) > c_cws_batch_most ) )
    {
