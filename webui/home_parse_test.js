@@ -535,6 +535,32 @@ check( "- the others are not the person's other words",
  three.filter( function( w ) { return w !== "ribbon"; } ).every( function( w ) { return setup_words.indexOf( w ) < 0; } ), true );
 check( "- no word twice", three[ 0 ] !== three[ 1 ] && three[ 1 ] !== three[ 2 ] && three[ 0 ] !== three[ 2 ], true );
 
+// NOTE: Asking together (2026-11-25).
+var cws = "http://node.local/cws";
+var with_session = "?access=20401&device=0123456789abcde&format=text&session=abcdef0123456789abcd";
+
+check( "asking together - a read's part: its resource, options and request, decoded; the node's own request with no resource", [
+ hp.batch_part( cws + "/logs/server" + with_session + "&options=" + encodeURIComponent( "lines=1000" ), cws ),
+ hp.batch_part( cws + with_session + "&request=" + encodeURIComponent( "system_variable @sid_secure" ), cws ),
+ hp.batch_part( cws + "/messages/0000001" + with_session + "&options=" + encodeURIComponent( "from=0;extra=ENTIRE" ), cws ),
+ hp.batch_part( cws + "/users?access=20401&device=0123456789abcde&format=text&session=abcdef0123456789abcd", cws ) ],
+ [ "logs/server\tlines=1000\t", "\t\tsystem_variable @sid_secure", "messages/0000001\tfrom=0;extra=ENTIRE\t", "users\t\t" ] );
+check( "- none for one that can't be: another place, no session, a batch, a password or payload, a line break, bad escapes", [
+ hp.batch_part( "http://other.local/cws/users" + with_session, cws ), hp.batch_part( cws + "/users?access=20401&format=text", cws ),
+ hp.batch_part( cws + "/batch" + with_session, cws ), hp.batch_part( cws + "/devices" + with_session + "&passwd=x", cws ),
+ hp.batch_part( cws + "/messages/0000003" + with_session + "&payload=hi", cws ),
+ hp.batch_part( cws + with_session + "&request=" + encodeURIComponent( "a\nb" ), cws ), hp.batch_part( cws + "users" + with_session, cws ),
+ hp.batch_part( cws + "/users" + with_session + "&options=%E0%A4%A", cws ), hp.batch_part( null, cws ) ],
+ [ "", "", "", "", "", "", "", "", "" ] );
+
+var boundary = "0f".repeat( 16 );
+
+check( "- a batch's answers in order, an answer with lines of its own or a refusal kept as it is", hp.parse_batch( "one\ntwo lines\n" + boundary
+ + "\nError: Not allowed.\n" + boundary + "\n", boundary, 3 ), [ "one\ntwo lines", "Error: Not allowed.", "" ] );
+check( "- none if not that many: refused whole, a node without batches, nothing", [ hp.parse_batch( "Error: Invalid batch request.", boundary, 2 ),
+ hp.parse_batch( "a\n" + boundary + "\nb", boundary, 3 ), hp.parse_batch( null, boundary, 2 ), hp.parse_batch( "a", boundary, 1 ) ],
+ [ null, null, null, null ] );
+
 console.log( "" );
 console.log( failures === 0 ? "All checks passed." : ( failures + " check(s) FAILED." ) );
 

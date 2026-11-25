@@ -1153,9 +1153,68 @@ function setup_retry_wait_text( seconds )
    return "You can check again in " + Math.floor( left / 60 ) + ":" + String( left % 60 ).padStart( 2, "0" ) + ".";
 }
 
+// ---- Asking together (2026-11-25) - "ask_together( )" in "home.js"
+
+// NOTE: A read's part in a batch, from its address - "<resource>\t<options>\t<request>" - or "" for one that can't be: not of
+// "base" ("/cws"), without a session, a batch itself, or one carrying a password or a payload. The same read gives the same part,
+// so its answer is found by it.
+function batch_part( url, base )
+{
+   var text = String( url == null ? "" : url );
+
+   if( ( base === "" ) || ( text.indexOf( base ) !== 0 ) )
+      return "";
+
+   var rest = text.substring( base.length );
+   var at = rest.indexOf( "?" );
+   var path = ( at < 0 ) ? rest : rest.substring( 0, at );
+
+   if( ( path !== "" ) && ( path.charAt( 0 ) !== "/" ) )
+      return "";
+
+   var values = { };
+
+   try
+   {
+      var resource = decodeURIComponent( path.substring( 1 ) );
+
+      ( ( at < 0 ) ? "" : rest.substring( at + 1 ) ).split( "&" ).forEach( function( pair )
+      {
+         var equals = pair.indexOf( "=" );
+
+         if( equals > 0 )
+            values[ pair.substring( 0, equals ) ] = decodeURIComponent( pair.substring( equals + 1 ) );
+      } );
+   }
+   catch( e )
+   {
+      return "";
+   }
+
+   if( !values.session || ( "passwd" in values ) || ( "payload" in values ) || ( resource === "batch" ) )
+      return "";
+
+   var part = resource + "\t" + ( values.options || "" ) + "\t" + ( values.request || "" );
+
+   return /[\n\r]/.test( part ) || ( part.split( "\t" ).length !== 3 ) ? "" : part;
+}
+
+// NOTE: A batch's answers in order - null if it isn't "count" of them (the node refused it all, or doesn't know "batch").
+function parse_batch( text, boundary, count )
+{
+   if( ( text == null ) || ( boundary === "" ) || ( count < 2 ) )
+      return null;
+
+   var answers = String( text ).split( "\n" + boundary + "\n" );
+
+   return ( answers.length === count ) ? answers : null;
+}
+
 if( typeof module !== "undefined" )
 {
    module.exports = {
+      batch_part: batch_part,
+      parse_batch: parse_batch,
       setup_retry_wait_text: setup_retry_wait_text,
       user_keys_problem_text: user_keys_problem_text,
       people_matching: people_matching,

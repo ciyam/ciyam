@@ -48,8 +48,123 @@ function request( issue )
    } );
 }
 
+// NOTE: Asking together (2026-11-25) - the reads Home's opening and each refresh make of the node asked in one request ("/cws/batch")
+// rather than one after another, each a round trip on a phone: over slow 4G Home's nine took 5.5 s. The answers are kept briefly,
+// each given to the first read that asks for it ("batch_part( )"), so the reads themselves are as they were. A node without batches
+// refuses it, and each read is then asked by itself. Anything but a read lets every kept answer go, so none is older than a change.
+const c_batch_keep_ms = 10000;
+
+var g_batched = { };
+
+function install_batching( )
+{
+   var plain = ciyam.fetch;
+   var in_body = ciyam.fetch_in_body;
+
+   ciyam.fetch = async function( url, request_type, callback )
+   {
+      var part = ( request_type === "GET" ) ? batch_part( url, ciyam.get_cws_url( ) ) : "";
+      var kept = ( part !== "" ) ? g_batched[ part ] : null;
+
+      if( request_type !== "GET" )
+         g_batched = { };
+
+      if( kept )
+      {
+         delete g_batched[ part ];
+
+         if( Date.now( ) < kept.until )
+         {
+            await callback( kept.answer );
+
+            return;
+         }
+      }
+
+      return plain.call( ciyam, url, request_type, callback );
+   };
+
+   ciyam.fetch_in_body = function( url, request_type, callback )
+   {
+      g_batched = { };
+
+      return in_body.call( ciyam, url, request_type, callback );
+   };
+}
+
+// NOTE: Queued at once - so asked before the reads queued after it, which then find their answers kept. Not for fewer than two.
+function ask_together( urls )
+{
+   var base = ciyam.get_cws_url( );
+   var parts = [ ];
+
+   urls.forEach( function( url )
+   {
+      var part = batch_part( url, base );
+
+      if( ( part !== "" ) && ( parts.indexOf( part ) < 0 ) )
+         parts.push( part );
+   } );
+
+   if( ( parts.length < 2 ) || !window.crypto || !window.crypto.getRandomValues )
+      return Promise.resolve( );
+
+   var bytes = window.crypto.getRandomValues( new Uint8Array( 16 ) );
+   var boundary = Array.from( bytes ).map( function( b ) { return ( "0" + b.toString( 16 ) ).slice( -2 ); } ).join( "" );
+
+   var url = base + "/batch?access=" + ciyam.access + "&device=" + ciyam.device + "&format=text&options=" + encodeURIComponent( "boundary="
+    + boundary ) + "&payload=" + encodeURIComponent( parts.join( "\n" ) ) + "&session=" + ciyam.sessid;
+
+   var sessid = ciyam.sessid;
+
+   return request( function( done ) { return ciyam.fetch( url, "GET", done ); } ).then( function( answer )
+   {
+      var answers = parse_batch( answer, boundary, parts.length );
+
+      if( ( answers === null ) || ( ciyam.sessid !== sessid ) )
+         return;
+
+      var until = Date.now( ) + c_batch_keep_ms;
+
+      parts.forEach( function( part, i ) { g_batched[ part ] = { answer: answers[ i ], until: until }; } );
+   } );
+}
+
+// NOTE: What a look at Home asks of the node, as its reads ask it ("load_member_home( )", and admin's "load_overview( )" for the
+// Overview or Health) - the lobby aside, which a resume has just read.
+function look_urls( section )
+{
+   var urls = [ devices_url( ) ];
+
+   if( !g_keys_known )
+      urls.push( ciyam.get_cws_url( ) + "/user-keys?access=" + ciyam.access + "&device=" + ciyam.device + "&format=text&session=" + ciyam.sessid );
+
+   if( ciyam.is_admin && ( ( section === "overview" ) || ( section === "health" ) ) )
+   {
+      var requests = [ c_home_secure_request, c_home_keys_request ];
+
+      if( kept_node_flags( ) === null )
+         requests.push( c_home_devt_request, c_home_demo_request );
+
+      requests.push( c_home_sessions_request );
+
+      if( section === "health" )
+         requests.push( c_home_schedule_request, c_home_listeners_request );
+
+      requests.forEach( function( text ) { urls.push( admin_url( "" ) + "&request=" + encodeURIComponent( text ) ); } );
+
+      urls.push( ciyam.get_cws_url( ) + "/users?access=" + ciyam.access + "&device=" + ciyam.device + "&format=" + ciyam.format_type
+       + "&session=" + ciyam.sessid );
+      urls.push( log_url( "server", c_overview_problem_lines ) );
+   }
+
+   return urls;
+}
+
 function home_main( )
 {
+   install_batching( );
+
    // NOTE: The eye in each new password's field, to see it - one suggested above all (2026-10-25).
    attach_reveals( document );
 
@@ -1580,6 +1695,8 @@ async function enter_app( )
    g_no_keys = false;
    g_keys_known = false;
 
+   ask_together( look_urls( g_section ) );
+
    render_member_home( );
 
    await load_member_home( );
@@ -1937,6 +2054,8 @@ function start_refresh( )
       if( ( ciyam.sessid === "" ) || document.hidden )
          return;
 
+      ask_together( look_urls( ciyam.is_admin ? g_section : "" ) );
+
       load_member_home( );
       refresh_node_line( );
 
@@ -2044,7 +2163,7 @@ async function ask_node( text )
 // kept for the tab: Home is loaded afresh at each switch from another app (2026-11-14, over 4G). Kept only when both were answered.
 const c_node_flags_key = "home.node_flags";
 
-async function read_node_flags( )
+function kept_node_flags( )
 {
    try
    {
@@ -2056,6 +2175,16 @@ async function read_node_flags( )
    catch( e )
    {
    }
+
+   return null;
+}
+
+async function read_node_flags( )
+{
+   var kept = kept_node_flags( );
+
+   if( kept !== null )
+      return kept;
 
    var flags = { sessid: ciyam.sessid, devt: parse_flag( await ask_node( c_home_devt_request ) ),
     demo: parse_flag( await ask_node( c_home_demo_request ) ) };
@@ -2099,9 +2228,14 @@ function set_health_pill( id, level, text )
 
 // NOTE: A log's last "count" lines - every line for none. The node gives ten unless asked (commit "3d6a5820"), so
 // Home always says how many it wants.
+function log_url( name, count )
+{
+   return admin_url( "/logs/" + encodeURIComponent( name ) ) + "&options=" + encodeURIComponent( log_options( count ) );
+}
+
 async function read_log( name, count )
 {
-   var url = admin_url( "/logs/" + encodeURIComponent( name ) ) + "&options=" + encodeURIComponent( log_options( count ) );
+   var url = log_url( name, count );
 
    var response = await request( function( done )
    {
@@ -3048,13 +3182,20 @@ function on_section_shown( section )
       load_logs( );
 }
 
+function refresh_overview( )
+{
+   ask_together( look_urls( g_section ) );
+
+   load_overview( true );
+}
+
 function install_admin( )
 {
    document.getElementById( "problems_show" ).addEventListener( "click", show_problems_in_logs );
    document.getElementById( "log_problems_clear" ).addEventListener( "click", function( ) { g_log_problems_only = false; show_log( ); } );
 
-   document.getElementById( "overview_refresh" ).addEventListener( "click", function( ) { load_overview( true ); } );
-   document.getElementById( "health_refresh" ).addEventListener( "click", function( ) { load_overview( true ); } );
+   document.getElementById( "overview_refresh" ).addEventListener( "click", refresh_overview );
+   document.getElementById( "health_refresh" ).addEventListener( "click", refresh_overview );
 
    document.getElementById( "alerts_server_form" ).addEventListener( "submit", save_alerts_server );
    document.getElementById( "alerts_test" ).addEventListener( "click", send_test_alert );
@@ -4172,6 +4313,8 @@ async function do_sign_out( )
 
    // NOTE: "disconnect( )" ends the session on the server but leaves the instance as it was.
    clear_ciyam( );
+
+   g_batched = { };
 
    forget_admin( );
 
