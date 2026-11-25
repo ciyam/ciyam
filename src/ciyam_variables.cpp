@@ -385,6 +385,7 @@ constexpr const char* c_special_variable_blockchain_peer_hub_height = "@blockcha
 constexpr const char* c_special_variable_blockchain_shared_identity = "@blockchain_shared_identity";
 constexpr const char* c_special_variable_use_insecure_peer_protocol = "@use_insecure_peer_protocol";
 constexpr const char* c_special_variable_blockchain_waiting_for_hub = "@blockchain_waiting_for_hub";
+constexpr const char* c_special_variable_system_setting_livekit_url = "@system_setting_livekit_url";
 constexpr const char* c_special_variable_system_setting_ntfy_server = "@system_setting_ntfy_server";
 constexpr const char* c_special_variable_system_setting_turn_secret = "@system_setting_turn_secret";
 constexpr const char* c_special_variable_blockchain_block_processing = "@blockchain_block_processing";
@@ -396,10 +397,12 @@ constexpr const char* c_special_variable_blockchain_peer_hub_identity = "@blockc
 constexpr const char* c_special_variable_blockchain_targeted_identity = "@blockchain_targeted_identity";
 constexpr const char* c_special_variable_blockchain_non_extra_identity = "@blockchain_non_extra_identity";
 constexpr const char* c_special_variable_queue_archive_info_for_resize = "@queue_archive_info_for_resize";
+constexpr const char* c_special_variable_system_setting_livekit_secret = "@system_setting_livekit_secret";
 constexpr const char* c_special_variable_blockchain_peer_has_supporters = "@blockchain_peer_has_supporters";
 constexpr const char* c_special_variable_blockchain_primary_pubkey_hash = "@blockchain_primary_pubkey_hash";
 constexpr const char* c_special_variable_blockchain_signature_file_hash = "@blockchain_signature_file_hash";
 constexpr const char* c_special_variable_display_last_two_for_duplicate = "@display_last_two_for_duplicate";
+constexpr const char* c_special_variable_system_setting_livekit_api_key = "@system_setting_livekit_api_key";
 constexpr const char* c_special_variable_blockchain_tertiary_pubkey_hash = "@blockchain_tertiary_pubkey_hash";
 constexpr const char* c_special_variable_blockchain_secondary_pubkey_hash = "@blockchain_secondary_pubkey_hash";
 constexpr const char* c_special_variable_skip_total_child_field_in_parent = "@skip_total_child_field_in_parent";
@@ -780,6 +783,7 @@ void init_special_variable_names( )
       g_special_variable_names.push_back( c_special_variable_blockchain_shared_identity );
       g_special_variable_names.push_back( c_special_variable_use_insecure_peer_protocol );
       g_special_variable_names.push_back( c_special_variable_blockchain_waiting_for_hub );
+      g_special_variable_names.push_back( c_special_variable_system_setting_livekit_url );
       g_special_variable_names.push_back( c_special_variable_system_setting_ntfy_server );
       g_special_variable_names.push_back( c_special_variable_system_setting_turn_secret );
       g_special_variable_names.push_back( c_special_variable_blockchain_block_processing );
@@ -791,10 +795,12 @@ void init_special_variable_names( )
       g_special_variable_names.push_back( c_special_variable_blockchain_targeted_identity );
       g_special_variable_names.push_back( c_special_variable_blockchain_non_extra_identity );
       g_special_variable_names.push_back( c_special_variable_queue_archive_info_for_resize );
+      g_special_variable_names.push_back( c_special_variable_system_setting_livekit_secret );
       g_special_variable_names.push_back( c_special_variable_blockchain_peer_has_supporters );
       g_special_variable_names.push_back( c_special_variable_blockchain_primary_pubkey_hash );
       g_special_variable_names.push_back( c_special_variable_blockchain_signature_file_hash );
       g_special_variable_names.push_back( c_special_variable_display_last_two_for_duplicate );
+      g_special_variable_names.push_back( c_special_variable_system_setting_livekit_api_key );
       g_special_variable_names.push_back( c_special_variable_blockchain_tertiary_pubkey_hash );
       g_special_variable_names.push_back( c_special_variable_blockchain_secondary_pubkey_hash );
       g_special_variable_names.push_back( c_special_variable_skip_total_child_field_in_parent );
