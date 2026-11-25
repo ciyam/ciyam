@@ -110,6 +110,17 @@ constexpr const char* c_cws_request_handover_options_id = "id";
 constexpr const char* c_cws_request_handover_options_for = "for";
 constexpr const char* c_cws_request_handover_options_answer = "answer";
 
+// NOTE: Several reads asked in one request ("batch", 2026-11-25) - for a page on a slow phone connection, where each request is a
+// round trip (Home's opening asked nine, one after another: 5.5 s over slow 4G). Each part is a line of "payload" - its resource,
+// options and request, separated by tabs - and is answered as it would have been alone, in order, the answers separated by a line
+// of the "boundary" the page chose (random, so no answer can hold it). Reads only, with a session, and not many at once.
+const size_t c_cws_batch_most = 16;
+
+const size_t c_cws_batch_boundary_min = 16;
+const size_t c_cws_batch_boundary_max = 64;
+
+constexpr const char* c_cws_request_batch_options_boundary = "boundary";
+
 // NOTE: A browser's accounts moved to a new phone (2026-11-23) - a meeting place on the node for the two, under an id made from the
 // secret in the old phone's code, which the node never sees. Opened by the old phone signed in; from then on neither need be (the
 // new phone has no session, and the old one's ends as the new one signs in): each answers with a secret of its own, of which the
@@ -199,6 +210,7 @@ constexpr const char* c_web_storage_suffix = ".storage";
 constexpr const char* c_cws_artifacts_link = ".ciyam";
 
 constexpr const char* c_cws_uri_suffix_help = "help";
+constexpr const char* c_cws_uri_suffix_batch = "batch";
 constexpr const char* c_cws_uri_suffix_logs = "logs";
 constexpr const char* c_cws_uri_suffix_ring = "ring";
 constexpr const char* c_cws_uri_suffix_alerts = "alerts";
@@ -2400,9 +2412,130 @@ bool ip_addr_belongs_to_a_web_session( const string& ip_addr )
    return retval;
 }
 
+// NOTE: The parts of a batch ("c_cws_batch_most") each asked through "process_cws_request( )" - a GET each, with the batch's own
+// credentials and session, so each is checked and answered as if asked alone. Not a batch in a batch, nor a request that makes a
+// session or is asked without one. An error is answered as the node answers one ("Error: ..."), without its delay: if every part
+// is refused - an expired session, say - the batch is refused with the first part's error, which is then delayed as any is.
+bool process_cws_batch( http_request_type request_type, const cws_paramaters& cws_params, string& response, string& error )
+{
+   string boundary;
+
+   string prefix( string( c_cws_request_batch_options_boundary ) + '=' );
+
+   if( cws_params.options.find( prefix ) == 0 )
+      boundary = cws_params.options.substr( prefix.length( ) );
+
+   vector< string > parts;
+
+   string::size_type from = 0;
+
+   while( !cws_params.payload.empty( ) && ( from <= cws_params.payload.length( ) ) )
+   {
+      string::size_type pos = cws_params.payload.find( '\n', from );
+
+      if( pos == string::npos )
+         pos = cws_params.payload.length( );
+
+      parts.push_back( cws_params.payload.substr( from, pos - from ) );
+
+      from = pos + 1;
+   }
+
+   if( ( request_type != e_http_request_type_get ) || cws_params.session.empty( )
+    || ( boundary.length( ) < c_cws_batch_boundary_min ) || ( boundary.length( ) > c_cws_batch_boundary_max )
+    || !are_hex_nibbles( boundary, false ) || parts.empty( ) || ( parts.size( ) > c_cws_batch_most ) )
+   {
+      // FUTURE: This message should be handled as a server string message.
+      error = "Invalid batch request.";
+
+      return false;
+   }
+
+   vector< string > answers;
+
+   string first_error;
+
+   size_t refused = 0;
+
+   for( size_t i = 0; i < parts.size( ); i++ )
+   {
+      string::size_type tab1 = parts[ i ].find( '\t' );
+      string::size_type tab2 = ( tab1 == string::npos ) ? string::npos : parts[ i ].find( '\t', tab1 + 1 );
+
+      string part_error;
+      string part_response;
+
+      if( tab2 == string::npos )
+         // FUTURE: This message should be handled as a server string message.
+         part_error = "Invalid batch part.";
+      else
+      {
+         string resource( parts[ i ].substr( 0, tab1 ) );
+
+         cws_paramaters part_params( cws_params );
+
+         part_params.options = parts[ i ].substr( tab1 + 1, tab2 - tab1 - 1 );
+         part_params.payload.erase( );
+         part_params.request = parts[ i ].substr( tab2 + 1 );
+
+         if( ( resource == c_cws_uri_suffix_batch ) || ( resource == c_cws_uri_suffix_move ) || ( resource == c_cws_uri_suffix_sessions )
+          || HAS_CONST_CHAR_PREFIX( resource, c_cws_uri_suffix_sessions_prefix ) )
+            // FUTURE: This message should be handled as a server string message.
+            part_error = "Invalid batch part.";
+         else
+         {
+            bool use_none_response = false;
+
+            if( !process_cws_request( e_http_request_type_get, resource, part_params, use_none_response, part_response, part_error )
+             && part_error.empty( ) )
+               // FUTURE: This message should be handled as a server string message.
+               part_error = "Unknown batch part.";
+         }
+      }
+
+      if( !part_error.empty( ) )
+      {
+         if( first_error.empty( ) )
+            first_error = part_error;
+
+         ++refused;
+
+         if( !cws_params.is_json_output )
+            part_response = "Error: " + part_error;
+         else
+            part_response = "{\"error\":\"" + escaped_json( part_error ) + "\"}";
+      }
+
+      answers.push_back( part_response );
+   }
+
+   if( refused == parts.size( ) )
+   {
+      error = first_error;
+
+      return false;
+   }
+
+   for( size_t i = 0; i < answers.size( ); i++ )
+   {
+      if( i > 0 )
+         response += cws_params.is_json_output ? string( "," ) : '\n' + boundary + '\n';
+
+      response += answers[ i ];
+   }
+
+   if( cws_params.is_json_output )
+      response = '[' + response + ']';
+
+   return true;
+}
+
 bool process_cws_request( http_request_type request_type, const string& uri_suffix,
  const cws_paramaters& cws_params, bool& use_none_response, string& response, string& error )
 {
+   if( uri_suffix == c_cws_uri_suffix_batch )
+      return process_cws_batch( request_type, cws_params, response, error );
+
    bool found = false;
 
    int64_t now = unix_time( );
