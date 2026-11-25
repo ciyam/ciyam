@@ -243,6 +243,7 @@ ok   - the others are not the person's other words
 ok   - no word twice
 ok   asking together - a read's part: its resource, options and request, decoded; the node's own request with no resource
 ok   - none for one that can't be: another place, no session, a batch, a password or payload, a line break, bad escapes
+ok   - whose read it is: the account, device and session; none without a session
 ok   - a batch's answers in order, an answer with lines of its own or a refusal kept as it is
 ok   - none if not that many: refused whole, a node without batches, nothing
 

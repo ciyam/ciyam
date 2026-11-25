@@ -553,6 +553,10 @@ check( "- none for one that can't be: another place, no session, a batch, a pass
  hp.batch_part( cws + "/users" + with_session + "&options=%E0%A4%A", cws ), hp.batch_part( null, cws ) ],
  [ "", "", "", "", "", "", "", "", "" ] );
 
+check( "- whose read it is: the account, device and session; none without a session", [ hp.batch_owner( cws + "/users" + with_session ),
+ hp.batch_owner( cws + "/users?access=20401&device=0123456789abcde&format=text" ), hp.batch_owner( null ) ],
+ [ "20401/0123456789abcde/abcdef0123456789abcd", "", "" ] );
+
 var boundary = "0f".repeat( 16 );
 
 check( "- a batch's answers in order, an answer with lines of its own or a refusal kept as it is", hp.parse_batch( "one\ntwo lines\n" + boundary

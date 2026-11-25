@@ -1199,6 +1199,25 @@ function batch_part( url, base )
    return /[\n\r]/.test( part ) || ( part.split( "\t" ).length !== 3 ) ? "" : part;
 }
 
+// NOTE: Whose read it is - "<access>/<device>/<session>" from its address, "" if it has no session. A kept answer is given only to
+// the same, so never to another account or session (found by review, 2026-11-25).
+function batch_owner( url )
+{
+   var text = String( url == null ? "" : url );
+   var at = text.indexOf( "?" );
+   var values = { };
+
+   ( ( at < 0 ) ? "" : text.substring( at + 1 ) ).split( "&" ).forEach( function( pair )
+   {
+      var equals = pair.indexOf( "=" );
+
+      if( equals > 0 )
+         values[ pair.substring( 0, equals ) ] = pair.substring( equals + 1 );
+   } );
+
+   return values.session ? ( values.access || "" ) + "/" + ( values.device || "" ) + "/" + values.session : "";
+}
+
 // NOTE: A batch's answers in order - null if it isn't "count" of them (the node refused it all, or doesn't know "batch").
 function parse_batch( text, boundary, count )
 {
@@ -1214,6 +1233,7 @@ if( typeof module !== "undefined" )
 {
    module.exports = {
       batch_part: batch_part,
+      batch_owner: batch_owner,
       parse_batch: parse_batch,
       setup_retry_wait_text: setup_retry_wait_text,
       user_keys_problem_text: user_keys_problem_text,

@@ -50,28 +50,40 @@ function request( issue )
 
 // NOTE: Asking together (2026-11-25) - the reads Home's opening and each refresh make of the node asked in one request ("/cws/batch")
 // rather than one after another, each a round trip on a phone: over slow 4G Home's nine took 5.5 s. The answers are kept briefly,
-// each given to the first read that asks for it ("batch_part( )"), so the reads themselves are as they were. A node without batches
-// refuses it, and each read is then asked by itself. Anything but a read lets every kept answer go, so none is older than a change.
+// each given to the first read that asks for it - the same read ("batch_part( )") by the same session ("batch_owner( )") - so the
+// reads themselves are as they were. Anything but a read lets every kept answer go, so none is older than a change, and so does the
+// session ending ("clear_ciyam( )"). A node without batches refuses it, and each read is then asked by itself - and no batch is asked
+// of it again while the page is open.
 const c_batch_keep_ms = 10000;
 
 var g_batched = { };
+var g_no_batches = false;
+
+function batch_key( url )
+{
+   var part = batch_part( url, ciyam.get_cws_url( ) );
+   var owner = batch_owner( url );
+
+   return ( ( part === "" ) || ( owner === "" ) ) ? "" : owner + "\n" + part;
+}
 
 function install_batching( )
 {
    var plain = ciyam.fetch;
    var in_body = ciyam.fetch_in_body;
+   var post = ciyam.post;
 
    ciyam.fetch = async function( url, request_type, callback )
    {
-      var part = ( request_type === "GET" ) ? batch_part( url, ciyam.get_cws_url( ) ) : "";
-      var kept = ( part !== "" ) ? g_batched[ part ] : null;
+      var key = ( request_type === "GET" ) ? batch_key( url ) : "";
+      var kept = ( key !== "" ) ? g_batched[ key ] : null;
 
       if( request_type !== "GET" )
          g_batched = { };
 
       if( kept )
       {
-         delete g_batched[ part ];
+         delete g_batched[ key ];
 
          if( Date.now( ) < kept.until )
          {
@@ -90,9 +102,17 @@ function install_batching( )
 
       return in_body.call( ciyam, url, request_type, callback );
    };
+
+   ciyam.post = function( )
+   {
+      g_batched = { };
+
+      return post.apply( ciyam, arguments );
+   };
 }
 
-// NOTE: Queued at once - so asked before the reads queued after it, which then find their answers kept. Not for fewer than two.
+// NOTE: Queued at once - so asked before the reads queued after it, which then find their answers kept. Not for fewer than two,
+// and in text only, as the browser asks.
 function ask_together( urls )
 {
    var base = ciyam.get_cws_url( );
@@ -106,7 +126,7 @@ function ask_together( urls )
          parts.push( part );
    } );
 
-   if( ( parts.length < 2 ) || !window.crypto || !window.crypto.getRandomValues )
+   if( g_no_batches || ( parts.length < 2 ) || ( ciyam.format_type !== "text" ) || !window.crypto || !window.crypto.getRandomValues )
       return Promise.resolve( );
 
    var bytes = window.crypto.getRandomValues( new Uint8Array( 16 ) );
@@ -115,18 +135,22 @@ function ask_together( urls )
    var url = base + "/batch?access=" + ciyam.access + "&device=" + ciyam.device + "&format=text&options=" + encodeURIComponent( "boundary="
     + boundary ) + "&payload=" + encodeURIComponent( parts.join( "\n" ) ) + "&session=" + ciyam.sessid;
 
-   var sessid = ciyam.sessid;
+   var owner = batch_owner( url );
 
    return request( function( done ) { return ciyam.fetch( url, "GET", done ); } ).then( function( answer )
    {
       var answers = parse_batch( answer, boundary, parts.length );
 
-      if( ( answers === null ) || ( ciyam.sessid !== sessid ) )
+      // NOTE: Refused for anything but the session - a node that doesn't know batches.
+      if( ( answers === null ) && is_error_response( answer ) && !/session/i.test( answer ) )
+         g_no_batches = true;
+
+      if( ( answers === null ) || ( batch_owner( "?access=" + ciyam.access + "&device=" + ciyam.device + "&session=" + ciyam.sessid ) !== owner ) )
          return;
 
       var until = Date.now( ) + c_batch_keep_ms;
 
-      parts.forEach( function( part, i ) { g_batched[ part ] = { answer: answers[ i ], until: until }; } );
+      parts.forEach( function( part, i ) { g_batched[ owner + "\n" + part ] = { answer: answers[ i ], until: until }; } );
    } );
 }
 
@@ -336,6 +360,8 @@ function clear_ciyam( )
    ciyam.unique = "";
    ciyam.username = "";
    ciyam.is_admin = false;
+
+   g_batched = { };
 }
 
 async function after_sign_in( )
@@ -4313,8 +4339,6 @@ async function do_sign_out( )
 
    // NOTE: "disconnect( )" ends the session on the server but leaves the instance as it was.
    clear_ciyam( );
-
-   g_batched = { };
 
    forget_admin( );
 
