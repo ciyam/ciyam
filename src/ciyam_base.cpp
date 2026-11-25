@@ -155,6 +155,10 @@ constexpr const char* c_env_var_turn_port = "CIYAM_TURN_PORT";
 constexpr const char* c_env_var_turn_secret = "CIYAM_TURN_SECRET";
 constexpr const char* c_env_var_turn_ip_addr = "CIYAM_TURN_IP_ADDR";
 
+constexpr const char* c_env_var_livekit_url = "CIYAM_LIVEKIT_URL";
+constexpr const char* c_env_var_livekit_secret = "CIYAM_LIVEKIT_SECRET";
+constexpr const char* c_env_var_livekit_api_key = "CIYAM_LIVEKIT_API_KEY";
+
 constexpr const char* c_dummy_host_name = "ciyam.peer";
 
 constexpr const char* c_at_init_script = "./at_init";
@@ -201,8 +205,10 @@ constexpr const char* c_section_email = "email";
 constexpr const char* c_section_client = "client";
 constexpr const char* c_section_extern = "extern";
 constexpr const char* c_section_script = "script";
+constexpr const char* c_section_livekit = "livekit";
 constexpr const char* c_section_files_area = "files_area";
 
+constexpr const char* c_attribute_url = "url";
 constexpr const char* c_attribute_name = "name";
 constexpr const char* c_attribute_path = "path";
 constexpr const char* c_attribute_port = "port";
@@ -212,6 +218,7 @@ constexpr const char* c_attribute_secret = "secret";
 constexpr const char* c_attribute_server = "server";
 constexpr const char* c_attribute_sender = "sender";
 constexpr const char* c_attribute_suffix = "suffix";
+constexpr const char* c_attribute_api_key = "api_key";
 constexpr const char* c_attribute_ip_addr = "ip_addr";
 constexpr const char* c_attribute_logging = "logging";
 constexpr const char* c_attribute_use_udp = "use_udp";
@@ -2102,6 +2109,10 @@ string g_smtp_security;
 string g_turn_port;
 string g_turn_secret;
 string g_turn_ip_addr;
+
+string g_livekit_url;
+string g_livekit_secret;
+string g_livekit_api_key;
 
 int g_smtp_max_send_attempts = c_min_smtp_max_send_attempts;
 
@@ -4328,6 +4339,33 @@ void read_server_configuration( )
 
          reader.finish_section( c_section_extern );
       }
+
+      if( reader.has_started_section( c_section_livekit ) )
+      {
+         g_livekit_url = has_environment_variable( c_env_var_livekit_url )
+          ? get_environment_variable( c_env_var_livekit_url ) : g_none_name;
+
+         g_livekit_secret = has_environment_variable( c_env_var_livekit_secret )
+          ? get_environment_variable( c_env_var_livekit_secret ) : g_none_name;
+
+         g_livekit_api_key = has_environment_variable( c_env_var_livekit_api_key )
+          ? get_environment_variable( c_env_var_livekit_api_key ) : g_none_name;
+
+         reader.finish_section( c_section_livekit );
+      }
+
+      if( g_livekit_url.empty( ) )
+         g_livekit_url = g_none_name;
+
+      if( g_livekit_secret.empty( ) )
+         g_livekit_secret = g_none_name;
+
+      if( g_livekit_api_key.empty( ) )
+         g_livekit_api_key = g_none_name;
+
+      set_system_variable( e_special_var_system_setting_livekit_url, g_livekit_url );
+      set_system_variable( e_special_var_system_setting_livekit_secret, g_livekit_secret );
+      set_system_variable( e_special_var_system_setting_livekit_api_key, g_livekit_api_key );
 
       reader.start_section( c_section_files_area );
 
@@ -7526,7 +7564,7 @@ string get_turn_secret( bool from_setting_variable )
       secret = get_system_variable( e_special_var_system_setting_turn_secret );
 
    // NOTE: An encrypted secret will contain a ':' (as the salt separator)
-   // whereas one provided via an environment variable will not have been
+   // whereas one provided via an environment variable might not have been
    // encrypted (so is returned as is).
    if( secret.find( ':' ) != string::npos )
       secret = decrypt_data( secret, true );
@@ -7543,6 +7581,42 @@ string get_turn_ip_addr( bool from_setting_variable )
 
    if( retval == get_special_var_name( e_special_var_ip_ext_addr ) )
       retval = get_system_variable( e_special_var_ip_ext_addr );
+
+   return retval;
+}
+
+string get_livekit_url( bool from_setting_variable )
+{
+   string retval( g_livekit_url );
+
+   if( from_setting_variable && has_system_variable( e_special_var_system_setting_livekit_url ) )
+      retval = get_system_variable( e_special_var_system_setting_livekit_url );
+
+   return retval;
+}
+
+string get_livekit_secret( bool from_setting_variable )
+{
+   string secret( g_livekit_secret );
+
+   if( from_setting_variable && has_system_variable( e_special_var_system_setting_livekit_secret ) )
+      secret = get_system_variable( e_special_var_system_setting_livekit_secret );
+
+   // NOTE: An encrypted secret will contain a ':' (as the salt separator)
+   // whereas one provided via an environment variable might not have been
+   // encrypted (so is returned as is).
+   if( secret.find( ':' ) != string::npos )
+      secret = decrypt_data( secret, true );
+
+   return secret;
+}
+
+string get_livekit_api_key( bool from_setting_variable )
+{
+   string retval( g_livekit_api_key );
+
+   if( from_setting_variable && has_system_variable( e_special_var_system_setting_livekit_api_key ) )
+      retval = get_system_variable( e_special_var_system_setting_livekit_api_key );
 
    return retval;
 }

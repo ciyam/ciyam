@@ -385,6 +385,10 @@ std::string get_turn_port( bool from_setting_variable = true );
 std::string get_turn_secret( bool from_setting_variable = true );
 std::string get_turn_ip_addr( bool from_setting_variable = true );
 
+std::string get_livekit_url( bool from_setting_variable = true );
+std::string get_livekit_secret( bool from_setting_variable = true );
+std::string get_livekit_api_key( bool from_setting_variable = true );
+
 struct external_client
 {
    external_client( ) : port( 0 ), is_local( false ) { }
