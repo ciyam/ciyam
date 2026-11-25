@@ -660,12 +660,12 @@ http://www.opensource.org/licenses/mit-license.php.
                        ("account_move.js", 2026-11-23). -->
                   <div class="account-card account-form" id="move_part">
                      <div>
-                        <h2>Move to a new phone</h2>
-                        <p class="account-lede">Move your accounts to another phone - no passwords to type.</p>
+                        <h2>Move this device</h2>
+                        <p class="account-lede">Move your accounts to another device - no passwords to type.</p>
                      </div>
                      <div class="chat-error-text" id="move_start_error" role="alert"></div>
                      <div class="account-actions-row">
-                        <button type="button" class="chat-btn" id="move_start" onclick="move_start( )">Move to a new phone</button>
+                        <button type="button" class="chat-btn" id="move_start" onclick="move_start( )">Move this device</button>
                      </div>
                   </div>
 

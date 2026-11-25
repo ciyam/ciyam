@@ -1297,7 +1297,7 @@ string move_request( bool is_post, const map< string, string >& options, int64_t
 
    // FUTURE: These messages should be handled as server string messages.
    string invalid( "Invalid options for move." );
-   string lapsed( "That code has lapsed - show a new one on the old phone." );
+   string lapsed( "That code has lapsed - show a new one on the old device." );
 
    if( !is_move_hex( id ) || ( !owner.empty( ) && !is_move_hex( owner ) ) || ( !key.empty( ) && !is_move_hex( key ) )
     || ( !proof.empty( ) && !is_move_hex( proof ) ) || ( !bundle.empty( ) && !is_move_sealed( bundle, c_cws_move_bundle_max ) )
@@ -1344,7 +1344,7 @@ string move_request( bool is_post, const map< string, string >& options, int64_t
             {
                if( place.key.empty( ) || place.is_contested || place.is_taken || !place.bundle.empty( ) )
                   // FUTURE: This message should be handled as a server string message.
-                  error = "Nothing can be moved with that code now - start again on the old phone.";
+                  error = "Nothing can be moved with that code now - start again on the old device.";
                else
                   place.bundle = bundle;
             }
@@ -1367,7 +1367,7 @@ string move_request( bool is_post, const map< string, string >& options, int64_t
                   place.is_contested = true;
 
                // FUTURE: This message should be handled as a server string message.
-               error = "Another phone answered this code first - start again on the old phone.";
+               error = "Another device answered this code first - start again on the old device.";
             }
          }
          else if( !proof.empty( ) && ( place.key.empty( ) || ( sha256( proof ).get_digest_as_string( ) != place.proof ) ) )
@@ -1376,7 +1376,7 @@ string move_request( bool is_post, const map< string, string >& options, int64_t
          {
             if( place.is_contested )
                // FUTURE: This message should be handled as a server string message.
-               error = "Another phone answered this code too, so nothing was moved - start again on the old phone.";
+               error = "Another device answered this code too, so nothing was moved - start again on the old device.";
             else if( !place.bundle.empty( ) )
             {
                response = place.bundle;

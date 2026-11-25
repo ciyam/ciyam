@@ -8,7 +8,7 @@
 // its password moves - the PIN, the saved password, the keys' access key, the settings - and the device token with them, which the
 // saved passwords were hashed with: to the node the new phone is the same device, in new hands.
 //
-// The old phone, signed in, shows one code (Devices, "Move to a new phone") - this page's address and a secret after "#", which the
+// The old phone, signed in, shows one code (Devices, "Move this device") - this page's address and a secret after "#", which the
 // node never sees. The new phone's camera opens it here, and it answers through a place on the node made from the secret
 // ("move_request( )" in "ciyam_web_session.cpp") with a one-off public key. The old phone asks "Move these accounts to it?"; once
 // told yes it seals what moves under the X25519 secret between the two phones' one-off keys and the code's own secret, leaves it on
@@ -211,7 +211,7 @@ function move_problem( response, fallback )
    return ( is_error_response( response ) && ( response !== c_no_answer ) ) ? error_text( response ) : fallback;
 }
 
-// ---- The old phone - Devices, "Move to a new phone"
+// ---- The old phone - Devices, "Move this device"
 
 function move_saved_values( )
 {
@@ -286,8 +286,8 @@ async function move_start( )
       return signin_saved_name( pin ) || pin;
    } ), until: Date.now( ) + c_move_answer_wait_ms };
 
-   move_draw( { title: "Move to a new phone", lede: "Point your new phone's camera at this code.",
-    qr: move_link( window.location.origin + window.location.pathname, secret ), busy: "Waiting for your new phone…",
+   move_draw( { title: "Move this device", lede: "Point your new device's camera at this code.",
+    qr: move_link( window.location.origin + window.location.pathname, secret ), busy: "Waiting for your new device…",
     other: { text: "Cancel", act: move_cancel } } );
 
    move_watch_old( turn );
@@ -338,14 +338,14 @@ async function move_watch_old( turn )
 
       if( shown.state === "contested" )
       {
-         move_draw_again( "Another phone answered this code too, so nothing was moved." );
+         move_draw_again( "Another device answered this code too, so nothing was moved." );
 
          return;
       }
 
       if( ( ( shown.state === "error" ) && ( response !== c_no_answer ) ) || ( Date.now( ) > g_move.until ) )
       {
-         move_draw_again( g_move.asked ? "The code lapsed." : "The code lapsed before a new phone answered it." );
+         move_draw_again( g_move.asked ? "The code lapsed." : "The code lapsed before a new device answered it." );
 
          return;
       }
@@ -380,7 +380,7 @@ async function move_ask_old( key )
       return;
    }
 
-   move_draw( { title: "Your new phone is ready", lede: "Check it shows " + code + ", then move " + ( one ? "this account" : "these accounts" )
+   move_draw( { title: "Your new device is ready", lede: "Check it shows " + code + ", then move " + ( one ? "this account" : "these accounts" )
     + " to it.",
     names: g_move.names, go: { text: one ? "Move it" : "Move them", act: function( ) { move_send( key ); } },
     other: { text: "Cancel", act: move_cancel } } );
@@ -416,7 +416,7 @@ async function move_send( new_key )
    }
    catch( e )
    {
-      move_draw_again( "What your new phone sent couldn't be read." );
+      move_draw_again( "What your new device sent couldn't be read." );
 
       return;
    }
@@ -426,7 +426,7 @@ async function move_send( new_key )
    seed = "";
    text = "";
 
-   move_draw( { title: "Moving…", lede: "Keep this open until your new phone is signed in.", busy: "Finishing on your new phone…" } );
+   move_draw( { title: "Moving…", lede: "Keep this open until your new device is signed in.", busy: "Finishing on your new device…" } );
 
    // NOTE: Signed out first, so that ending this session can't cross the new phone's sign in on the same device.
    await request( function( done ) { return ciyam.disconnect( done ); } );
@@ -478,7 +478,7 @@ async function move_watch_sent( turn )
       if( ( shown.state === "contested" ) || ( ( shown.state === "error" ) && ( response !== c_no_answer ) )
        || ( Date.now( ) > g_move.until ) )
       {
-         move_finish_old( { title: "Your new phone didn't finish", lede: "Nothing was cleared here - sign in and try again." } );
+         move_finish_old( { title: "Your new device didn't finish", lede: "Nothing was cleared here - sign in and try again." } );
 
          return;
       }
@@ -503,14 +503,14 @@ async function move_told( sealed )
 
    if( report === null )
    {
-      move_finish_old( { title: "Your new phone didn't finish", lede: "Nothing was cleared here - sign in and try again." } );
+      move_finish_old( { title: "Your new device didn't finish", lede: "Nothing was cleared here - sign in and try again." } );
 
       return;
    }
 
    if( report.done.length === 0 )
    {
-      move_finish_old( { title: "Nothing moved", lede: "Your accounts wouldn't sign in on your new phone, so they're still here." } );
+      move_finish_old( { title: "Nothing moved", lede: "Your accounts wouldn't sign in on your new device, so they're still here." } );
 
       return;
    }
@@ -519,9 +519,9 @@ async function move_told( sealed )
    var moved = { pins: report.done, names: names_of( report.done ) };
    var stayed = names_of( report.failed );
 
-   move_draw( { title: "Your new phone is signed in", lede: "Clear " + move_names_text( moved.names ) + " from this phone?",
+   move_draw( { title: "Your new device is signed in", lede: "Clear " + move_names_text( moved.names ) + " from this device?",
     note: ( stayed.length === 0 ) ? "" : move_names_text( stayed ) + " didn't sign in there, so " + ( ( stayed.length === 1 ) ? "stays"
-    : "stay" ) + " here.", go: { text: "Clear this phone", act: function( ) { move_clear( moved ); } }, other: { text: "Not now",
+    : "stay" ) + " here.", go: { text: "Clear this device", act: function( ) { move_clear( moved ); } }, other: { text: "Not now",
     act: function( ) { move_later( moved ); } } } );
 }
 
@@ -541,8 +541,8 @@ function move_clear( moved )
    move_keep_moved( moved );
    signin_clear_moved( );
 
-   move_finish_old( { title: "This phone is cleared", lede: move_names_text( moved.names ) + ( ( moved.names.length === 1 ) ? " is" : " are" )
-    + " on your new phone now." } );
+   move_finish_old( { title: "This device is cleared", lede: move_names_text( moved.names ) + ( ( moved.names.length === 1 ) ? " is" : " are" )
+    + " on your new device now." } );
 }
 
 // NOTE: Kept here for now, said on the sign in until cleared ("signin_show_moved( )").
@@ -568,7 +568,7 @@ async function move_arrive( )
 
    g_move = { side: "new", turn: turn, secret: secret };
 
-   move_draw( { title: "Moving to this phone", busy: "Getting ready…" } );
+   move_draw( { title: "Moving to this device", busy: "Getting ready…" } );
 
    if( signin_saved_pins( ).length > 0 )
    {
@@ -600,7 +600,7 @@ async function move_arrive( )
    if( problem_text( response ) !== "" )
    {
       move_finish_new( { title: "That didn't work", lede: move_problem( response, "The node didn't answer - start again on your old"
-       + " phone." ) } );
+       + " device." ) } );
 
       return;
    }
@@ -610,7 +610,7 @@ async function move_arrive( )
    if( turn !== g_move_turn )
       return;
 
-   move_draw( { title: "Moving to this phone", lede: "Check your old phone shows " + code + ", then confirm there.", busy: "Waiting for your old phone…",
+   move_draw( { title: "Moving to this device", lede: "Check your old device shows " + code + ", then confirm there.", busy: "Waiting for your old device…",
     other: { text: "Cancel", act: move_cancel } } );
 
    move_watch_new( turn, sm );
@@ -651,7 +651,7 @@ async function move_watch_new( turn, sm )
 
       if( ( is_error_response( response ) && ( response !== c_no_answer ) ) || ( Date.now( ) > g_move.until ) )
       {
-         move_finish_new( { title: "That didn't work", lede: move_problem( response, "The code lapsed - start again on your old phone." ) } );
+         move_finish_new( { title: "That didn't work", lede: move_problem( response, "The code lapsed - start again on your old device." ) } );
 
          return;
       }
@@ -681,12 +681,12 @@ async function move_take( turn, sm, sealed )
 
    if( bundle === null )
    {
-      move_finish_new( { title: "That didn't work", lede: "What arrived couldn't be opened - start again on your old phone." } );
+      move_finish_new( { title: "That didn't work", lede: "What arrived couldn't be opened - start again on your old device." } );
 
       return;
    }
 
-   move_draw( { title: "Moving to this phone", busy: "Signing in…" } );
+   move_draw( { title: "Moving to this device", busy: "Signing in…" } );
 
    if( ciyam.sessid !== "" )
    {
@@ -748,7 +748,7 @@ async function move_take( turn, sm, sealed )
 
    if( done.length === 0 )
    {
-      move_finish_new( { title: "Nothing moved", lede: "Your accounts wouldn't sign in here, so they're still on your old phone." } );
+      move_finish_new( { title: "Nothing moved", lede: "Your accounts wouldn't sign in here, so they're still on your old device." } );
 
       return;
    }
@@ -759,7 +759,7 @@ async function move_take( turn, sm, sealed )
    var stayed = failed.map( function( pin ) { return bundle.store[ "cws.name_" + pin ] || pin; } );
 
    move_finish_new( { title: "You're signed in", lede: move_names_text( names ) + ( ( names.length === 1 ) ? " is" : " are" )
-    + " on this phone now.", note: ( ( stayed.length === 0 ) ? "" : move_names_text( stayed ) + " stayed on your old phone. " )
+    + " on this device now.", note: ( ( stayed.length === 0 ) ? "" : move_names_text( stayed ) + " stayed on your old device. " )
     + "Calls ring through the ntfy app - set it up again under Notifications.", go: { text: "Go to Home", act: function( )
     {
        window.location.href = "home.html";

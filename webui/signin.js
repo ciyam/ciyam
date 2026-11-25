@@ -438,7 +438,7 @@ function signin_show_moved( )
 
    if( moved !== null )
       signin_set_text( "signin_moved_text", move_names_text( moved.names ) + ( ( moved.names.length === 1 ) ? " is" : " are" )
-       + " on your new phone now." );
+       + " on your new device now." );
 }
 
 // NOTE: The accounts moved forgotten here - all the browser keeps for the node, its device token too (the new phone's now), once no
