@@ -446,6 +446,35 @@ inline bool is_host_and_port( const string& s )
     && ( port.find_first_not_of( "0123456789" ) == string::npos ) && ( atoi( port.c_str( ) ) <= 65535 );
 }
 
+// NOTE: LiveKit's address as a browser connects to it - "wss://" (or "https://") then a host with an optional port and
+// an optional path. It is handed to every caller's browser, so nothing that would need quoting or escaping.
+inline bool is_livekit_url( const string& s )
+{
+   string rest;
+
+   if( s.find( "wss://" ) == 0 )
+      rest = s.substr( 6 );
+   else if( s.find( "https://" ) == 0 )
+      rest = s.substr( 8 );
+   else
+      return false;
+
+   string::size_type slash = rest.find( '/' );
+
+   if( !is_host_and_port( rest.substr( 0, slash ) ) )
+      return false;
+
+   return ( slash == string::npos ) || ( rest.find_first_not_of(
+    "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-._~/", slash ) == string::npos );
+}
+
+// NOTE: A LiveKit API key - letters and digits (as LiveKit makes them, such as "APIxxxxxxxxxxxx") or '-' and '_'.
+inline bool is_livekit_api_key( const string& s )
+{
+   return !s.empty( ) && ( s.length( ) <= 128 ) && ( s.find_first_not_of(
+    "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-_" ) == string::npos );
+}
+
 inline string escaped_json( const string& s )
 {
    string str( escaped( s, "/\"", '\\', c_json_escape_specials ) );
@@ -4696,8 +4725,9 @@ bool process_cws_request( http_request_type request_type, const string& uri_suff
                   if( is_put_request && ( access != g_cws_admin_token ) )
                      // FUTURE: This message should be handled as a server string message.
                      error = "Settings can only be changed by the administrator.";
-                  // NOTE: The relay's secret, even encrypted, only for the administrator (2026-11-17).
-                  else if( ( var_name == get_special_var_name( e_special_var_system_setting_turn_secret ) ) && ( access != g_cws_admin_token ) )
+                  // NOTE: The relay's secret and LiveKit's, even encrypted, only for the administrator (2026-11-17).
+                  else if( ( ( var_name == get_special_var_name( e_special_var_system_setting_turn_secret ) )
+                   || ( var_name == get_special_var_name( e_special_var_system_setting_livekit_secret ) ) ) && ( access != g_cws_admin_token ) )
                      // FUTURE: This message should be handled as a server string message.
                      error = "This setting can only be read by the administrator.";
                   else if( value.empty( ) )
@@ -4758,8 +4788,16 @@ bool process_cws_request( http_request_type request_type, const string& uri_suff
                                     // FUTURE: This message should be handled as a server string message.
                                     error = "Invalid TURN port value(s) must be provided as <port>[:<tls_port>].";
                               }
-                              else if( var_name == get_special_var_name( e_special_var_system_setting_turn_secret ) )
+                              else if( ( var_name == get_special_var_name( e_special_var_system_setting_turn_secret ) )
+                               || ( var_name == get_special_var_name( e_special_var_system_setting_livekit_secret ) ) )
                                  value = encrypt_data( value, false, true );
+                              else if( ( var_name == get_special_var_name( e_special_var_system_setting_livekit_url ) ) && !is_livekit_url( value ) )
+                                 // FUTURE: This message should be handled as a server string message.
+                                 error = "Invalid LiveKit URL '" + value + "' (expecting wss:// or https:// then a host with an optional port).";
+                              else if( ( var_name == get_special_var_name( e_special_var_system_setting_livekit_api_key ) )
+                               && !is_livekit_api_key( value ) )
+                                 // FUTURE: This message should be handled as a server string message.
+                                 error = "Invalid LiveKit API key (expecting letters, digits, '-' or '_').";
                               // NOTE: "@ip_ext_addr" too - the default, and better than an address as it follows any change.
                               else if( ( var_name == get_special_var_name( e_special_var_system_setting_turn_ip_addr ) )
                                && ( value != get_special_var_name( e_special_var_ip_ext_addr ) ) )
@@ -4786,13 +4824,19 @@ bool process_cws_request( http_request_type request_type, const string& uri_suff
                                     value = get_ntfy_server( false );
                                  else if( var_name == get_special_var_name( e_special_var_system_setting_turn_port ) )
                                     value = get_turn_port( false );
-                                 else if( var_name == get_special_var_name( e_special_var_system_setting_turn_secret ) )
+                                 else if( var_name == get_special_var_name( e_special_var_system_setting_livekit_url ) )
+                                    value = get_livekit_url( false );
+                                 else if( var_name == get_special_var_name( e_special_var_system_setting_livekit_api_key ) )
+                                    value = get_livekit_api_key( false );
+                                 else if( ( var_name == get_special_var_name( e_special_var_system_setting_turn_secret ) )
+                                  || ( var_name == get_special_var_name( e_special_var_system_setting_livekit_secret ) ) )
                                  {
                                     // NOTE: Encrypted again - the variable holds the secret encrypted (the relay decrypts it),
                                     // so restoring it decrypted would leave nothing usable.
                                     try
                                     {
-                                       string secret( get_turn_secret( false ) );
+                                       string secret( ( var_name == get_special_var_name( e_special_var_system_setting_turn_secret ) )
+                                        ? get_turn_secret( false ) : get_livekit_secret( false ) );
 
                                        // NOTE: None stays none - "@none" encrypted would be taken for a secret.
                                        if( !secret.empty( ) && ( secret != g_none_var ) )
