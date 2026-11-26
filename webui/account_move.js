@@ -286,11 +286,41 @@ async function move_start( )
       return signin_saved_name( pin ) || pin;
    } ), until: Date.now( ) + c_move_answer_wait_ms };
 
-   move_draw( { title: "Move this device", lede: "Point your new device's camera at this code.",
-    qr: move_link( window.location.origin + window.location.pathname, secret ), busy: "Waiting for your new device…",
+   var link = move_link( window.location.origin + window.location.pathname, secret );
+
+   move_draw( { title: "Move this device", lede: "Point your new device's camera at this code - or copy the link, and paste it on"
+    + " its sign in.", qr: link, busy: "Waiting for your new device…", go: { text: "Copy link", act: function( ) { move_copy_link( link ); } },
     other: { text: "Cancel", act: move_cancel } } );
 
    move_watch_old( turn );
+}
+
+// NOTE: The code's link by the clipboard, for a new device with no camera (2026-11-26: "I can't easily scan the QR code (without
+// using a phone ...) so the ability to optionally also use the clipboard would be helpful"). It holds what the code holds; the new
+// device pastes it on its sign in, at whatever address it uses for the node ("signin_move_go( )"). The check code still guards it.
+// Where the browser won't copy (plain http on a LAN address), the link is shown to copy by hand.
+async function move_copy_link( link )
+{
+   var note = document.getElementById( "move_note" );
+   var copied = false;
+
+   try
+   {
+      await navigator.clipboard.writeText( link );
+
+      copied = true;
+   }
+   catch( e )
+   {
+      copied = false;
+   }
+
+   if( ( g_move === null ) || ( g_move.side !== "old" ) || g_move.asked )
+      return;
+
+   note.textContent = copied ? "Copied - paste it on your new device, under \"Moving from another device?\" on its sign in."
+    : "This browser won't copy it - copy it from here: " + link;
+   note.hidden = false;
 }
 
 // NOTE: Back where it started - the place on the node left to lapse.

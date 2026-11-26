@@ -215,17 +215,58 @@ function signin_build( host, options )
 
    form.appendChild( forgot );
 
-   // NOTE: One line (2026-10-28: the sign in scrolled) - what it forgets is said by the question it asks first.
+   // NOTE: The other end of a move by the clipboard ("move_copy_link( )" in "account_move.js", 2026-11-26) - the old device's link
+   // pasted here, opened at this page's own address, which may not be the one it was copied at. Offered on the foot's line, and
+   // opened beneath it - the sign in stays on one screen.
+   var paste = signin_element( "div", { class: "signin-move", id: "signin_move_paste", hidden: "" } );
+   var paste_go = signin_element( "button", { type: "button", class: "chat-btn chat-signin-setup", id: "signin_move_go" }, "Move to this device" );
+
+   paste_go.addEventListener( "click", signin_move_go );
+
+   paste.appendChild( signin_element( "label", { class: "chat-label", for: "signin_move_link" }, "The link from your old device" ) );
+
+   var paste_field = signin_element( "input", { type: "text", id: "signin_move_link", class: "chat-field chat-field--mono",
+    autocomplete: "off", spellcheck: "false" } );
+
+   paste_field.addEventListener( "keydown", function( event )
+   {
+      if( event.key === "Enter" )
+      {
+         event.preventDefault( );
+         signin_move_go( );
+      }
+   } );
+
+   paste.appendChild( paste_field );
+   paste.appendChild( signin_element( "div", { class: "chat-error-text signin-error", id: "signin_move_error", role: "alert" } ) );
+
+   var paste_actions = signin_element( "div", { class: "chat-signin-actions" } );
+
+   paste_actions.appendChild( paste_go );
+   paste.appendChild( paste_actions );
+
+   // NOTE: One line (2026-10-28: the sign in scrolled) - what it forgets is said by the question it asks first. "Trouble signing in?"
+   // before it went for the move's offer to fit (2026-11-27).
    var foot = signin_element( "div", { class: "chat-signin-foot" } );
    var reset = signin_element( "button", { type: "button", class: "chat-btn--link", id: "signin_reset" }, "Reset this browser" );
 
    reset.addEventListener( "click", signin_reset_browser );
 
-   foot.appendChild( signin_element( "span", { }, "Trouble signing in?" ) );
-   foot.appendChild( document.createTextNode( " " ) );
    foot.appendChild( reset );
 
+   var move = signin_element( "span", { id: "signin_move" } );
+   var move_offer = signin_element( "button", { type: "button", class: "chat-btn--link", id: "signin_move_offer" }, "Paste its link" );
+
+   move_offer.addEventListener( "click", signin_move_show );
+
+   move.appendChild( document.createTextNode( "Moving from another device? " ) );
+   move.appendChild( move_offer );
+
+   foot.appendChild( signin_element( "span", { "aria-hidden": "true" }, "·" ) );
+   foot.appendChild( move );
+
    form.appendChild( foot );
+   form.appendChild( paste );
    view.appendChild( form );
 
    // NOTE: A node not set up yet - nobody can sign in; it is set up from Home (2026-10-13: a Back from setting up
@@ -439,6 +480,41 @@ function signin_show_moved( )
    if( moved !== null )
       signin_set_text( "signin_moved_text", move_names_text( moved.names ) + ( ( moved.names.length === 1 ) ? " is" : " are" )
        + " on your new device now." );
+}
+
+function signin_move_show( )
+{
+   var paste = document.getElementById( "signin_move_paste" );
+
+   paste.hidden = !paste.hidden;
+
+   signin_set_text( "signin_move_error", "" );
+
+   if( !paste.hidden )
+      document.getElementById( "signin_move_link" ).focus( );
+}
+
+// NOTE: Only the secret is taken from the link ("parse_move_link( )") - the move then opens here, on My account, at this page's own
+// address, just as the code's camera would have opened it.
+function signin_move_go( )
+{
+   var secret = parse_move_link( document.getElementById( "signin_move_link" ).value );
+
+   if( secret === "" )
+   {
+      signin_set_text( "signin_move_error", "That isn't a move link - copy it again from your old device." );
+
+      return;
+   }
+
+   var page = window.location.pathname.replace( /[^/]*$/, "account.html" );
+   var here = ( page === window.location.pathname );
+
+   window.location.assign( move_link( window.location.origin + page, secret ) );
+
+   // NOTE: Only the part after "#" changes on My account itself, which a browser doesn't load again by itself.
+   if( here )
+      window.location.reload( );
 }
 
 // NOTE: The accounts moved forgotten here - all the browser keeps for the node, its device token too (the new phone's now), once no

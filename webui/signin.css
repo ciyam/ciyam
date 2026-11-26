@@ -232,6 +232,17 @@
    text-decoration: underline;
 }
 
+/* NOTE: The old device's link pasted, for a move by the clipboard ("signin_move_go( )", 2026-11-26). */
+.signin-move
+{
+   margin: 14px 0 14px;
+}
+
+.signin-move[hidden]
+{
+   display: none;
+}
+
 .recover-warning
 {
    margin: 12px 0 14px;
