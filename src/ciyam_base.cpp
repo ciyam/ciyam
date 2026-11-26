@@ -4340,16 +4340,17 @@ void read_server_configuration( )
          reader.finish_section( c_section_extern );
       }
 
-      if( reader.has_started_section( c_section_livekit ) )
+      if( !reader.has_started_section( c_section_livekit ) )
       {
-         g_livekit_url = has_environment_variable( c_env_var_livekit_url )
-          ? get_environment_variable( c_env_var_livekit_url ) : g_none_name;
-
-         g_livekit_secret = has_environment_variable( c_env_var_livekit_secret )
-          ? get_environment_variable( c_env_var_livekit_secret ) : g_none_name;
-
-         g_livekit_api_key = has_environment_variable( c_env_var_livekit_api_key )
-          ? get_environment_variable( c_env_var_livekit_api_key ) : g_none_name;
+         g_livekit_url = get_environment_variable( c_env_var_livekit_url );
+         g_livekit_secret = get_environment_variable( c_env_var_livekit_secret );
+         g_livekit_api_key = get_environment_variable( c_env_var_livekit_api_key );
+      }
+      else
+      {
+         g_livekit_url = reader.read_opt_attribute( c_env_var_livekit_url, g_none_name );
+         g_livekit_secret = reader.read_opt_attribute( c_env_var_livekit_secret, g_none_name );
+         g_livekit_api_key = reader.read_opt_attribute( c_env_var_livekit_api_key, g_none_name );
 
          reader.finish_section( c_section_livekit );
       }
