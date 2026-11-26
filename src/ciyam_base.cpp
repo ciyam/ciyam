@@ -4348,9 +4348,9 @@ void read_server_configuration( )
       }
       else
       {
-         g_livekit_url = reader.read_opt_attribute( c_env_var_livekit_url, g_none_name );
-         g_livekit_secret = reader.read_opt_attribute( c_env_var_livekit_secret, g_none_name );
-         g_livekit_api_key = reader.read_opt_attribute( c_env_var_livekit_api_key, g_none_name );
+         g_livekit_url = reader.read_opt_attribute( c_attribute_url, g_none_name );
+         g_livekit_secret = reader.read_opt_attribute( c_attribute_secret, g_none_name );
+         g_livekit_api_key = reader.read_opt_attribute( c_attribute_api_key, g_none_name );
 
          reader.finish_section( c_section_livekit );
       }
