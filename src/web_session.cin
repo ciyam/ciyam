@@ -265,8 +265,9 @@ COMMAND=$OUTPUT
 ~rm -rf $CIYAM_TMP_DIR/$SESSION
 
    @ifdef $IRC_ALLOWED
-   .session_variable @irc_* ""
+   .session_variable @system_@queue_irc_* ""
    .session_variable @queue_irc_* ""
+   .session_variable @irc_* ""
    @endif
 
 .session_variable @script_executed ""
