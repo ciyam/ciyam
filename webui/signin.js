@@ -85,8 +85,8 @@ function signin_element( tag, attributes, text )
 
 // NOTE: The node's mark - square brackets about a vertical ellipsis (2026-11-28). Each bracket is its arms, lying in the
 // plane that turns, and its upright, which counter-turns so it keeps facing the viewer as the pair swings about the dots
-// ("chat.css"). The motion is "" (still), "turn" (one half turn, 5 s after it is shown) or "busy" (turning while it lasts).
-// Also the switcher's ("apps.js").
+// ("chat.css"). The motion is "" (still), "turn" (a half turn 5 s after it is shown, and every 8 s after) or "busy" (turning
+// while it lasts). Also the switcher's ("apps.js").
 function signin_logo( motion )
 {
    var logo = signin_element( "span", { class: "chat-logo" + ( motion ? " chat-logo--" + motion : "" ), "aria-hidden": "true" } );
@@ -371,6 +371,13 @@ function signin_build( host, options )
    host.appendChild( view );
 
    host.appendChild( recover_build( ) );
+
+   // NOTE: The page's own cards (Home's setting up and unlocking, the accounts page's joining steps and the rest) carry an
+   // empty "chat-logo" in their markup - the mark drawn into each, still; only the sign in's turns.
+   document.querySelectorAll( ".chat-logo:empty" ).forEach( function( empty )
+   {
+      empty.parentNode.replaceChild( signin_logo( "" ), empty );
+   } );
 
    return view;
 }
