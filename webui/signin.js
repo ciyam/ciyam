@@ -83,6 +83,32 @@ function signin_element( tag, attributes, text )
    return element;
 }
 
+// NOTE: The node's mark - square brackets about a vertical ellipsis (2026-11-28). Each bracket is its arms, lying in the
+// plane that turns, and its upright, which counter-turns so it keeps facing the viewer as the pair swings about the dots
+// ("chat.css"). The motion is "" (still), "turn" (one half turn, 5 s after it is shown) or "busy" (turning while it lasts).
+// Also the switcher's ("apps.js").
+function signin_logo( motion )
+{
+   var logo = signin_element( "span", { class: "chat-logo" + ( motion ? " chat-logo--" + motion : "" ), "aria-hidden": "true" } );
+   var orbit = signin_element( "span", { class: "chat-logo-orbit" } );
+
+   [ "left", "right" ].forEach( function( side )
+   {
+      orbit.appendChild( signin_element( "span", { class: "chat-logo-arms chat-logo-arms--" + side } ) );
+      orbit.appendChild( signin_element( "span", { class: "chat-logo-bar chat-logo-face chat-logo-bar--" + side } ) );
+   } );
+
+   var dots = signin_element( "span", { class: "chat-logo-dots chat-logo-face" } );
+
+   for( var i = 0; i < 3; i++ )
+      dots.appendChild( signin_element( "span", { class: "chat-logo-dot" } ) );
+
+   orbit.appendChild( dots );
+   logo.appendChild( orbit );
+
+   return logo;
+}
+
 function signin_build( host, options )
 {
    g_signin_options = options || { };
@@ -97,7 +123,7 @@ function signin_build( host, options )
 
    var brand = signin_element( "div", { class: "chat-brand" } );
 
-   brand.appendChild( signin_element( "span", { class: "chat-logo" } ) );
+   brand.appendChild( signin_logo( "turn" ) );
    brand.appendChild( signin_element( "span", { class: "chat-wordmark" }, "CIYAM" ) );
    brand.appendChild( signin_element( "span", { class: "chat-brand-note" }, g_signin_options.note || "" ) );
 
@@ -209,7 +235,7 @@ function signin_build( host, options )
    // NOTE: Shown while the sign in is under way - it can take a few seconds (the chat's, 2026-09).
    var busy = signin_element( "div", { class: "chat-signin-busy", id: "signin_busy", hidden: "" } );
 
-   busy.appendChild( signin_element( "span", { class: "chat-spinner" } ) );
+   busy.appendChild( signin_logo( "busy" ) );
    busy.appendChild( signin_element( "span", { id: "signin_busy_text", role: "status" }, "Contacting the server…" ) );
 
    form.appendChild( busy );
@@ -325,7 +351,7 @@ function signin_build( host, options )
    var fresh = signin_element( "div", { class: "chat-signin-form", id: "signin_new_node", hidden: "" } );
    var fresh_brand = signin_element( "div", { class: "chat-brand" } );
 
-   fresh_brand.appendChild( signin_element( "span", { class: "chat-logo" } ) );
+   fresh_brand.appendChild( signin_logo( "turn" ) );
    fresh_brand.appendChild( signin_element( "span", { class: "chat-wordmark" }, "CIYAM" ) );
    fresh_brand.appendChild( signin_element( "span", { class: "chat-brand-note" }, g_signin_options.note || "" ) );
 
@@ -1388,7 +1414,7 @@ function recover_build( )
 
    var brand = signin_element( "div", { class: "chat-brand" } );
 
-   brand.appendChild( signin_element( "span", { class: "chat-logo" } ) );
+   brand.appendChild( signin_logo( "turn" ) );
    brand.appendChild( signin_element( "span", { class: "chat-wordmark" }, "CIYAM" ) );
    brand.appendChild( signin_element( "span", { class: "chat-brand-note" }, g_signin_options.note || "" ) );
 

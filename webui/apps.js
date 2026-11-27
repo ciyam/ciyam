@@ -113,7 +113,7 @@ function apps_build( host, options )
    trigger.setAttribute( "aria-controls", "apps_panel" );
    trigger.title = "Switch to…";
 
-   trigger.appendChild( apps_element( "span", "chat-logo" ) );
+   trigger.appendChild( signin_logo( "" ) );
    trigger.appendChild( apps_element( "span", "chat-wordmark apps-wordmark", "CIYAM" ) );
    trigger.appendChild( apps_element( "span", "apps-dot", "·" ) );
 
