@@ -362,6 +362,8 @@ function signin_show( )
    document.getElementById( "recover_view" ).hidden = true;
    document.getElementById( "signin_view" ).hidden = false;
 
+   signin_focus( );
+
    recover_clear_words( );
 
    signin_check_locked( );
@@ -543,6 +545,17 @@ function signin_show_options( open )
 
    if( !open )
       signin_move_close( );
+}
+
+// NOTE: Sign in focused where an account with its password saved is chosen - Enter is then all it takes (2026-11-27: the usual
+// browser keeps one account). Nothing is focused otherwise, as a phone would open its keyboard for a field.
+function signin_focus( )
+{
+   var submit = document.getElementById( g_signin_ids.submit );
+
+   if( ( document.getElementById( g_signin_ids.access ).value !== "" ) && document.getElementById( "signin_password" ).hidden
+    && ( submit.offsetParent !== null ) )
+      submit.focus( );
 }
 
 function signin_show_forgot( open )

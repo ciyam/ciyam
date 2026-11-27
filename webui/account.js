@@ -528,6 +528,9 @@ function show_view( id )
    {
       document.getElementById( view ).hidden = ( view !== id );
    } );
+
+   if( id === "signin_view" )
+      signin_focus( );
 }
 
 // NOTE: One of My account's sections ("account_sections( )", 2026-10-26) - drawn afresh only for a session not drawn yet; the
