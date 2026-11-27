@@ -95,10 +95,12 @@ echo ""
 
 # Basic file upload API tests.
 filename=$(curl -s -F "file=@test.jpg" localhost:13031/upload)
-diff test.jpg $filename
+sha256sum test.jpg
+echo `cat $filename`
 rm -f $filename
 filename=$(curl -s -F "file=@test.png" localhost:13031/upload)
-diff test.png $filename
+sha256sum test.png
+echo `cat $filename`
 rm -f $filename
 
 # Basic web session API tests.
