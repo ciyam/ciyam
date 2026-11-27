@@ -101,6 +101,8 @@ constexpr const char* c_data_image = "image";
 constexpr const char* c_data_filename = "filename";
 constexpr const char* c_data_application = "application";
 
+constexpr const char* c_user_files_marker = "(0)";
+
 constexpr const char* c_all_specials = " !\"#$%&'()*+,-./<=>?@[\\]^`{|}~";
 
 constexpr const char* c_hdr_separator = ": ";
@@ -788,6 +790,7 @@ void http_request_handler::on_start( )
          bool is_json_output = false;
          bool is_text_output = true;
 
+         bool has_valid_session = false;
          bool has_format_parameter = false;
 
          ostringstream osstr;
@@ -812,6 +815,24 @@ void http_request_handler::on_start( )
 
          parse_query_info( http_qry_info, params, access, device, session,
           error, is_json_output, is_text_output, is_verbose, has_format_parameter );
+
+         // NOTE: If "web session" access credentials have been provided
+         // then is checking that a matching web session system variable
+         // exists in order to determine that it is a valid session.
+         if( error.empty( )
+          && !access.empty( ) && !device.empty( ) && !session.empty( )
+          && ( ( access == g_cws_admin_token ) || has_user_info( access ) ) )
+         {
+            string var_prefix( get_special_var_name( e_special_var_web ) + '.' );
+
+            string user_name( ( access == g_cws_admin_token ) ? string( c_admin ) : get_user_name( access ) );
+
+            string check_session( get_system_variable( var_prefix
+             + user_name + '.' + device + '.' + string( c_query_param_name_session ) ) );
+
+            if( session == check_session )
+               has_valid_session = true;
+         }
 
          if( error.empty( )
           && header_info.count( c_http_content_length_header ) )
@@ -1112,50 +1133,34 @@ void http_request_handler::on_start( )
 #else
                         local_filename = g_temporary_directory + '/';
 
-                        bool has_valid_session = false;
-
-                        // NOTE: If the upload is part of a "web sesssion" then verify
-                        // that the system variable for the provided access and device
-                        // exists and that its value matches the provided "session" so
-                        // a filename in the form "<session>.tmp" is created.
-                        if( !access.empty( ) && !device.empty( ) && !session.empty( )
-                         && ( ( access == g_cws_admin_token ) || has_user_info( access ) ) )
+                        if( has_valid_session )
                         {
-                           string var_prefix( get_special_var_name( e_special_var_web ) + '.' );
+                           string user_name( ( access == g_cws_admin_token )
+                            ? string( c_admin ) : get_user_name( access ) );
 
-                           string user_name( ( access == g_cws_admin_token ) ? string( c_admin ) : get_user_name( access ) );
+                           string web_user_files( g_html_dir + '/' + string( c_user_files_dir ) );
 
-                           string check_session( get_system_variable( var_prefix
-                            + user_name + '.' + device + '.' + string( c_query_param_name_session ) ) );
+                           if( !dir_exists( web_user_files ) )
+                              create_dir( web_user_files );
 
-                           if( session == check_session )
-                           {
-                              has_valid_session = true;
+                           if( !dir_exists( web_user_files ) )
+                              throw runtime_error( "unable to create '" + web_user_files + "'" );
 
-                              string web_user_files( g_html_dir + '/' + string( c_user_files_dir ) );
+                           web_user_files += '/' + user_name;
 
-                              if( !dir_exists( web_user_files ) )
-                                 create_dir( web_user_files );
+                           if( !dir_exists( web_user_files ) )
+                              create_dir( web_user_files );
 
-                              if( !dir_exists( web_user_files ) )
-                                 throw runtime_error( "unable to create '" + web_user_files + "'" );
+                           if( !dir_exists( web_user_files ) )
+                              throw runtime_error( "unable to create '" + web_user_files + "'" );
 
-                              web_user_files += '/' + user_name;
+                           local_filename = web_user_files;
 
-                              if( !dir_exists( web_user_files ) )
-                                 create_dir( web_user_files );
+                           // NOTE: Need to use this
+                           // to allow for UTF-8.
+                           bool has_utf_chars = false;
 
-                              if( !dir_exists( web_user_files ) )
-                                 throw runtime_error( "unable to create '" + web_user_files + "'" );
-
-                              local_filename = web_user_files;
-
-                              // NOTE: Need to use this
-                              // to allow for UTF-8.
-                              bool has_utf_chars = false;
-
-                              local_filename += '/' + valid_file_name( to_string( unix_time( ) ) + ' ' + filename, &has_utf_chars );
-                           }
+                           local_filename += '/' + valid_file_name( to_string( unix_time( ) ) + ' ' + filename, &has_utf_chars );
                         }
 
                         // NOTE: If not a "web session" upload
@@ -1484,7 +1489,7 @@ void http_request_handler::on_start( )
             string start( file_target( path ) );
 
             if( !http_document.empty( ) && ( http_document[ 0 ] != '/' ) )
-               path += '/';
+               http_document = '/' + http_document;
 
             bool rc = true;
 
@@ -1534,10 +1539,18 @@ void http_request_handler::on_start( )
 
             if( allowed )
             {
+               http_document = url_decode( http_document );
+
                found = file_exists( path + http_document );
 
+               if( !found )
+               {
+                  replace( http_document, c_user_files_marker, c_user_files_dir );
+
+                  found = file_exists( path + http_document );
+               }
                // NOTE: Ensures that hidden files stay hidden.
-               if( http_document.find( "/." ) != string::npos )
+               else if( http_document.find( "/." ) != string::npos )
                   found = false;
 
                if( found )
