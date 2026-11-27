@@ -318,7 +318,7 @@ async function move_copy_link( link )
    if( ( g_move === null ) || ( g_move.side !== "old" ) || g_move.asked )
       return;
 
-   note.textContent = copied ? "Copied - paste it on your new device, under \"Moving from another device?\" on its sign in."
+   note.textContent = copied ? "Copied - paste it on your new device's sign in, under More options."
     : "This browser won't copy it - copy it from here: " + link;
    note.hidden = false;
 }

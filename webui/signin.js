@@ -597,19 +597,52 @@ function signin_move_show( scan )
    }
 }
 
+// NOTE: Closed whenever the sign in gives way - "signin_hide( )", the twelve words' recovery, My account's other views - so the
+// camera never stays on behind them; the link's secret cleared with it.
 function signin_move_close( )
 {
+   if( document.getElementById( "signin_move_paste" ) === null )
+      return;
+
    g_signin_move_shown = "";
 
    signin_move_stop_scan( );
 
    document.getElementById( "signin_move_paste" ).hidden = true;
+   document.getElementById( "signin_move_link" ).value = "";
+
+   signin_set_text( "signin_move_error", "" );
 }
 
 // NOTE: Scanning the old device's code - "qr_scan.js", read in only now, as it reads "html5-qrcode.min.js" (375 KB) only when asked.
 // "g_signin_move_opened" tells a scan still starting that it has been closed since.
 var g_signin_move_scanner = null;
 var g_signin_move_opened = 0;
+var g_signin_qr_scan = null;
+
+// NOTE: Whether the reader is in - one reading of "qr_scan.js" shared by every ask, let go again if it failed, so a second tap while
+// it loads waits for it, and one after a failure tries again (found by review).
+function signin_qr_scan_ready( )
+{
+   if( typeof qr_scan_library === "function" )
+      return qr_scan_library( );
+
+   if( g_signin_qr_scan === null )
+   {
+      g_signin_qr_scan = new Promise( function( resolve )
+      {
+         var script = document.createElement( "script" );
+
+         script.src = "qr_scan.js";
+         script.onload = function( ) { resolve( typeof qr_scan_library === "function" ); };
+         script.onerror = function( ) { g_signin_qr_scan = null; script.remove( ); resolve( false ); };
+
+         document.head.appendChild( script );
+      } );
+   }
+
+   return g_signin_qr_scan.then( function( ok ) { return ok && qr_scan_library( ); } );
+}
 
 function signin_move_status( text )
 {
@@ -640,7 +673,7 @@ async function signin_move_scan( )
 
    signin_move_status( "Starting the camera…" );
 
-   if( !await signin_load_script( "qr_scan.js" ) || !await qr_scan_library( ) )
+   if( !await signin_qr_scan_ready( ) )
    {
       if( opened === g_signin_move_opened )
          signin_move_status( "The code reader could not be loaded - paste its link instead." );
@@ -703,12 +736,16 @@ async function signin_move_picture( input )
 
    document.getElementById( "signin_move_scanning" ).hidden = false;
 
-   if( !await signin_load_script( "qr_scan.js" ) || !await qr_scan_library( ) )
+   if( !await signin_qr_scan_ready( ) )
    {
-      signin_move_status( "The code reader could not be loaded - paste its link instead." );
+      if( opened === g_signin_move_opened )
+         signin_move_status( "The code reader could not be loaded - paste its link instead." );
 
       return;
    }
+
+   if( opened !== g_signin_move_opened )
+      return;
 
    signin_move_status( "Reading the picture…" );
 
@@ -756,13 +793,10 @@ function signin_move_go( )
    }
 
    var page = window.location.pathname.replace( /[^/]*$/, "account.html" );
-   var here = ( page === window.location.pathname );
 
+   // NOTE: On My account itself only the part after "#" changes - its "hashchange" takes the move up ("move_take_link( )"), so the
+   // page isn't loaded again (found by review: a reload as well could lose the link, or start the move twice).
    window.location.assign( move_link( window.location.origin + page, secret ) );
-
-   // NOTE: Only the part after "#" changes on My account itself, which a browser doesn't load again by itself.
-   if( here )
-      window.location.reload( );
 }
 
 // NOTE: The accounts moved forgotten here - all the browser keeps for the node, its device token too (the new phone's now), once no
@@ -904,10 +938,11 @@ function signin_on_access( )
    document.getElementById( "signin_forgot_line" ).hidden = use_saved;
 
    if( use_saved )
+   {
       signin_show_forgot( false );
 
-   if( use_saved )
       document.getElementById( "signin_password" ).value = "";
+   }
 
    document.getElementById( "signin_retain" ).value =
     retain_mode_of( signin_storage_get( c_signin_storage_access ), is_account_pin( pin ) ? pin : "", has_hash );
@@ -1910,6 +1945,8 @@ async function recover_show( options )
    signin_set_text( "recover_words_error", "" );
    signin_set_text( "recover_error", "" );
    signin_set_text( "recover_status", "" );
+
+   signin_move_close( );
 
    document.getElementById( "signin_view" ).hidden = true;
    document.getElementById( "recover_view" ).hidden = false;
