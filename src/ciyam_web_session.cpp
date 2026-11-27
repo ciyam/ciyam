@@ -210,24 +210,25 @@ constexpr const char* c_web_storage_suffix = ".storage";
 constexpr const char* c_cws_artifacts_link = ".ciyam";
 
 constexpr const char* c_cws_uri_suffix_help = "help";
-constexpr const char* c_cws_uri_suffix_batch = "batch";
 constexpr const char* c_cws_uri_suffix_logs = "logs";
-constexpr const char* c_cws_uri_suffix_ring = "ring";
-constexpr const char* c_cws_uri_suffix_alerts = "alerts";
-constexpr const char* c_cws_uri_suffix_relay = "relay";
-constexpr const char* c_cws_uri_suffix_handover = "handover";
 constexpr const char* c_cws_uri_suffix_move = "move";
+constexpr const char* c_cws_uri_suffix_ring = "ring";
+constexpr const char* c_cws_uri_suffix_batch = "batch";
+constexpr const char* c_cws_uri_suffix_relay = "relay";
 constexpr const char* c_cws_uri_suffix_users = "users";
+constexpr const char* c_cws_uri_suffix_alerts = "alerts";
 constexpr const char* c_cws_uri_suffix_status = "status";
 constexpr const char* c_cws_uri_suffix_devices = "devices";
+constexpr const char* c_cws_uri_suffix_handover = "handover";
 constexpr const char* c_cws_uri_suffix_messages = "messages";
 constexpr const char* c_cws_uri_suffix_sessions = "sessions";
 constexpr const char* c_cws_uri_suffix_settings = "settings";
 constexpr const char* c_cws_uri_suffix_storages = "storages";
+constexpr const char* c_cws_uri_suffix_user_keys = "user-keys";
+constexpr const char* c_cws_uri_suffix_user_files = "user-files";
 constexpr const char* c_cws_uri_suffix_javascripts = "javascripts";
 constexpr const char* c_cws_uri_suffix_stylesheets = "stylesheets";
 constexpr const char* c_cws_uri_suffix_webcmdlists = "webcmdlists";
-constexpr const char* c_cws_uri_suffix_user_keys = "user-keys";
 constexpr const char* c_cws_uri_suffix_unlock_keys = "unlock-keys";
 constexpr const char* c_cws_uri_suffix_storage_modules = "storage-modules";
 
@@ -238,6 +239,7 @@ constexpr const char* c_cws_uri_suffix_messages_prefix = "messages/";
 constexpr const char* c_cws_uri_suffix_sessions_prefix = "sessions/";
 constexpr const char* c_cws_uri_suffix_settings_prefix = "settings/";
 constexpr const char* c_cws_uri_suffix_storages_prefix = "storages/";
+constexpr const char* c_cws_uri_suffix_user_files_prefix = "user-files/";
 constexpr const char* c_cws_uri_suffix_javascripts_prefix = "javascripts/";
 constexpr const char* c_cws_uri_suffix_stylesheets_prefix = "stylesheets/";
 constexpr const char* c_cws_uri_suffix_webcmdlists_prefix = "webcmdlists/";
@@ -282,20 +284,20 @@ constexpr const char* c_cws_request_unlock_keys_create_options_encrypted = "encr
 // NOTE: This help is only intended for the "test_web_session.html" page which translates this more "user friendly" syntax to HTTP requests.
 constexpr const char* c_cws_help_request_output = "quit\n"
  "attach storage <name>\ncreate message <room> [for=<name,>;]text=<text>\ndelete device <ident>\ndelete message <room>\n"
- "delete javascript\ndelete stylesheet\ndelete webcmdlist\ndelete user-keys\nemploy unlock-key <key>\nretain javascript\n"
+ "delete javascript\ndelete stylesheet\ndelete webcmdlist\ndelete user-keys\ndelete user-file <unix_time>\nemploy unlock-key <key>\nretain javascript\n"
  "retain stylesheet\nretain webcmdlist\nretain user-keys\nreview users\nreview devices\n"
  "review messages <room> [[from=<unix_time>;]extra={NONE|PEEK|TIME|KEYID|ENTIRE}]\nreview setting <name>\nreview storages\nreview javascript[s] [<name>]\n"
- "review stylesheet[s] [<name>]\nreview webcmdlist[s] [<name>]\nreview user-keys\nreview storage-modules [<id>/enums|lists|views[/<item_id>]]\n"
+ "review stylesheet[s] [<name>]\nreview webcmdlist[s] [<name>]\nreview user-keys\nreview user-files\nreview storage-modules [<id>/enums|lists|views[/<item_id>]]\n"
  "review storage-instances <id>/<cid>[/<key>] [[key=<key>;][num=[-|+]<num>;][path=<path>;][query=<query>;][fields=<fields>]]\n"
  "update user *** password=<password>\nupdate message <room> name=<name>|owner=<user>|posts={ANY|OWN|NONE|REACT}|closes=<unix_time>\n"
  "update storage-instance <id>/<cid>/<key> assigns=<names_and_values>";
 
 constexpr const char* c_cws_help_request_admin_output = "quit\n"
  "attach storage <name>\ncreate user [secret|nominated=[[!]<pin>:][<username>]]\ncreate message <room> [for=<name,>;]text=<text>\n"
- "create unlock-key [encrypted=<prefix>-<xor_hash>]\ndelete user <pin>\ndelete device <ident>\ndelete message <room>\ndelete javascript\ndelete stylesheet\n"
- "delete webcmdlist\ndelete user-keys\nemploy unlock-key <key>\nretain javascript\nretain stylesheet\nretain webcmdlist\nretain user-keys\nreview logs [<name> [lines=10]]\n"
+ "create unlock-key [encrypted=<prefix>-<xor_hash>]\ndelete user <pin>\ndelete device <ident>\ndelete message <room>\ndelete javascript\ndelete stylesheet\ndelete webcmdlist\n"
+ "delete user-keys\ndelete user-file <unix_time>\nemploy unlock-key <key>\nretain javascript\nretain stylesheet\nretain webcmdlist\nretain user-keys\nreview logs [<name> [lines=10]]\n"
  "review users\nreview devices\nreview messages <room> [[from=<unix_time>;]extra={NONE|PEEK|TIME|KEYID|ENTIRE}]\nreview setting[s] [<name>]\nreview storages\nreview javascript[s] [<name>]\n"
- "review stylesheet[s] [<name>]\nreview webcmdlist[s] [<name>]\nreview user-keys\nreview storage-modules [<id>/enums|lists|views[/<item_id>]]\n"
+ "review stylesheet[s] [<name>]\nreview webcmdlist[s] [<name>]\nreview user-keys\nreview user-files\nreview storage-modules [<id>/enums|lists|views[/<item_id>]]\n"
  "review storage-instances <id>/<cid>[/<key>] [[key=<key>;][num=[-|+]<num>;][path=<path>;][query=<query>;][fields=<fields>]]\n"
  "update user <pin> keys={REPLACE|RESTORE}|password=<password>\nupdate message <room> name=<name>|owner=<user>|posts={ANY|OWN|NONE|REACT}|closes=<unix_time>\n"
  "update setting <name> value=<value>\nupdate storage-instance <id>/<cid>/<key> assigns=<names_and_values>";
@@ -4230,6 +4232,64 @@ bool process_cws_request( http_request_type request_type, const string& uri_suff
                      else
                         // FUTURE: This message should be handled as a server string message.
                         error = "User keys could not be erased (contact the administrator).";
+                  }
+               }
+               else if( ( is_get_request && ( uri_suffix == c_cws_uri_suffix_user_files ) )
+                || ( is_delete_request && HAS_CONST_CHAR_PREFIX( uri_suffix, c_cws_uri_suffix_user_files_prefix ) ) )
+               {
+                  found = true;
+
+                  set< string > file_names;
+
+                  file_filter ff;
+
+                  string web_user_files( g_html_dir + '/' + string( c_user_files_dir ) );
+
+                  web_user_files += '/' + username;
+
+                  if( dir_exists( web_user_files ) )
+                  {
+                     fs_iterator fs( web_user_files, &ff );
+
+                     while( fs.has_next( ) )
+                     {
+                        string next( fs.get_name( ) );
+
+                        file_names.insert( next );
+                     }
+                  }
+
+                  if( is_delete_request )
+                  {
+                     string unix_time( uri_suffix.substr( CONST_LENGTH( c_cws_uri_suffix_user_files_prefix ) ) );
+
+                     auto i = file_names.lower_bound( unix_time );
+
+                     if( i != file_names.end( ) )
+                     {
+                        if( i->find( unix_time ) == 0 )
+                           file_remove( web_user_files + '/' + *i );
+                     }
+                  }
+                  else
+                  {
+                     string all_names( join( file_names, '\n' ) );
+
+                     if( all_names.empty( ) )
+                        use_none_response = true;
+                     else
+                     {
+                        if( !is_json_output )
+                           response = all_names;
+                        else
+                        {
+                           vector< string > names;
+
+                           split( all_names, names, '\n' );
+
+                           response = as_json_array( ( !is_admin ? "files" : "all_files" ), names );
+                        }
+                     }
                   }
                }
                else if( is_post_request && ( uri_suffix == c_cws_uri_suffix_users ) )

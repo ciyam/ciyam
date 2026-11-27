@@ -195,6 +195,8 @@ constexpr const char* c_tmp_path = "/tmp";
 
 constexpr const char* c_tmp_ciyam_path = "/tmp/ciyam";
 
+constexpr const char* c_user_files_dir = ".user_files";
+
 constexpr const char* c_ciyam_server_sid_file = "ciyam_server.sid";
 constexpr const char* c_ciyam_server_sid_chk_file = "ciyam_server.sid.chk";
 

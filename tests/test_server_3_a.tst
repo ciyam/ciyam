@@ -26,6 +26,10 @@ Error: Invalid format value 'xxxx'.
 opt=value
 testing...
 {"data":"testing..."}
+1d61b80f62329e91c240c021684641607e623ac0aff3da17271b3e279afa06ae  test.jpg
+1d61b80f62329e91c240c021684641607e623ac0aff3da17271b3e279afa06ae
+10a898cf6a78ae9d351613a1e8a9362304311c41b4b27e44b34c5c98dc6be405  test.png
+10a898cf6a78ae9d351613a1e8a9362304311c41b4b27e44b34c5c98dc6be405
 Error: Invalid device identity 'bad_device'.
 [adm]@admin
 Error: This web session is not valid (or has expired).
@@ -47,6 +51,7 @@ delete javascript
 delete stylesheet
 delete webcmdlist
 delete user-keys
+delete user-file <unix_time>
 employ unlock-key <key>
 retain javascript
 retain stylesheet
@@ -61,6 +66,7 @@ review javascript[s] [<name>]
 review stylesheet[s] [<name>]
 review webcmdlist[s] [<name>]
 review user-keys
+review user-files
 review storage-modules [<id>/enums|lists|views[/<item_id>]]
 review storage-instances <id>/<cid>[/<key>] [[key=<key>;][num=[-|+]<num>;][path=<path>;][query=<query>;][fields=<fields>]]
 update user *** password=<password>
@@ -239,6 +245,7 @@ delete javascript
 delete stylesheet
 delete webcmdlist
 delete user-keys
+delete user-file <unix_time>
 employ unlock-key <key>
 retain javascript
 retain stylesheet
@@ -254,6 +261,7 @@ review javascript[s] [<name>]
 review stylesheet[s] [<name>]
 review webcmdlist[s] [<name>]
 review user-keys
+review user-files
 review storage-modules [<id>/enums|lists|views[/<item_id>]]
 review storage-instances <id>/<cid>[/<key>] [[key=<key>;][num=[-|+]<num>;][path=<path>;][query=<query>;][fields=<fields>]]
 update user <pin> keys={REPLACE|RESTORE}|password=<password>

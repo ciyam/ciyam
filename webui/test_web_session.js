@@ -69,6 +69,13 @@ const settings_update_cmd = "settings|update";
 const storages_attach_cmd = "storages|attach";
 const storages_review_cmd = "storages|review";
 
+const user_keys_delete_cmd = "user-keys|delete";
+const user_keys_retain_cmd = "user-keys|retain";
+const user_keys_review_cmd = "user-keys|review";
+
+const user_files_delete_cmd = "user-files|delete";
+const user_files_review_cmd = "user-files|review";
+
 const javascripts_delete_cmd = "javascripts|delete";
 const javascripts_employ_cmd = "javascripts|employ";
 const javascripts_reload_cmd = "javascripts|reload";
@@ -86,10 +93,6 @@ const stylesheets_unload_cmd = "stylesheets|unload";
 const webcmdlists_delete_cmd = "webcmdlists|delete";
 const webcmdlists_retain_cmd = "webcmdlists|retain";
 const webcmdlists_review_cmd = "webcmdlists|review";
-
-const user_keys_delete_cmd = "user-keys|delete";
-const user_keys_retain_cmd = "user-keys|retain";
-const user_keys_review_cmd = "user-keys|review";
 
 const unlock_keys_create_cmd = "unlock-keys|create";
 const unlock_keys_employ_cmd = "unlock-keys|employ";
@@ -1086,9 +1089,9 @@ async function do_fetch( )
           || ( cmd == messages_create_cmd ) || ( cmd == storages_attach_cmd )
           || ( cmd == unlock_keys_create_cmd ) || ( cmd == unlock_keys_employ_cmd ) )
             request_type = "POST";
-         else if( ( cmd == users_delete_cmd ) || ( cmd == devices_delete_cmd ) || ( cmd == messages_delete_cmd )
-          || ( cmd == javascripts_delete_cmd ) || ( cmd == stylesheets_delete_cmd ) || ( cmd == webcmdlists_delete_cmd )
-          || ( cmd == user_keys_delete_cmd ) )
+         else if( ( cmd == users_delete_cmd ) || ( cmd == devices_delete_cmd )
+          || ( cmd == messages_delete_cmd ) || ( cmd == user_keys_delete_cmd ) || ( cmd == user_files_delete_cmd )
+          || ( cmd == javascripts_delete_cmd ) || ( cmd == stylesheets_delete_cmd ) || ( cmd == webcmdlists_delete_cmd ) )
             request_type = "DELETE";
 
          var has_cmd_options = false;
@@ -1101,12 +1104,13 @@ async function do_fetch( )
 
          if( request == help_name )
             cmd_is_url_suffix = true;
-         else if( ( cmd == users_review_cmd )
-          || ( cmd == devices_review_cmd ) || ( cmd == unlock_keys_create_cmd )
+         else if( ( cmd == users_review_cmd ) || ( cmd == devices_review_cmd )
+          || ( cmd == user_keys_delete_cmd ) || ( cmd == user_keys_retain_cmd )
+          || ( cmd == user_keys_review_cmd ) || ( cmd == user_files_review_cmd )
           || ( cmd == javascripts_delete_cmd ) || ( cmd == stylesheets_delete_cmd )
           || ( cmd == javascripts_retain_cmd ) || ( cmd == stylesheets_retain_cmd )
           || ( cmd == webcmdlists_delete_cmd ) || ( cmd == webcmdlists_retain_cmd )
-          || ( cmd == user_keys_delete_cmd ) || ( cmd == user_keys_retain_cmd ) || ( cmd == user_keys_review_cmd ) )
+          || ( cmd == unlock_keys_create_cmd ) )
          {
             cmd_is_url_suffix = true;
             cmd_needs_truncating = true;
@@ -1123,6 +1127,7 @@ async function do_fetch( )
           || ( cmd == messages_review_cmd ) || ( cmd == messages_update_cmd )
           || ( cmd == settings_review_cmd ) || ( cmd == settings_update_cmd )
           || ( cmd == storages_attach_cmd ) || ( cmd == storages_review_cmd )
+          || ( cmd == user_files_delete_cmd )
           || ( cmd == unlock_keys_create_cmd ) || ( cmd == unlock_keys_employ_cmd )
           || ( cmd == javascripts_review_cmd ) || ( cmd == stylesheets_review_cmd )
           || ( cmd == webcmdlists_review_cmd ) || ( cmd == storage_modules_review_cmd )

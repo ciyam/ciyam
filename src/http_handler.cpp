@@ -27,6 +27,7 @@
 #include "regex.h"
 #include "base64.h"
 #include "format.h"
+#include "sha256.h"
 #include "threads.h"
 #include "date_time.h"
 #include "utilities.h"
@@ -223,7 +224,7 @@ constexpr const char* c_has_moved_html_response = "<!doctype html>\n<html>\n<hea
 constexpr const char* c_not_found_html_response = "<!doctype html>\n<html>\n<head><title>Document Not Found</title></head>\n<body><p>Unable to find document 'DOCUMENT'.</p></body>\n</html>\n";
 constexpr const char* c_not_endpoint_html_response = "<!doctype html>\n<html>\n<head><title>Document Not Found</title></head>\n<body><p>Unable to find 'DOCUMENT' (incorrect endpoint?).</p></body>\n</html>\n";
 
-constexpr const char* c_upload_filename = "upload";
+constexpr const char* c_upload_tmp_filename = "upload.tmp";
 
 constexpr const char* c_replace_document_marker = "DOCUMENT";
 
@@ -1117,31 +1118,65 @@ void http_request_handler::on_start( )
                         // that the system variable for the provided access and device
                         // exists and that its value matches the provided "session" so
                         // a filename in the form "<session>.tmp" is created.
-                        if( !access.empty( ) && !device.empty( ) && !session.empty( ) )
+                        if( !access.empty( ) && !device.empty( ) && !session.empty( )
+                         && ( ( access == g_cws_admin_token ) || has_user_info( access ) ) )
                         {
                            string var_prefix( get_special_var_name( e_special_var_web ) + '.' );
 
+                           string user_name( ( access == g_cws_admin_token ) ? string( c_admin ) : get_user_name( access ) );
+
                            string check_session( get_system_variable( var_prefix
-                            + access + '.' + device + '.' + string( c_query_param_name_session ) ) );
+                            + user_name + '.' + device + '.' + string( c_query_param_name_session ) ) );
 
                            if( session == check_session )
                            {
                               has_valid_session = true;
-                              local_filename += session;
+
+                              string web_user_files( g_html_dir + '/' + string( c_user_files_dir ) );
+
+                              if( !dir_exists( web_user_files ) )
+                                 create_dir( web_user_files );
+
+                              if( !dir_exists( web_user_files ) )
+                                 throw runtime_error( "unable to create '" + web_user_files + "'" );
+
+                              web_user_files += '/' + user_name;
+
+                              if( !dir_exists( web_user_files ) )
+                                 create_dir( web_user_files );
+
+                              if( !dir_exists( web_user_files ) )
+                                 throw runtime_error( "unable to create '" + web_user_files + "'" );
+
+                              local_filename = web_user_files;
+
+                              // NOTE: Need to use this
+                              // to allow for UTF-8.
+                              bool has_utf_chars = false;
+
+                              local_filename += '/' + valid_file_name( to_string( unix_time( ) ) + ' ' + filename, &has_utf_chars );
                            }
                         }
 
                         // NOTE: If not a "web session" upload
-                        // then just use the name "upload" (so
+                        // then uses the name "upload.tmp" (so
                         // that testing will not inadvertantly
                         // fill up the temporary file system).
                         if( !has_valid_session )
-                           local_filename += c_upload_filename;
-
-                        local_filename += c_tmp_file_ext;
+                           local_filename += c_upload_tmp_filename;
 #endif
 
                         ofstream outf( local_filename );
+
+                        // NOTE: Is only storing an SHA256
+                        // digest when not a valid session
+                        // to provide very simple testing.
+                        if( !has_valid_session )
+                        {
+                           sha256 hash( data );
+
+                           data = hash.get_digest_as_string( );
+                        }
 
                         outf << data;
                      }
