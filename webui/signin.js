@@ -59,8 +59,7 @@ const c_signin_saved_mark = "  ·  saved password";
 
 const c_signin_title = "Sign in";
 
-const c_signin_lede = "One PIN and password for every part of your node. The password is hashed in this browser and never sent"
- + " in the clear.";
+const c_signin_lede = "One sign in for every part of your node.";
 
 var g_signin_options = { };
 
@@ -141,6 +140,31 @@ function signin_build( host, options )
    form.appendChild( signin_element( "input", { type: "password", id: "signin_password", class: "chat-field",
     autocomplete: "current-password" } ) );
 
+   // NOTE: Whenever the password is asked for (2026-11-27) - what can be done only once it is asked for, as the sign in was too wordy
+   // with it said throughout. A forgotten password is reset by admin, the account then set up again with its PIN (2026-10-29) - or,
+   // since 2026-11-22, by the person with the twelve words their keys were made from ("recover_show( { own } )"); not on a locked
+   // node, which can't ("signin_check_locked( )").
+   var forgot_line = signin_element( "div", { class: "signin-hint", id: "signin_forgot_line" } );
+   var forgot_offer = signin_element( "button", { type: "button", class: "chat-btn--link signin-link", id: "signin_forgot_offer",
+    "aria-expanded": "false", "aria-controls": "signin_forgot" }, "Forgot your password?" );
+
+   forgot_offer.addEventListener( "click", function( ) { signin_show_forgot( document.getElementById( "signin_forgot" ).hidden ); } );
+
+   forgot_line.appendChild( forgot_offer );
+
+   form.appendChild( forgot_line );
+
+   var forgot = signin_element( "div", { class: "signin-hint", id: "signin_forgot", hidden: "" } );
+   var own_reset = signin_element( "button", { type: "button", class: "chat-btn--link signin-link", id: "signin_forgot_words" },
+    "Use your twelve words" );
+
+   own_reset.addEventListener( "click", function( ) { recover_show( { own: true, pin: signin_pin( ) } ); } );
+
+   forgot.appendChild( own_reset );
+   forgot.appendChild( signin_element( "span", { id: "signin_forgot_admin" }, ", or ask your admin to reset it." ) );
+
+   form.appendChild( forgot );
+
    // NOTE: A saved password is used without its field (2026-10-29: an empty field looks as if a password must be typed) -
    // typed instead if it no longer works.
    var saved = signin_element( "div", { class: "signin-hint", id: "signin_hint", hidden: "" } );
@@ -163,7 +187,6 @@ function signin_build( host, options )
    retain.appendChild( new Option( "The PIN and the password", "full" ) );
 
    form.appendChild( retain );
-   form.appendChild( signin_element( "div", { class: "signin-hint" }, "Saving the password as well signs you in without typing it." ) );
 
    // NOTE: A refusal stands out - a panel of its own (2026-10-10: it was small grey-red type).
    form.appendChild( signin_element( "div", { class: "chat-error-text signin-error", id: "signin_error", role: "alert" } ) );
@@ -171,10 +194,6 @@ function signin_build( host, options )
    var actions = signin_element( "div", { class: "chat-signin-actions" } );
 
    actions.appendChild( signin_element( "button", { type: "submit", class: "chat-btn chat-btn--primary", id: g_signin_ids.submit }, "Sign in" ) );
-
-   if( g_signin_options.setup_href )
-      actions.appendChild( signin_element( "a", { class: "chat-btn chat-signin-setup", id: "signin_setup",
-       href: g_signin_options.setup_href }, "New here? Set up your account" ) );
 
    form.appendChild( actions );
 
@@ -198,32 +217,73 @@ function signin_build( host, options )
    // NOTE: How far securing the password has got - it is hardened before it is sent, a second or two (2026-10-25).
    form.appendChild( signin_element( "progress", { class: "chat-signin-progress", id: "signin_busy_bar", max: "1", value: "0", hidden: "" } ) );
 
+   // NOTE: All but signing in, out of the way under "More options" (2026-11-27: the sign in was cluttered) - open by itself on a
+   // browser with no account saved, where "New here?" or a move is what is wanted ("signin_fill_saved( )").
+   var more_line = signin_element( "div", { class: "chat-signin-centred signin-more-line" } );
+   var more = signin_element( "button", { type: "button", class: "chat-btn--link signin-link signin-more", id: "signin_more",
+    "aria-expanded": "false", "aria-controls": "signin_options" }, "More options" );
+
+   more.addEventListener( "click", function( ) { signin_show_options( document.getElementById( "signin_options" ).hidden ); } );
+
+   more_line.appendChild( more );
+
+   form.appendChild( more_line );
+
+   var options = signin_element( "div", { class: "signin-options", id: "signin_options", hidden: "" } );
+
    if( g_signin_options.setup_href )
-      form.appendChild( signin_element( "div", { class: "chat-hint chat-signin-centred", id: "signin_setup_hint" },
+   {
+      options.appendChild( signin_element( "a", { class: "chat-btn chat-signin-setup", id: "signin_setup",
+       href: g_signin_options.setup_href }, "New here? Set up your account" ) );
+
+      options.appendChild( signin_element( "div", { class: "chat-hint chat-signin-centred", id: "signin_setup_hint" },
        "With the code or PIN from the person who added you." ) );
+   }
 
-   // NOTE: A forgotten password is reset by admin, the account then set up again with its PIN (2026-10-29) - or, since 2026-11-22,
-   // by the person with the twelve words their keys were made from ("recover_show( { own } )"). Not on a locked node, which can't.
-   var forgot = signin_element( "div", { class: "chat-hint chat-signin-centred", id: "signin_forgot" } );
-   var own_reset = signin_element( "button", { type: "button", class: "chat-btn--link", id: "signin_forgot_words" }, "Use your twelve words" );
+   // NOTE: The other end of a move ("account_move.js") - the old device's code scanned here (2026-11-27), or its link pasted
+   // ("move_copy_link( )", 2026-11-26), opened at this page's own address, which may not be the one it was made at. Scanned here, it
+   // stays in this browser - the camera's own app opens a link in the phone's default browser.
+   var move = signin_element( "div", { class: "signin-option chat-signin-centred", id: "signin_move" } );
+   var move_scan = signin_element( "button", { type: "button", class: "chat-btn--link signin-link", id: "signin_move_scan" }, "Scan its code" );
+   var move_offer = signin_element( "button", { type: "button", class: "chat-btn--link signin-link", id: "signin_move_offer" }, "Paste its link" );
 
-   own_reset.addEventListener( "click", function( ) { recover_show( { own: true, pin: document.getElementById( "signin_pin" ).value.trim( ) } ); } );
+   move_scan.addEventListener( "click", function( ) { signin_move_show( true ); } );
+   move_offer.addEventListener( "click", function( ) { signin_move_show( false ); } );
 
-   forgot.appendChild( document.createTextNode( "Forgot your password? " ) );
-   forgot.appendChild( own_reset );
-   forgot.appendChild( signin_element( "span", { id: "signin_forgot_admin" }, ", or ask your admin." ) );
+   move.appendChild( document.createTextNode( "Moving from another device? " ) );
+   move.appendChild( move_scan );
+   move.appendChild( signin_element( "span", { "aria-hidden": "true" }, " · " ) );
+   move.appendChild( move_offer );
 
-   form.appendChild( forgot );
+   options.appendChild( move );
 
-   // NOTE: The other end of a move by the clipboard ("move_copy_link( )" in "account_move.js", 2026-11-26) - the old device's link
-   // pasted here, opened at this page's own address, which may not be the one it was copied at. Offered on the foot's line, and
-   // opened beneath it - the sign in stays on one screen.
    var paste = signin_element( "div", { class: "signin-move", id: "signin_move_paste", hidden: "" } );
+
+   // NOTE: The camera's picture ("qr_scan.js"), or a picture of the code where there is no camera or no https.
+   var scan = signin_element( "div", { class: "signin-move-scan", id: "signin_move_scanning", hidden: "" } );
+   var picture = signin_element( "input", { type: "file", accept: "image/*", id: "signin_move_picture", hidden: "" } );
+   var choose = signin_element( "button", { type: "button", class: "chat-btn--link signin-link", id: "signin_move_choose" },
+    "Use a picture of it" );
+
+   picture.addEventListener( "change", function( ) { signin_move_picture( picture ); } );
+   choose.addEventListener( "click", function( ) { picture.click( ); } );
+
+   scan.appendChild( signin_element( "div", { class: "chat-scan-reader", id: "signin_move_reader" } ) );
+   scan.appendChild( signin_element( "div", { class: "signin-hint", id: "signin_move_status", role: "status" } ) );
+   scan.appendChild( choose );
+   scan.appendChild( picture );
+
+   paste.appendChild( scan );
+
+   // NOTE: The link's field - pasted, or a scan's that would not open.
+   var pasting = signin_element( "div", { id: "signin_move_pasting" } );
+
    var paste_go = signin_element( "button", { type: "button", class: "chat-btn chat-signin-setup", id: "signin_move_go" }, "Move to this device" );
 
    paste_go.addEventListener( "click", signin_move_go );
 
-   paste.appendChild( signin_element( "label", { class: "chat-label", for: "signin_move_link" }, "The link from your old device" ) );
+   pasting.appendChild( signin_element( "label", { class: "chat-label", for: "signin_move_link", id: "signin_move_link_label" },
+    "The link from your old device" ) );
 
    var paste_field = signin_element( "input", { type: "text", id: "signin_move_link", class: "chat-field chat-field--mono",
     autocomplete: "off", spellcheck: "false" } );
@@ -237,36 +297,27 @@ function signin_build( host, options )
       }
    } );
 
-   paste.appendChild( paste_field );
-   paste.appendChild( signin_element( "div", { class: "chat-error-text signin-error", id: "signin_move_error", role: "alert" } ) );
+   pasting.appendChild( paste_field );
+   pasting.appendChild( signin_element( "div", { class: "chat-error-text signin-error", id: "signin_move_error", role: "alert" } ) );
 
    var paste_actions = signin_element( "div", { class: "chat-signin-actions" } );
 
    paste_actions.appendChild( paste_go );
-   paste.appendChild( paste_actions );
+   pasting.appendChild( paste_actions );
+   paste.appendChild( pasting );
 
-   // NOTE: One line (2026-10-28: the sign in scrolled) - what it forgets is said by the question it asks first. "Trouble signing in?"
-   // before it went for the move's offer to fit (2026-11-27).
-   var foot = signin_element( "div", { class: "chat-signin-foot" } );
+   options.appendChild( paste );
+
+   // NOTE: What it forgets is said by the question it asks first. Out of the way here - it forgets every account saved.
+   var reset_line = signin_element( "div", { class: "signin-option chat-signin-centred" } );
    var reset = signin_element( "button", { type: "button", class: "chat-btn--link", id: "signin_reset" }, "Reset this browser" );
 
    reset.addEventListener( "click", signin_reset_browser );
 
-   foot.appendChild( reset );
+   reset_line.appendChild( reset );
+   options.appendChild( reset_line );
 
-   var move = signin_element( "span", { id: "signin_move" } );
-   var move_offer = signin_element( "button", { type: "button", class: "chat-btn--link", id: "signin_move_offer" }, "Paste its link" );
-
-   move_offer.addEventListener( "click", signin_move_show );
-
-   move.appendChild( document.createTextNode( "Moving from another device? " ) );
-   move.appendChild( move_offer );
-
-   foot.appendChild( signin_element( "span", { "aria-hidden": "true" }, "·" ) );
-   foot.appendChild( move );
-
-   form.appendChild( foot );
-   form.appendChild( paste );
+   form.appendChild( options );
    view.appendChild( form );
 
    // NOTE: A node not set up yet - nobody can sign in; it is set up from Home (2026-10-13: a Back from setting up
@@ -305,6 +356,7 @@ function signin_show( )
 
    signin_set_text( "signin_error", "" );
 
+   signin_show_forgot( false );
    signin_fill_saved( );
 
    document.getElementById( "recover_view" ).hidden = true;
@@ -345,8 +397,7 @@ async function signin_check_locked( )
 
    // NOTE: A locked node takes no password, so a reset with words is not offered there.
    document.getElementById( "signin_forgot_words" ).hidden = locked;
-   signin_set_text( "signin_forgot_admin", locked ? "Forgotten your password? Ask your admin to reset it." : ", or ask your admin." );
-   document.getElementById( "signin_forgot" ).firstChild.textContent = locked ? "" : "Forgot your password? ";
+   signin_set_text( "signin_forgot_admin", locked ? "Ask your admin to reset it." : ", or ask your admin to reset it." );
 
    if( locked )
    {
@@ -371,6 +422,8 @@ function signin_describe( title, lede, offers_setup )
 
 function signin_hide( )
 {
+   signin_move_close( );
+
    document.getElementById( "signin_view" ).hidden = true;
 }
 
@@ -482,16 +535,198 @@ function signin_show_moved( )
        + " on your new device now." );
 }
 
-function signin_move_show( )
+// NOTE: "More options" opened or closed - a move under way closed with it.
+function signin_show_options( open )
 {
+   document.getElementById( "signin_options" ).hidden = !open;
+   document.getElementById( "signin_more" ).setAttribute( "aria-expanded", open ? "true" : "false" );
+
+   if( !open )
+      signin_move_close( );
+}
+
+function signin_show_forgot( open )
+{
+   document.getElementById( "signin_forgot" ).hidden = !open;
+   document.getElementById( "signin_forgot_offer" ).setAttribute( "aria-expanded", open ? "true" : "false" );
+}
+
+// NOTE: The move's panel - "scan" with the camera, or the link's field. The same one asked for again closes it.
+var g_signin_move_shown = "";
+
+function signin_move_show( scan )
+{
+   var wanted = scan ? "scan" : "paste";
    var paste = document.getElementById( "signin_move_paste" );
 
-   paste.hidden = !paste.hidden;
+   if( !paste.hidden && ( g_signin_move_shown === wanted ) )
+   {
+      signin_move_close( );
+
+      return;
+   }
+
+   g_signin_move_shown = wanted;
+
+   paste.hidden = false;
+
+   document.getElementById( "signin_move_pasting" ).hidden = scan;
 
    signin_set_text( "signin_move_error", "" );
 
-   if( !paste.hidden )
+   if( scan )
+      signin_move_scan( );
+   else
+   {
+      signin_move_stop_scan( );
+
       document.getElementById( "signin_move_link" ).focus( );
+   }
+}
+
+function signin_move_close( )
+{
+   g_signin_move_shown = "";
+
+   signin_move_stop_scan( );
+
+   document.getElementById( "signin_move_paste" ).hidden = true;
+}
+
+// NOTE: Scanning the old device's code - "qr_scan.js", read in only now, as it reads "html5-qrcode.min.js" (375 KB) only when asked.
+// "g_signin_move_opened" tells a scan still starting that it has been closed since.
+var g_signin_move_scanner = null;
+var g_signin_move_opened = 0;
+
+function signin_move_status( text )
+{
+   signin_set_text( "signin_move_status", text );
+}
+
+function signin_move_stop_scan( )
+{
+   var scanner = g_signin_move_scanner;
+
+   g_signin_move_opened++;
+   g_signin_move_scanner = null;
+
+   document.getElementById( "signin_move_scanning" ).hidden = true;
+
+   var done = ( typeof qr_scan_stop === "function" ) ? qr_scan_stop( scanner ) : Promise.resolve( );
+
+   return done.then( function( ) { document.getElementById( "signin_move_reader" ).replaceChildren( ); } );
+}
+
+async function signin_move_scan( )
+{
+   await signin_move_stop_scan( );
+
+   var opened = g_signin_move_opened;
+
+   document.getElementById( "signin_move_scanning" ).hidden = false;
+
+   signin_move_status( "Starting the camera…" );
+
+   if( !await signin_load_script( "qr_scan.js" ) || !await qr_scan_library( ) )
+   {
+      if( opened === g_signin_move_opened )
+         signin_move_status( "The code reader could not be loaded - paste its link instead." );
+
+      return;
+   }
+
+   if( opened !== g_signin_move_opened )
+      return;
+
+   if( !qr_scan_can_use_camera( ) )
+   {
+      signin_move_status( "The camera needs this page opened as https - use a picture of the code, or paste its link." );
+
+      return;
+   }
+
+   var scanner = qr_scan_reader( "signin_move_reader" );
+
+   g_signin_move_scanner = scanner;
+
+   try
+   {
+      await scanner.start( { facingMode: "environment" }, { fps: 10 }, signin_move_read, function( ) { } );
+   }
+   catch( e )
+   {
+      if( g_signin_move_scanner === scanner )
+         g_signin_move_scanner = null;
+
+      if( opened === g_signin_move_opened )
+         signin_move_status( "No camera could be used - use a picture of the code, or paste its link." );
+
+      return;
+   }
+
+   // NOTE: Closed while the camera was starting - let go of it now.
+   if( ( opened !== g_signin_move_opened ) || ( g_signin_move_scanner !== scanner ) )
+   {
+      qr_scan_stop( scanner );
+
+      return;
+   }
+
+   signin_move_status( "Point the camera at the code on your old device." );
+}
+
+async function signin_move_picture( input )
+{
+   var file = ( input.files && input.files.length ) ? input.files[ 0 ] : null;
+
+   input.value = "";
+
+   if( file === null )
+      return;
+
+   await signin_move_stop_scan( );
+
+   var opened = g_signin_move_opened;
+
+   document.getElementById( "signin_move_scanning" ).hidden = false;
+
+   if( !await signin_load_script( "qr_scan.js" ) || !await qr_scan_library( ) )
+   {
+      signin_move_status( "The code reader could not be loaded - paste its link instead." );
+
+      return;
+   }
+
+   signin_move_status( "Reading the picture…" );
+
+   var text = await qr_scan_picture( "signin_move_reader", file, function( ) { return opened === g_signin_move_opened; } );
+
+   if( opened !== g_signin_move_opened )
+      return;
+
+   if( text === null )
+      signin_move_status( "No code could be read in that picture - try one closer up, or straighter." );
+   else
+      signin_move_read( text );
+}
+
+// NOTE: What the camera read - it reads a code many times a second, so only the first is taken. Anything but a move's code is said
+// so and the camera left on; a move's is opened as a pasted link is.
+function signin_move_read( text )
+{
+   if( document.getElementById( "signin_move_scanning" ).hidden )
+      return;
+
+   if( parse_move_link( text ) === "" )
+   {
+      signin_move_status( "That isn't a move code - show \"Move this device\" on your old device." );
+
+      return;
+   }
+
+   document.getElementById( "signin_move_link" ).value = text;
+
+   signin_move_stop_scan( ).then( signin_move_go );
 }
 
 // NOTE: Only the secret is taken from the link ("parse_move_link( )") - the move then opens here, on My account, at this page's own
@@ -611,6 +846,8 @@ function signin_fill_saved( )
    document.getElementById( "signin_access_label" ).hidden = ( ordered.length === 0 );
    select.hidden = ( ordered.length === 0 );
 
+   signin_show_options( ordered.length === 0 );
+
    signin_choose_access( );
 }
 
@@ -651,6 +888,10 @@ function signin_on_access( )
    document.getElementById( "signin_password_label" ).hidden = use_saved;
    document.getElementById( "signin_password" ).hidden = use_saved;
    document.getElementById( "signin_hint" ).hidden = !use_saved;
+   document.getElementById( "signin_forgot_line" ).hidden = use_saved;
+
+   if( use_saved )
+      signin_show_forgot( false );
 
    if( use_saved )
       document.getElementById( "signin_password" ).value = "";

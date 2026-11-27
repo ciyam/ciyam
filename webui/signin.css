@@ -232,12 +232,73 @@
    text-decoration: underline;
 }
 
-/* NOTE: The old device's link pasted, for a move by the clipboard ("signin_move_go( )", 2026-11-26). */
-.signin-move
+/* NOTE: A link that loses nothing - the accent, not the red of "Reset this browser". */
+.chat-signin .signin-link
 {
-   margin: 14px 0 14px;
+   color: var(--color-chat-accent-deep);
 }
 
+/* NOTE: All but signing in, under "More options" (2026-11-27) - its arrow turned as it opens. */
+.signin-more-line
+{
+   margin-top: 12px;
+}
+
+/* NOTE: An inline block, so the link's underline stops short of the arrow. */
+.signin-more::after
+{
+   display: inline-block;
+   margin-left: 4px;
+   content: "\25BE";
+}
+
+.signin-more[aria-expanded="true"]::after
+{
+   content: "\25B4";
+}
+
+.signin-options
+{
+   display: flex;
+   flex-direction: column;
+   gap: 10px;
+   margin-top: 12px;
+   padding-top: 14px;
+   border-top: 1px solid var(--color-chat-rule);
+}
+
+.signin-options[hidden]
+{
+   display: none;
+}
+
+.signin-options .chat-hint
+{
+   margin-top: -6px;
+}
+
+.signin-option
+{
+   font-size: var(--font-size-chat-meta);
+   color: var(--color-chat-text-secondary);
+}
+
+/* NOTE: The old device's code scanned, or its link pasted, for a move ("signin_move_go( )", 2026-11-26). */
+.signin-move-scan
+{
+   display: flex;
+   flex-direction: column;
+   align-items: center;
+   gap: 8px;
+   margin-bottom: 18px;
+}
+
+.signin-move-scan .chat-scan-reader
+{
+   width: 100%;
+}
+
+.signin-move-scan[hidden],
 .signin-move[hidden]
 {
    display: none;

@@ -1423,21 +1423,6 @@ button.chat-avatar:hover
    text-align: center;
 }
 
-/* NOTE: One line - "Trouble signing in? Reset this browser" (2026-10-28: the sign in scrolled). */
-.chat-signin-foot
-{
-   margin-top: 22px;
-   padding-top: 14px;
-   border-top: 1px solid var(--color-chat-rule);
-   display: flex;
-   flex-wrap: wrap;
-   justify-content: center;
-   align-items: baseline;
-   gap: 6px;
-   font-size: var(--font-size-chat-meta);
-   color: var(--color-chat-text-faint);
-}
-
 /* ====================================================================
    Main layout
    ==================================================================== */
