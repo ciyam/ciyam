@@ -1543,9 +1543,15 @@ void http_request_handler::on_start( )
 
                found = file_exists( path + http_document );
 
-               if( !found )
+               if( !found && has_valid_session )
                {
-                  replace( http_document, c_user_files_marker, c_user_files_dir );
+                  string::size_type pos = http_document.find( c_user_files_marker );
+
+                  if( pos == 1 )
+                  {
+                     http_document.erase( pos, strlen( c_user_files_marker ) );
+                     http_document.insert( pos, c_user_files_dir );
+                  }
 
                   found = file_exists( path + http_document );
                }
