@@ -4313,7 +4313,7 @@ bool process_cws_request( http_request_type request_type, const string& uri_suff
 
                            split( all_names, names, '\n' );
 
-                           response = as_json_array( ( !is_admin ? "files" : "all_files" ), names );
+                           response = as_json_array( "files", names );
                         }
                      }
                   }
