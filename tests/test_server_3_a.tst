@@ -51,7 +51,7 @@ delete javascript
 delete stylesheet
 delete webcmdlist
 delete user-keys
-delete user-file <unix_time>
+delete user-file <name_or_unix_time>
 employ unlock-key <key>
 retain javascript
 retain stylesheet
@@ -245,7 +245,7 @@ delete javascript
 delete stylesheet
 delete webcmdlist
 delete user-keys
-delete user-file <unix_time>
+delete user-file <name_or_unix_time>
 employ unlock-key <key>
 retain javascript
 retain stylesheet
