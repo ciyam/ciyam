@@ -233,6 +233,7 @@ constexpr const char* c_replace_document_marker = "DOCUMENT";
 constexpr const char* c_query_param_name_token = "token";
 constexpr const char* c_query_param_name_format = "format";
 constexpr const char* c_query_param_name_verbose = "verbose";
+constexpr const char* c_query_param_name_prefixed = "prefixed";
 
 constexpr const char* c_query_param_value_json = "json";
 constexpr const char* c_query_param_value_text = "text";
@@ -1160,7 +1161,12 @@ void http_request_handler::on_start( )
                            // to allow for UTF-8.
                            bool has_utf_chars = false;
 
-                           local_filename += '/' + valid_file_name( to_string( unix_time( ) ) + ' ' + filename, &has_utf_chars );
+                           local_filename += '/';
+
+                           if( params.count( c_query_param_name_prefixed ) )
+                              local_filename += to_string( unix_time( ) ) + ' ';
+
+                           local_filename += valid_file_name( filename, &has_utf_chars );
                         }
 
                         // NOTE: If not a "web session" upload
